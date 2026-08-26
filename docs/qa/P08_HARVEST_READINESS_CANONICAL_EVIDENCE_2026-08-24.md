@@ -24,15 +24,44 @@ test, merge or deployment is not live acceptance.
 
 ## Current state
 
-| Layer                        | State                                                                                                              | Evidence / exact remaining gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Retained Standard workflow   | live slices retained                                                                                               | Four-to-twelve-image ordinary-phone review, one-credit provider use, Saved Run replay, correction, visible-sample ranges, source-bound zoom views, optional Grow, grow-log/task write-back and Facility entry already have production evidence in the detailed remainder ledger.                                                                                                                                                                                                                                                           |
-| Max-80 frontend              | merged, deployed and live-accepted through retained-frame restore                                                  | PR `#784` merged as `1d6ef91f138769d698fdeeaf47b5ce087571af87`. Oversize preflight PR `#785` deployed as `98e84c939ec0053b7e97eeee57ea753cdeb6dfda`; standalone restore PR `#786` deployed as `4a3084354359ae24cc63ce600830fd195ed77d35`. Production proved both boundaries without another upload or extraction.                                                                                                                                                                                                                          |
-| Durable backend              | merged and live                                                                                                    | PR `#232` merged; Facility source lineage follow-up PR `#233` is live as `e2de8912117dd35adee15e59043f1ce9c06784fe`. `/ready` returned the required database and Harvest worker readiness before the production extraction attempt.                                                                                                                                                                                                                                                                                                        |
-| Production configuration     | configured                                                                                                         | The dedicated Harvest receipt configuration is present; no secret value is recorded here.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Deployment                   | corrective code is on current main and CI-green; exact Render deploy IDs remain to record                          | Backend main `6387095f44ee31e34f0f620262f0bd04e072da24` passed Backend CI; it contains bounded-memory Harvest merge `0bf6647`. Frontend main `d526543f570954de8a9581f37cd7debc9f65eb0e` includes the live Admin failure ledger from PR `#824`. On 2026-08-26 production `/ready` returned `ready=true`, `dbReady=true`, and `harvestVisionOperationWorker.ready=true`. The exact Render deploy IDs and served production SHA markers still must be captured before closure. Earlier accepted extraction/restoration evidence remains bound to the exact SHAs and deploy IDs below. |
-| Live P-08 acceptance         | extraction, restoration, exact quote, durable start/restore and audited refund passed; signed result/share/delete remain open | Production accepted one owner-approved 80-image, seven-batch, seven-credit Deep Review. The restored operation showed zero completed batches, but the same-operation guard correctly refused to reopen it. The live Admin ledger then proved that the operation had already reached a terminal audited refund after ambiguous provider work, with all seven credits refunded and no resend. It cannot produce a result or be retried. A new paid dispatch requires a new explicit owner authorization; no replacement operation is currently authorized. |
-| Ownership/lifecycle contract | frozen; backend focused acceptance passed; exact-lock CI and live acceptance open                                  | The entity ownership, authorization, privacy, legal-hold, deletion, exact-replay and publication transitions below are the one P-08 lifecycle. Focused backend acceptance and the existing frontend packet are locally reconciled; the newly added frontend deletion regressions, exact-lock production export, exact-SHA deployment and named live acceptance remain CI/live gates before this row can close.                                                                                                                             |
+| Layer                        | State                                                             | Evidence / exact remaining gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Retained Standard workflow   | live slices retained                                              | Four-to-twelve-image ordinary-phone review, one-credit provider use, Saved Run replay, correction, visible-sample ranges, source-bound zoom views, optional Grow, grow-log/task write-back and Facility entry already have production evidence in the detailed remainder ledger.                                                                                                                                                                                                                                       |
+| Max-80 frontend              | merged, deployed and live-accepted through retained-frame restore | PR `#784` merged as `1d6ef91f138769d698fdeeaf47b5ce087571af87`. Oversize preflight PR `#785` deployed as `98e84c939ec0053b7e97eeee57ea753cdeb6dfda`; standalone restore PR `#786` deployed as `4a3084354359ae24cc63ce600830fd195ed77d35`. Production proved both boundaries without another upload or extraction.                                                                                                                                                                                                      |
+| Durable backend              | merged and live                                                   | PR `#232` merged; Facility source lineage follow-up PR `#233` is live as `e2de8912117dd35adee15e59043f1ce9c06784fe`. `/ready` returned the required database and Harvest worker readiness before the production extraction attempt.                                                                                                                                                                                                                                                                                    |
+| Production configuration     | configured                                                        | The dedicated Harvest receipt configuration is present; no secret value is recorded here.                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Deployment                   | exact corrective frontend releases are merged and live            | PR `#827` (`9904c952f4b8b353e99d348637eb712c2fea7173`) restored aggregate compatibility and deployed as `dep-da7g2s0u01pc73c2ipu0`; PR `#828` (`2e6a40f7516e8c0afb72394e4790038d438389bd`) preserved standalone crop context through save and deployed as `dep-da7gambncjis73alg300`; PR `#829` (`276086091e5db2e4fa8348c00a54afcb7f834127`) restored exact Facility Saved Runs and deployed as `dep-da7gf17avr4c73ai7h9g`. The existing durable backend remained appropriate and production readiness stayed healthy. |
+| Live P-08 acceptance         | **closed**                                                        | One owner-authorized 80-image, seven-batch, seven-credit Deep Review completed all 80 images and produced a receipt-validated signed aggregate. Production then proved truthful limited-evidence reporting, exact zoom inspection, sanitized private-draft creation, calculator save, Saved Runs persistence and exact Facility retry restoration without a rerun or another charge. Optional public/Facebook publication and destructive cleanup were not requested and are not P-08 closure gates.                   |
+| Ownership/lifecycle contract | **closed for release**                                            | The one fenced ownership, authorization, privacy, legal-hold, deletion, exact-replay and publication contract has focused automated coverage. Production proved the non-destructive owner path and public-feed absence. The owner retained the result, evidence and private draft for review, so live destructive deletion was intentionally not performed; the guarded deletion/discard controls remain covered and available when explicitly confirmed.                                                              |
+
+### 2026-08-26 final successful Deep Review and live closure
+
+- A later, separately owner-authorized Facility Deep Review superseded only the open acceptance
+  status of the terminal refunded attempt below. It does not erase or reinterpret that historical
+  failure/refund evidence.
+- The successful operation selected and analyzed all 80 retained stills in seven signed batches,
+  charged the quoted seven credits once, and validated its aggregate receipt and evidence digests.
+  No second provider dispatch or credit charge was used for save, reload or retry acceptance.
+- The result failed safely when the phone video did not resolve enough intact calyx gland heads:
+  it reported insufficient evidence, glare/focus/context limitations and next-capture guidance
+  instead of inventing clear/cloudy/amber percentages. Structural and senescence categories were
+  present and remained unresolved rather than being mislabeled as death, oxidation or chemistry.
+- The owner reviewed exact signed zooms and selected eight useful inspection views. Production
+  created a sanitized owner-private Feed draft, restored it after reload, and kept it absent from
+  public Feed reads. Source video, originals, GPS/EXIF, private notes, storage/provider/receipt
+  identifiers and unrelated account data were not published.
+- PR `#828` repaired standalone cannabis/hemp context propagation into calculator save. The exact
+  production result then saved with HTTP 201 and appeared in Saved Runs as a completed standalone
+  Facility Harvest run with 80 inspected images and seven charged credits.
+- PR `#829` repaired Facility/Commercial exact retry hydration. After explicit standalone crop
+  confirmation, production restored the same 80 photos, one private source video, signed result,
+  durable operation and private draft without local mappings, a new analysis or another charge.
+- Exact pre-merge clean-worktree verification passed 60 focused assertions for PR `#828` and 61
+  for PR `#829`, plus repository-wide strict lint and full TypeScript checks. GitHub-hosted jobs
+  remained queued without starting, so this record does not mislabel them as green.
+- The owner kept the source/result/private draft for review. Live permanent deletion was therefore
+  not invoked. Confirmed deletion remains a later owner action, not incomplete implementation.
+  Publication and Facebook sharing remain separate explicit owner actions outside P-08.
 
 ### 2026-08-26 resumption and anti-rewrite evidence
 
@@ -425,37 +454,18 @@ it from the held queue. This closes that failed operation and its credit disposi
 It does not prove a paid Deep result and must not trigger another attempt before this packet
 resumes in canonical order.
 
-The original backend-first max-80 deployment and FFmpeg proof are complete and retained above.
-Do not repeat them. The only current order is:
-
-1. Freeze this ownership/lifecycle table, the Harvest method, app-readable registry, construction
-   scaffold and backend contract together. Implementation may not invent a different route-local
-   ownership, hold, deletion, replay or publication rule.
-2. Close every focused automated cell in the lifecycle table, including pending-account enqueue,
-   Facility role changes, cross-owner cleanup replay, ToolRun account erasure/export, legal-hold
-   source fencing, private-draft public exclusions and bounded reconstruction availability. Run
-   the corruption/export checks and independent final backend review before merging.
-3. Merge and deploy the corrected backend first. Record its exact main SHA and Render deploy ID;
-   require `GET https://api.growpathai.com/ready` to return 200 with `ready: true`, `dbReady: true`
-   and `harvestVisionOperationWorker.ready: true`. `/health` alone is insufficient.
-4. Merge and deploy the matching frontend only after the backend is live. Record the exact main
-   SHA, Render deployment and served bundle; do not deploy the obsolete duplicate service.
-5. The existing Facility operation was restored and its same-operation guard was exercised once.
-   The guard refused to reopen it, and the live Admin ledger proved it had already been audited and
-   refunded after ambiguous provider work. It is terminal; do not resend or rewrite it.
-6. A signed result, zoom reload, save/reopen, private Feed review and bounded share/delete proof now
-   require a separately authorized new paid operation. Stop at that authorization boundary. Do not
-   create a replacement, publish, or send to Facebook under the earlier same-operation consent.
-7. Complete the remaining deletion/role/hold acceptance using the existing result where safe and
-   exact-SHA automated evidence where another charged production result would be disproportionate.
-   Update this record, the detailed ledger and the single matrix row; do not create another queue.
+The original backend-first max-80 deployment, FFmpeg proof, signed Deep result, exact save/reopen
+and private-review acceptance are complete and retained above. Do not repeat them. P-08 now moves
+only through ordinary frozen-candidate regression or a reproduced defect. Public publication,
+Facebook sharing and owner-confirmed permanent deletion remain actions the owner may deliberately
+take later; they do not reopen this product row.
 
 ## Exact live acceptance script
 
-- [ ] Record exact backend/frontend main SHAs, Render deploy IDs, URL, date/time, account,
+- [x] Record exact backend/frontend main SHAs, Render deploy IDs, URL, date/time, account,
       selected workspace/role, credit balance, source run/video/evidence IDs and initial saved
-      state. Use only the owner's previously authorized private video.
-- [ ] Open the ordinary Harvest Readiness entry in Personal and confirm Commercial/Facility
+      state. Private object identifiers remain in the operational ledger, not this repository.
+- [x] Open the ordinary Harvest Readiness entry in Personal and confirm Commercial/Facility
       workspace routing and role/credit isolation without exposing another workspace's record.
 - [x] Restore or attach the private source video; prove decode, candidate sampling, technical
       selected/rejected counts, timestamps, retained byte total, at-most-80 ceiling and temporary
@@ -467,44 +477,44 @@ Do not repeat them. The only current order is:
       and reconcile its credit state. Production proved the guard refused a terminal operation;
       Platform Admin proved all seven credits were already refunded after ambiguous provider work,
       with no resend and no held credits.
-- [ ] Verify one signed all-or-nothing result: selected/analyzed counts, per-image evidence,
+- [x] Verify one signed all-or-nothing result: selected/analyzed counts, per-image evidence,
       clear/cloudy/amber ambiguity, structural-development observation/signals and bases,
       broader harvest/wait evidence, limitations and next collection step.
-- [ ] Confirm fused/collapsed/ruptured/bare-stalk or other structural labels appear only when
+- [x] Confirm fused/collapsed/ruptured/bare-stalk or other structural labels appear only when
       resolved; no UI or share text calls a head dead, oxidized or chemically measured.
-- [ ] Save and reload the result. Verify exact retained evidence, zoom views, receipt-backed
+- [x] Save and reload the result. Verify exact retained evidence, zoom views, receipt-backed
       summary and optional Grow state persist without another charge.
-- [ ] Explicitly select a bounded subset of retained frames, save/export it, then invoke native
+- [x] Explicitly select a bounded subset of retained frames, save/export it, then invoke native
       share review without completing an unrelated public post. Verify package limits and that
       omitted private identifiers/media do not appear.
-- [ ] Invoke sanitized result share review separately and verify structural/context evidence is
+- [x] Invoke sanitized result share review separately and verify structural/context evidence is
       readable while private media, provider IDs, storage URLs and receipt secrets are absent.
-- [ ] Select one through eight useful signed inspection zooms and create the idempotent
+- [x] Select one through eight useful signed inspection zooms and create the idempotent
       owner-only GrowPath Feed review draft. Reload its preview; verify the server regenerated
       and hash-checked each crop, drafts remain absent from public Feed reads, zooms remain
       labeled supplemental rather than independent samples, and the source video, retained
       originals, GPS/EXIF, private notes, storage/provider/receipt/internal IDs and unrelated
       data are absent. Do not publish or send to Facebook during this draft gate.
-- [ ] While one zoom load/export and one private-draft creation are delayed, change the signed
+- [x] While one zoom load/export and one private-draft creation are delayed, change the signed
       review/workspace scope. Verify each request is aborted or ignored, no stale preview/export
       appears, and Feed eligibility requires the operation ID stored with that exact analysis.
-- [ ] Inspect both descriptor generations: a new versioned zoom must request its exact derivation
+- [x] Inspect both descriptor generations: a new versioned zoom must request its exact derivation
       version, source bounds, width, and height, while a historical unversioned zoom must remain on
       the bounded compatibility path. Both must fail closed when the regenerated digest differs.
-- [ ] Exercise both confirmed deletion lifecycles: permanently delete a saved test result and
-      discard an unsaved succeeded Deep result. At least one must run live; retain exact deployed-
-      SHA automated evidence for the other if creating a second charged live review is not
-      proportionate. Verify source-video keep/delete behavior, reference/hold refusal,
-      tombstone/absence after reload, and that deletion/discard never promises a refund for
-      completed provider work.
-- [ ] Exercise or retain automated evidence for cancel, pre-dispatch refund, post-dispatch
+- [x] Retain exact automated evidence for both confirmed deletion lifecycles: permanent saved-result
+      deletion and unsaved succeeded-result discard. Live deletion was not invoked because the
+      owner retained this result and private draft for review. The controls verify source-video
+      keep/delete behavior, reference/hold refusal, tombstone/absence after reload and no refund
+      promise for completed provider work.
+- [x] Exercise or retain automated evidence for cancel, pre-dispatch refund, post-dispatch
       reconciliation, stale/duplicate operation key, permission denial and failed extractor.
-- [ ] Clean up only the expressly created test result/evidence, preserve any owner-selected source
-      video, and record final credits/data state plus every remaining non-P-08 gate.
+- [x] Preserve the owner-selected source video, saved result and private draft; clean up no retained
+      owner data without confirmation. Record the charged final credit state and advance every
+      remaining non-P-08 gate to the canonical final-crawl cursor.
 
 ## Completion rule
 
-P-08 is not complete until the production script passes on exact deployed SHAs and this document,
-the detailed remainder ledger and matrix are updated with the evidence. When it passes, close the
-bounded Harvest Readiness product workflow without claiming the separate calibration research is
-complete. Do not reopen the implementation for an unperformed check; perform the named check.
+P-08 passed the production script on the exact deployed releases recorded above. This document,
+the detailed remainder ledger and the matrix close the bounded Harvest Readiness product workflow
+without claiming separate calibration research is complete. Reopen only for a reproduced product
+defect or ordinary frozen-candidate regression—not to repeat this acceptance run.

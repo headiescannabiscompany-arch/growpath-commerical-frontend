@@ -3,8 +3,8 @@
 Updated: 2026-08-26
 
 Status: Detailed evidence and remainder ledger; reconciled against retained production
-evidence on 2026-08-21, with the P-08 implementation/evidence freeze reconciled on
-2026-08-24. A checked sub-scope stays checked even when its larger end-to-end workflow has a
+evidence on 2026-08-21, with P-08 completion reconciled on 2026-08-26. A checked sub-scope stays
+checked even when its larger end-to-end workflow has a
 separately named open remainder.
 
 `CANONICAL_PRODUCT_ACCEPTANCE_MATRIX_2026-08-21.md` is the single authoritative product
@@ -21,42 +21,27 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
-**Current active cursor (2026-08-26):** the reachable non-Harvest production increment is closed;
-P-08 remains the active final functional row exactly as frozen in
-`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Current frontend and backend main are
-CI-green, the focused frontend Harvest packet passes 88/88 assertions, the Harvest history
-contract passes, and production reports the database and required Harvest worker ready. The
-authorized Facility owner restored the retained zero-of-seven operation and exercised only its
-same-operation recovery guard; the server refused because the operation was no longer an
-untouched, uncharged failure. Frontend PR `#824`, live as
-`d526543f570954de8a9581f37cd7debc9f65eb0e`, then exposed the existing backend recent-failure
-ledger to Platform Admin. Production proved the operation was already terminally reconciled and
-all seven credits refunded after ambiguous provider work, with no resend and no credits held.
-The old operation cannot be reopened. Do not perform a code rewrite, re-upload, re-extraction or
-replacement operation under the earlier same-operation authorization.
-After P-08 closes, proceed to the final crawl/fixes, proven dead-code cleanup, frozen-SHA
-release rerun, external review, and then stop at hats. Production already passed the
-512 MiB client guard, real FFmpeg preselection of `OOFC0208.MOV` into 80 retained frames,
-exact standalone source/frame restoration, explicit standalone cannabis/hemp confirmation, and
-the exact 80-image/7-batch/7-credit quote. The owner accepted that quote once as a Facility
-operation. Its retained pre-dispatch checkpoint showed all seven batches `not_started` and no
-result; the later audited Admin ledger is the terminal authority and shows all seven credits
-refunded after ambiguous provider work. Do not repeat upload, extraction, restoration, quote, or
-start, and do not create another operation without new explicit owner authorization.
-The ownership/lifecycle packet is now frozen across the Harvest method, app-readable registry,
-construction scaffold, backend contract and P-08 record: Personal/Commercial is account-owned;
-Facility is Facility-owned; private Feed review is non-public; replay, deletion, account erasure
-and legal holds share one fenced state machine. Backend-focused ownership/race/export/
-availability acceptance is now closed, including direct source holds, whole-Facility erasure,
-sequential consent retention, failed/reserved reconciliation, consent revocation and
-subscriber-aware zoom deadlines. The matching frontend passes static reconciliation, with its
-added deletion, saved-operation recovery, draft-reset and stale/latest-zoom regressions plus the
-exact-lock production export reserved for one networked CI run. Remaining order: deploy backend
-then frontend; the exact same-operation recovery/credit gate is now closed by its guarded refusal
-and audited refund. A signed result/reload, sanitized exact zooms, owner-private Feed review draft
-and result deletion/cleanup require a separately authorized new paid operation. Stop at that
-authorization boundary. Publication and Facebook remain later explicit owner actions. The older
-batch cursor below is retained history and cannot override this slice.
+**Current active cursor (2026-08-26):** P-08 is closed and the final professional crawl is next.
+The exact Harvest completion evidence is frozen in
+`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`: production completed one separately
+owner-authorized 80-image/seven-batch Deep Review, charged the quoted seven credits once, validated
+the signed all-or-nothing aggregate, failed safely on insufficient resolved gland-head evidence,
+restored exact zooms, created and reloaded an eight-zoom owner-private Feed draft, saved the
+standalone Facility result, and reopened that exact Saved Run without another provider dispatch or
+credit charge. PRs `#827`, `#828` and `#829` are merged and live, with their exact commits and Render
+deployments recorded in the P-08 record. Clean detached-worktree verification passed the focused
+suites, repository-wide strict lint and full TypeScript checks; GitHub-hosted jobs remained queued
+without starting and are not mislabeled as green.
+
+The failed zero-of-seven operation remains useful historical refund evidence but is not the final
+result. Do not reopen, resend or rewrite either operation. The owner retained the successful source,
+result and private draft for review; optional permanent deletion, public publication and Facebook
+sharing remain later explicit owner actions rather than incomplete P-08 implementation.
+
+Proceed in canonical order: initial frozen-SHA professional crawl and fixes, evidence-driven dead-
+code cleanup, post-cleanup frozen-SHA release rerun, isolated outside-review suggestions, owner
+review, then stop before hats. App Store and Play Store work remain last. The older batch cursor
+below is retained history and cannot override this slice.
 
 The 2026-08-25 safe non-Harvest production increment is complete: C-01/C-04/C-05 own-
 Commercial entitlement and Admin entry are accepted; S-02/S-03 upload, exact quota,
@@ -66,8 +51,8 @@ already named external gates—paid provider credentials/evaluation authority, r
 email delivery, disposable-account deletion, real Facility role identities, a published
 premiere source, simultaneous broadcasters or multi-organization populated data. Do not
 manufacture those states, send messages, publish content, charge money or create misleading
-fixtures. Record them as exact blockers and continue unrelated work. P-08's retained operation
-is terminally refunded and cannot be retried; no new Deep operation is authorized.
+fixtures. Record them as exact blockers and continue unrelated work. P-08 is closed; its failed
+refunded operation and later successful signed operation are both frozen historical evidence.
 
 1. **Completed current release-candidate slice:** exact-candidate Personal, paid Commercial
    and Platform Admin read-only acceptance is recorded. The reproduced missing Admin return
@@ -308,38 +293,38 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   current entry/configuration regression; only the named two-account simultaneous-stream and
   final-candidate isolation regression remains.
 - [x] **S-02/S-03 video uploads:** configured R2/object storage, exact quota accounting,
-  protected playback, privacy, lifecycle and release are production accepted.
-  Verify the visible upload/library/following/comment/premiere paths and configured storage
-  in the final candidate; a local route without production storage is not completion.
-  The 2026-08-25 Admin-owned Commercial pass exposed one exact authorization mismatch: the
-  shared `/videos` UI correctly selected Commercial storage but its API returned
-  `VIDEO_WORKSPACE_DENIED` because `routes/videos.js` recognized Commercial/Facility plans and
-  omitted the server-verified Platform Admin exception already used by the other own-Commercial
-  services. Backend PR `#251` permits only the Admin account's own Commercial video workspace,
-  retains cross-account workspace denial, and adds both positive and negative route coverage.
-  It merged as `d43438c32a1c60bd619e252549e88041a933c76c`; Render deploy
-  `dep-da74d22vcj2c73d3s3mg` reached Live. The cache-busted Admin-owned Commercial library
-  then returned the truthful `0 B used of 10 GB` quota, zero workspace/my/published/draft
-  counts, enabled provider/visibility/structured-interest authoring controls, and an empty
-  library without `VIDEO_WORKSPACE_DENIED`. This closes the Admin-library authorization
-  correction. Backend PR `#253` passed both dependency-backed CI lanes and merged as
-  `6387095f44ee31e34f0f620262f0bd04e072da24`; exact Render deploy
-  `dep-da75hp6gekts73bq5ah0` reached Live. Reversible synthetic Free/Commercial production
-  acceptance then proved Follow plus the Following filter, comment create/edit/list/delete/
-  reload, repeat-delete idempotency, correct engagement reconciliation, private-draft
-  archive/reload, outside-Free denial and cleanup. The original follow state and engagement
-  total were restored. The final configured-storage regression then ran on frontend
-  `e67206c3dbe050e54713a5e131a16ba1ec50c402` (Render
-  `dep-da75rm7lk1mc73ecf8m0`) and backend
-  `6387095f44ee31e34f0f620262f0bd04e072da24` (Render
-  `dep-da75hp6gekts73bq5ah0`). A synthetic Commercial owner uploaded the owner-authorized
-  135,214-byte `IMG_2706.MOV` as one protected R2 multipart part. The active private draft
-  increased storage from `0` to exactly `135214` bytes, owner playback returned a signed
-  URL whose range read returned `206`, and the outside Free account received `404` for both
-  detail and playback. Archive/reload persisted. Permanent removal reported storage
-  `released` and exact quota returned to `0`; the record was never published and cleanup
-  left no test video or upload. Preserve the architecture; S-02/S-03 are closed except for
-  final-candidate regression.
+      protected playback, privacy, lifecycle and release are production accepted.
+      Verify the visible upload/library/following/comment/premiere paths and configured storage
+      in the final candidate; a local route without production storage is not completion.
+      The 2026-08-25 Admin-owned Commercial pass exposed one exact authorization mismatch: the
+      shared `/videos` UI correctly selected Commercial storage but its API returned
+      `VIDEO_WORKSPACE_DENIED` because `routes/videos.js` recognized Commercial/Facility plans and
+      omitted the server-verified Platform Admin exception already used by the other own-Commercial
+      services. Backend PR `#251` permits only the Admin account's own Commercial video workspace,
+      retains cross-account workspace denial, and adds both positive and negative route coverage.
+      It merged as `d43438c32a1c60bd619e252549e88041a933c76c`; Render deploy
+      `dep-da74d22vcj2c73d3s3mg` reached Live. The cache-busted Admin-owned Commercial library
+      then returned the truthful `0 B used of 10 GB` quota, zero workspace/my/published/draft
+      counts, enabled provider/visibility/structured-interest authoring controls, and an empty
+      library without `VIDEO_WORKSPACE_DENIED`. This closes the Admin-library authorization
+      correction. Backend PR `#253` passed both dependency-backed CI lanes and merged as
+      `6387095f44ee31e34f0f620262f0bd04e072da24`; exact Render deploy
+      `dep-da75hp6gekts73bq5ah0` reached Live. Reversible synthetic Free/Commercial production
+      acceptance then proved Follow plus the Following filter, comment create/edit/list/delete/
+      reload, repeat-delete idempotency, correct engagement reconciliation, private-draft
+      archive/reload, outside-Free denial and cleanup. The original follow state and engagement
+      total were restored. The final configured-storage regression then ran on frontend
+      `e67206c3dbe050e54713a5e131a16ba1ec50c402` (Render
+      `dep-da75rm7lk1mc73ecf8m0`) and backend
+      `6387095f44ee31e34f0f620262f0bd04e072da24` (Render
+      `dep-da75hp6gekts73bq5ah0`). A synthetic Commercial owner uploaded the owner-authorized
+      135,214-byte `IMG_2706.MOV` as one protected R2 multipart part. The active private draft
+      increased storage from `0` to exactly `135214` bytes, owner playback returned a signed
+      URL whose range read returned `206`, and the outside Free account received `404` for both
+      detail and playback. Archive/reload persisted. Permanent removal reported storage
+      `released` and exact quota returned to `0`; the record was never published and cleanup
+      left no test video or upload. Preserve the architecture; S-02/S-03 are closed except for
+      final-candidate regression.
 - [~] **S-04/S-07 private regression:** frontend `e67206c` and backend `6387095` served a
   2026-08-25 signed-in Admin Commercial run. Temporary private course
   `6a8e613df1139368577357f2` retained unsaved lesson title, body and reviewed YouTube URL
@@ -375,14 +360,16 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
 - [~] **A-03 Sentry investigation:** Sentry issue reading is implemented but requires Admin
   provider access. Configure and live-accept the Admin tally/detail/deep-link workflow or
   retain the exact credential dependency without claiming that Sentry is visible in Admin.
-- [~] **P-07/P-08/P-09 AI-provider and media-processing readiness:** the core Diagnosis,
-  Harvest, Plant ID, form-assistant, Forum-assistant and protected-video paths contain real
+- [~] **P-07/P-09 AI-provider and media-processing readiness:** the core Diagnosis,
+  Plant ID, form-assistant, Forum-assistant and protected-video paths contain real
   provider integrations, but several deliberately fail closed or fall back to deterministic
   guidance when OpenAI credentials/model selection, FFmpeg, protected source storage or
   generated-frame leases are unavailable. The final candidate must expose the degraded state,
   prove that unavailable providers do not consume credits or invent evidence, and live-accept
   the configured launch models plus photo/video extraction. This is configuration acceptance,
-  not permission to replace the already implemented tools.
+  not permission to replace the already implemented tools. P-08 Harvest provider, extraction,
+  signed-result, save/reopen and private-review acceptance is closed; retain only ordinary
+  final-candidate regression for that tool.
   For P-09 specifically, the governed Diagnosis/IPM catalog is complete at 252 cases / 504
   rights-reviewed images and `scripts/run-diagnosis-ipm-evaluation.cjs` is the retained
   execution path. The 2026-08-25 environment check found every required staging execution
@@ -879,110 +866,120 @@ found` and neither appeared in the active list, so cleanup is accepted without r
     final-candidate read-only privacy regression remains. See
     `NATURE_CARY_MAYDALE_RECOVERY_2026-08-25.md`.
 
-- [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
-  visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
-  inference warnings, pistil/bud-development context, top/middle/lower/context
-  sampling, video frames, exact retake guidance, and saved-run comparisons.
-  **Current canonical P-08 freeze:**
-  `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md` owns the exact current
-  implementation/evidence record, deployment order, live script and anti-rewrite boundary.
-  Its ownership and transition tables are binding: Personal/Commercial records are account-owned;
-  Facility operations, saved results, evidence and private Feed drafts are Facility-owned; current
-  role is fenced at commit; account deletion, saved-result deletion, direct discard, legal holds,
-  exact replay and private-to-public review cannot use conflicting route-local rules. The focused
-  acceptance cells in that record must pass before deployment; they are not a second queue.
-  Frontend PR `#784` and backend PR `#232` are merged and live. Follow-ups `#785` and `#786`
-  passed full CI and production acceptance for pre-upload size rejection, bounded extraction,
-  and standalone reload restoration. Those accepted slices must not be rebuilt.
-  **Authorized max-80 completion slice (open; reuse, do not rebuild):** preserve the
-  existing upload transport, protected source-video storage, server extraction, dedicated
-  Harvest model, exact evidence receipts, Saved Runs, correction, calculator, and existing
-  four-through-twelve review behavior. Extend only Harvest video preparation to scan at most
-  600 temporary low-resolution candidates and retain at most 80 quality-, diversity-,
-  timeline-, and byte-bounded frames; keep Plant ID and generic vision at 12. Direct uploads
-  remain capped at 12 and direct photos plus retained frames remain capped at 80. Standard
-  reviews remain one credit. Thirteen through eighty is an explicitly quoted durable Deep
-  Review at `ceil(images / 12)` credits, grouped into no more than 12 originals per provider
-  call with deterministic server aggregation and one signed all-or-nothing receipt. A failure
-  durably proven to precede every provider dispatch refunds the complete reservation once. Once
-  any dispatch begins or an earlier group completes, expose no partial result, never redispatch,
-  and retain the accepted reservation for support reconciliation if a safe final result cannot
-  commit. This supersedes the older inaccurate automatic-refund promise. Rejected candidates are deleted immediately;
-  retain only their compact technical rejection/coverage manifest, never biological claims.
-  The owner explicitly approved Deep Review for Personal/free accounts when the account has
-  enough AI credits; do not add a second paid-plan entitlement gate beyond the accepted exact
-  credit quote. The owner also approved provider dispatch of no more than 80 explicitly
-  selected private still images after accepting the exact image count and credit cost. Send
-  neither the source video, rejected candidates, GPS/EXIF data, nor unrelated account data.
-  For live acceptance only, the owner authorized reuse of their previously uploaded older
-  videos after synthetic and local gates pass. Preserve the exact run and evidence IDs in the
-  acceptance record, keep each source video private, and dispatch only its explicitly accepted
-  retained still frames. This narrow authorization is not general production-media consent and
-  does not permit real user media in development or automated tests.
-  **Private save/share completion (implemented and locally tested; live acceptance open):**
-  retained frames stay unselected and private by default. An authenticated owner may explicitly
-  select only verified retained JPEGs and save or send them through protected retrieval and the
-  device share sheet in repeatable packages of at most 12 frames and 24 MiB. The package omits
-  source video, rejected or unselected frames, GPS/EXIF, record/upload IDs, storage URLs,
-  provider identifiers, and receipt secrets, and creates no public link, feed item, or implicit
-  publication. A separate explicit action may share only a revalidated signed Harvest result as
-  a sanitized readable summary. Failed, deleted, incomplete, or unattested results remain
-  unshareable. Production status remains open until the authorized live video run proves exact
-  selection, protected export, sanitized result sharing, reload, and privacy boundaries.
-  **Unsaved Deep-result discard completion (implemented and locally tested; live acceptance
-  open):** after a succeeded Deep Review, the owner receives a separate confirmation-gated
-  result-only discard. It permanently tombstones the unsaved signed result and provider-result
-  metadata, keeps the private source video and retained frames, and does not refund already
-  charged credits. The backend refuses saved ToolRuns, calibration references, and legal or
-  preservation holds; saved results remain in the guarded Saved Runs deletion lifecycle.
-  This expansion reuses the deployment-managed OpenAI and protected-object-storage
-  credentials; no new OpenAI/provider API key is needed to raise the application image ceiling.
-  Production signing does require a dedicated random `HARVEST_ANALYSIS_RECEIPT_SECRET` and
-  public `HARVEST_ANALYSIS_RECEIPT_KEY_ID`; do not reuse another application secret or copy any
-  production secret into either worktree. Perform the already
-  scheduled credential rotation only after the final release candidate is frozen and
-  verified, so rotation does not become another partially completed feature dependency.
-  Exact retained result frames remain until the owner uses the guarded permanent-result
-  deletion lifecycle. Required closure is focused local/CI coverage, exact-SHA deployment,
-  one authorized short-video live run plus reload/save/delete/refund-safe evidence, then the
-  final frozen-candidate crawl. Do not substitute another 12-frame implementation or rewrite
-  the already accepted standard path.
-  The structural-development result is also implemented and locally/CI tested independently
-  from clear/cloudy/amber color: small/developing, intact/turgid, swollen, wrinkled, collapsed,
-  ruptured, resin-exuding, fused, detached/missing and bare-stalk evidence plus repeated resolved
-  advanced senescence. Color or one image never proves biological death, oxidation, chemistry,
-  potency or time. Required deployment is backend first after receipt-key configuration, then
-  `/ready` with the Harvest worker ready, real FFmpeg decode/preselection, frontend deployment,
-  and the authorized old-private-video reload/share/delete acceptance script.
-  Production retained run `6a77ea01b6f7eb6b90cd3595` returns an Aug 5-19
-  planning range centered Aug 12, explains the user's approximate date and
-  declining smell as reasons the window may be open, and preserves unfinished
-  swelling, fresh pistils, and unconfirmed trichomes as reasons to wait. The same
-  saved run was reopened in production and successfully wrote both a grow-log entry
-  and a follow-up task to attached grow `6a603a8fda5c5bfdc030ac1b`.
-  Harvest Readiness now supports standalone authenticated analysis in Personal,
-  Commercial, and Facility workspaces while keeping grow attachment optional.
-  Frontend merges `4585b59b` and `2569d571` plus backend merges `52af744e` and
-  `222b2011` passed their full main CI and production-build gates. Facility standalone
-  analysis remains Facility-credit scoped and write-role gated; an optional supplied
-  grow still passes ownership/authorization checks, and grow-log, task, plant-history,
-  and Harvest-batch actions stay unavailable until a grow is attached. On 2026-08-13,
-  the real `admin@growpathai.com` Personal session opened the cache-busted production
-  route and visibly showed `No grow is required`, direct observations/media, the
-  optional-grow standalone-review message, and the truthful `Select a grow first`
-  batch state. No media was uploaded, no AI credit was spent, and no record was
-  created. On 2026-08-13, the real Triple Bag Genetics Facility-owner session then
-  opened the production Facility AI Tools page with the Facility-owned `2000 / 2000`
-  balance, a visible Harvest Readiness entry, and the explicit selected-Facility
-  authorization boundary. The same session opened the Facility Harvest route, which
-  offered `No grow`, the authorized temporary Facility grow, direct media and
-  observation inputs, and the truthful standalone-review message. No media was
-  uploaded, no AI credit was spent, and no record was created. This closes the
-  role-correct Facility standalone entry proof; a fresh rightful no-grow media run
-  remains part of provider/provenance/billing acceptance. Generic result summaries
-  support readable Copy and native Share actions
-  without exposing private or technical JSON. A fresh rightful no-grow media run is
-  still needed to combine this entry path with provider/provenance/billing acceptance.
+- [x] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
+      visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
+      inference warnings, pistil/bud-development context, top/middle/lower/context
+      sampling, video frames, exact retake guidance, and saved-run comparisons.
+      **Current canonical P-08 freeze:**
+      `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md` owns the exact current
+      implementation/evidence record, deployment order, live script and anti-rewrite boundary.
+      **Closed 2026-08-26:** the owner-authorized successful Facility Deep Review analyzed 80/80
+      selected stills in seven signed batches for the quoted seven credits. It produced a truthful
+      insufficient-evidence result with glare/focus/context limits instead of invented trichome
+      percentages, preserved structural/senescence uncertainty, restored exact zooms, created and
+      reloaded a sanitized eight-zoom owner-private Feed draft, saved the standalone result, and
+      reopened the exact Facility Saved Run without another provider dispatch or charge. Frontend
+      PRs `#827`, `#828` and `#829` are merged and live. The exact commits, Render deployments,
+      focused clean-worktree checks and production evidence are in the P-08 record. The owner kept
+      the private source/result/draft; optional permanent deletion, publication and Facebook sharing
+      are deliberate later owner actions, not open implementation. Everything below in this item is
+      retained implementation and historical calibration evidence and cannot reopen P-08 by itself.
+      Its ownership and transition tables are binding: Personal/Commercial records are account-owned;
+      Facility operations, saved results, evidence and private Feed drafts are Facility-owned; current
+      role is fenced at commit; account deletion, saved-result deletion, direct discard, legal holds,
+      exact replay and private-to-public review cannot use conflicting route-local rules. The focused
+      acceptance cells in that record must pass before deployment; they are not a second queue.
+      Frontend PR `#784` and backend PR `#232` are merged and live. Follow-ups `#785` and `#786`
+      passed full CI and production acceptance for pre-upload size rejection, bounded extraction,
+      and standalone reload restoration. Those accepted slices must not be rebuilt.
+      **Authorized max-80 completion slice (closed; reuse, do not rebuild):** preserve the
+      existing upload transport, protected source-video storage, server extraction, dedicated
+      Harvest model, exact evidence receipts, Saved Runs, correction, calculator, and existing
+      four-through-twelve review behavior. Extend only Harvest video preparation to scan at most
+      600 temporary low-resolution candidates and retain at most 80 quality-, diversity-,
+      timeline-, and byte-bounded frames; keep Plant ID and generic vision at 12. Direct uploads
+      remain capped at 12 and direct photos plus retained frames remain capped at 80. Standard
+      reviews remain one credit. Thirteen through eighty is an explicitly quoted durable Deep
+      Review at `ceil(images / 12)` credits, grouped into no more than 12 originals per provider
+      call with deterministic server aggregation and one signed all-or-nothing receipt. A failure
+      durably proven to precede every provider dispatch refunds the complete reservation once. Once
+      any dispatch begins or an earlier group completes, expose no partial result, never redispatch,
+      and retain the accepted reservation for support reconciliation if a safe final result cannot
+      commit. This supersedes the older inaccurate automatic-refund promise. Rejected candidates are deleted immediately;
+      retain only their compact technical rejection/coverage manifest, never biological claims.
+      The owner explicitly approved Deep Review for Personal/free accounts when the account has
+      enough AI credits; do not add a second paid-plan entitlement gate beyond the accepted exact
+      credit quote. The owner also approved provider dispatch of no more than 80 explicitly
+      selected private still images after accepting the exact image count and credit cost. Send
+      neither the source video, rejected candidates, GPS/EXIF data, nor unrelated account data.
+      For live acceptance only, the owner authorized reuse of their previously uploaded older
+      videos after synthetic and local gates pass. Preserve the exact run and evidence IDs in the
+      acceptance record, keep each source video private, and dispatch only its explicitly accepted
+      retained still frames. This narrow authorization is not general production-media consent and
+      does not permit real user media in development or automated tests.
+      **Private save/share completion (live accepted):**
+      retained frames stay unselected and private by default. An authenticated owner may explicitly
+      select only verified retained JPEGs and save or send them through protected retrieval and the
+      device share sheet in repeatable packages of at most 12 frames and 24 MiB. The package omits
+      source video, rejected or unselected frames, GPS/EXIF, record/upload IDs, storage URLs,
+      provider identifiers, and receipt secrets, and creates no public link, feed item, or implicit
+      publication. A separate explicit action may share only a revalidated signed Harvest result as
+      a sanitized readable summary. Failed, deleted, incomplete, or unattested results remain
+      unshareable. Production acceptance proved exact selection, protected export review, sanitized
+      private-draft sharing, reload, public-feed absence and privacy boundaries.
+      **Unsaved Deep-result discard completion (implemented and accepted by guarded automated
+      evidence):** after a succeeded Deep Review, the owner receives a separate confirmation-gated
+      result-only discard. It permanently tombstones the unsaved signed result and provider-result
+      metadata, keeps the private source video and retained frames, and does not refund already
+      charged credits. The backend refuses saved ToolRuns, calibration references, and legal or
+      preservation holds; saved results remain in the guarded Saved Runs deletion lifecycle.
+      This expansion reuses the deployment-managed OpenAI and protected-object-storage
+      credentials; no new OpenAI/provider API key is needed to raise the application image ceiling.
+      Production signing does require a dedicated random `HARVEST_ANALYSIS_RECEIPT_SECRET` and
+      public `HARVEST_ANALYSIS_RECEIPT_KEY_ID`; do not reuse another application secret or copy any
+      production secret into either worktree. Perform the already
+      scheduled credential rotation only after the final release candidate is frozen and
+      verified, so rotation does not become another partially completed feature dependency.
+      Exact retained result frames remain until the owner uses the guarded permanent-result
+      deletion lifecycle. Closure used focused exact-commit verification, exact-SHA deployment,
+      one authorized live run plus reload/save/private-share/refund-safe evidence and automated
+      destructive-lifecycle coverage. The owner retained the result, so a live permanent delete was
+      not performed. Proceed to the final frozen-candidate crawl. Do not substitute another 12-frame
+      implementation or rewrite the accepted Standard or Deep paths.
+      The structural-development result is also implemented and locally/CI tested independently
+      from clear/cloudy/amber color: small/developing, intact/turgid, swollen, wrinkled, collapsed,
+      ruptured, resin-exuding, fused, detached/missing and bare-stalk evidence plus repeated resolved
+      advanced senescence. Color or one image never proves biological death, oxidation, chemistry,
+      potency or time. Deployment and acceptance completed backend readiness, real FFmpeg
+      decode/preselection, frontend deployment, signed result, save/reopen and private-review proof.
+      Production retained run `6a77ea01b6f7eb6b90cd3595` returns an Aug 5-19
+      planning range centered Aug 12, explains the user's approximate date and
+      declining smell as reasons the window may be open, and preserves unfinished
+      swelling, fresh pistils, and unconfirmed trichomes as reasons to wait. The same
+      saved run was reopened in production and successfully wrote both a grow-log entry
+      and a follow-up task to attached grow `6a603a8fda5c5bfdc030ac1b`.
+      Harvest Readiness now supports standalone authenticated analysis in Personal,
+      Commercial, and Facility workspaces while keeping grow attachment optional.
+      Frontend merges `4585b59b` and `2569d571` plus backend merges `52af744e` and
+      `222b2011` passed their full main CI and production-build gates. Facility standalone
+      analysis remains Facility-credit scoped and write-role gated; an optional supplied
+      grow still passes ownership/authorization checks, and grow-log, task, plant-history,
+      and Harvest-batch actions stay unavailable until a grow is attached. On 2026-08-13,
+      the real `admin@growpathai.com` Personal session opened the cache-busted production
+      route and visibly showed `No grow is required`, direct observations/media, the
+      optional-grow standalone-review message, and the truthful `Select a grow first`
+      batch state. No media was uploaded, no AI credit was spent, and no record was
+      created. On 2026-08-13, the real Triple Bag Genetics Facility-owner session then
+      opened the production Facility AI Tools page with the Facility-owned `2000 / 2000`
+      balance, a visible Harvest Readiness entry, and the explicit selected-Facility
+      authorization boundary. The same session opened the Facility Harvest route, which
+      offered `No grow`, the authorized temporary Facility grow, direct media and
+      observation inputs, and the truthful standalone-review message. No media was
+      uploaded, no AI credit was spent, and no record was created. This closes the
+      role-correct Facility standalone entry proof; the later successful Deep Review closes the
+      standalone provider/provenance/billing acceptance. Generic result summaries
+      support readable Copy and native Share actions
+      without exposing private or technical JSON. Do not repeat the completed no-grow media run.
 
   The exact four retained Headies photos from saved run
   `6a7632764f34c5f3a9943cb6` now form a repeatable calibration case. Under backend
