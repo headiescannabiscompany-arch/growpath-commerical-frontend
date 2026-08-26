@@ -235,9 +235,16 @@ approval. House and potted-plant exclusions remain unchanged.
   Street, Cary, near Raleigh. The address is sufficient for a future reviewed shared park
   point, but it is not plant evidence. Cary observations still require owner re-upload of one
   photo/video evidence set per distinct plant and must not be fabricated from the address.
-- Local focused acceptance currently passes 18 tests across globe behavior, public list
-  request ordering/photo details, and the app-readable knowledge registry. Production deploy
-  and visual cluster selection remain the only open checks for this bounded regression.
+- Merge `0f1f09640b86cbe31b856de559b9a5864833ed4e` and Render deploy
+  `dep-da76lnjtqb8s739s8m10` made the focus/return control live. Production then proved the
+  map centered on Maydale and retained all four cards, but a close visual and center-click
+  check found that MapLibre's custom WebGL circle still did not paint or receive the click.
+  The observation count and centered map are therefore not accepted as pin evidence.
+- The follow-up candidate retains MapLibre clustering and adds one visible keyboard-operable
+  HTML marker for every unique privacy-safe public coordinate group. The marker count opens
+  every separate observation at that point; this supplements rather than replaces the map,
+  cards, publication, projection, withdrawal, or privacy workflow. Production deployment,
+  visible `4` marker evidence, and selecting all four Maydale findings remain open.
 
 ## No-rebuild boundary
 

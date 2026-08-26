@@ -849,9 +849,10 @@ found` and neither appeared in the active list, so cleanup is accepted without r
     Frontend `b941755b` and backend `413612f` prove search against approved public place text
     and the correct observation count in production. A 2026-08-26 Browser pass reproduced that
     their shared cluster could begin off-screen even while all four cards loaded. The bounded
-    candidate now fits privacy-safe result coordinates and provides **Show published
-    observations**; focused local tests pass, while deploy and production visual cluster
-    selection remain open. Do not fabricate pins or rebuild the map.
+    focus/return control is live at `0f1f0964`, but the production WebGL circle remained
+    invisible and did not receive a center click. The follow-up candidate retains clustering
+    and adds one visible keyboard-operable marker per privacy-safe coordinate group; local and
+    production selection acceptance remain open. Do not fabricate pins or rebuild the map.
   - **N-02 (`live accepted`):** retain the current-candidate compact zero-pin Discover globe
     and canonical link. No action remains beyond final-candidate regression checking. The
     older duplicate-preview removal is superseded history, not a request to remove this
