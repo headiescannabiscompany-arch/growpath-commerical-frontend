@@ -1870,7 +1870,11 @@ public visibility, or screenshot/video acceptance still called out below.
       content headings. The Commercial route policy now gives each one heading owner
       and awaits the same focused/deployed recheck. The final creation/import/report
       batch passed 8/9 routes; Auto Grow Calendar repeated the hidden navigator-heading
-      pattern and is included in the same fix/recheck batch. Browser route/DOM evidence exists; screenshot capture was
+      pattern and is included in the same fix/recheck batch. The signed-in public
+      continuation confirmed ten canonical catalog/community/Nature/legal routes; the
+      published Living Soil Labs storefront loaded correctly but its visible brand title
+      lacked heading semantics. The brand title now owns the page H1 and joins the same
+      pending fix/deploy/recheck batch. Browser route/DOM evidence exists; screenshot capture was
       unavailable, so responsive visual/theme/assistive-tech evidence is not claimed.
       A non-mutating signed-in desktop production batch on 2026-08-20 covered the
       Admin Personal Home, Grows, AI Tools, Forum/Q&A, Discover, Courses, and Profile

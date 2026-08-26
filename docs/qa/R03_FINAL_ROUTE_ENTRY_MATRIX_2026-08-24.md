@@ -49,6 +49,11 @@ deployed application candidate named below.
 - The final Commercial creation/import/report batch passed 8/9 routes. Auto Grow Calendar was
   usable and workspace-scoped but repeated the same hidden-navigator-heading pattern; it now uses
   the navigator title as its sole level-one heading and joins the pending exact recheck batch.
+- The signed-in public continuation confirmed Pricing, Store, Courses, Videos, Lives, Forum/Q&A,
+  Nature, Feed/Campaigns, Privacy and Terms. The published Living Soil Labs storefront loaded its
+  saved image/profile state and Back action but its visible brand title lacked heading semantics;
+  that title now owns the public page's level-one heading. Signed-out public state and the exact
+  deployed storefront recheck remain open.
 - The repository test runner also discovered stale nested checkout folders as duplicate Jest
   projects. The canonical frontend suite is now rooted only in `src` and `tests`, so retained local
   checkouts cannot multiply or contaminate a verification run.

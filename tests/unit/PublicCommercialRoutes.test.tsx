@@ -366,7 +366,10 @@ describe("public commercial routes", () => {
     await waitFor(() =>
       expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
     );
-    expect(screen.getByText("Living Soil Labs")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Living Soil Labs" })).toHaveProp(
+      "aria-level",
+      1
+    );
     expect(
       screen.getByLabelText("Living Soil Labs storefront image").props.source
     ).toEqual({ uri: "https://example.com/living-soil-banner.jpg" });
