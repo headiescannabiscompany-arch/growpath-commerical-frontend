@@ -340,6 +340,11 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       attached purple sprouting path with two upward leaves, right `GPAI`, left branching-path
       mark and small rear `GrowPathAI`. The no-green-emblem draft is retired. Custom supplier
       confirmation, premium pricing, digitizing and sew-out remain open.
+- [x] The owner approved GP-11 Day Path on 2026-08-27: custom cream/stone crown with burgundy
+      brim/button/rope, dark-and-burgundy `GrowPathAI` with attached upward sprout, right
+      `GPAI`, left branching-path mark and small rear `GrowPathAI`. Its complete rope wording is
+      retained as design intent but requires written manufacturing-method, legibility and
+      durability confirmation. Custom supplier pricing, digitizing and sew-out remain open.
 - [x] BLVNK HEADWEAR is recorded as the candidate blank-body source based on the retained
       supplier email; no exact model, fabric, cost, or production claim is invented.
 - [x] A zero-stock, unpriced, non-checkout `Would you buy this at this price?` trial flow

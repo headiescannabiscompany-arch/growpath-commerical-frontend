@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "partial: 2 of 16",
+    "ownerConceptApproval": "partial: 3 of 16",
     "digitizerSelected": false,
     "machineFilesApproved": false,
     "physicalSewoutsApproved": false
@@ -17,7 +17,7 @@
     "role": "candidate blank distributor",
     "wholesalePriceConfirmed": false,
     "liveVariantAvailabilityConfirmed": false,
-    "customColorwaysPending": ["GP-06", "GP-08"]
+    "customColorwaysPending": ["GP-06", "GP-08", "GP-11"]
   },
   "conceptSheets": [
     "heritage-core-concept-sheet.png",
@@ -27,7 +27,8 @@
   ],
   "ownerApprovedConcepts": [
     "approved-concepts/gp-06-volt-path-approved.png",
-    "approved-concepts/gp-08-royal-current-approved.png"
+    "approved-concepts/gp-08-royal-current-approved.png",
+    "approved-concepts/gp-11-day-path-approved.png"
   ],
   "sourceArt": [
     "source-art/circuit-leaf.svg",
