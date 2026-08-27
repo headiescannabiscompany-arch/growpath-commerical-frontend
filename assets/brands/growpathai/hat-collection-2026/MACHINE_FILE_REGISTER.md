@@ -7,10 +7,11 @@ digitize.
 
 | Concept range | Source art | Digitizer assigned | DST returned | Native source returned | Sew-out | Owner approval |
 |---|---|---|---|---|---|---|
-| GP-04–GP-05, GP-07 Heritage | ready | no | no | no | not run | pending |
+| GP-05, GP-07 Heritage | ready | no | no | no | not run | pending |
 | GP-01 Circuit Crimson | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; DST/native file and exact-blank sew-out pending |
 | GP-02 Deep Canopy | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; tonal thread match, DST/native file and exact-blank sew-out pending |
 | GP-03 Midnight Stealth | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; low-sheen tonal thread match, DST/native file and exact-blank sew-out pending |
+| GP-04 Night Current | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; custom script digitization, DST/native file and exact-blank sew-out pending |
 | GP-06 Volt Path | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom blank, DST/native file and exact-blank sew-out pending |
 | GP-08 Royal Current | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom blank, DST/native file and exact-blank sew-out pending |
 | GP-09–GP-10, GP-12 Gramps rope/cord | ready | no | no | no | not run | pending |
@@ -21,6 +22,6 @@ When files arrive, add their exact filename, SHA-256, dimensions, stitch count, 
 machine/native format, sample photo, disposition and superseding revision. A file is not
 production-approved merely because it opens in embroidery software.
 
-Concept approval and production approval are separate gates. GP-01, GP-02, GP-03, GP-06, GP-08 and GP-11 approved visuals
+Concept approval and production approval are separate gates. GP-01, GP-02, GP-03, GP-04, GP-06, GP-08 and GP-11 approved visuals
 are recorded in `approved-concepts/` with SHA-256 values in `SHA256SUMS.txt`. They do not claim
 that a custom blank, machine file or physical sample already exists.

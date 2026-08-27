@@ -343,6 +343,12 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       deep-forest node accents, right tonal `GPAI`, left tonal branching-path mark and small
       rear tonal `GrowPathAI`. Final thread-card contrast, machine file and exact-blank sew-out
       remain open.
+- [x] The owner approved GP-04 Night Current on 2026-08-27: the real stock BLV600 Navy
+      premium-wool blank with a custom white `GrowPath` script, GrowPath-blue `AI`, restrained
+      path underline and small white/blue right-side `GPAI`. The final front scale is 92.5% of
+      the first script mockup (approximately 100 x 29 mm); there is no front circuit leaf. The
+      left branching-path mark, small rear `GrowPathAI`, custom script digitization, machine
+      file and exact-blank sew-out remain open.
 - [x] The owner approved GP-06 Volt Path on 2026-08-27: a custom BLV600-style matte-black
       crown with banana-yellow brim/button, clean circuit leaf, `GrowPathAI` wordmark, right
       `GPAI`, left branching-path mark and small rear `GrowPathAI`. It may cost more and is a
