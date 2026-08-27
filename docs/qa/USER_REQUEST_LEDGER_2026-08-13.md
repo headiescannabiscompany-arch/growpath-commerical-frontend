@@ -330,6 +330,10 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       retained TBG material is not approval to make or publish a TBG product.
 - [x] The owner approved the black Circuit Leaf GrowPathAI concept and the revised
       tonal-sage concept with a longer structured brim and small rear `GROWPATHAI` mark.
+- [x] The owner approved GP-01 Circuit Crimson on 2026-08-27: the real stock BLV600 Maroon
+      premium-wool blank with a restrained 46 x 45 mm antique-gold circuit leaf, right gold
+      `GPAI`, left gold branching-path mark and small rear gold `GrowPathAI`. Machine-file,
+      exact-blank sew-out and optional shallow outer-border foam proof remain open.
 - [x] The owner approved GP-06 Volt Path on 2026-08-27: a custom BLV600-style matte-black
       crown with banana-yellow brim/button, clean circuit leaf, `GrowPathAI` wordmark, right
       `GPAI`, left branching-path mark and small rear `GrowPathAI`. It may cost more and is a

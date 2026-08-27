@@ -1,5 +1,5 @@
 concept_id,placement,art_source,target_mm,default_method,thread_order,notes,status
-GP-01,front,source-art/circuit-leaf.svg,58x56,flat satin with optional shallow outer-border foam,"antique gold",Internal traces and nodes stay flat; foam trial limited to outer leaf border,digitizer_required
+GP-01,front,source-art/circuit-leaf.svg,46x45,flat satin with optional shallow outer-border foam,"antique gold",Owner-approved restrained scale; internal traces and nodes stay flat; foam trial limited to outer leaf border,digitizer_required
 GP-01,right,source-art/gpai-monogram.svg,34x14,flat satin,"antique gold",Font-independent monoline mark,digitizer_required
 GP-01,left,source-art/branching-path.svg,31x17,flat satin,"antique gold",Keep open node centers,digitizer_required
 GP-01,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"antique gold",Convert approved lettering to curves before digitizing,digitizer_required
