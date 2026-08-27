@@ -325,6 +325,14 @@ fronds, bursts or decorative emblem frames. An individual owner-approved concept
 any conflicting aggregate-sheet panel. The owner's master visual-review folder is
 `C:\Users\jcind\Pictures\growpath hats`; repository copies remain the production record.
 
+Owner correction, 2026-08-27: the older 16-slot concept package is not the visual-completion
+boundary. The owner registered 21 source files and expects every source to receive an explicit
+one-to-one GrowPathAI conversion or explicit rejection/duplicate disposition. Fifteen sources
+currently have approved conversions; `GYSG2238.PNG`, `GEOT0660.PNG`, `PUMD5290.PNG`,
+`MCXG5769.PNG`, `KVQV2209.PNG`, and `FDGN4955.PNG` remain open. GP-16 is an owner-approved
+corduroy material variant of the already-covered `OBJU0610.PNG` direction, but it does not
+close another source and must not be described as 16-of-16 completion.
+
 - [x] Historical GrowPathAI and Triple Bag Genetics concept images, exact hashes, brand
       manifests, approved emblems, and a production brief are retained as design input;
       retained TBG material is not approval to make or publish a TBG product.
@@ -389,12 +397,15 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
       small rear wordmarks; retain approved source files and final review images. Sixteen
-      active mapped concepts and four historical multi-view review sheets now exist. Fifteen individual concepts
-      are owner-approved; GP-07 is locked to the real BLV600 White & Black blank with a black
-      circuit-leaf-only front, black side marks and a small black rear wordmark. GP-09 is locked
-      to the real BLV550 Sage/Olive nylon blank with the factory rope removed, a dark-olive
-      circuit-leaf-only front, tonal side marks and a small rear wordmark; alteration durability
-      remains a production gate. GP-10 Loden Signal is retired: it was not derived from an
+      active mapped concepts and four historical multi-view review sheets now exist. Fifteen
+      owner-source conversions are approved out of the 21-source roster; the legacy 16-slot
+      package is not the completion count. GP-07 is locked to the real BLV600 White & Black blank with a black
+      circuit-leaf-only front, black side marks and a small black rear wordmark. Fifteen
+      one-to-one owner-source conversions are approved. GP-09 is retained separately as a real
+      BLV550 Sage/Olive nylon supplier variant with the factory rope removed and dark-olive
+      embroidery; GP-18 separately closes the pale light-green-on-light-green `CNKY2160.PNG`
+      direction on the real BLV550 Sage/Olive Gramps with its factory rope retained. Rope-removal
+      durability remains a GP-09 production gate. GP-10 Loden Signal is retired: it was not derived from an
       owner-selected source and its draft improperly changed the emblem treatment. The 21-file
       owner roster and brand-swap-only conversion contract are locked in
       `assets/brands/growpathai/hat-collection-2026/OWNER_SOURCE_REGISTER.md`. GP-12 Orange

@@ -45,9 +45,13 @@ The isolated Roberto review gate remains pending under
 execution is now active without fabricating reviewer findings: sixteen GrowPathAI-only designs
 are mapped to real published BLVNK models/textiles/colorways in
 `assets/brands/growpathai/hat-collection-2026/`, with four multi-view sheets, reusable SVG art,
-a stitch sequence, digitizer handoff and machine-file register. R-05 is not complete: live
-Fifteen of the sixteen active concepts now have owner-approved individual images; GP-16 is
-the only remaining owner-art disposition.
+a stitch sequence, digitizer handoff and machine-file register. R-05 is not complete: fifteen
+of 21 registered owner sources have approved one-to-one conversions and six remain open.
+GP-18 closes the pale light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550
+Sage/Olive blank with its factory rope retained. GP-09 remains a darker-treatment variant, and
+the owner-approved GP-16 corduroy image is an extra material variant of an already-covered source,
+not the last owner-source disposition and not evidence that visual work is complete.
+Live
 wholesale availability/cost, decorator selection, returned `DST` plus editable source, exact-
 blank sew-outs, owner sample approval, zero-stock website research presentation and any later
 owner-priced trials remain open. Production credential rotation remains a separately named
@@ -68,7 +72,8 @@ result. Do not reopen, resend or rewrite either operation. The owner retained th
 result and private draft for review; optional permanent deletion, public publication and Facebook
 sharing remain later explicit owner actions rather than incomplete P-08 implementation.
 
-Proceed from the active R-05 package through owner art disposition, exact supplier/decorator
+Proceed from the active R-05 package through all 21 registered owner-source dispositions,
+exact supplier/decorator
 facts, returned embroidery files and physical sample approval, then the zero-stock research
 presentation and any owner-priced trials. Roberto findings, if returned, remain separately
 itemized and owner-disposed rather than silently merged. App Store and Play Store work remains

@@ -21,14 +21,15 @@ digitize.
 | GP-13 Rasta Circuit Patch | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom patch/trim feasibility, DST/native file and exact-blank sew-out pending |
 | GP-14 Prism Terrain | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom all-over print feasibility, thread match, DST/native file and exact-blank sew-out pending |
 | GP-15 Royal Signal | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; neon-green thread match, DST/native file and exact-blank sew-out pending |
-| GP-16 Night Script Cord | ready | no | no | no | not run | pending |
+| GP-16 Night Script Cord | ready; owner-approved stock-blank variant image retained; duplicates already-covered OBJU0610 direction | no | no | no | not run | concept approved 2026-08-27 as an extra material variant; does not close another owner source; DST/native file and exact-blank sew-out pending |
 | GP-17 Redline Circuit Rope | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; custom rope attachment, DST/native file and exact-blank sew-out pending |
+| GP-18 Pale Sage Gramps | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; pale tonal thread match, DST/native file and exact-blank BLV550 sew-out pending; factory olive rope retained |
 
 When files arrive, add their exact filename, SHA-256, dimensions, stitch count, color count,
 machine/native format, sample photo, disposition and superseding revision. A file is not
 production-approved merely because it opens in embroidery software.
 
 Concept approval and production approval are separate gates. GP-01 through GP-09, plus GP-11,
-GP-12 through GP-15 and GP-17 approved visuals
+GP-12 through GP-18 approved visuals
 are recorded in `approved-concepts/` with SHA-256 values in `SHA256SUMS.txt`. They do not claim
 that a custom blank, machine file or physical sample already exists.

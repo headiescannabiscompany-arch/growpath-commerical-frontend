@@ -62,3 +62,39 @@ they are not duplicated into Git merely to avoid unnecessary repository weight.
 GP-10 Loden Signal and its generated draft are rejected. They did not originate from this
 roster, changed both the hat direction and emblem treatment, were never owner-approved and
 must not be saved, published, digitized, quoted or used as a basis for another concept.
+
+## One-to-one source coverage
+
+The registered-source roster, not the older 16-slot concept-sheet package, controls visual
+completion. A material or blank variant derived from an already covered source does not close
+another source. Every row must finish as either an individually owner-approved GrowPathAI
+conversion or an explicit owner rejection/duplicate disposition.
+
+| Owner source | Current concept/evidence | Coverage status |
+|---|---|---|
+| `GYSG2238.PNG` | its purple/blue script details informed earlier review, but no one-to-one final conversion is retained | open |
+| `CNKY2160.PNG` | GP-18 Pale Sage Gramps; GP-09 remains a separate darker olive-treatment variant | approved |
+| `HZTB1071.PNG` | GP-11 Day Path | approved |
+| `ODPT8770.PNG` | GP-08 Royal Current | approved |
+| `UIAC0015.PNG` | GP-06 Volt Path | approved |
+| `RMUS4022.PNG` | GP-12 Orange Tonal Circuit | approved |
+| `GEOT0660.PNG` | no one-to-one final conversion retained | open |
+| `JQLD5959.PNG` | GP-17 Redline Circuit Rope | approved |
+| `OBJU0610.PNG` | GP-05 Signal Classic; owner-approved GP-16 is an extra corduroy material variant of this already covered direction | approved once for source coverage; GP-16 does not add source coverage |
+| `LTBM9546.PNG` | GP-03 Midnight Stealth | approved |
+| `VNBS9429.PNG` | GP-01 Circuit Crimson | approved |
+| `PUMD5290.PNG` | no one-to-one final conversion retained | open |
+| `MCXG5769.PNG` | no one-to-one final conversion retained on an exact supplier blank | open |
+| `KZJV0657.PNG` | GP-15 Royal Signal | approved |
+| `KVQV2209.PNG` | no one-to-one final conversion retained | open |
+| `NNNI1535.PNG` | GP-07 Glacier Contrast | approved; the later owner-approved white/black treatment controls |
+| `FTRU8917.PNG` | GP-02 Deep Canopy | approved |
+| `MTSN8249.PNG` | GP-13 Rasta Circuit Patch | approved |
+| `LANR8844.PNG` | GP-14 Prism Terrain | approved |
+| `PWVH4651.PNG` | GP-04 Night Current | approved |
+| `FDGN4955.PNG` | no one-to-one final conversion retained | open |
+
+Current source coverage: **15 approved / 21 registered; 6 open**. GP-18 closes the pale
+light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550 Sage/Olive Gramps blank
+with its factory rope retained. GP-09 and GP-16 remain approved extra variants and do not add
+another source-coverage count.
