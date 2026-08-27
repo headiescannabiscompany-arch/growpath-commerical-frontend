@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "partial: 11 of 17",
+    "ownerConceptApproval": "partial: 11 of 16",
     "digitizerSelected": false,
     "machineFilesApproved": false,
     "physicalSewoutsApproved": false
@@ -53,11 +53,12 @@
     "digitizerHandoff": "EMBROIDERY_DIGITIZER_HANDOFF.md",
     "stitchSequence": "STITCH_SEQUENCE.csv",
     "machineFileRegister": "MACHINE_FILE_REGISTER.md",
+    "ownerSourceRegister": "OWNER_SOURCE_REGISTER.md",
     "decoratorQuotePacket": "DECORATOR_QUOTE_PACKET.md",
     "dstFilesPresent": false,
     "nativeEmbroideryFilesPresent": false
   },
-  "conceptCount": 17,
+  "conceptCount": 16,
   "thirdPartyMarksIncluded": false,
   "tripleBagGeneticsProductCreated": false
 }

@@ -22,7 +22,8 @@ package or agreed to the project yet.
 ## Quote request scope
 
 Please quote a pre-production sample for the selected GrowPathAI concepts on owner-supplied
-BLVNK blanks. Start with one design from each construction family before digitizing all 17:
+BLVNK blanks. Start with one design from each construction family before digitizing all 16
+active concepts (GP-10 is retired and must not be quoted or digitized):
 
 1. GP-01 Circuit Crimson on BLV600 Maroon wool blend.
 2. GP-09 Sage Circuit on BLV550 Sage/Olive nylon, with factory rope removed cleanly.

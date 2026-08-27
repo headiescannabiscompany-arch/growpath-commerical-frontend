@@ -2,7 +2,10 @@
 
 Date locked for concept review: 2026-08-27
 
-Status: seventeen GrowPathAI-only concepts mapped to real public BLVNK models and textiles.
+Status: sixteen active GrowPathAI-only concepts mapped to owner-selected design sources and
+real public BLVNK models/textiles. GP-10 Loden Signal was retired before approval because it
+was introduced from a supplier/catalog direction rather than an owner-selected design source,
+and its emblem treatment changed the source design instead of performing a brand-only swap.
 GP-06, GP-08 and GP-11 are owner-approved custom color-blocking directions rather than claimed
 factory colorways. Concept art is not manufactured inventory. Custom feasibility, the local
 decorator, wholesale cost, availability at order time, digitized machine files and physical
@@ -39,7 +42,6 @@ quality requirement.
 | GP-07 | Glacier Contrast | BLV600 White & Black – Premium Wool | clean monochrome contrast | restrained black circuit leaf only; small black GPAI side mark | owner approved 2026-08-27 on the real stock supplier blank; no front wordmark |
 | GP-08 | Royal Current | custom BLV600-style royal-blue crown / purple brim and button – Premium Wool; supplier confirmation required | blue/purple high-energy two-tone direction | green circuit leaf, white/blue GrowPathAI wordmark and attached purple sprouting path | owner approved 2026-08-27; premium custom-cost/retail tier; no shield, burst or decorative fronds |
 | GP-09 | Sage Circuit | BLV550 Sage / Olive – Gramps Nylon with factory 5 mm rope removed; decorator confirmation required | light-sage tonal concept without rope | restrained dark-olive circuit leaf only; small tonal side marks | owner approved 2026-08-27; uses the real published sage/olive textile and silhouette but requires clean, durable rope removal |
-| GP-10 | Loden Signal | BLV550 Loden / Gold – Grandpa Nylon | premium green/gold direction | gold/forest circuit leaf | coordinates to factory rope color |
 | GP-11 | Day Path | custom BLV600-style cream/stone crown / burgundy brim, button and text-bearing rope – Premium Wool; supplier confirmation required | approved cream/burgundy day-hat direction | dark GrowPath/burgundy AI wordmark with attached burgundy sprouting path | owner approved 2026-08-27; premium custom-cost/retail tier; rope text requires manufacturer feasibility proof |
 | GP-12 | Rust Path Cord | BLV551 Rusty / Black – Irregular Wale Corduroy | orange tonal direction | rust/black tonal leaf | real supplier textile/colorway |
 | GP-13 | Grow Together Cord | BLV551 Black / Black – Irregular Wale Corduroy | bordered black community/collaboration energy | original `GROW TOGETHER` patch | no RAW name, logo or collaboration claim |
@@ -61,6 +63,12 @@ quality requirement.
   sew-out at the approved size.
 - Visual sheets are directionally accurate concept renderings. Exact stitch geometry,
   lettering and thread colors come from the approved source/machine files and physical sample.
+- `OWNER_SOURCE_REGISTER.md` controls which owner images may originate a hat direction. A
+  supplier image can substantiate construction, textile, factory color and availability, but
+  cannot introduce a new colorway, silhouette, layout or emblem treatment.
+- A conversion preserves the owner source's color blocking, silhouette, decoration layout and
+  emblem scale. It replaces only Triple Bag Genetics or third-party identity with an existing
+  approved GrowPathAI mark from `source-art/`; it does not redraw, ornament or restyle that mark.
 
 ## Concept sheets
 
@@ -73,6 +81,8 @@ quality requirement.
 
 The aggregate concept sheets are historical review aids. When an individual owner-approved
 hat conflicts with a sheet, the individual file and the collection-matrix disposition control.
+The GP-10 panel in `gramps-rope-cord-concept-sheet.png` is explicitly rejected and is not an
+active concept, owner source, production candidate or basis for later work.
 `approved-concepts/gp-01-circuit-crimson-approved.png` supersedes the GP-01 panel in
 `heritage-core-concept-sheet.png`.
 `approved-concepts/gp-02-deep-canopy-approved.png` supersedes the GP-02 panel in that sheet.
