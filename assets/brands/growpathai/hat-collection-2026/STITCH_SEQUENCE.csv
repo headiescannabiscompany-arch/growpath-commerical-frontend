@@ -7,9 +7,15 @@ GP-02,front,source-art/circuit-leaf.svg,56x54,flat tonal satin,"dark olive",Matc
 GP-03,front,source-art/circuit-leaf.svg,56x54,flat tonal satin,"black; forest node accents",Low-sheen black with sparse green nodes,digitizer_required
 GP-04,front,source-art/growpathai-wordmark.svg plus source-art/circuit-leaf.svg,108x31,flat satin,"white; circuit lime; GrowPath blue",Convert lettering to curves and avoid center-seam damage,digitizer_required
 GP-05,front,source-art/growpathai-wordmark.svg,106x28,flat satin,"white; signal red",Original GrowPathAI treatment only; convert lettering to curves,digitizer_required
-GP-06,front,source-art/circuit-leaf.svg,56x55,flat satin,"forest; GrowPath blue; circuit lime",Shield outline is a digitizer redraw around the leaf,digitizer_required
+GP-06,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,106x55,flat satin,"white; GrowPath blue; circuit lime",Owner-approved clean leaf and wordmark; no shield wings flames burst or decorative frame,digitizer_required
+GP-06,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; GrowPath blue",Small side mark from approved reference,digitizer_required
+GP-06,left,source-art/branching-path.svg,31x17,flat satin,"GrowPath blue",Keep open node centers,digitizer_required
+GP-06,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"white; GrowPath blue",Single small wordmark centered above opening; no arch slogan,digitizer_required
 GP-07,front,source-art/growpathai-wordmark.svg plus source-art/circuit-leaf.svg,108x32,flat satin,"black; forest; GrowPath blue",Convert lettering to curves; high-contrast white crown,digitizer_required
-GP-08,front,source-art/circuit-leaf.svg,60x58,flat satin,"circuit lime; violet; GrowPath blue",Circuit-frond surround must be simplified at sew-out size,digitizer_required
+GP-08,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg plus source-art/sprouting-path.svg,108x58,flat satin,"circuit lime; white; GrowPath blue; violet",Retain green circuit leaf and attach the two upward leaves to the violet path; no shield burst or fronds,digitizer_required
+GP-08,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; GrowPath blue",Small side mark from approved reference,digitizer_required
+GP-08,left,source-art/branching-path.svg,31x17,flat satin,"GrowPath blue",Keep open node centers,digitizer_required
+GP-08,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"white; GrowPath blue",Single small wordmark centered above opening; no arch slogan,digitizer_required
 GP-09,front,source-art/circuit-leaf.svg,55x53,flat tonal satin,"sage/olive swatch",BLV550 nylon; do not stretch crown,digitizer_required
 GP-10,front,source-art/circuit-leaf.svg,55x53,flat satin,"antique gold; forest",Coordinate with factory gold rope,digitizer_required
 GP-11,front,source-art/circuit-leaf.svg,55x53,flat satin or patch,"burgundy; stone",Corduroy topper required,digitizer_required

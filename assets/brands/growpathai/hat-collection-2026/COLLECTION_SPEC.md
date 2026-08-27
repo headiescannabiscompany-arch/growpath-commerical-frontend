@@ -2,9 +2,11 @@
 
 Date locked for concept review: 2026-08-27
 
-Status: sixteen GrowPathAI-only concepts mapped to real public BLVNK models, textiles and
-factory colorways. Concept art is not manufactured inventory. The local decorator, wholesale
-cost, availability at order time, digitized machine files and physical sew-outs remain open.
+Status: sixteen GrowPathAI-only concepts mapped to real public BLVNK models and textiles.
+GP-06 and GP-08 are owner-approved custom color-blocking directions rather than claimed
+factory colorways. Concept art is not manufactured inventory. Custom feasibility, the local
+decorator, wholesale cost, availability at order time, digitized machine files and physical
+sew-outs remain open.
 
 ## Supplier facts retained
 
@@ -33,9 +35,9 @@ quality requirement.
 | GP-03 | Midnight Stealth | BLV600 Black – Premium Wool | black tonal stealth | black leaf with sparse forest nodes | GrowPathAI-only, flat tonal embroidery |
 | GP-04 | Night Current | BLV600 Navy – Premium Wool | navy/white clean brand | white/blue wordmark plus circuit leaf | original GrowPathAI block treatment |
 | GP-05 | Signal Classic | BLV600 Navy & Red – Premium Wool | navy/red/white athletic color energy | white wordmark with red `AI` | no team name, league mark or copied script |
-| GP-06 | Volt Path | BLV600 Heather Charcoal & Banana Yellow – Premium Wool | black/yellow/neon contrast | geometric circuit-leaf shield | no seed-company or cannabis artwork |
+| GP-06 | Volt Path | custom BLV600-style matte-black crown / banana-yellow brim and button – Premium Wool; supplier confirmation required | black/yellow/neon contrast | circuit leaf above the GrowPathAI wordmark | owner approved 2026-08-27; premium custom-cost/retail tier; the stock heather-charcoal draft and rejected shield/burst treatment are retired |
 | GP-07 | Glacier Contrast | BLV600 White & Black – Premium Wool | clean black/white mark | forest leaf and black/blue wordmark | GrowPathAI-only |
-| GP-08 | Royal Current | BLV600 Royal – Premium Wool | blue/purple/neon high-energy direction | circuit-frond around leaf | electronic/leaf geometry, not cannabis imagery |
+| GP-08 | Royal Current | custom BLV600-style royal-blue crown / purple brim and button – Premium Wool; supplier confirmation required | blue/purple high-energy two-tone direction | green circuit leaf, white/blue GrowPathAI wordmark and attached purple sprouting path | owner approved 2026-08-27; premium custom-cost/retail tier; no shield, burst or decorative fronds |
 | GP-09 | Sage Circuit Rope | BLV550 Sage / Olive – Grandpa Nylon | approved light-sage tonal concept | tonal circuit leaf | uses the exact published sage/olive reference blank |
 | GP-10 | Loden Signal | BLV550 Loden / Gold – Grandpa Nylon | premium green/gold direction | gold/forest circuit leaf | coordinates to factory rope color |
 | GP-11 | Burgundy Circuit Cord | BLV551 Charcoal / Burgundy – Irregular Wale Corduroy | cream/burgundy fashion direction | burgundy/stone leaf patch | real available colorway replaces invented cream/burgundy blank |
@@ -66,10 +68,18 @@ quality requirement.
 - `gramps-rope-cord-concept-sheet.png`: GP-09 through GP-12.
 - `patch-script-concept-sheet.png`: GP-13 through GP-16.
 
+The aggregate concept sheets are historical review aids. When an individual owner-approved
+hat conflicts with a sheet, the individual file and the collection-matrix disposition control.
+`approved-concepts/gp-06-volt-path-approved.png` supersedes the GP-06 panel in
+`heritage-contrast-concept-sheet.png`. `approved-concepts/gp-08-royal-current-approved.png`
+supersedes the GP-08 panel. Superseded drafts are retained only for revision traceability and
+are not approved designs.
+
 ## Open production gates
 
 1. Confirm wholesale account access, current color availability, minimums, sample/blank costs,
-   shipping and lead time.
+   shipping and lead time. For GP-06 and GP-08, obtain a written custom-color-blocking quote,
+   tooling/setup cost, minimum, lead time and repeat-order terms; price them as premium hats.
 2. Select a local embroidery/decorating shop and approve its file ownership and revision terms.
 3. Convert approved wordmarks to curves, then digitize every used placement and return `DST`
    plus the shop's editable source.

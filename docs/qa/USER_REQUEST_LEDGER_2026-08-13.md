@@ -318,11 +318,28 @@ in `assets/brands/growpathai/hat-collection-2026/`. Returned `DST`/native embroi
 decorator selection, exact-blank sew-outs, live wholesale availability/cost and owner sample
 approval remain open.
 
+Owner decision, 2026-08-27: review and correct the collection one hat at a time. Preserve the
+approved Triple Bag-style blank, color blocking and overall silhouette, but replace only the
+branding with established GrowPathAI-owned marks. Do not invent shields, wings, flames,
+fronds, bursts or decorative emblem frames. An individual owner-approved concept supersedes
+any conflicting aggregate-sheet panel. The owner's master visual-review folder is
+`C:\Users\jcind\Pictures\growpath hats`; repository copies remain the production record.
+
 - [x] Historical GrowPathAI and Triple Bag Genetics concept images, exact hashes, brand
       manifests, approved emblems, and a production brief are retained as design input;
       retained TBG material is not approval to make or publish a TBG product.
 - [x] The owner approved the black Circuit Leaf GrowPathAI concept and the revised
       tonal-sage concept with a longer structured brim and small rear `GROWPATHAI` mark.
+- [x] The owner approved GP-06 Volt Path on 2026-08-27: a custom BLV600-style matte-black
+      crown with banana-yellow brim/button, clean circuit leaf, `GrowPathAI` wordmark, right
+      `GPAI`, left branching-path mark and small rear `GrowPathAI`. It may cost more and is a
+      premium retail tier. The stock heather-charcoal draft and rejected shield/burst version
+      are retired. Custom supplier confirmation, pricing, digitizing and sew-out remain open.
+- [x] The owner approved one GP-08 Royal Current blue/purple hat on 2026-08-27: custom royal-
+      blue crown, purple brim/button, retained green circuit leaf, white/blue `GrowPathAI`,
+      attached purple sprouting path with two upward leaves, right `GPAI`, left branching-path
+      mark and small rear `GrowPathAI`. The no-green-emblem draft is retired. Custom supplier
+      confirmation, premium pricing, digitizing and sew-out remain open.
 - [x] BLVNK HEADWEAR is recorded as the candidate blank-body source based on the retained
       supplier email; no exact model, fabric, cost, or production claim is invented.
 - [x] A zero-stock, unpriced, non-checkout `Would you buy this at this price?` trial flow
