@@ -354,6 +354,12 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       signal-red inline/shadow, signal-red `AI` with white outline and small white/red
       right-side `GPAI`. The left branching-path mark, small rear `GrowPathAI`, original
       script digitization, machine file and exact-blank sew-out remain open.
+- [x] The owner approved GP-17 Redline Circuit Rope on 2026-08-27 as the controlling conversion
+      of source design #6: the real stock BLV600 Black premium-wool blank with a front-only
+      white circuit-leaf outline, signal-red internal paths/nodes, small red/white right-side
+      `GPAI`, and a narrow black rope with restrained red/white braid accents. It is separate
+      from GP-06 Volt Path. Custom rope-attachment feasibility/cost, left branching-path mark,
+      small rear `GrowPathAI`, machine file and exact-blank sew-out remain open.
 - [x] The owner approved GP-06 Volt Path on 2026-08-27: a custom BLV600-style matte-black
       crown with banana-yellow brim/button, clean circuit leaf, `GrowPathAI` wordmark, right
       `GPAI`, left branching-path mark and small rear `GrowPathAI`. It may cost more and is a
@@ -382,7 +388,7 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       GrowPathAI hat design set against the approved BLVNK blank. Produce accurate front,
       left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
-      small rear wordmarks; retain approved source files and final review images. Sixteen
+      small rear wordmarks; retain approved source files and final review images. Seventeen
       mapped concepts and four multi-view review sheets now exist; owner art disposition,
       exact source-art refinements, digitized files and sew-out corrections remain.
 - [~] Complete the embroidery package for every approved placement. Reusable SVG sources,

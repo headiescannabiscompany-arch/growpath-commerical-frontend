@@ -22,7 +22,7 @@ package or agreed to the project yet.
 ## Quote request scope
 
 Please quote a pre-production sample for the selected GrowPathAI concepts on owner-supplied
-BLVNK blanks. Start with one design from each construction family before digitizing all 16:
+BLVNK blanks. Start with one design from each construction family before digitizing all 17:
 
 1. GP-01 Circuit Crimson on BLV600 Maroon wool blend.
 2. GP-09 Sage Circuit Rope on BLV550 Sage/Olive nylon.
@@ -51,6 +51,8 @@ the shop can source BLVNK directly or requires owner-supplied blanks.
 - Can it embroider the side and small rear placements without disassembling or distorting the
   cap? What exact rear minimum text height is reliable?
 - Can it produce both direct embroidery and woven/embroidered patches for GP-13/GP-14?
+- Can it securely install the GP-17 narrow black/red/white rope on a structured BLV600 without
+  puckering or weakening the crown/brim junction, and provide photographed wear/wash proof?
 
 ## Selection rule
 

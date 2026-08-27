@@ -2,7 +2,7 @@
 
 Date locked for concept review: 2026-08-27
 
-Status: sixteen GrowPathAI-only concepts mapped to real public BLVNK models and textiles.
+Status: seventeen GrowPathAI-only concepts mapped to real public BLVNK models and textiles.
 GP-06, GP-08 and GP-11 are owner-approved custom color-blocking directions rather than claimed
 factory colorways. Concept art is not manufactured inventory. Custom feasibility, the local
 decorator, wholesale cost, availability at order time, digitized machine files and physical
@@ -46,6 +46,7 @@ quality requirement.
 | GP-14 | Prism Terrain | BLV600 Camo – Premium Wool | grey/green prism direction | separate prism/leaf patch | preserves real BLVNK camo; no invented all-over print |
 | GP-15 | Blue Signal Cord | BLV603 Air Blue – Micro Corduroy | blue/black/white statement direction | white/blue wordmark and circuit underline | no New Era mark, THC diagram or copied slogan |
 | GP-16 | Night Script Cord | BLV551 Dark Navy / Red – Irregular Wale Corduroy | navy/red/white script direction | original GrowPathAI script | no Wizards/team/seed-brand imitation |
+| GP-17 | Redline Circuit Rope | BLV600 Black – Premium Wool with custom-added narrow black/red/white rope; decorator confirmation required | source design #6 black/red/white athletic energy | emblem-only white circuit leaf with signal-red internal paths and nodes; small red/white GPAI side mark | owner approved 2026-08-27; no team mark, wings or front wordmark; rope attachment is a premium custom modification requiring durability proof |
 
 ## Shared placement contract
 
@@ -67,6 +68,8 @@ quality requirement.
 - `heritage-contrast-concept-sheet.png`: GP-05 through GP-08.
 - `gramps-rope-cord-concept-sheet.png`: GP-09 through GP-12.
 - `patch-script-concept-sheet.png`: GP-13 through GP-16.
+- GP-17 is retained as its individual owner-approved image because it was added after the four
+  aggregate sheets were locked.
 
 The aggregate concept sheets are historical review aids. When an individual owner-approved
 hat conflicts with a sheet, the individual file and the collection-matrix disposition control.
@@ -76,6 +79,8 @@ hat conflicts with a sheet, the individual file and the collection-matrix dispos
 `approved-concepts/gp-03-midnight-stealth-approved.png` supersedes the GP-03 panel in that sheet.
 `approved-concepts/gp-04-night-current-approved.png` supersedes the GP-04 panel in that sheet.
 `approved-concepts/gp-05-signal-classic-approved.png` supersedes the GP-05 panel in the contrast sheet.
+`approved-concepts/gp-17-redline-circuit-rope-approved.png` is the controlling conversion of
+source design #6 and does not replace the separately approved GP-06 Volt Path.
 `approved-concepts/gp-06-volt-path-approved.png` supersedes the GP-06 panel in
 `heritage-contrast-concept-sheet.png`. `approved-concepts/gp-08-royal-current-approved.png`
 supersedes the GP-08 panel. `approved-concepts/gp-11-day-path-approved.png` supersedes the
@@ -88,6 +93,8 @@ revision traceability and are not approved designs.
    shipping and lead time. For GP-06, GP-08 and GP-11, obtain a written custom-color-blocking quote,
    tooling/setup cost, minimum, lead time and repeat-order terms; price them as premium hats.
    GP-11 also requires written confirmation of a durable, legible text-bearing rope method.
+   For GP-17, obtain written confirmation that a narrow rope can be securely added to the BLV600
+   without distorting the structured crown, plus installation cost and wash/wear durability.
 2. Select a local embroidery/decorating shop and approve its file ownership and revision terms.
 3. Convert approved wordmarks to curves, then digitize every used placement and return `DST`
    plus the shop's editable source.

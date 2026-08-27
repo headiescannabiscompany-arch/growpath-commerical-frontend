@@ -40,3 +40,7 @@ GP-13,front,source-art/grow-together-patch.svg,88x52,embroidered patch,"circuit 
 GP-14,front,source-art/prism-terrain-patch.svg,58x51,woven patch preferred,"forest; stone; GrowPath blue; circuit lime",Use real BLV600 camo fabric; no invented all-over print,digitizer_required
 GP-15,front,source-art/growpathai-wordmark.svg,108x29,flat satin,"white; GrowPath blue",Convert lettering to curves; BLV603 micro corduroy topper required,digitizer_required
 GP-16,front,source-art/growpathai-script.svg,105x29,flat satin,"white; signal red",Convert approved script to curves; no team or seed-brand imitation,digitizer_required
+GP-17,front,source-art/circuit-leaf.svg,46x45,flat satin,"white outer leaf/stem; signal-red internal paths and nodes",Emblem-only front; no wordmark; preserve open node centers,digitizer_required
+GP-17,right,source-art/gpai-monogram.svg,34x14,flat satin,"signal red; white",Small side mark from approved reference,digitizer_required
+GP-17,left,source-art/branching-path.svg,31x17,flat satin,"signal red; white",Keep open node centers,digitizer_required
+GP-17,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"signal red; white",Single small wordmark centered above opening,digitizer_required
