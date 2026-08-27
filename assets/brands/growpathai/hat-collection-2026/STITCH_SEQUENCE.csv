@@ -41,7 +41,10 @@ GP-11,right,source-art/gpai-monogram.svg,34x14,flat satin,"dark forest; burgundy
 GP-11,left,source-art/branching-path.svg,31x17,flat satin,"burgundy",Keep open node centers,digitizer_required
 GP-11,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"dark forest; burgundy",Single small wordmark centered above opening; no circuit leaf or arch slogan,digitizer_required
 GP-11,rope,custom text-bearing rope,n/a,manufacturer-specific,"burgundy rope; light stone text","Exact text: FOR GROWS, SOIL, TOOLS, COURSES, AND COMMUNITY. No production claim until legibility durability and method pass a physical sample.",manufacturer_confirmation_required
-GP-12,front,source-art/circuit-leaf.svg,55x53,flat tonal satin,"dark rust; black",Corduroy topper required,digitizer_required
+GP-12,front,source-art/circuit-leaf.svg,46x45,flat tonal satin,"darker burnt orange",Owner-approved unchanged circuit leaf at the source emblem footprint; no frame triangle bag wording or ornament,digitizer_required
+GP-12,right,source-art/gpai-monogram.svg,34x14,flat tonal satin,"darker burnt orange",Owner-approved small side mark at the source manufacturer-mark scale,digitizer_required
+GP-12,left,source-art/branching-path.svg,31x17,flat tonal satin,"darker burnt orange",Use only if the unseen left-side production layout is owner-approved; do not infer from the front preview,owner_approval_required
+GP-12,back,source-art/growpathai-wordmark.svg,42x7,flat tonal satin,"darker burnt orange",Use only if the unseen rear production layout is owner-approved; do not infer from the front preview,owner_approval_required
 GP-13,front,source-art/grow-together-patch.svg,88x52,embroidered patch,"circuit lime; antique gold; signal red; white; GrowPath blue",No third-party name or collaboration claim,digitizer_required
 GP-14,front,source-art/prism-terrain-patch.svg,58x51,woven patch preferred,"forest; stone; GrowPath blue; circuit lime",Use real BLV600 camo fabric; no invented all-over print,digitizer_required
 GP-15,front,source-art/growpathai-wordmark.svg,108x29,flat satin,"white; GrowPath blue",Convert lettering to curves; BLV603 micro corduroy topper required,digitizer_required

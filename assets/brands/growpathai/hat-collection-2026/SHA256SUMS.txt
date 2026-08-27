@@ -19,5 +19,6 @@ c24168e5fe0aa18d4fbbd7dbb04a50370f2e2a53acbef947047d5dc5207df59d  approved-conce
 e4e53244cf6943e960c814303f83e182156d1f8fa0966eefa1ee7f1e399f355b  approved-concepts/gp-07-glacier-contrast-approved.png
 feb8c2d14cbbecffdf0e4721d6b0de2d38b459d7848873ec283cfecbd58730a4  approved-concepts/gp-08-royal-current-approved.png
 2a60bbe7df1dda8e1f885f514733ebbb372e998ddba17a268bb43ea90288488d  approved-concepts/gp-09-sage-circuit-approved.png
+19654f5c35fac484dcee5ac57b6beea231b6dd9e4ee1dc4546c6f7c66d3739c7  approved-concepts/gp-12-orange-tonal-approved.png
 566f8b09ea6828c397f7f3d8e92737ab10720b259be0c9422aabfa6bf3281c5c  approved-concepts/gp-11-day-path-approved.png
 d8e2d79c79ffe53f4db9308db8d0cb9b027394fb55b75445ebfe09004f113213  approved-concepts/gp-17-redline-circuit-rope-approved.png

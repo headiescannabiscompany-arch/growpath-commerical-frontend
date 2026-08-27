@@ -6,8 +6,8 @@ Status: sixteen active GrowPathAI-only concepts mapped to owner-selected design 
 real public BLVNK models/textiles. GP-10 Loden Signal was retired before approval because it
 was introduced from a supplier/catalog direction rather than an owner-selected design source,
 and its emblem treatment changed the source design instead of performing a brand-only swap.
-GP-06, GP-08 and GP-11 are owner-approved custom color-blocking directions rather than claimed
-factory colorways. Concept art is not manufactured inventory. Custom feasibility, the local
+GP-06, GP-08, GP-11 and GP-12 are owner-approved custom color/color-blocking directions rather
+than claimed factory colorways. Concept art is not manufactured inventory. Custom feasibility, the local
 decorator, wholesale cost, availability at order time, digitized machine files and physical
 sew-outs remain open.
 
@@ -43,7 +43,7 @@ quality requirement.
 | GP-08 | Royal Current | custom BLV600-style royal-blue crown / purple brim and button – Premium Wool; supplier confirmation required | blue/purple high-energy two-tone direction | green circuit leaf, white/blue GrowPathAI wordmark and attached purple sprouting path | owner approved 2026-08-27; premium custom-cost/retail tier; no shield, burst or decorative fronds |
 | GP-09 | Sage Circuit | BLV550 Sage / Olive – Gramps Nylon with factory 5 mm rope removed; decorator confirmation required | light-sage tonal concept without rope | restrained dark-olive circuit leaf only; small tonal side marks | owner approved 2026-08-27; uses the real published sage/olive textile and silhouette but requires clean, durable rope removal |
 | GP-11 | Day Path | custom BLV600-style cream/stone crown / burgundy brim, button and text-bearing rope – Premium Wool; supplier confirmation required | approved cream/burgundy day-hat direction | dark GrowPath/burgundy AI wordmark with attached burgundy sprouting path | owner approved 2026-08-27; premium custom-cost/retail tier; rope text requires manufacturer feasibility proof |
-| GP-12 | Rust Path Cord | BLV551 Rusty / Black – Irregular Wale Corduroy | orange tonal direction | rust/black tonal leaf | real supplier textile/colorway |
+| GP-12 | Orange Tonal Circuit | custom BLV600-style solid burnt-orange crown/brim/button – Premium Wool; supplier confirmation required | owner source `RMUS4022.PNG`: smooth orange tonal structured flat-brim direction | unchanged circuit-leaf emblem in slightly darker burnt-orange tonal thread; small tonal GPAI at the source side-mark scale | owner approved 2026-08-27; no triangle, bag, frame, rope, front wording, ornament, sticker or manufacturer mark; premium custom-cost/retail tier |
 | GP-13 | Grow Together Cord | BLV551 Black / Black – Irregular Wale Corduroy | bordered black community/collaboration energy | original `GROW TOGETHER` patch | no RAW name, logo or collaboration claim |
 | GP-14 | Prism Terrain | BLV600 Camo – Premium Wool | grey/green prism direction | separate prism/leaf patch | preserves real BLVNK camo; no invented all-over print |
 | GP-15 | Blue Signal Cord | BLV603 Air Blue – Micro Corduroy | blue/black/white statement direction | white/blue wordmark and circuit underline | no New Era mark, THC diagram or copied slogan |
@@ -93,6 +93,9 @@ active concept, owner source, production candidate or basis for later work.
 contrast sheet and controls its emblem-only black front treatment.
 `approved-concepts/gp-09-sage-circuit-approved.png` supersedes the GP-09 panel in the rope/cord
 sheet and controls its rope-free, emblem-only front treatment.
+`approved-concepts/gp-12-orange-tonal-approved.png` supersedes the GP-12 panel in the rope/cord
+sheet and controls the smooth structured orange tonal blank, unchanged circuit-leaf emblem and
+source-scale tonal side mark. The earlier corduroy substitution is retired.
 `approved-concepts/gp-17-redline-circuit-rope-approved.png` is the controlling conversion of
 source design #6 and does not replace the separately approved GP-06 Volt Path.
 `approved-concepts/gp-06-volt-path-approved.png` supersedes the GP-06 panel in
@@ -104,7 +107,7 @@ revision traceability and are not approved designs.
 ## Open production gates
 
 1. Confirm wholesale account access, current color availability, minimums, sample/blank costs,
-   shipping and lead time. For GP-06, GP-08 and GP-11, obtain a written custom-color-blocking quote,
+   shipping and lead time. For GP-06, GP-08, GP-11 and GP-12, obtain a written custom-color or color-blocking quote,
    tooling/setup cost, minimum, lead time and repeat-order terms; price them as premium hats.
    GP-11 also requires written confirmation of a durable, legible text-bearing rope method.
    For GP-09, obtain written confirmation that the factory rope can be removed without visible
