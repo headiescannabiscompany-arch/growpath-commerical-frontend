@@ -31,7 +31,7 @@ quality requirement.
 | ID | GrowPathAI concept | Exact candidate blank/color | Source style retained | Front treatment | Rights/sourcing disposition |
 |---|---|---|---|---|---|
 | GP-01 | Circuit Crimson | BLV600 Maroon – Premium Wool | premium blood-red/gold minimal | restrained antique-gold circuit leaf; small gold GPAI side mark | owner approved 2026-08-27 on the real stock supplier blank; optional shallow outer-border foam sample only |
-| GP-02 | Deep Canopy | BLV600 Army Olive – Premium Wool | green tonal stealth | darker-olive circuit leaf | GrowPathAI-only, flat tonal embroidery |
+| GP-02 | Deep Canopy | BLV600 Army Olive – Premium Wool | green tonal stealth | restrained darker-olive circuit leaf; small tonal GPAI side mark | owner approved 2026-08-27 on the real stock supplier blank; flat tonal embroidery |
 | GP-03 | Midnight Stealth | BLV600 Black – Premium Wool | black tonal stealth | black leaf with sparse forest nodes | GrowPathAI-only, flat tonal embroidery |
 | GP-04 | Night Current | BLV600 Navy – Premium Wool | navy/white clean brand | white/blue wordmark plus circuit leaf | original GrowPathAI block treatment |
 | GP-05 | Signal Classic | BLV600 Navy & Red – Premium Wool | navy/red/white athletic color energy | white wordmark with red `AI` | no team name, league mark or copied script |
@@ -72,6 +72,7 @@ The aggregate concept sheets are historical review aids. When an individual owne
 hat conflicts with a sheet, the individual file and the collection-matrix disposition control.
 `approved-concepts/gp-01-circuit-crimson-approved.png` supersedes the GP-01 panel in
 `heritage-core-concept-sheet.png`.
+`approved-concepts/gp-02-deep-canopy-approved.png` supersedes the GP-02 panel in that sheet.
 `approved-concepts/gp-06-volt-path-approved.png` supersedes the GP-06 panel in
 `heritage-contrast-concept-sheet.png`. `approved-concepts/gp-08-royal-current-approved.png`
 supersedes the GP-08 panel. `approved-concepts/gp-11-day-path-approved.png` supersedes the
