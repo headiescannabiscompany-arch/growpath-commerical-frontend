@@ -1,9 +1,17 @@
 # R-04 independent reviewer packet
 
 Date prepared: 2026-08-27  
-Status: owner review required; no invitation or external message has been sent  
+Status: invitation sent; separate-account creation and review pending
 Reviewer: `roberto.tomas.cuentas@gmail.com`  
 Production frontend freeze: `f322d440add3d63bb6e417b4d750913f487a2f5f`
+
+Invitation evidence: on 2026-08-27 the owner explicitly approved `invite rob`. GrowPathAI Support
+sent the bounded review invitation from `support@growpathai.com` to the reviewer address above.
+Gmail returned sent message/thread ID `1a044195f895351d` with the `SENT` label. This proves the
+outbound message was accepted by Gmail; it does not prove delivery, account creation or review
+acceptance. The invitation directs Roberto to `https://growpathai.com/register`, prohibits use of
+owner/Admin credentials, starts with Personal, withholds Platform Admin, and reserves any
+Commercial/Facility test access for a later explicit grant.
 
 ## Purpose and boundary
 
@@ -75,7 +83,7 @@ or `defer with reason/date`. Silence is not approval.
 
 ## Invitation checkpoint
 
-Before sending an invitation, the owner reviews this packet and confirms the exact access to grant.
+The owner reviewed the boundary and explicitly approved the invitation on 2026-08-27.
 The invitation must identify GrowPathAI, state that this is a limited product review, link to the
 frozen production release, prohibit password sharing and explain where to return the completed
 finding ledger. Email delivery and account acceptance are recorded as external evidence; they are
