@@ -39,9 +39,11 @@ and Admin production routes retained their expected headings and error-free stat
 its semantic main landmark and loaded security coverage. This closes the affected post-cleanup
 rerun without manufacturing a runtime change or repeating the already accepted full route matrix.
 Next is the isolated Roberto review gate and owner disposition, using
-`R04_INDEPENDENT_REVIEW_PACKET_2026-08-27.md`; no invitation has been sent. After the review gate,
-rotate production credentials service-by-service with bounded smoke/rollback evidence, then stop
-before hats.
+`R04_INDEPENDENT_REVIEW_PACKET_2026-08-27.md`. The owner-approved invitation was sent from
+`support@growpathai.com` on 2026-08-27; separate-account creation, any explicitly limited test-
+workspace access, returned findings and item-by-item owner disposition remain open. After the
+review gate, rotate production credentials service-by-service with bounded smoke/rollback
+evidence, then stop before hats.
 The exact Harvest completion evidence is frozen in
 `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`: production completed one separately
 owner-authorized 80-image/seven-batch Deep Review, charged the quoted seven credits once, validated
