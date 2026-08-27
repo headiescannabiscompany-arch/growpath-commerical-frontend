@@ -34,7 +34,7 @@ quality requirement.
 | GP-02 | Deep Canopy | BLV600 Army Olive – Premium Wool | green tonal stealth | restrained darker-olive circuit leaf; small tonal GPAI side mark | owner approved 2026-08-27 on the real stock supplier blank; flat tonal embroidery |
 | GP-03 | Midnight Stealth | BLV600 Black – Premium Wool | black tonal stealth | restrained low-sheen black circuit leaf with sparse deep-forest node accents; small tonal GPAI side mark | owner approved 2026-08-27 on the real stock supplier blank; flat tonal embroidery |
 | GP-04 | Night Current | BLV600 Navy – Premium Wool | navy/white premium script front | custom white `GrowPath` script with GrowPath-blue `AI` and restrained path underline; small white/blue GPAI side mark | owner approved 2026-08-27 on the real stock supplier blank at 92.5% of the first script mockup scale; no front circuit leaf |
-| GP-05 | Signal Classic | BLV600 Navy & Red – Premium Wool | navy/red/white athletic color energy | white wordmark with red `AI` | no team name, league mark or copied script |
+| GP-05 | Signal Classic | BLV600 Navy & Red – Premium Wool | navy/red/white athletic color energy | original white `GrowPath` script with restrained signal-red inline/shadow, signal-red `AI` with white outline, and small white/red GPAI side mark | owner approved 2026-08-27 on the real stock supplier blank; no team name, league mark or copied script |
 | GP-06 | Volt Path | custom BLV600-style matte-black crown / banana-yellow brim and button – Premium Wool; supplier confirmation required | black/yellow/neon contrast | circuit leaf above the GrowPathAI wordmark | owner approved 2026-08-27; premium custom-cost/retail tier; the stock heather-charcoal draft and rejected shield/burst treatment are retired |
 | GP-07 | Glacier Contrast | BLV600 White & Black – Premium Wool | clean black/white mark | forest leaf and black/blue wordmark | GrowPathAI-only |
 | GP-08 | Royal Current | custom BLV600-style royal-blue crown / purple brim and button – Premium Wool; supplier confirmation required | blue/purple high-energy two-tone direction | green circuit leaf, white/blue GrowPathAI wordmark and attached purple sprouting path | owner approved 2026-08-27; premium custom-cost/retail tier; no shield, burst or decorative fronds |
@@ -75,6 +75,7 @@ hat conflicts with a sheet, the individual file and the collection-matrix dispos
 `approved-concepts/gp-02-deep-canopy-approved.png` supersedes the GP-02 panel in that sheet.
 `approved-concepts/gp-03-midnight-stealth-approved.png` supersedes the GP-03 panel in that sheet.
 `approved-concepts/gp-04-night-current-approved.png` supersedes the GP-04 panel in that sheet.
+`approved-concepts/gp-05-signal-classic-approved.png` supersedes the GP-05 panel in the contrast sheet.
 `approved-concepts/gp-06-volt-path-approved.png` supersedes the GP-06 panel in
 `heritage-contrast-concept-sheet.png`. `approved-concepts/gp-08-royal-current-approved.png`
 supersedes the GP-08 panel. `approved-concepts/gp-11-day-path-approved.png` supersedes the

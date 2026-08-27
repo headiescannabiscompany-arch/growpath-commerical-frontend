@@ -15,7 +15,10 @@ GP-04,front,custom approved script artwork derived from approved concept,100x29,
 GP-04,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; GrowPath blue",Small side mark from approved reference,digitizer_required
 GP-04,left,source-art/branching-path.svg,31x17,flat satin,"GrowPath blue",Keep open node centers,digitizer_required
 GP-04,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"white; GrowPath blue",Single small wordmark centered above opening,digitizer_required
-GP-05,front,source-art/growpathai-wordmark.svg,106x28,flat satin,"white; signal red",Original GrowPathAI treatment only; convert lettering to curves,digitizer_required
+GP-05,front,custom approved athletic-script artwork derived from approved concept,100x29,flat satin with restrained inline/shadow,"white; signal red",Original GrowPathAI treatment only; no copied team script; convert lettering to curves,digitizer_required
+GP-05,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; signal red",Small side mark from approved reference,digitizer_required
+GP-05,left,source-art/branching-path.svg,31x17,flat satin,"white; signal red",Keep open node centers,digitizer_required
+GP-05,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"white; signal red",Single small wordmark centered above opening,digitizer_required
 GP-06,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,106x55,flat satin,"white; GrowPath blue; circuit lime",Owner-approved clean leaf and wordmark; no shield wings flames burst or decorative frame,digitizer_required
 GP-06,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; GrowPath blue",Small side mark from approved reference,digitizer_required
 GP-06,left,source-art/branching-path.svg,31x17,flat satin,"GrowPath blue",Keep open node centers,digitizer_required

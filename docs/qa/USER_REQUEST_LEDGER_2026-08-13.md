@@ -349,6 +349,11 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       the first script mockup (approximately 100 x 29 mm); there is no front circuit leaf. The
       left branching-path mark, small rear `GrowPathAI`, custom script digitization, machine
       file and exact-blank sew-out remain open.
+- [x] The owner approved GP-05 Signal Classic on 2026-08-27: the real stock BLV600 Navy & Red
+      premium-wool blank with an original white GrowPathAI athletic script, restrained
+      signal-red inline/shadow, signal-red `AI` with white outline and small white/red
+      right-side `GPAI`. The left branching-path mark, small rear `GrowPathAI`, original
+      script digitization, machine file and exact-blank sew-out remain open.
 - [x] The owner approved GP-06 Volt Path on 2026-08-27: a custom BLV600-style matte-black
       crown with banana-yellow brim/button, clean circuit leaf, `GrowPathAI` wordmark, right
       `GPAI`, left branching-path mark and small rear `GrowPathAI`. It may cost more and is a
