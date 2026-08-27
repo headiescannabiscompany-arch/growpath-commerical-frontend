@@ -389,7 +389,9 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
       small rear wordmarks; retain approved source files and final review images. Seventeen
-      mapped concepts and four multi-view review sheets now exist; owner art disposition,
+      mapped concepts and four multi-view review sheets now exist. Ten individual concepts
+      are owner-approved; GP-07 is locked to the real BLV600 White & Black blank with a black
+      circuit-leaf-only front, black side marks and a small black rear wordmark. Remaining owner art disposition,
       exact source-art refinements, digitized files and sew-out corrections remain.
 - [~] Complete the embroidery package for every approved placement. Reusable SVG sources,
       size/placement/thread/density guidance, stitch sequence and file register are retained.

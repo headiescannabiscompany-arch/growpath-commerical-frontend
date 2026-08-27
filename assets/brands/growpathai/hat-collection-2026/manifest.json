@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "partial: 9 of 17",
+    "ownerConceptApproval": "partial: 10 of 17",
     "digitizerSelected": false,
     "machineFilesApproved": false,
     "physicalSewoutsApproved": false
@@ -33,6 +33,7 @@
     "approved-concepts/gp-04-night-current-approved.png",
     "approved-concepts/gp-05-signal-classic-approved.png",
     "approved-concepts/gp-06-volt-path-approved.png",
+    "approved-concepts/gp-07-glacier-contrast-approved.png",
     "approved-concepts/gp-08-royal-current-approved.png",
     "approved-concepts/gp-11-day-path-approved.png",
     "approved-concepts/gp-17-redline-circuit-rope-approved.png"

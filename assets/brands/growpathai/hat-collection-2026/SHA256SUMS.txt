@@ -16,6 +16,7 @@ ccb5e4cab08200be059dd6747aa79e8294f06c1db4b33661a55ae64b25e3013e  approved-conce
 c24168e5fe0aa18d4fbbd7dbb04a50370f2e2a53acbef947047d5dc5207df59d  approved-concepts/gp-04-night-current-approved.png
 7a6a6cd113f67575c2068a461faa3d0a7874648cf94f37fe0fd5c28bb35eb171  approved-concepts/gp-05-signal-classic-approved.png
 9c4ebac5883214be41aa792ab5b01554a6daa6ec8bb23ff6088fa435c5b132af  approved-concepts/gp-06-volt-path-approved.png
+e4e53244cf6943e960c814303f83e182156d1f8fa0966eefa1ee7f1e399f355b  approved-concepts/gp-07-glacier-contrast-approved.png
 feb8c2d14cbbecffdf0e4721d6b0de2d38b459d7848873ec283cfecbd58730a4  approved-concepts/gp-08-royal-current-approved.png
 566f8b09ea6828c397f7f3d8e92737ab10720b259be0c9422aabfa6bf3281c5c  approved-concepts/gp-11-day-path-approved.png
 d8e2d79c79ffe53f4db9308db8d0cb9b027394fb55b75445ebfe09004f113213  approved-concepts/gp-17-redline-circuit-rope-approved.png

@@ -7,7 +7,7 @@ digitize.
 
 | Concept range | Source art | Digitizer assigned | DST returned | Native source returned | Sew-out | Owner approval |
 |---|---|---|---|---|---|---|
-| GP-07 Heritage | ready | no | no | no | not run | pending |
+| GP-07 Glacier Contrast | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; black thread match, DST/native file and exact-blank sew-out pending |
 | GP-01 Circuit Crimson | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; DST/native file and exact-blank sew-out pending |
 | GP-02 Deep Canopy | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; tonal thread match, DST/native file and exact-blank sew-out pending |
 | GP-03 Midnight Stealth | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; low-sheen tonal thread match, DST/native file and exact-blank sew-out pending |
@@ -24,6 +24,7 @@ When files arrive, add their exact filename, SHA-256, dimensions, stitch count, 
 machine/native format, sample photo, disposition and superseding revision. A file is not
 production-approved merely because it opens in embroidery software.
 
-Concept approval and production approval are separate gates. GP-01 through GP-06, GP-08, GP-11 and GP-17 approved visuals
+Concept approval and production approval are separate gates. GP-01 through GP-08 except GP-09,
+plus GP-11 and GP-17 approved visuals
 are recorded in `approved-concepts/` with SHA-256 values in `SHA256SUMS.txt`. They do not claim
 that a custom blank, machine file or physical sample already exists.

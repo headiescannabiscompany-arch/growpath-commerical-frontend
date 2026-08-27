@@ -23,7 +23,10 @@ GP-06,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,
 GP-06,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; GrowPath blue",Small side mark from approved reference,digitizer_required
 GP-06,left,source-art/branching-path.svg,31x17,flat satin,"GrowPath blue",Keep open node centers,digitizer_required
 GP-06,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"white; GrowPath blue",Single small wordmark centered above opening; no arch slogan,digitizer_required
-GP-07,front,source-art/growpathai-wordmark.svg plus source-art/circuit-leaf.svg,108x32,flat satin,"black; forest; GrowPath blue",Convert lettering to curves; high-contrast white crown,digitizer_required
+GP-07,front,source-art/circuit-leaf.svg,46x45,flat satin,"black",Owner-approved emblem-only front on the white crown; no front wordmark,digitizer_required
+GP-07,right,source-art/gpai-monogram.svg,34x14,flat satin,"black",Small side mark from approved reference,digitizer_required
+GP-07,left,source-art/branching-path.svg,31x17,flat satin,"black",Keep open node centers,digitizer_required
+GP-07,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"black",Single small wordmark centered above opening,digitizer_required
 GP-08,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg plus source-art/sprouting-path.svg,108x58,flat satin,"circuit lime; white; GrowPath blue; violet",Retain green circuit leaf and attach the two upward leaves to the violet path; no shield burst or fronds,digitizer_required
 GP-08,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; GrowPath blue",Small side mark from approved reference,digitizer_required
 GP-08,left,source-art/branching-path.svg,31x17,flat satin,"GrowPath blue",Keep open node centers,digitizer_required
