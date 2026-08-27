@@ -21,11 +21,15 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
-**Current active cursor (2026-08-27):** P-08 is closed and the final professional crawl is in
-progress. Facility Owner, Personal, Commercial owner, signed-out public, non-admin denial and
-Platform Admin positive/read-only route batches are retained; do not repeat them without a current
-regression. Continue with the exact responsive/theme/assistive-technology and remaining named
-human/provider gates, then evidence-driven dead-code cleanup and the post-cleanup frozen-SHA rerun.
+**Current active cursor (2026-08-27):** P-08 and the pre-cleanup professional crawl are closed.
+Facility Owner, Personal, Commercial owner, signed-out public, non-admin denial and Platform Admin
+positive/read-only route batches are retained; do not repeat them without a current regression.
+The Admin follow-up also closes its mobile/tablet/desktop, Day/Night/Auto, leading keyboard,
+semantic-main and hard-reload slices on merged frontend `ee116800`. Exact provider, physical-device,
+physical screen-reader and specially authorized/disposable-account actions remain named external
+gates rather than reasons to rebuild or stall accepted products. Evidence-driven dead-code cleanup
+is now active; next freeze new frontend/backend SHAs and rerun the affected gates plus the final
+route matrix.
 The exact Harvest completion evidence is frozen in
 `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`: production completed one separately
 owner-authorized 80-image/seven-batch Deep Review, charged the quoted seven credits once, validated
@@ -1901,9 +1905,15 @@ public visibility, or screenshot/video acceptance still called out below.
       named visible interactive controls, no unnamed visible interactive controls and no duplicate
       IDs. It also identified one real shared-shell defect: AppPage had no main landmark. The
       canonical content wrapper now exposes `role="main"`, its regression assertion is added, and
-      the focused AppPage/Admin suite passes 54/54. Deployment plus exact live landmark recheck,
-      both resolved theme modes, retained screenshot/assistive-technology evidence, and the named
-      provider/human mutation cases remain. No screenshot artifact is claimed from this pass.
+      the focused AppPage/Admin suite passes 54/54. Full Frontend CI run `33039051479` passed, PR
+      `#834` merged as `ee116800`, and Render deploy `dep-da7rqqs9v7es73bm1s40` completed. The exact
+      live Admin URL then exposed one real semantic main landmark, one H1, loaded security content
+      and no overflow. Day and Night both rendered the expected high-contrast palette; Auto was
+      restored. Real Tab/Shift+Tab traversal covered Back, Switch workspace, Log out, the promoted
+      link, security history and regulated-commerce fields, and hard reload retained the Admin
+      identity. Physical screen-reader/screenshot evidence and named external provider/human
+      mutations remain explicitly open. They do not block evidence-driven cleanup and are not
+      relabeled as completed. No screenshot artifact is claimed from this pass.
       A non-mutating signed-in desktop production batch on 2026-08-20 covered the
       Admin Personal Home, Grows, AI Tools, Forum/Q&A, Discover, Courses, and Profile
       routes and the Admin Commercial Dashboard, Grows, Storefront, Products, Courses,
