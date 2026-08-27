@@ -389,7 +389,7 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
       small rear wordmarks; retain approved source files and final review images. Sixteen
-      active mapped concepts and four historical multi-view review sheets now exist. Twelve individual concepts
+      active mapped concepts and four historical multi-view review sheets now exist. Thirteen individual concepts
       are owner-approved; GP-07 is locked to the real BLV600 White & Black blank with a black
       circuit-leaf-only front, black side marks and a small black rear wordmark. GP-09 is locked
       to the real BLV550 Sage/Olive nylon blank with the factory rope removed, a dark-olive
@@ -402,8 +402,13 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       crown/brim/button, unchanged darker-tonal circuit leaf at the source emblem footprint and
       a small tonal `GPAI` side mark; no triangle, bag, frame, rope, front wording, ornament,
       sticker or manufacturer mark. The exact custom blank/thread match, unseen left/rear
-      placements, digitizing and sew-out remain production gates. Remaining owner art disposition,
-      exact source-art refinements, digitized files and sew-out corrections remain.
+      placements, digitizing and sew-out remain production gates. GP-13 Rasta Circuit Patch
+      is owner-approved from `MTSN8249.PNG`: black structured
+      flat-brim, source-faithful red/yellow/green bordered patch and brim-edge piping, unchanged
+      circuit leaf above the GrowPathAI wordmark, and a small GPAI side mark replacing RAW.
+      The custom trim/patch method, durability, cost, digitizing and exact-blank sew-out remain
+      production gates. Remaining owner-art disposition, exact source-art refinements,
+      digitized files and sew-out corrections remain.
 - [~] Complete the embroidery package for every approved placement. Reusable SVG sources,
       size/placement/thread/density guidance, stitch sequence and file register are retained.
       A selected digitizer must return `DST` plus editable native source, stitch chart/count

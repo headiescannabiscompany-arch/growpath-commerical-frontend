@@ -27,7 +27,8 @@ active concepts (GP-10 is retired and must not be quoted or digitized):
 
 1. GP-01 Circuit Crimson on BLV600 Maroon wool blend.
 2. GP-09 Sage Circuit on BLV550 Sage/Olive nylon, with factory rope removed cleanly.
-3. GP-13 Grow Together Cord on BLV551 Black/Black irregular-wale corduroy.
+3. GP-13 Rasta Circuit Patch on a custom BLV600 Black wool-blend blank with rasta-bordered
+   front patch and narrow rasta brim-edge piping.
 4. GP-15 Blue Signal Cord on BLV603 Air Blue micro corduroy.
 
 For each sample, quote blank handling, digitizing, each placement, backing/topping, thread,

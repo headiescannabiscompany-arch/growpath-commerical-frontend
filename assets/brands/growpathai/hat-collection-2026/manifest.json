@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "partial: 12 of 16",
+    "ownerConceptApproval": "partial: 13 of 16",
     "digitizerSelected": false,
     "machineFilesApproved": false,
     "physicalSewoutsApproved": false
@@ -18,7 +18,7 @@
     "wholesalePriceConfirmed": false,
     "liveVariantAvailabilityConfirmed": false,
     "customColorwaysPending": ["GP-06", "GP-08", "GP-11", "GP-12"],
-    "customModificationsPending": ["GP-09 factory rope removal", "GP-17 rope attachment"]
+    "customModificationsPending": ["GP-09 factory rope removal", "GP-13 rasta brim piping and bordered patch", "GP-17 rope attachment"]
   },
   "conceptSheets": [
     "heritage-core-concept-sheet.png",
@@ -38,6 +38,7 @@
     "approved-concepts/gp-09-sage-circuit-approved.png",
     "approved-concepts/gp-11-day-path-approved.png",
     "approved-concepts/gp-12-orange-tonal-approved.png",
+    "approved-concepts/gp-13-rasta-circuit-patch-approved.png",
     "approved-concepts/gp-17-redline-circuit-rope-approved.png"
   ],
   "sourceArt": [
