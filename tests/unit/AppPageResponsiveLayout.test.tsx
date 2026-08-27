@@ -46,6 +46,7 @@ describe("AppPage responsive layout", () => {
     const mainStyle = StyleSheet.flatten(screen.getByTestId("app-page-main").props.style);
     const railStyle = StyleSheet.flatten(screen.getByTestId("app-page-rail").props.style);
 
+    expect(screen.getByTestId("app-page-main").props.role).toBe("main");
     expect(mainStyle).toMatchObject({
       flexGrow: 0,
       flexShrink: 0,

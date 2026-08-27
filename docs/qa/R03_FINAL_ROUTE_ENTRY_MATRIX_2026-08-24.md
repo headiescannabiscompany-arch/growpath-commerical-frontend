@@ -65,14 +65,38 @@ deployed application candidate named below.
   Forum/Q&A, Nature, Campaigns, Privacy, Terms and Support. Each exposed one H1 and no
   access/application error; every interior route exposed Back.
 - The same non-admin identity correctly failed closed at `/admin` with `Platform owner access
-  required`, confirming that Facility ownership does not imply Platform Admin. The positive Admin
-  workspace crawl now requires the Platform Admin identity and is the next human-account gate.
+  required`, confirming that Facility ownership does not imply Platform Admin.
+- On 2026-08-27 the production workspace chooser identified the authenticated account as
+  `GrowPathAI Admin`, exposed the ordinary `Platform Administration` entry, and opened `/admin`
+  without an access or application error. The loaded read-only console showed 64 registered users,
+  zero open security investigations, zero active support requests, zero active moderation cases,
+  14 retained completed work items, and the two already-settled Harvest refund records. All named
+  internal security sources reported connected while Sentry was explicitly `not configured`; the
+  page did not imply complete Sentry coverage. The retained synthetic legal-preservation QA record
+  remained rejected, preservation stayed separate from disclosure, and the screen explicitly
+  could not release account data. This accepts the positive-role/read-only portions of A-01,
+  A-03 and A-04 plus A-02's honest active-empty/retained-count state. Assignment, enforcement,
+  resolve/reopen, real provider and real lawful-disclosure actions remain their separately gated
+  mutation/provider cases; they are not reasons to rebuild the accepted Admin entry or overview.
 - The repository test runner also discovered stale nested checkout folders as duplicate Jest
   projects. The canonical frontend suite is now rooted only in `src` and `tests`, so retained local
   checkouts cannot multiply or contaminate a verification run.
 - The in-app Browser route/DOM evidence is retained. Screenshot capture was unavailable during
-  this slice, so no screenshot or full visual-viewport acceptance is claimed. Commercial, Admin,
-  signed-out public, responsive viewport, theme and assistive-technology continuations remain open.
+  the earlier route slice, so no screenshot or full visual-viewport acceptance is claimed from it.
+  The later Admin sign-in used the owner's Chrome saved credential with owner-completed Windows
+  authentication and produced live accessibility evidence, not a retained screenshot artifact.
+  A subsequent controlled Chrome pass kept the authenticated Admin session on the exact
+  `/admin?verify=admin-responsive-acceptance` route and exercised 390 x 844, 768 x 1024 and
+  1440 x 900 viewports. Every viewport retained the single `Administration` H1, Back, Switch
+  workspace, Log out, Security and investigations, Admin work queue and Legal and evidence
+  requests, with no document-width overflow. The focused semantic audit found English document
+  language, one H1 followed by the expected H2 sections, 291 named visible interactive controls,
+  no unnamed visible interactive controls and no duplicate IDs. It also found that the shared
+  page shell did not expose a main landmark; `AppPage` now marks the canonical content wrapper
+  `role="main"` and has a regression assertion. Focused AppPage/Admin verification passes 54/54.
+  The landmark change still needs deployment and exact live recheck. Both resolved theme modes,
+  retained screenshot/assistive-technology evidence and named provider/human mutation gates
+  remain open.
 
 `Back` means the visible Back control returns to the named parent without changing the
 selected workspace. Unless narrowed below, every row owns loading, honest empty, populated,
@@ -171,10 +195,15 @@ permission/error and reload states. Dynamic IDs are represented as `:id`.
   `/notifications`, `/home/personal/lives`, `/home/personal/tools/diagnose` and
   `/home/personal/data-integrations`). They are not compatibility contracts and must not be
   added merely because a tester guessed them; the visible entries point to the canonical URLs.
-- Remaining human-account gate: a current Free identity, Commercial owner identity, Facility
-  Owner plus Staff/Viewer identities, and logout/expiry transition are still required for
-  the final multi-account A-05/F/B role chain. Do not infer those sessions from the Admin
-  account or rebuild their locally accepted implementations.
+- Remaining human-account gates are narrowed to the exact unaccepted transitions and roles:
+  Facility Staff/Viewer restrictions, expiry/refresh transitions, and any named mutation that
+  needs a disposable or specifically authorized account. Free, Commercial owner, Facility owner,
+  signed-out, non-admin denial and Platform Admin positive/read-only entry states are retained
+  evidence and must not be repeated without a reproduced regression.
+- Admin responsive route retention is accepted at 390 x 844, 768 x 1024 and 1440 x 900. The
+  shared-main-landmark defect found by the same pass is fixed and tested locally but remains an
+  exact deploy/recheck item; day/night resolution and hands-on assistive-technology operation are
+  not inferred from viewport or DOM checks.
 - Remaining physical/provider gates stay in their owning matrix rows (email/device push,
   storage/video, hosted-live two-account isolation, Stripe/gifts, Sentry, METRC and named
   device-provider credentials). Their explicit unavailable state is part of this route
