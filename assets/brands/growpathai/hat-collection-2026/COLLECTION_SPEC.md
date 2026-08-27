@@ -6,7 +6,7 @@ Status: sixteen active GrowPathAI-only concepts mapped to owner-selected design 
 real public BLVNK models/textiles. GP-10 Loden Signal was retired before approval because it
 was introduced from a supplier/catalog direction rather than an owner-selected design source,
 and its emblem treatment changed the source design instead of performing a brand-only swap.
-GP-06, GP-08, GP-11, GP-12 and GP-13 are owner-approved custom color, trim or color-blocking directions rather
+GP-06, GP-08, GP-11, GP-12, GP-13 and GP-14 are owner-approved custom color, textile, trim or color-blocking directions rather
 than claimed factory colorways. Concept art is not manufactured inventory. Custom feasibility, the local
 decorator, wholesale cost, availability at order time, digitized machine files and physical
 sew-outs remain open.
@@ -45,7 +45,7 @@ quality requirement.
 | GP-11 | Day Path | custom BLV600-style cream/stone crown / burgundy brim, button and text-bearing rope – Premium Wool; supplier confirmation required | approved cream/burgundy day-hat direction | dark GrowPath/burgundy AI wordmark with attached burgundy sprouting path | owner approved 2026-08-27; premium custom-cost/retail tier; rope text requires manufacturer feasibility proof |
 | GP-12 | Orange Tonal Circuit | custom BLV600-style solid burnt-orange crown/brim/button – Premium Wool; supplier confirmation required | owner source `RMUS4022.PNG`: smooth orange tonal structured flat-brim direction | unchanged circuit-leaf emblem in slightly darker burnt-orange tonal thread; small tonal GPAI at the source side-mark scale | owner approved 2026-08-27; no triangle, bag, frame, rope, front wording, ornament, sticker or manufacturer mark; premium custom-cost/retail tier |
 | GP-13 | Rasta Circuit Patch | custom BLV600 Black – Premium Wool with narrow red/yellow/green brim-edge piping and matching bordered front patch; supplier/decorator confirmation required | owner source `MTSN8249.PNG`: black structured flat-brim, rasta-bordered rectangular patch and rasta brim-edge detail | unchanged circuit leaf above the GrowPathAI wordmark inside the source-scale patch; small GPAI replaces the source side patch | owner approved 2026-08-27; no Triple Bag, RAW, triangle, bag, number 3, collaboration claim or extra slogan; custom trim/patch durability and premium pricing pending |
-| GP-14 | Prism Terrain | BLV600 Camo – Premium Wool | grey/green prism direction | separate prism/leaf patch | preserves real BLVNK camo; no invented all-over print |
+| GP-14 | Prism Terrain | custom BLV600-style greenish-grey all-over prism print – Premium Wool; supplier confirmation required | owner source `LANR8844.PNG`: greenish-grey fractal prism textile across structured crown and flat brim | unchanged unenclosed circuit leaf in muted stone/deep-forest thread at the source emblem footprint; small stone GPAI replaces the source side mark | owner approved 2026-08-27; no triangle, bag, number 3, wordmark, sticker or manufacturer mark; print registration/colorfastness, custom minimum and premium pricing pending |
 | GP-15 | Blue Signal Cord | BLV603 Air Blue – Micro Corduroy | blue/black/white statement direction | white/blue wordmark and circuit underline | no New Era mark, THC diagram or copied slogan |
 | GP-16 | Night Script Cord | BLV551 Dark Navy / Red – Irregular Wale Corduroy | navy/red/white script direction | original GrowPathAI script | no Wizards/team/seed-brand imitation |
 | GP-17 | Redline Circuit Rope | BLV600 Black – Premium Wool with custom-added narrow black/red/white rope; decorator confirmation required | source design #6 black/red/white athletic energy | emblem-only white circuit leaf with signal-red internal paths and nodes; small red/white GPAI side mark | owner approved 2026-08-27; no team mark, wings or front wordmark; rope attachment is a premium custom modification requiring durability proof |
@@ -59,8 +59,8 @@ quality requirement.
   are retired for this collection.
 - Flat embroidery is default. Only GP-01 may test shallow raised detail, and only on the
   outer leaf border.
-- A woven patch is preferred for GP-14 if the prism grid cannot survive an embroidery
-  sew-out at the approved size.
+- GP-14's prism grid belongs to the custom all-over textile, not the embroidery file. The
+  circuit leaf remains direct flat embroidery and must be sampled over the printed fabric.
 - Visual sheets are directionally accurate concept renderings. Exact stitch geometry,
   lettering and thread colors come from the approved source/machine files and physical sample.
 - `OWNER_SOURCE_REGISTER.md` controls which owner images may originate a hat direction. A
@@ -99,6 +99,9 @@ source-scale tonal side mark. The earlier corduroy substitution is retired.
 `approved-concepts/gp-13-rasta-circuit-patch-approved.png` supersedes the GP-13 panel in the
 patch/script sheet and controls the black structured blank, source-faithful rasta patch border,
 rasta brim-edge piping, unchanged circuit leaf, GrowPathAI wordmark and small GPAI side mark.
+`approved-concepts/gp-14-prism-terrain-approved.png` supersedes the GP-14 panel in that sheet and
+controls the source-faithful all-over prism textile, unchanged unenclosed circuit leaf and small
+GPAI side mark. The earlier stock-camo substitution and separate prism patch are retired.
 `approved-concepts/gp-17-redline-circuit-rope-approved.png` is the controlling conversion of
 source design #6 and does not replace the separately approved GP-06 Volt Path.
 `approved-concepts/gp-06-volt-path-approved.png` supersedes the GP-06 panel in
@@ -110,7 +113,7 @@ revision traceability and are not approved designs.
 ## Open production gates
 
 1. Confirm wholesale account access, current color availability, minimums, sample/blank costs,
-   shipping and lead time. For GP-06, GP-08, GP-11, GP-12 and GP-13, obtain a written custom-color, trim or color-blocking quote,
+   shipping and lead time. For GP-06, GP-08, GP-11, GP-12, GP-13 and GP-14, obtain a written custom-color, textile, trim or color-blocking quote,
    tooling/setup cost, minimum, lead time and repeat-order terms; price them as premium hats.
    GP-11 also requires written confirmation of a durable, legible text-bearing rope method.
    For GP-09, obtain written confirmation that the factory rope can be removed without visible
@@ -119,6 +122,8 @@ revision traceability and are not approved designs.
    without distorting the structured crown, plus installation cost and wash/wear durability.
    For GP-13, obtain written confirmation that the rasta brim-edge piping and bordered patch can
    be installed cleanly and repeatedly without weakening or distorting the BLV600 brim/crown.
+   For GP-14, obtain written confirmation of the all-over prism print method, pattern registration
+   across panels/seams, abrasion and colorfastness results, repeat-order tolerance and minimum.
 2. Select a local embroidery/decorating shop and approve its file ownership and revision terms.
 3. Convert approved wordmarks to curves, then digitize every used placement and return `DST`
    plus the shop's editable source.

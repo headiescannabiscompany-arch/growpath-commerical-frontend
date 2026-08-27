@@ -52,7 +52,9 @@ the shop can source BLVNK directly or requires owner-supplied blanks.
   times? Do later color-only changes require a new digitizing fee?
 - Can it embroider the side and small rear placements without disassembling or distorting the
   cap? What exact rear minimum text height is reliable?
-- Can it produce both direct embroidery and woven/embroidered patches for GP-13/GP-14?
+- Can it produce both direct embroidery and the bordered front patch required for GP-13?
+- For GP-14, can it source or manufacture the registered all-over prism textile with reliable
+  panel/seam registration, abrasion resistance, colorfastness and repeat-order tolerances?
 - Can it securely install the GP-17 narrow black/red/white rope on a structured BLV600 without
   puckering or weakening the crown/brim junction, and provide photographed wear/wash proof?
 - Can it remove GP-09's factory 5 mm rope without leaving holes, residue, puckering or a weak

@@ -19,7 +19,8 @@ digitize.
 | GP-12 Orange Tonal Circuit | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom solid-orange blank, darker tonal thread match, DST/native file and exact-blank sew-out pending |
 | GP-11 Day Path | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom blank/rope method, DST/native file and exact-blank sew-out pending |
 | GP-13 Rasta Circuit Patch | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom patch/trim feasibility, DST/native file and exact-blank sew-out pending |
-| GP-14–GP-16 patch/script | ready | no | no | no | not run | pending |
+| GP-14 Prism Terrain | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom all-over print feasibility, thread match, DST/native file and exact-blank sew-out pending |
+| GP-15–GP-16 script | ready | no | no | no | not run | pending |
 | GP-17 Redline Circuit Rope | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; custom rope attachment, DST/native file and exact-blank sew-out pending |
 
 When files arrive, add their exact filename, SHA-256, dimensions, stitch count, color count,
@@ -27,6 +28,6 @@ machine/native format, sample photo, disposition and superseding revision. A fil
 production-approved merely because it opens in embroidery software.
 
 Concept approval and production approval are separate gates. GP-01 through GP-09, plus GP-11,
-GP-12, GP-13 and GP-17 approved visuals
+GP-12 through GP-14 and GP-17 approved visuals
 are recorded in `approved-concepts/` with SHA-256 values in `SHA256SUMS.txt`. They do not claim
 that a custom blank, machine file or physical sample already exists.
