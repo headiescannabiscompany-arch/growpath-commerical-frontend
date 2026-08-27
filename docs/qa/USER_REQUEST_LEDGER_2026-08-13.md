@@ -416,6 +416,17 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       listings are complete, run owner-priced purchase-intent trials for every approved
       hat concept. Verify response, revision, aggregation, and close behavior while
       inventory remains zero and no item can be purchased.
+- [ ] After all designs, stitch files, exact-blank sew-outs, supplier/decorator costs and
+      owner pricing are approved, publish the Facebook and GrowPathAI launch package. Use a
+      two-stage minimum-25 flow: first collect revocable, no-payment interest against an
+      inventory-zero listing with checkout disabled; then send a time-limited final Stripe
+      offer. Only paid orders count toward production. If the paid minimum is missed, cancel
+      and promptly refund rather than treating interest responses or expiring card holds as
+      funded orders. Keep campaign status, price, deadline, fulfillment window and refund
+      terms identical on GrowPathAI and Facebook. Facebook posts must deep-link to the same
+      GrowPathAI collection/design pages; those pages must expose native/Web Share and a copy
+      link while remaining the canonical campaign record. The controlling launch contract is in
+      `assets/brands/growpathai/hat-collection-2026/COLLECTION_SPEC.md`.
 
 ## App Store and final release
 

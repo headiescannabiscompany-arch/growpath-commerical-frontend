@@ -103,3 +103,53 @@ revision traceability and are not approved designs.
 6. Record decorated unit cost, packaging, minimum and lead time, then obtain owner approval.
 7. Only owner-approved concepts may become zero-stock, non-sale research listings. A later
    candidate price is required before a purchase-intent trial; checkout remains disabled.
+
+## Minimum-25 launch contract
+
+This collection uses a two-stage commitment flow. A research listing is not inventory, a
+preorder, or a sale.
+
+### Stage A — no-payment demand test
+
+- Publish only owner-approved concept photos under the Admin-owned GrowPathAI brand.
+- Label every page and social post `Interest test — not yet in production or for sale`.
+- Show the exact design, an estimated price or price range, the 25-customer target, the
+  response deadline, and a truthful `interested / 25` count.
+- The action is `Join the interest list`, not `Buy`, `Reserve`, or `Preorder`. It collects
+  contact information, design/size preference and consent to receive the later offer; it
+  does not collect card information, authorize a payment, consume inventory, or promise a
+  ship date.
+- Keep every candidate at inventory zero and checkout disabled. A person may withdraw an
+  interest response at any time before purchasing.
+
+### Stage B — time-limited paid production offer
+
+Open payment only after the exact blank, physical sample and sew-out, wholesale/decorator
+quote, landed unit cost, minimum, lead time, final retail price, rights review and owner
+approval are complete. Send the final offer to interested customers through a time-limited
+Stripe Payment Link or invoice. The offer must state the final price, taxes/shipping,
+minimum paid-order threshold, payment deadline, expected shipment window, cancellation and
+refund terms, and what happens if the threshold is not met. Only completed payments count
+toward the production minimum; an interest response does not reserve stock.
+
+Do not hold ordinary online card authorizations while waiting for the campaign threshold.
+If fewer than 25 paid orders are received, do not place the production order: cancel the
+campaign and promptly refund all buyers unless the owner separately approves a lower viable
+minimum and every affected buyer expressly accepts the revised terms. If the promised
+shipping window later cannot be met, notify buyers and offer the legally required choice to
+accept the delay or cancel for a full refund.
+
+### Publication package after design approval
+
+- One GrowPathAI page per approved hat with front/side/rear images and honest sample status.
+- A Facebook collection post and individual design posts using the same price, deadline,
+  minimum and status as the GrowPathAI page. Every post links to the corresponding public
+  GrowPathAI hat page (or the collection page when several hats are shown), using an app-aware
+  HTTPS deep link that opens the installed app when supported and otherwise opens the web app.
+- The GrowPathAI listing provides native/Web Share plus `Copy link`, so users can share the
+  same canonical hat page back to Facebook and other supported platforms without creating a
+  disconnected product record.
+- No Facebook checkout or direct-message order ledger; GrowPathAI remains the canonical
+  source of campaign status and later routes payment to Stripe.
+- Preserve campaign counts, revisions, closure reason and final outcome for owner review;
+  do not manufacture engagement, stock or orders.
