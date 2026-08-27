@@ -83,7 +83,7 @@ conversion or an explicit owner rejection/duplicate disposition.
 | `OBJU0610.PNG` | GP-05 Signal Classic; owner-approved GP-16 is an extra corduroy material variant of this already covered direction | approved once for source coverage; GP-16 does not add source coverage |
 | `LTBM9546.PNG` | GP-03 Midnight Stealth | approved |
 | `VNBS9429.PNG` | GP-01 Circuit Crimson | approved |
-| `PUMD5290.PNG` | no one-to-one final conversion retained | open |
+| `PUMD5290.PNG` | GP-21 Heritage Merlot | approved |
 | `MCXG5769.PNG` | no one-to-one final conversion retained on an exact supplier blank | open |
 | `KZJV0657.PNG` | GP-15 Royal Signal | approved |
 | `KVQV2209.PNG` | no one-to-one final conversion retained | open |
@@ -94,9 +94,12 @@ conversion or an explicit owner rejection/duplicate disposition.
 | `PWVH4651.PNG` | GP-04 Night Current | approved |
 | `FDGN4955.PNG` | no one-to-one final conversion retained | open |
 
-Current source coverage: **17 approved / 21 registered; 4 open**. GP-18 closes the pale
+Current source coverage: **18 approved / 21 registered; 3 open**. GP-18 closes the pale
 light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550 Sage/Olive Gramps blank
 with its factory rope retained. GP-19 closes `GYSG2238.PNG` with its black/purple color block,
 purple rope, original script-path treatment and green rear leaf retained. GP-09 and GP-16 remain
 approved extra variants and do not add another source-coverage count. GP-20 closes
 `GEOT0660.PNG` on stock BLV600 Black with established white GrowPathAI marks only.
+GP-21 closes `PUMD5290.PNG` with its warm-cream crown, burgundy brim/button/snap and
+burgundy/antique-gold raised-embroidery direction; it remains a custom blank pending written
+supplier feasibility and exact-blank sew-out.

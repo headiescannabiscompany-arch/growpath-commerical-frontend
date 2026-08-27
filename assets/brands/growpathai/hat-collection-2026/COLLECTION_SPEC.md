@@ -2,7 +2,7 @@
 
 Date locked for concept review: 2026-08-27
 
-Status: seventeen owner-source conversions are visually approved, four registered owner-source
+Status: eighteen owner-source conversions are visually approved, three registered owner-source
 directions remain open, and GP-09 plus GP-16 are owner-approved extra variants rather than new
 source coverage. The older sixteen-slot package is not the completion boundary; all 21 rows
 in `OWNER_SOURCE_REGISTER.md` require an explicit disposition. GP-10 Loden Signal was retired before approval because it
@@ -54,6 +54,7 @@ quality requirement.
 | GP-18 | Pale Sage Gramps | BLV550 Sage / Olive – Gramps Nylon with the factory dark-olive 5 mm rope retained | owner source `CNKY2160.PNG`: pale light-green-on-light-green tonal direction | unchanged circuit-leaf emblem in restrained pale tonal sage; small tonal GPAI and branching-path side marks; small tonal rear wordmark | owner approved 2026-08-27 on the real stock supplier blank; no rope removal, front wordmark, patch, frame or invented emblem; exact thread match and sew-out remain production gates |
 | GP-19 | Night Bloom Path | custom BLV600-style matte-black crown / electric-purple brim and button – Premium Wool, with a narrow purple rope added; supplier/decorator confirmation required | owner source `GYSG2238.PNG`: black/purple/blue script-and-path direction | original white GrowPathAI script with blue `AI`, attached purple sprouting underline, small white/blue GPAI, blue branching path and small green rear circuit leaf | owner approved 2026-08-27; no invented emblem or removed rear leaf; custom color blocking, rope attachment, digitizing and exact-blank sew-out remain production gates |
 | GP-20 | Mono Signal | BLV600 Black – Premium Wool | owner source `GEOT0660.PNG`: clean black/white minimal lockup | established white circuit leaf above restrained white uppercase GrowPathAI wordmark; small white GPAI, branching-path and rear wordmark | owner approved 2026-08-27 on the real stock supplier blank; corrected circuit leaf controls and the rejected tree-emblem draft is excluded; flat embroidery and exact-blank sew-out remain production gates |
+| GP-21 | Heritage Merlot | custom BLV600-style warm-cream crown / burgundy brim, button and snap – Premium Wool; supplier confirmation required | owner source `PUMD5290.PNG`: cream/burgundy structured flat-brim direction with burgundy/gold raised embroidery | established circuit leaf in burgundy with antique-gold nodes/veins above the burgundy GrowPath/gold AI wordmark; small gold GPAI, burgundy/gold branching path and small burgundy rear wordmark | owner approved 2026-08-27; no rope, triangle, bag, number, genetics text, shield, sticker or manufacturer mark; custom color blocking, raised-embroidery limits, digitizing and exact-blank sew-out remain production gates |
 
 ## Shared placement contract
 

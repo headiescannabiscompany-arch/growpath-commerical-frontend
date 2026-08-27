@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "19 approved concept images; source coverage 17 of 21",
+    "ownerConceptApproval": "20 approved concept images; source coverage 18 of 21",
     "allOwnerSourcesDispositioned": false,
     "digitizerSelected": false,
     "machineFilesApproved": false,
@@ -18,7 +18,7 @@
     "role": "candidate blank distributor",
     "wholesalePriceConfirmed": false,
     "liveVariantAvailabilityConfirmed": false,
-    "customColorwaysPending": ["GP-06", "GP-08", "GP-11", "GP-12", "GP-14", "GP-19"],
+    "customColorwaysPending": ["GP-06", "GP-08", "GP-11", "GP-12", "GP-14", "GP-19", "GP-21"],
     "customModificationsPending": ["GP-09 factory rope removal", "GP-13 rasta brim piping and bordered patch", "GP-17 rope attachment", "GP-19 purple rope attachment"]
   },
   "conceptSheets": [
@@ -46,7 +46,8 @@
     "approved-concepts/gp-17-redline-circuit-rope-approved.png",
     "approved-concepts/gp-18-pale-sage-gramps-approved.png",
     "approved-concepts/gp-19-night-bloom-path-approved.png",
-    "approved-concepts/gp-20-mono-signal-approved.png"
+    "approved-concepts/gp-20-mono-signal-approved.png",
+    "approved-concepts/gp-21-heritage-merlot-approved.png"
   ],
   "sourceArt": [
     "source-art/circuit-leaf.svg",
@@ -69,8 +70,8 @@
   },
   "legacyConceptSlotCount": 16,
   "registeredOwnerSourceCount": 21,
-  "approvedOwnerSourceCoverageCount": 17,
-  "openOwnerSourceCoverageCount": 4,
+  "approvedOwnerSourceCoverageCount": 18,
+  "openOwnerSourceCoverageCount": 3,
   "reviewCandidateCount": 0,
   "thirdPartyMarksIncluded": false,
   "tripleBagGeneticsProductCreated": false

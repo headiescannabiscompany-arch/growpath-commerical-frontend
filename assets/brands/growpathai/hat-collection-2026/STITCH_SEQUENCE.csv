@@ -73,3 +73,8 @@ GP-20,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,
 GP-20,right,source-art/gpai-monogram.svg,34x14,flat satin,"white",Small side mark at owner-approved scale,digitizer_required
 GP-20,left,source-art/branching-path.svg,31x17,flat satin,"white",Use established branching-path geometry with open node centers,digitizer_required
 GP-20,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"white",Single small wordmark centered above opening,digitizer_required
+GP-21,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,82x60,raised outer detail plus flat satin,"burgundy; antique gold",Established circuit leaf with burgundy outline and antique-gold nodes/veins above burgundy GrowPath and gold AI; no enclosing shape or invented emblem,digitizer_required
+GP-21,right,source-art/gpai-monogram.svg,34x14,flat satin,"antique gold",Small side mark at owner-approved scale,digitizer_required
+GP-21,left,source-art/branching-path.svg,31x17,flat satin,"burgundy; antique gold",Use established branching-path geometry with open node centers,digitizer_required
+GP-21,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"burgundy",Single very small wordmark centered above opening,digitizer_required
+GP-21,blank,custom BLV600-style cream crown with burgundy brim button and snap,n/a,manufacturer-specific,"warm cream; burgundy",No rope; custom color blocking and exact supplier feasibility require written confirmation,manufacturer_confirmation_required
