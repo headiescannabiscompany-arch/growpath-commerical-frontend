@@ -93,10 +93,19 @@ deployed application candidate named below.
   language, one H1 followed by the expected H2 sections, 291 named visible interactive controls,
   no unnamed visible interactive controls and no duplicate IDs. It also found that the shared
   page shell did not expose a main landmark; `AppPage` now marks the canonical content wrapper
-  `role="main"` and has a regression assertion. Focused AppPage/Admin verification passes 54/54.
-  The landmark change still needs deployment and exact live recheck. Both resolved theme modes,
-  retained screenshot/assistive-technology evidence and named provider/human mutation gates
-  remain open.
+  `role="main"` and has a regression assertion. Focused AppPage/Admin verification passed 54/54;
+  full Frontend CI run `33039051479` then passed audit, lint, TypeScript, delivery guards and the
+  complete test gate. PR `#834` merged as `ee116800`, and Render deployment
+  `dep-da7rqqs9v7es73bm1s40` completed. The exact production Admin URL then exposed one semantic
+  `<main data-testid="app-page-main">`, one `Administration` H1, the loaded security section and
+  no overflow. The same authenticated production session selected Day and Night through the
+  named Appearance radiogroup: Day rendered `rgb(241, 247, 242)` with dark heading text, Night
+  rendered `rgb(14, 20, 27)` with light heading text, and Auto was restored to its prior resolved
+  Night state. Real Tab navigation moved from Switch workspace to Log out, the promoted link,
+  security history and regulated-commerce fields, while Shift+Tab from Switch workspace reached
+  Back. A hard reload retained the Admin identity and loaded console. Retained screenshot and
+  physical screen-reader evidence plus named external provider/human mutation gates remain open;
+  they are not inferred from DOM, theme or keyboard evidence.
 
 `Back` means the visible Back control returns to the named parent without changing the
 selected workspace. Unless narrowed below, every row owns loading, honest empty, populated,
@@ -201,9 +210,9 @@ permission/error and reload states. Dynamic IDs are represented as `:id`.
   signed-out, non-admin denial and Platform Admin positive/read-only entry states are retained
   evidence and must not be repeated without a reproduced regression.
 - Admin responsive route retention is accepted at 390 x 844, 768 x 1024 and 1440 x 900. The
-  shared-main-landmark defect found by the same pass is fixed and tested locally but remains an
-  exact deploy/recheck item; day/night resolution and hands-on assistive-technology operation are
-  not inferred from viewport or DOM checks.
+  shared-main-landmark defect found by the same pass is fixed, merged and production-rechecked.
+  Day, Night, Auto restoration, leading keyboard order and hard-reload retention are also accepted
+  for this Admin slice. Hands-on physical screen-reader operation is not inferred from those checks.
 - Remaining physical/provider gates stay in their owning matrix rows (email/device push,
   storage/video, hosted-live two-account isolation, Stripe/gifts, Sentry, METRC and named
   device-provider credentials). Their explicit unavailable state is part of this route

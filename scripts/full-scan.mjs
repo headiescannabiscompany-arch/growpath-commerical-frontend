@@ -104,7 +104,10 @@ function groupByBase(files) {
 
 function isCompatReexport(file) {
   if (path.extname(file) !== ".js") return false;
-  const code = read(file).trim();
+  const code = read(file)
+    .replace(/\r\n/g, "\n")
+    .replace(/^(?:\s*\/\/[^\n]*\n)+/, "")
+    .trim();
   const base = path.basename(file, ".js");
   const tsTarget = `./${base}.ts`;
   const tsxTarget = `./${base}.tsx`;

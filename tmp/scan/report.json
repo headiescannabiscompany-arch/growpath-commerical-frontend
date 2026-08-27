@@ -1,31 +1,26 @@
 {
   "root": "C:\\growpathai\\growpath-commerical-frontend.worktrees\\agents-vscode-terminal-issues",
   "counts": {
-    "srcFiles": 992,
-    "testFiles": 411,
-    "totalFiles": 1403,
-    "apiFiles": 121,
+    "srcFiles": 1136,
+    "testFiles": 540,
+    "totalFiles": 1676,
+    "apiFiles": 132,
     "apiOrphans": 0,
     "legacyClientCallers": 0,
-    "jsTsTwins": 2,
-    "compatTwinWrappers": 13,
+    "jsTsTwins": 0,
+    "compatTwinWrappers": 15,
     "bannedFindings": 2,
     "strictBannedFindings": 0
   },
-  "jsTsTwins": [
-    [
-      "src/api/client.js",
-      "src/api/client.ts"
-    ],
-    [
-      "src/components/EmptyState.js",
-      "src/components/EmptyState.tsx"
-    ]
-  ],
+  "jsTsTwins": [],
   "compatTwinWrappers": [
     [
       "src/api/auth.js",
       "src/api/auth.ts"
+    ],
+    [
+      "src/api/client.js",
+      "src/api/client.ts"
     ],
     [
       "src/api/growlog.js",
@@ -58,6 +53,10 @@
     [
       "src/api/team.js",
       "src/api/team.ts"
+    ],
+    [
+      "src/components/EmptyState.js",
+      "src/components/EmptyState.tsx"
     ],
     [
       "src/components/FeatureGate.js",
