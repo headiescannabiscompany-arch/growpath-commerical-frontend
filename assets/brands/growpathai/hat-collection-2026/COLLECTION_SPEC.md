@@ -46,7 +46,7 @@ quality requirement.
 | GP-12 | Orange Tonal Circuit | custom BLV600-style solid burnt-orange crown/brim/button – Premium Wool; supplier confirmation required | owner source `RMUS4022.PNG`: smooth orange tonal structured flat-brim direction | unchanged circuit-leaf emblem in slightly darker burnt-orange tonal thread; small tonal GPAI at the source side-mark scale | owner approved 2026-08-27; no triangle, bag, frame, rope, front wording, ornament, sticker or manufacturer mark; premium custom-cost/retail tier |
 | GP-13 | Rasta Circuit Patch | custom BLV600 Black – Premium Wool with narrow red/yellow/green brim-edge piping and matching bordered front patch; supplier/decorator confirmation required | owner source `MTSN8249.PNG`: black structured flat-brim, rasta-bordered rectangular patch and rasta brim-edge detail | unchanged circuit leaf above the GrowPathAI wordmark inside the source-scale patch; small GPAI replaces the source side patch | owner approved 2026-08-27; no Triple Bag, RAW, triangle, bag, number 3, collaboration claim or extra slogan; custom trim/patch durability and premium pricing pending |
 | GP-14 | Prism Terrain | custom BLV600-style greenish-grey all-over prism print – Premium Wool; supplier confirmation required | owner source `LANR8844.PNG`: greenish-grey fractal prism textile across structured crown and flat brim | unchanged unenclosed circuit leaf in muted stone/deep-forest thread at the source emblem footprint; small stone GPAI replaces the source side mark | owner approved 2026-08-27; no triangle, bag, number 3, wordmark, sticker or manufacturer mark; print registration/colorfastness, custom minimum and premium pricing pending |
-| GP-15 | Blue Signal Cord | BLV603 Air Blue – Micro Corduroy | blue/black/white statement direction | white/blue wordmark and circuit underline | no New Era mark, THC diagram or copied slogan |
+| GP-15 | Royal Signal | BLV600 Royal – Premium Wool | owner source `KZJV0657.PNG`: solid royal-blue structured flat-brim direction with a neon-green source-scale front lockup | unchanged neon-green circuit leaf above the uppercase GrowPathAI wordmark; small neon-green GPAI at the source side-mark scale | owner approved 2026-08-27 on the real stock supplier blank; no bag, number 3, `GENETICS`, sticker, manufacturer mark, underline or added ornament |
 | GP-16 | Night Script Cord | BLV551 Dark Navy / Red – Irregular Wale Corduroy | navy/red/white script direction | original GrowPathAI script | no Wizards/team/seed-brand imitation |
 | GP-17 | Redline Circuit Rope | BLV600 Black – Premium Wool with custom-added narrow black/red/white rope; decorator confirmation required | source design #6 black/red/white athletic energy | emblem-only white circuit leaf with signal-red internal paths and nodes; small red/white GPAI side mark | owner approved 2026-08-27; no team mark, wings or front wordmark; rope attachment is a premium custom modification requiring durability proof |
 
@@ -102,6 +102,10 @@ rasta brim-edge piping, unchanged circuit leaf, GrowPathAI wordmark and small GP
 `approved-concepts/gp-14-prism-terrain-approved.png` supersedes the GP-14 panel in that sheet and
 controls the source-faithful all-over prism textile, unchanged unenclosed circuit leaf and small
 GPAI side mark. The earlier stock-camo substitution and separate prism patch are retired.
+`approved-concepts/gp-15-royal-signal-approved.png` supersedes the GP-15 panel in that sheet and
+controls the source-faithful royal-blue BLV600 blank, unchanged neon-green circuit leaf,
+uppercase GrowPathAI wordmark and small neon-green GPAI side mark. The earlier Air Blue
+micro-corduroy substitution and circuit-underline direction are retired.
 `approved-concepts/gp-17-redline-circuit-rope-approved.png` is the controlling conversion of
 source design #6 and does not replace the separately approved GP-06 Volt Path.
 `approved-concepts/gp-06-volt-path-approved.png` supersedes the GP-06 panel in

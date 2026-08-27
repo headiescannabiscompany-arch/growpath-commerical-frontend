@@ -51,7 +51,10 @@ GP-13,brim edge,custom red/yellow/green piping,n/a,manufacturer-specific,"green;
 GP-14,blank textile,owner source LANR8844.PNG all-over prism pattern,n/a,manufacturer-specific,"greenish grey; muted stone; deep forest",Custom print must retain source pattern scale and register cleanly across panels/seams; colorfastness and abrasion proof required,manufacturer_confirmation_required
 GP-14,front,source-art/circuit-leaf.svg,46x45,flat satin,"muted stone; subtle deep forest",Owner-approved unchanged unenclosed circuit leaf at the source emblem footprint; no triangle bag patch or wordmark,digitizer_required
 GP-14,right,source-art/gpai-monogram.svg,34x14,flat satin,"muted stone",Replace source manufacturer mark at the same small side scale,digitizer_required
-GP-15,front,source-art/growpathai-wordmark.svg,108x29,flat satin,"white; GrowPath blue",Convert lettering to curves; BLV603 micro corduroy topper required,digitizer_required
+GP-15,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,92x55,flat satin,"neon green",Owner-approved source-scale lockup on BLV600 Royal; unchanged circuit leaf above uppercase GrowPathAI; no bag number Genetics underline sticker or ornament,digitizer_required
+GP-15,right,source-art/gpai-monogram.svg,34x14,flat satin,"neon green",Replace the source manufacturer mark at the same small side scale,digitizer_required
+GP-15,left,source-art/branching-path.svg,31x17,flat satin,"neon green",Use only if the unseen left-side production layout is owner-approved; do not infer from the front preview,owner_approval_required
+GP-15,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"neon green",Use only if the unseen rear production layout is owner-approved; do not infer from the front preview,owner_approval_required
 GP-16,front,source-art/growpathai-script.svg,105x29,flat satin,"white; signal red",Convert approved script to curves; no team or seed-brand imitation,digitizer_required
 GP-17,front,source-art/circuit-leaf.svg,46x45,flat satin,"white outer leaf/stem; signal-red internal paths and nodes",Emblem-only front; no wordmark; preserve open node centers,digitizer_required
 GP-17,right,source-art/gpai-monogram.svg,34x14,flat satin,"signal red; white",Small side mark from approved reference,digitizer_required

@@ -389,7 +389,7 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
       small rear wordmarks; retain approved source files and final review images. Sixteen
-      active mapped concepts and four historical multi-view review sheets now exist. Fourteen individual concepts
+      active mapped concepts and four historical multi-view review sheets now exist. Fifteen individual concepts
       are owner-approved; GP-07 is locked to the real BLV600 White & Black blank with a black
       circuit-leaf-only front, black side marks and a small black rear wordmark. GP-09 is locked
       to the real BLV550 Sage/Olive nylon blank with the factory rope removed, a dark-olive
@@ -412,6 +412,11 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
       unenclosed circuit leaf at the source emblem footprint and small GPAI replacing the side
       manufacturer mark. The earlier stock-camo/patch substitution is retired; custom printing,
       registration, colorfastness, cost, digitizing and exact-blank sew-out remain gates.
+      GP-15 Royal Signal is owner-approved from `KZJV0657.PNG`: the real stock BLV600 Royal
+      premium-wool blank, unchanged neon-green circuit leaf above the uppercase GrowPathAI
+      wordmark and a small neon-green `GPAI` side mark at the source scale. The earlier Air
+      Blue micro-corduroy/underline substitution is retired; live availability, final thread
+      match, unseen left/rear placements, digitizing and exact-blank sew-out remain gates.
       Remaining owner-art disposition, exact source-art refinements,
       digitized files and sew-out corrections remain.
 - [~] Complete the embroidery package for every approved placement. Reusable SVG sources,

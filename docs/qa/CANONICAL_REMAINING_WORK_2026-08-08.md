@@ -46,6 +46,8 @@ execution is now active without fabricating reviewer findings: sixteen GrowPathA
 are mapped to real published BLVNK models/textiles/colorways in
 `assets/brands/growpathai/hat-collection-2026/`, with four multi-view sheets, reusable SVG art,
 a stitch sequence, digitizer handoff and machine-file register. R-05 is not complete: live
+Fifteen of the sixteen active concepts now have owner-approved individual images; GP-16 is
+the only remaining owner-art disposition.
 wholesale availability/cost, decorator selection, returned `DST` plus editable source, exact-
 blank sew-outs, owner sample approval, zero-stock website research presentation and any later
 owner-priced trials remain open. Production credential rotation remains a separately named

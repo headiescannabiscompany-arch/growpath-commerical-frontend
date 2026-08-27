@@ -29,7 +29,7 @@ active concepts (GP-10 is retired and must not be quoted or digitized):
 2. GP-09 Sage Circuit on BLV550 Sage/Olive nylon, with factory rope removed cleanly.
 3. GP-13 Rasta Circuit Patch on a custom BLV600 Black wool-blend blank with rasta-bordered
    front patch and narrow rasta brim-edge piping.
-4. GP-15 Blue Signal Cord on BLV603 Air Blue micro corduroy.
+4. GP-15 Royal Signal on BLV600 Royal wool blend.
 
 For each sample, quote blank handling, digitizing, each placement, backing/topping, thread,
 sample sew-out, revisions, shipping/tax, decorated quantity tiers and lead time. State whether

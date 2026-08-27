@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "partial: 14 of 16",
+    "ownerConceptApproval": "partial: 15 of 16",
     "digitizerSelected": false,
     "machineFilesApproved": false,
     "physicalSewoutsApproved": false
@@ -40,6 +40,7 @@
     "approved-concepts/gp-12-orange-tonal-approved.png",
     "approved-concepts/gp-13-rasta-circuit-patch-approved.png",
     "approved-concepts/gp-14-prism-terrain-approved.png",
+    "approved-concepts/gp-15-royal-signal-approved.png",
     "approved-concepts/gp-17-redline-circuit-rope-approved.png"
   ],
   "sourceArt": [
