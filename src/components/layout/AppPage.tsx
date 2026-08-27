@@ -91,6 +91,7 @@ export default function AppPage({
       ) : null}
       <View style={[styles.columns, isWide ? styles.columnsWide : styles.columnsNarrow]}>
         <View
+          role="main"
           testID="app-page-main"
           style={[styles.main, isWide ? styles.mainWide : styles.mainNarrow]}
         >

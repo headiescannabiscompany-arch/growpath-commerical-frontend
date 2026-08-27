@@ -1,6 +1,6 @@
 # GrowPathAI Canonical Remaining Work
 
-Updated: 2026-08-26
+Updated: 2026-08-27
 
 Status: Detailed evidence and remainder ledger; reconciled against retained production
 evidence on 2026-08-21, with P-08 completion reconciled on 2026-08-26. A checked sub-scope stays
@@ -21,7 +21,11 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
-**Current active cursor (2026-08-26):** P-08 is closed and the final professional crawl is next.
+**Current active cursor (2026-08-27):** P-08 is closed and the final professional crawl is in
+progress. Facility Owner, Personal, Commercial owner, signed-out public, non-admin denial and
+Platform Admin positive/read-only route batches are retained; do not repeat them without a current
+regression. Continue with the exact responsive/theme/assistive-technology and remaining named
+human/provider gates, then evidence-driven dead-code cleanup and the post-cleanup frozen-SHA rerun.
 The exact Harvest completion evidence is frozen in
 `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`: production completed one separately
 owner-authorized 80-image/seven-batch Deep Review, charged the quoted seven credits once, validated
@@ -1871,11 +1875,35 @@ public visibility, or screenshot/video acceptance still called out below.
       and awaits the same focused/deployed recheck. The final creation/import/report
       batch passed 8/9 routes; Auto Grow Calendar repeated the hidden navigator-heading
       pattern and is included in the same fix/recheck batch. The signed-in public
-      continuation confirmed ten canonical catalog/community/Nature/legal routes; the
-      published Living Soil Labs storefront loaded correctly but its visible brand title
-      lacked heading semantics. The brand title now owns the page H1 and joins the same
-      pending fix/deploy/recheck batch. Browser route/DOM evidence exists; screenshot capture was
-      unavailable, so responsive visual/theme/assistive-tech evidence is not claimed.
+      continuation confirmed ten canonical catalog/community/Nature/legal routes. The
+      direct Living Soil Labs slug honestly returns `Storefront not found` while the
+      brand remains draft; its fallback `Storefront` title now owns the page H1 on exact
+      frontend release `a7322f21dd499acd87b8c62599d4932d193b1464`, while populated
+      brand-title semantics pass the public fixture. That exact release also passed all
+      six Commercial heading-owner rechecks with one H1 and Back. Signed-out public state
+      then passed 13/13 landing/catalog/community/Nature/legal/support routes after
+      Commercial logout correctly cleared the session to `/login`. The draft storefront
+      remained honestly unavailable. The jcindc non-admin identity also failed closed at
+      `/admin`, proving Facility ownership does not imply Platform Admin. On 2026-08-27 the
+      authenticated `GrowPathAI Admin` identity then exposed `Platform Administration` from the
+      workspace chooser and opened the live `/admin` console. Its read-only loaded state showed
+      64 registered users; zero open security investigations, support requests and moderation
+      cases; 14 retained completed work items; connected GrowPath security sources; and Sentry
+      explicitly `not configured`. The two already-refunded Harvest failures remained read-only.
+      A rejected synthetic legal-preservation test remained auditable while preservation,
+      approval and disclosure stayed separate and the screen could not release account data.
+      This closes positive-role/read-only A-01/A-03/A-04 and A-02's active-empty/retained-count
+      state without pretending that assignment, enforcement, resolve/reopen, real provider or
+      lawful-disclosure mutations were exercised. Owner-authorized published-storefront
+      acceptance remains. A controlled Chrome follow-up retained the Admin route at 390 x 844,
+      768 x 1024 and 1440 x 900 with one H1, the key Admin sections and navigation controls, and
+      no horizontal overflow. Its focused semantic audit found a logical H1/H2 hierarchy, 291
+      named visible interactive controls, no unnamed visible interactive controls and no duplicate
+      IDs. It also identified one real shared-shell defect: AppPage had no main landmark. The
+      canonical content wrapper now exposes `role="main"`, its regression assertion is added, and
+      the focused AppPage/Admin suite passes 54/54. Deployment plus exact live landmark recheck,
+      both resolved theme modes, retained screenshot/assistive-technology evidence, and the named
+      provider/human mutation cases remain. No screenshot artifact is claimed from this pass.
       A non-mutating signed-in desktop production batch on 2026-08-20 covered the
       Admin Personal Home, Grows, AI Tools, Forum/Q&A, Discover, Courses, and Profile
       routes and the Admin Commercial Dashboard, Grows, Storefront, Products, Courses,
