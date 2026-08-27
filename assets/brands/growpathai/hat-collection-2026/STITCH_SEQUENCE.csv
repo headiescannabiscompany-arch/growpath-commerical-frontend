@@ -1,0 +1,20 @@
+concept_id,placement,art_source,target_mm,default_method,thread_order,notes,status
+GP-01,front,source-art/circuit-leaf.svg,58x56,flat satin with optional shallow outer-border foam,"antique gold",Internal traces and nodes stay flat; foam trial limited to outer leaf border,digitizer_required
+GP-01,right,source-art/gpai-monogram.svg,34x14,flat satin,"antique gold",Font-independent monoline mark,digitizer_required
+GP-01,left,source-art/branching-path.svg,31x17,flat satin,"antique gold",Keep open node centers,digitizer_required
+GP-01,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"antique gold",Convert approved lettering to curves before digitizing,digitizer_required
+GP-02,front,source-art/circuit-leaf.svg,56x54,flat tonal satin,"dark olive",Match approved physical thread swatch,digitizer_required
+GP-03,front,source-art/circuit-leaf.svg,56x54,flat tonal satin,"black; forest node accents",Low-sheen black with sparse green nodes,digitizer_required
+GP-04,front,source-art/growpathai-wordmark.svg plus source-art/circuit-leaf.svg,108x31,flat satin,"white; circuit lime; GrowPath blue",Convert lettering to curves and avoid center-seam damage,digitizer_required
+GP-05,front,source-art/growpathai-wordmark.svg,106x28,flat satin,"white; signal red",Original GrowPathAI treatment only; convert lettering to curves,digitizer_required
+GP-06,front,source-art/circuit-leaf.svg,56x55,flat satin,"forest; GrowPath blue; circuit lime",Shield outline is a digitizer redraw around the leaf,digitizer_required
+GP-07,front,source-art/growpathai-wordmark.svg plus source-art/circuit-leaf.svg,108x32,flat satin,"black; forest; GrowPath blue",Convert lettering to curves; high-contrast white crown,digitizer_required
+GP-08,front,source-art/circuit-leaf.svg,60x58,flat satin,"circuit lime; violet; GrowPath blue",Circuit-frond surround must be simplified at sew-out size,digitizer_required
+GP-09,front,source-art/circuit-leaf.svg,55x53,flat tonal satin,"sage/olive swatch",BLV550 nylon; do not stretch crown,digitizer_required
+GP-10,front,source-art/circuit-leaf.svg,55x53,flat satin,"antique gold; forest",Coordinate with factory gold rope,digitizer_required
+GP-11,front,source-art/circuit-leaf.svg,55x53,flat satin or patch,"burgundy; stone",Corduroy topper required,digitizer_required
+GP-12,front,source-art/circuit-leaf.svg,55x53,flat tonal satin,"dark rust; black",Corduroy topper required,digitizer_required
+GP-13,front,source-art/grow-together-patch.svg,88x52,embroidered patch,"circuit lime; antique gold; signal red; white; GrowPath blue",No third-party name or collaboration claim,digitizer_required
+GP-14,front,source-art/prism-terrain-patch.svg,58x51,woven patch preferred,"forest; stone; GrowPath blue; circuit lime",Use real BLV600 camo fabric; no invented all-over print,digitizer_required
+GP-15,front,source-art/growpathai-wordmark.svg,108x29,flat satin,"white; GrowPath blue",Convert lettering to curves; BLV603 micro corduroy topper required,digitizer_required
+GP-16,front,source-art/growpathai-script.svg,105x29,flat satin,"white; signal red",Convert approved script to curves; no team or seed-brand imitation,digitizer_required

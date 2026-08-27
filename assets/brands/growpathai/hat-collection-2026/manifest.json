@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "growpathai-hat-collection-v2",
+  "updatedAt": "2026-08-27",
+  "brand": "GrowPathAI",
+  "state": {
+    "listingState": "unpublished",
+    "inventoryAvailable": 0,
+    "checkoutEnabled": false,
+    "manufacturedInventoryConfirmed": false,
+    "ownerConceptApproval": "pending",
+    "digitizerSelected": false,
+    "machineFilesApproved": false,
+    "physicalSewoutsApproved": false
+  },
+  "supplier": {
+    "name": "BLVNK HEADWEAR",
+    "role": "candidate blank distributor",
+    "wholesalePriceConfirmed": false,
+    "liveVariantAvailabilityConfirmed": false
+  },
+  "conceptSheets": [
+    "heritage-core-concept-sheet.png",
+    "heritage-contrast-concept-sheet.png",
+    "gramps-rope-cord-concept-sheet.png",
+    "patch-script-concept-sheet.png"
+  ],
+  "sourceArt": [
+    "source-art/circuit-leaf.svg",
+    "source-art/branching-path.svg",
+    "source-art/gpai-monogram.svg",
+    "source-art/growpathai-wordmark.svg",
+    "source-art/growpathai-script.svg",
+    "source-art/grow-together-patch.svg",
+    "source-art/prism-terrain-patch.svg"
+  ],
+  "productionFiles": {
+    "digitizerHandoff": "EMBROIDERY_DIGITIZER_HANDOFF.md",
+    "stitchSequence": "STITCH_SEQUENCE.csv",
+    "machineFileRegister": "MACHINE_FILE_REGISTER.md",
+    "decoratorQuotePacket": "DECORATOR_QUOTE_PACKET.md",
+    "dstFilesPresent": false,
+    "nativeEmbroideryFilesPresent": false
+  },
+  "conceptCount": 16,
+  "thirdPartyMarksIncluded": false,
+  "tripleBagGeneticsProductCreated": false
+}

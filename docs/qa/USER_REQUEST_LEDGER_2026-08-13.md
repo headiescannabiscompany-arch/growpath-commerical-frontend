@@ -310,6 +310,14 @@ GrowPathAI-branded collection. Triple Bag Genetics has no hat product, listing, 
 trial, public advertisement, inventory or checkout scope unless the owner later confirms
 that a separate company and its rights/ownership requirements exist.
 
+Owner decision, 2026-08-27: R-05 is resumed. The collection must use real supplier textiles
+and colorways and must include stitch files, not concept images alone. Sixteen rights-clean
+GrowPathAI concepts, four multi-view review sheets, official BLVNK references, reusable SVG
+source art, a placement/thread/stitch plan and an explicit machine-file register are retained
+in `assets/brands/growpathai/hat-collection-2026/`. Returned `DST`/native embroidery files,
+decorator selection, exact-blank sew-outs, live wholesale availability/cost and owner sample
+approval remain open.
+
 - [x] Historical GrowPathAI and Triple Bag Genetics concept images, exact hashes, brand
       manifests, approved emblems, and a production brief are retained as design input;
       retained TBG material is not approval to make or publish a TBG product.
@@ -320,16 +328,22 @@ that a separate company and its rights/ownership requirements exist.
 - [x] A zero-stock, unpriced, non-checkout `Would you buy this at this price?` trial flow
       exists with Yes/Maybe/No, one revisable response per account, aggregate results,
       and explicit `not for sale` language.
-- [ ] Complete the exact BLVNK blank specification first: model, construction, fabric,
-      available color match, brim profile, sample, unit/sample cost, minimums, lead time,
-      and local embroidery/decoration approval. This is the prerequisite for final hat
-      mockups, meaningful price research, product records, inventory, checkout,
-      production, or shipping.
-- [ ] Translate every owner-selected Triple Bag-style concept into the complete
+- [~] Exact candidate BLVNK models, published construction/fabrics, real factory colorways
+      and public retail reference prices are recorded for BLV600, BLV550, BLV551 and BLV603.
+      Live wholesale availability, blank/sample/decorated cost, minimums, shipping, lead time,
+      decorator selection and physical sample approval remain open.
+- [~] Translate every owner-selected Triple Bag-style concept into the complete
       GrowPathAI hat design set against the approved BLVNK blank. Produce accurate front,
       left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
-      small rear wordmarks; retain approved source files and final review images.
+      small rear wordmarks; retain approved source files and final review images. Sixteen
+      mapped concepts and four multi-view review sheets now exist; owner art disposition,
+      exact source-art refinements, digitized files and sew-out corrections remain.
+- [~] Complete the embroidery package for every approved placement. Reusable SVG sources,
+      size/placement/thread/density guidance, stitch sequence and file register are retained.
+      A selected digitizer must return `DST` plus editable native source, stitch chart/count
+      and machine settings; each must pass a photographed sew-out on the exact blank before
+      production approval.
 - [x] Give the `admin@growpathai.com` Admin identity the governed Commercial toolset and
       use the Admin/GrowPathAI brand—not Living Soil Labs—to own and present GrowPathAI
       hat research. Backend PR `#156` (`f49fae1f`) and frontend PR `#558`

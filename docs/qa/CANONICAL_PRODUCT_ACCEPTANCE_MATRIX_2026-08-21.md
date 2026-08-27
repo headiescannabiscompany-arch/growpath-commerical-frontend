@@ -419,7 +419,7 @@ stay open. See `FACILITY_INVENTORY_AI_PRODUCTION_EVIDENCE_2026-08-23.md`.
 | R-02 | Email/device notifications respect preferences and deliver supported events                                            | in-app preferences, inbox, receipts, deep links and truthful registered-device prerequisite live accepted; actual email/device delivery and failure receipt remain provider/device gated                                                                                         |
 | R-03 | Initial crawl, proof-based dead-code cleanup, and final full acceptance pass on new frozen SHAs                        | core release gate accepted: cross-workspace/public/Admin crawl retained, cleanup PR `#835` passed CI and deployed as frontend `f322d440`, and its scanner/docs-only bundle identity plus representative route smoke closed the affected rerun; named physical/provider/role-transition gates remain external rather than reopening accepted routes |
 | R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                             | owner-approved bounded invitation sent from GrowPathAI Support on 2026-08-27; separate-account creation, any limited test-workspace access, returned findings, explicit dispositions, preview evidence and production approval remain open                                                                                                      |
-| R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete           | open; stop gate                                                                                                                                                                                                                                                                  |
+| R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval, machine files/sew-outs and non-sale trials complete | active after owner resumed on 2026-08-27; sixteen real-BLVNK-mapped concepts and digitizer handoff retained; wholesale availability/cost, decorator-returned `DST` plus editable source, exact-blank sew-outs, owner approval, website presentation and trials remain open |
 | R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                       | open                                                                                                                                                                                                                                                                             |
 
 Twitch OAuth is a deliberately optional external-provider capability, not a prerequisite for
@@ -814,5 +814,7 @@ You` truthfully showed no matches while `All Discussions` loaded retained text, 
    Only this post-cleanup pass is final release evidence.
 8. Isolate and deliberately accept or reject independent reviewer suggestions.
 9. Pause for owner review and stop before hats; resume with the owner and complete only
-   the GrowPathAI collection.
+   the GrowPathAI collection. The owner resumed R-05 on 2026-08-27. Concept work must use
+   real supplier models/textiles/colorways and include source art, placement/thread/stitch
+   specifications, returned `DST` plus editable machine source, and exact-blank sew-outs.
 10. Complete App Store and Play Store work last.

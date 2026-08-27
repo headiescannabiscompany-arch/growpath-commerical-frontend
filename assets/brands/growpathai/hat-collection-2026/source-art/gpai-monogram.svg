@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 82 30" role="img" aria-labelledby="title desc">
+  <title id="title">GPAI monogram embroidery source</title>
+  <desc id="desc">Font-independent monoline GPAI side mark.</desc>
+  <g fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="square" stroke-linejoin="round">
+    <path d="M17 7C15 3 5 3 3 10V20C5 27 15 27 18 22V16H11"/>
+    <path d="M26 26V4H37C44 4 44 16 37 16H26"/>
+    <path d="M47 26L56 4L65 26M51 18H61"/>
+    <path d="M72 4H80M76 4V26M72 26H80"/>
+  </g>
+</svg>

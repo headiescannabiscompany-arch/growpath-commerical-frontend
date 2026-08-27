@@ -2,6 +2,13 @@
 
 Date reviewed: 2026-08-12
 
+2026-08-27 execution addendum: the owner resumed the hat gate. Sixteen GrowPathAI-only
+concepts are now mapped to public BLVNK BLV600, BLV550, BLV551 and BLV603 models and real
+published factory colorways in `growpathai/hat-collection-2026/COLLECTION_SPEC.md`. Four
+multi-view concept sheets, reusable SVG source artwork, a stitch sequence and an embroidery
+digitizer handoff are retained with that specification. These additions do not prove current
+wholesale availability, cost, decoration, manufactured inventory or sample approval.
+
 ## Supplier path established by email
 
 Captuer Headwear's service team replied on 2026-08-10 that Captuer is not accepting new direct accounts. It identified **BLVNK HEADWEAR** as Captuer's exclusive blank-product distributor and stated that BLVNK provides access to the full blank line, live inventory, wholesale pricing after account approval, order management, and free shipping. Captuer also stated that its blanks carry no Captuer branding and must be decorated locally to become private-label merchandise.
@@ -37,6 +44,11 @@ Triple Bag Genetics concepts use higher-fashion structured snapbacks, two-tone o
 ## Required launch boundary
 
 The designs are close to the intended product specification, but they remain concepts until the exact BLVNK/Captuer blank model, colors, decoration files, decorator, sample, cost, quantity, shipping, rights review, and owner approval are recorded.
+
+For embroidery, the required decoration package is a returned `DST` plus the decorator's
+editable native file, thread/color chart, stitch count/settings and a photographed physical
+sew-out on the exact blank. SVG sources and visual mockups are digitizer inputs, not machine
+files. No auto-digitized or renamed design file is production-approved without the sew-out.
 
 Until then:
 

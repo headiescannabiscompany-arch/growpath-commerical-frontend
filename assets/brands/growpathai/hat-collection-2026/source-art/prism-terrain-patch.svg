@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 105" role="img" aria-labelledby="title desc">
+  <title id="title">GrowPathAI prism terrain patch source</title>
+  <desc id="desc">Triangular geometric patch derived from GrowPathAI-owned circuit imagery.</desc>
+  <path d="M60 6L114 98H6Z" fill="#18261C" stroke="#8EEA36" stroke-width="4" stroke-linejoin="round"/>
+  <g fill="none" stroke="#2587FF" stroke-width="2" opacity=".9">
+    <path d="M22 86L60 20L98 86Z"/>
+    <path d="M14 86H106M28 62H92M42 38H78"/>
+    <path d="M22 86L78 38M42 38L98 86M28 62L60 86M92 62L60 86"/>
+  </g>
+  <g transform="translate(36 27) scale(.6)" fill="none" stroke="#8EEA36" stroke-width="3" stroke-linecap="round">
+    <path d="M10 82C18 69 22 55 22 39C22 20 39 8 69 6C71 36 61 62 35 74C25 79 17 81 10 82Z"/>
+    <path d="M10 86L57 24"/>
+  </g>
+</svg>
