@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "partial: 5 of 16",
+    "ownerConceptApproval": "partial: 6 of 16",
     "digitizerSelected": false,
     "machineFilesApproved": false,
     "physicalSewoutsApproved": false
@@ -28,6 +28,7 @@
   "ownerApprovedConcepts": [
     "approved-concepts/gp-01-circuit-crimson-approved.png",
     "approved-concepts/gp-02-deep-canopy-approved.png",
+    "approved-concepts/gp-03-midnight-stealth-approved.png",
     "approved-concepts/gp-06-volt-path-approved.png",
     "approved-concepts/gp-08-royal-current-approved.png",
     "approved-concepts/gp-11-day-path-approved.png"

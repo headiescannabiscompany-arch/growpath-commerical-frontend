@@ -7,7 +7,10 @@ GP-02,front,source-art/circuit-leaf.svg,46x45,flat tonal satin,"dark olive",Owne
 GP-02,right,source-art/gpai-monogram.svg,34x14,flat tonal satin,"dark olive",Small side mark from approved reference,digitizer_required
 GP-02,left,source-art/branching-path.svg,31x17,flat tonal satin,"dark olive",Keep open node centers,digitizer_required
 GP-02,back,source-art/growpathai-wordmark.svg,42x7,flat tonal satin,"dark olive",Single small wordmark centered above opening,digitizer_required
-GP-03,front,source-art/circuit-leaf.svg,56x54,flat tonal satin,"black; forest node accents",Low-sheen black with sparse green nodes,digitizer_required
+GP-03,front,source-art/circuit-leaf.svg,46x45,flat tonal satin,"low-sheen black; deep-forest node accents",Owner-approved restrained scale; node accents must remain sparse,digitizer_required
+GP-03,right,source-art/gpai-monogram.svg,34x14,flat tonal satin,"low-sheen black",Small side mark from approved reference,digitizer_required
+GP-03,left,source-art/branching-path.svg,31x17,flat tonal satin,"low-sheen black",Keep open node centers,digitizer_required
+GP-03,back,source-art/growpathai-wordmark.svg,42x7,flat tonal satin,"low-sheen black",Single small wordmark centered above opening,digitizer_required
 GP-04,front,source-art/growpathai-wordmark.svg plus source-art/circuit-leaf.svg,108x31,flat satin,"white; circuit lime; GrowPath blue",Convert lettering to curves and avoid center-seam damage,digitizer_required
 GP-05,front,source-art/growpathai-wordmark.svg,106x28,flat satin,"white; signal red",Original GrowPathAI treatment only; convert lettering to curves,digitizer_required
 GP-06,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,106x55,flat satin,"white; GrowPath blue; circuit lime",Owner-approved clean leaf and wordmark; no shield wings flames burst or decorative frame,digitizer_required
