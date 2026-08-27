@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "partial: 10 of 17",
+    "ownerConceptApproval": "partial: 11 of 17",
     "digitizerSelected": false,
     "machineFilesApproved": false,
     "physicalSewoutsApproved": false
@@ -18,7 +18,7 @@
     "wholesalePriceConfirmed": false,
     "liveVariantAvailabilityConfirmed": false,
     "customColorwaysPending": ["GP-06", "GP-08", "GP-11"],
-    "customModificationsPending": ["GP-17 rope attachment"]
+    "customModificationsPending": ["GP-09 factory rope removal", "GP-17 rope attachment"]
   },
   "conceptSheets": [
     "heritage-core-concept-sheet.png",
@@ -35,6 +35,7 @@
     "approved-concepts/gp-06-volt-path-approved.png",
     "approved-concepts/gp-07-glacier-contrast-approved.png",
     "approved-concepts/gp-08-royal-current-approved.png",
+    "approved-concepts/gp-09-sage-circuit-approved.png",
     "approved-concepts/gp-11-day-path-approved.png",
     "approved-concepts/gp-17-redline-circuit-rope-approved.png"
   ],

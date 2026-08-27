@@ -25,7 +25,7 @@ Please quote a pre-production sample for the selected GrowPathAI concepts on own
 BLVNK blanks. Start with one design from each construction family before digitizing all 17:
 
 1. GP-01 Circuit Crimson on BLV600 Maroon wool blend.
-2. GP-09 Sage Circuit Rope on BLV550 Sage/Olive nylon.
+2. GP-09 Sage Circuit on BLV550 Sage/Olive nylon, with factory rope removed cleanly.
 3. GP-13 Grow Together Cord on BLV551 Black/Black irregular-wale corduroy.
 4. GP-15 Blue Signal Cord on BLV603 Air Blue micro corduroy.
 
@@ -53,6 +53,8 @@ the shop can source BLVNK directly or requires owner-supplied blanks.
 - Can it produce both direct embroidery and woven/embroidered patches for GP-13/GP-14?
 - Can it securely install the GP-17 narrow black/red/white rope on a structured BLV600 without
   puckering or weakening the crown/brim junction, and provide photographed wear/wash proof?
+- Can it remove GP-09's factory 5 mm rope without leaving holes, residue, puckering or a weak
+  crown/brim junction, and provide photographed wear/wash proof of the altered blank?
 
 ## Selection rule
 

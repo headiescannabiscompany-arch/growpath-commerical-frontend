@@ -31,7 +31,11 @@ GP-08,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg 
 GP-08,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; GrowPath blue",Small side mark from approved reference,digitizer_required
 GP-08,left,source-art/branching-path.svg,31x17,flat satin,"GrowPath blue",Keep open node centers,digitizer_required
 GP-08,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"white; GrowPath blue",Single small wordmark centered above opening; no arch slogan,digitizer_required
-GP-09,front,source-art/circuit-leaf.svg,55x53,flat tonal satin,"sage/olive swatch",BLV550 nylon; do not stretch crown,digitizer_required
+GP-09,front,source-art/circuit-leaf.svg,46x45,flat tonal satin,"dark olive",Owner-approved emblem-only front; BLV550 nylon; do not stretch crown,digitizer_required
+GP-09,right,source-art/gpai-monogram.svg,34x14,flat tonal satin,"dark olive",Small side mark from approved reference,digitizer_required
+GP-09,left,source-art/branching-path.svg,31x17,flat tonal satin,"dark olive",Keep open node centers,digitizer_required
+GP-09,back,source-art/growpathai-wordmark.svg,42x7,flat tonal satin,"dark olive",Single small wordmark centered above opening,digitizer_required
+GP-09,blank modification,factory 5 mm rope removal,n/a,decorator-specific,"n/a",Remove rope cleanly without holes residue puckering or seam damage; durability proof required,decorator_confirmation_required
 GP-10,front,source-art/circuit-leaf.svg,55x53,flat satin,"antique gold; forest",Coordinate with factory gold rope,digitizer_required
 GP-11,front,source-art/growpathai-wordmark.svg plus source-art/sprouting-path.svg,108x38,flat satin,"dark forest; burgundy",Dark GrowPath burgundy AI and attached two-leaf path; convert lettering to curves,digitizer_required
 GP-11,right,source-art/gpai-monogram.svg,34x14,flat satin,"dark forest; burgundy",Small side mark from approved reference,digitizer_required

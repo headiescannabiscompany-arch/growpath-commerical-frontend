@@ -38,7 +38,7 @@ quality requirement.
 | GP-06 | Volt Path | custom BLV600-style matte-black crown / banana-yellow brim and button – Premium Wool; supplier confirmation required | black/yellow/neon contrast | circuit leaf above the GrowPathAI wordmark | owner approved 2026-08-27; premium custom-cost/retail tier; the stock heather-charcoal draft and rejected shield/burst treatment are retired |
 | GP-07 | Glacier Contrast | BLV600 White & Black – Premium Wool | clean monochrome contrast | restrained black circuit leaf only; small black GPAI side mark | owner approved 2026-08-27 on the real stock supplier blank; no front wordmark |
 | GP-08 | Royal Current | custom BLV600-style royal-blue crown / purple brim and button – Premium Wool; supplier confirmation required | blue/purple high-energy two-tone direction | green circuit leaf, white/blue GrowPathAI wordmark and attached purple sprouting path | owner approved 2026-08-27; premium custom-cost/retail tier; no shield, burst or decorative fronds |
-| GP-09 | Sage Circuit Rope | BLV550 Sage / Olive – Grandpa Nylon | approved light-sage tonal concept | tonal circuit leaf | uses the exact published sage/olive reference blank |
+| GP-09 | Sage Circuit | BLV550 Sage / Olive – Gramps Nylon with factory 5 mm rope removed; decorator confirmation required | light-sage tonal concept without rope | restrained dark-olive circuit leaf only; small tonal side marks | owner approved 2026-08-27; uses the real published sage/olive textile and silhouette but requires clean, durable rope removal |
 | GP-10 | Loden Signal | BLV550 Loden / Gold – Grandpa Nylon | premium green/gold direction | gold/forest circuit leaf | coordinates to factory rope color |
 | GP-11 | Day Path | custom BLV600-style cream/stone crown / burgundy brim, button and text-bearing rope – Premium Wool; supplier confirmation required | approved cream/burgundy day-hat direction | dark GrowPath/burgundy AI wordmark with attached burgundy sprouting path | owner approved 2026-08-27; premium custom-cost/retail tier; rope text requires manufacturer feasibility proof |
 | GP-12 | Rust Path Cord | BLV551 Rusty / Black – Irregular Wale Corduroy | orange tonal direction | rust/black tonal leaf | real supplier textile/colorway |
@@ -81,6 +81,8 @@ hat conflicts with a sheet, the individual file and the collection-matrix dispos
 `approved-concepts/gp-05-signal-classic-approved.png` supersedes the GP-05 panel in the contrast sheet.
 `approved-concepts/gp-07-glacier-contrast-approved.png` supersedes the GP-07 panel in the
 contrast sheet and controls its emblem-only black front treatment.
+`approved-concepts/gp-09-sage-circuit-approved.png` supersedes the GP-09 panel in the rope/cord
+sheet and controls its rope-free, emblem-only front treatment.
 `approved-concepts/gp-17-redline-circuit-rope-approved.png` is the controlling conversion of
 source design #6 and does not replace the separately approved GP-06 Volt Path.
 `approved-concepts/gp-06-volt-path-approved.png` supersedes the GP-06 panel in
@@ -95,6 +97,8 @@ revision traceability and are not approved designs.
    shipping and lead time. For GP-06, GP-08 and GP-11, obtain a written custom-color-blocking quote,
    tooling/setup cost, minimum, lead time and repeat-order terms; price them as premium hats.
    GP-11 also requires written confirmation of a durable, legible text-bearing rope method.
+   For GP-09, obtain written confirmation that the factory rope can be removed without visible
+   holes, residue, puckering or damage and that the altered crown-to-brim seam remains durable.
    For GP-17, obtain written confirmation that a narrow rope can be securely added to the BLV600
    without distorting the structured crown, plus installation cost and wash/wear durability.
 2. Select a local embroidery/decorating shop and approve its file ownership and revision terms.
