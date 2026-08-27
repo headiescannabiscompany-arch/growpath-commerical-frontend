@@ -72,7 +72,7 @@ conversion or an explicit owner rejection/duplicate disposition.
 
 | Owner source | Current concept/evidence | Coverage status |
 |---|---|---|
-| `GYSG2238.PNG` | its purple/blue script details informed earlier review, but no one-to-one final conversion is retained | open |
+| `GYSG2238.PNG` | GP-19 Night Bloom Path | approved |
 | `CNKY2160.PNG` | GP-18 Pale Sage Gramps; GP-09 remains a separate darker olive-treatment variant | approved |
 | `HZTB1071.PNG` | GP-11 Day Path | approved |
 | `ODPT8770.PNG` | GP-08 Royal Current | approved |
@@ -94,7 +94,8 @@ conversion or an explicit owner rejection/duplicate disposition.
 | `PWVH4651.PNG` | GP-04 Night Current | approved |
 | `FDGN4955.PNG` | no one-to-one final conversion retained | open |
 
-Current source coverage: **15 approved / 21 registered; 6 open**. GP-18 closes the pale
+Current source coverage: **16 approved / 21 registered; 5 open**. GP-18 closes the pale
 light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550 Sage/Olive Gramps blank
-with its factory rope retained. GP-09 and GP-16 remain approved extra variants and do not add
-another source-coverage count.
+with its factory rope retained. GP-19 closes `GYSG2238.PNG` with its black/purple color block,
+purple rope, original script-path treatment and green rear leaf retained. GP-09 and GP-16 remain
+approved extra variants and do not add another source-coverage count.

@@ -64,3 +64,8 @@ GP-18,front,source-art/circuit-leaf.svg,46x45,flat tonal satin,"pale tonal sage"
 GP-18,right,source-art/gpai-monogram.svg,34x14,flat tonal satin,"pale tonal sage",Small side mark at approved reference scale,digitizer_required
 GP-18,left,source-art/branching-path.svg,31x17,flat tonal satin,"pale tonal sage",Keep open node centers and low-contrast tonal treatment,digitizer_required
 GP-18,back,source-art/growpathai-wordmark.svg,42x7,flat tonal satin,"pale tonal sage",Single small wordmark centered above opening,digitizer_required
+GP-19,front,source-art/growpathai-script.svg plus source-art/sprouting-path.svg,104x33,flat satin,"white; GrowPath blue; electric purple",Preserve owner-approved script scale and attached upward sprouting path; no separate front leaf or invented ornament,digitizer_required
+GP-19,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; GrowPath blue",Small owner-approved side mark,digitizer_required
+GP-19,left,source-art/branching-path.svg,31x17,flat satin,"electric blue",Keep open node centers,digitizer_required
+GP-19,back,source-art/circuit-leaf.svg,24x24,flat satin,"neon green",Small rear leaf centered above opening; do not replace with text,digitizer_required
+GP-19,blank modification,custom electric-purple brim/button plus narrow purple rope,n/a,manufacturer-specific,"electric purple",Custom color-blocked BLV600-style blank and rope attachment require repeatability and durability proof,manufacturer_confirmation_required

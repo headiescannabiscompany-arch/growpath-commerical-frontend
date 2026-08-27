@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "17 approved concept images; source coverage 15 of 21",
+    "ownerConceptApproval": "18 approved concept images; source coverage 16 of 21",
     "allOwnerSourcesDispositioned": false,
     "digitizerSelected": false,
     "machineFilesApproved": false,
@@ -18,8 +18,8 @@
     "role": "candidate blank distributor",
     "wholesalePriceConfirmed": false,
     "liveVariantAvailabilityConfirmed": false,
-    "customColorwaysPending": ["GP-06", "GP-08", "GP-11", "GP-12", "GP-14"],
-    "customModificationsPending": ["GP-09 factory rope removal", "GP-13 rasta brim piping and bordered patch", "GP-17 rope attachment"]
+    "customColorwaysPending": ["GP-06", "GP-08", "GP-11", "GP-12", "GP-14", "GP-19"],
+    "customModificationsPending": ["GP-09 factory rope removal", "GP-13 rasta brim piping and bordered patch", "GP-17 rope attachment", "GP-19 purple rope attachment"]
   },
   "conceptSheets": [
     "heritage-core-concept-sheet.png",
@@ -44,7 +44,8 @@
     "approved-concepts/gp-15-royal-signal-approved.png",
     "approved-concepts/gp-16-night-script-cord-approved.png",
     "approved-concepts/gp-17-redline-circuit-rope-approved.png",
-    "approved-concepts/gp-18-pale-sage-gramps-approved.png"
+    "approved-concepts/gp-18-pale-sage-gramps-approved.png",
+    "approved-concepts/gp-19-night-bloom-path-approved.png"
   ],
   "sourceArt": [
     "source-art/circuit-leaf.svg",
@@ -67,8 +68,8 @@
   },
   "legacyConceptSlotCount": 16,
   "registeredOwnerSourceCount": 21,
-  "approvedOwnerSourceCoverageCount": 15,
-  "openOwnerSourceCoverageCount": 6,
+  "approvedOwnerSourceCoverageCount": 16,
+  "openOwnerSourceCoverageCount": 5,
   "reviewCandidateCount": 0,
   "thirdPartyMarksIncluded": false,
   "tripleBagGeneticsProductCreated": false

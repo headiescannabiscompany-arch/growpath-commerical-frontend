@@ -2,7 +2,7 @@
 
 Date locked for concept review: 2026-08-27
 
-Status: fifteen owner-source conversions are visually approved, six registered owner-source
+Status: sixteen owner-source conversions are visually approved, five registered owner-source
 directions remain open, and GP-09 plus GP-16 are owner-approved extra variants rather than new
 source coverage. The older sixteen-slot package is not the completion boundary; all 21 rows
 in `OWNER_SOURCE_REGISTER.md` require an explicit disposition. GP-10 Loden Signal was retired before approval because it
@@ -52,6 +52,7 @@ quality requirement.
 | GP-16 | Night Script Cord | BLV551 Dark Navy / Red – Irregular Wale Corduroy | additional material variant of the already-covered `OBJU0610.PNG` navy/red/white script direction | original signal-red GrowPathAI script with restrained white outline; small white/red GPAI side mark; factory red rope retained | owner approved 2026-08-27 as an extra material variant; similar to GP-05 and adds no owner-source coverage; no Wizards/team/seed-brand imitation |
 | GP-17 | Redline Circuit Rope | BLV600 Black – Premium Wool with custom-added narrow black/red/white rope; decorator confirmation required | source design #6 black/red/white athletic energy | emblem-only white circuit leaf with signal-red internal paths and nodes; small red/white GPAI side mark | owner approved 2026-08-27; no team mark, wings or front wordmark; rope attachment is a premium custom modification requiring durability proof |
 | GP-18 | Pale Sage Gramps | BLV550 Sage / Olive – Gramps Nylon with the factory dark-olive 5 mm rope retained | owner source `CNKY2160.PNG`: pale light-green-on-light-green tonal direction | unchanged circuit-leaf emblem in restrained pale tonal sage; small tonal GPAI and branching-path side marks; small tonal rear wordmark | owner approved 2026-08-27 on the real stock supplier blank; no rope removal, front wordmark, patch, frame or invented emblem; exact thread match and sew-out remain production gates |
+| GP-19 | Night Bloom Path | custom BLV600-style matte-black crown / electric-purple brim and button – Premium Wool, with a narrow purple rope added; supplier/decorator confirmation required | owner source `GYSG2238.PNG`: black/purple/blue script-and-path direction | original white GrowPathAI script with blue `AI`, attached purple sprouting underline, small white/blue GPAI, blue branching path and small green rear circuit leaf | owner approved 2026-08-27; no invented emblem or removed rear leaf; custom color blocking, rope attachment, digitizing and exact-blank sew-out remain production gates |
 
 ## Shared placement contract
 
