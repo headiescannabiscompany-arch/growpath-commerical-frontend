@@ -327,9 +327,9 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
 
 Owner correction, 2026-08-27: the older 16-slot concept package is not the visual-completion
 boundary. The owner registered 21 source files and expects every source to receive an explicit
-one-to-one GrowPathAI conversion or explicit rejection/duplicate disposition. Sixteen sources
-currently have approved conversions; `GEOT0660.PNG`, `PUMD5290.PNG`, `MCXG5769.PNG`,
-`KVQV2209.PNG`, and `FDGN4955.PNG` remain open. GP-16 is an owner-approved
+one-to-one GrowPathAI conversion or explicit rejection/duplicate disposition. Seventeen sources
+currently have approved conversions; `PUMD5290.PNG`, `MCXG5769.PNG`, `KVQV2209.PNG`, and
+`FDGN4955.PNG` remain open. GP-16 is an owner-approved
 corduroy material variant of the already-covered `OBJU0610.PNG` direction, but it does not
 close another source and must not be described as 16-of-16 completion.
 
@@ -400,7 +400,7 @@ close another source and must not be described as 16-of-16 completion.
       active mapped concepts and four historical multi-view review sheets now exist. Fifteen
       owner-source conversions are approved out of the 21-source roster; the legacy 16-slot
       package is not the completion count. GP-07 is locked to the real BLV600 White & Black blank with a black
-      circuit-leaf-only front, black side marks and a small black rear wordmark. Sixteen
+      circuit-leaf-only front, black side marks and a small black rear wordmark. Seventeen
       one-to-one owner-source conversions are approved. GP-09 is retained separately as a real
       BLV550 Sage/Olive nylon supplier variant with the factory rope removed and dark-olive
       embroidery; GP-18 separately closes the pale light-green-on-light-green `CNKY2160.PNG`

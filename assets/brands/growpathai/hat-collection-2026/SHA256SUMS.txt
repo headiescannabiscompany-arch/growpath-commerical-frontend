@@ -28,3 +28,4 @@ f1eac811a42b0cdef5b8824b3f2d8907de9cc5cbf157b8ab2506b4cda4324869  approved-conce
 d8e2d79c79ffe53f4db9308db8d0cb9b027394fb55b75445ebfe09004f113213  approved-concepts/gp-17-redline-circuit-rope-approved.png
 673ee816a61efc782996fa6ec127aa1de365b00add8850d39109b67caa639a89  approved-concepts/gp-18-pale-sage-gramps-approved.png
 51e946f1e478aa144f7a2727e04bc816d26dafdb7af9b4268e6edfeda1a79e86  approved-concepts/gp-19-night-bloom-path-approved.png
+3cdb0b3c9dd901375f3f169a21290319167529fb7d5fe2802f45c3e113e5321f  approved-concepts/gp-20-mono-signal-approved.png

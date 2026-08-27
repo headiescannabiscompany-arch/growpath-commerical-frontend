@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "18 approved concept images; source coverage 16 of 21",
+    "ownerConceptApproval": "19 approved concept images; source coverage 17 of 21",
     "allOwnerSourcesDispositioned": false,
     "digitizerSelected": false,
     "machineFilesApproved": false,
@@ -45,7 +45,8 @@
     "approved-concepts/gp-16-night-script-cord-approved.png",
     "approved-concepts/gp-17-redline-circuit-rope-approved.png",
     "approved-concepts/gp-18-pale-sage-gramps-approved.png",
-    "approved-concepts/gp-19-night-bloom-path-approved.png"
+    "approved-concepts/gp-19-night-bloom-path-approved.png",
+    "approved-concepts/gp-20-mono-signal-approved.png"
   ],
   "sourceArt": [
     "source-art/circuit-leaf.svg",
@@ -68,8 +69,8 @@
   },
   "legacyConceptSlotCount": 16,
   "registeredOwnerSourceCount": 21,
-  "approvedOwnerSourceCoverageCount": 16,
-  "openOwnerSourceCoverageCount": 5,
+  "approvedOwnerSourceCoverageCount": 17,
+  "openOwnerSourceCoverageCount": 4,
   "reviewCandidateCount": 0,
   "thirdPartyMarksIncluded": false,
   "tripleBagGeneticsProductCreated": false

@@ -69,3 +69,7 @@ GP-19,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; GrowPath blue"
 GP-19,left,source-art/branching-path.svg,31x17,flat satin,"electric blue",Keep open node centers,digitizer_required
 GP-19,back,source-art/circuit-leaf.svg,24x24,flat satin,"neon green",Small rear leaf centered above opening; do not replace with text,digitizer_required
 GP-19,blank modification,custom electric-purple brim/button plus narrow purple rope,n/a,manufacturer-specific,"electric purple",Custom color-blocked BLV600-style blank and rope attachment require repeatability and durability proof,manufacturer_confirmation_required
+GP-20,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,76x57,flat satin,"white",Established enclosed circuit leaf above restrained uppercase wordmark; rejected tree-emblem draft prohibited,digitizer_required
+GP-20,right,source-art/gpai-monogram.svg,34x14,flat satin,"white",Small side mark at owner-approved scale,digitizer_required
+GP-20,left,source-art/branching-path.svg,31x17,flat satin,"white",Use established branching-path geometry with open node centers,digitizer_required
+GP-20,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"white",Single small wordmark centered above opening,digitizer_required

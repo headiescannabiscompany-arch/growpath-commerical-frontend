@@ -78,7 +78,7 @@ conversion or an explicit owner rejection/duplicate disposition.
 | `ODPT8770.PNG` | GP-08 Royal Current | approved |
 | `UIAC0015.PNG` | GP-06 Volt Path | approved |
 | `RMUS4022.PNG` | GP-12 Orange Tonal Circuit | approved |
-| `GEOT0660.PNG` | no one-to-one final conversion retained | open |
+| `GEOT0660.PNG` | GP-20 Mono Signal | approved |
 | `JQLD5959.PNG` | GP-17 Redline Circuit Rope | approved |
 | `OBJU0610.PNG` | GP-05 Signal Classic; owner-approved GP-16 is an extra corduroy material variant of this already covered direction | approved once for source coverage; GP-16 does not add source coverage |
 | `LTBM9546.PNG` | GP-03 Midnight Stealth | approved |
@@ -94,8 +94,9 @@ conversion or an explicit owner rejection/duplicate disposition.
 | `PWVH4651.PNG` | GP-04 Night Current | approved |
 | `FDGN4955.PNG` | no one-to-one final conversion retained | open |
 
-Current source coverage: **16 approved / 21 registered; 5 open**. GP-18 closes the pale
+Current source coverage: **17 approved / 21 registered; 4 open**. GP-18 closes the pale
 light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550 Sage/Olive Gramps blank
 with its factory rope retained. GP-19 closes `GYSG2238.PNG` with its black/purple color block,
 purple rope, original script-path treatment and green rear leaf retained. GP-09 and GP-16 remain
-approved extra variants and do not add another source-coverage count.
+approved extra variants and do not add another source-coverage count. GP-20 closes
+`GEOT0660.PNG` on stock BLV600 Black with established white GrowPathAI marks only.

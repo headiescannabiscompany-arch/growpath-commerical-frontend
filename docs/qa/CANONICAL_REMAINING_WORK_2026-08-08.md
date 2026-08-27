@@ -45,12 +45,14 @@ The isolated Roberto review gate remains pending under
 execution is now active without fabricating reviewer findings: eighteen GrowPathAI-only designs
 are mapped to real published BLVNK models/textiles/colorways in
 `assets/brands/growpathai/hat-collection-2026/`, with four multi-view sheets, reusable SVG art,
-a stitch sequence, digitizer handoff and machine-file register. R-05 is not complete: sixteen
-of 21 registered owner sources have approved one-to-one conversions and five remain open.
+a stitch sequence, digitizer handoff and machine-file register. R-05 is not complete: seventeen
+of 21 registered owner sources have approved one-to-one conversions and four remain open.
 GP-18 closes the pale light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550
 Sage/Olive blank with its factory rope retained. GP-09 remains a darker-treatment variant, and
 GP-19 closes `GYSG2238.PNG` while retaining its black/purple color block, purple rope, script-path
-treatment and green rear leaf. The owner-approved GP-16 corduroy image is an extra material variant of an already-covered source,
+treatment and green rear leaf. GP-20 closes `GEOT0660.PNG` on stock BLV600 Black with the
+established white circuit leaf and GrowPathAI marks; its rejected tree-emblem draft is excluded.
+The owner-approved GP-16 corduroy image is an extra material variant of an already-covered source,
 not the last owner-source disposition and not evidence that visual work is complete.
 Live
 wholesale availability/cost, decorator selection, returned `DST` plus editable source, exact-
