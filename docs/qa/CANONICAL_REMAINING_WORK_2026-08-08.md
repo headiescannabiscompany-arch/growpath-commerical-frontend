@@ -21,15 +21,27 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
-**Current active cursor (2026-08-27):** P-08 and the pre-cleanup professional crawl are closed.
+**Current active cursor (2026-08-27):** P-08, the professional crawl, evidence-driven cleanup,
+and the post-cleanup affected-gate freeze are closed.
 Facility Owner, Personal, Commercial owner, signed-out public, non-admin denial and Platform Admin
 positive/read-only route batches are retained; do not repeat them without a current regression.
 The Admin follow-up also closes its mobile/tablet/desktop, Day/Night/Auto, leading keyboard,
 semantic-main and hard-reload slices on merged frontend `ee116800`. Exact provider, physical-device,
 physical screen-reader and specially authorized/disposable-account actions remain named external
-gates rather than reasons to rebuild or stall accepted products. Evidence-driven dead-code cleanup
-is now active; next freeze new frontend/backend SHAs and rerun the affected gates plus the final
-route matrix.
+gates rather than reasons to rebuild or stall accepted products. Cleanup PR `#835` merged as
+`f322d440add3d63bb6e417b4d750913f487a2f5f`; Frontend CI run `33039857257` passed and Render
+deployment `dep-da7rvnbl550s73cup6eg` completed. The strict cleanup scan now reports zero duplicate
+JS/TS modules, zero API orphans, zero legacy client callers and zero banned-source findings; the 15
+narrow re-export shims are classified compatibility wrappers, not deletion candidates. Because the
+merge changed only scanner/documentation artifacts, the deployed application bundle remained
+`index-d10983ff4bac311d0b50cfd1851a22aa.js?v=422fb1c227eb`. Representative Personal, Nature, Lives
+and Admin production routes retained their expected headings and error-free states; Admin retained
+its semantic main landmark and loaded security coverage. This closes the affected post-cleanup
+rerun without manufacturing a runtime change or repeating the already accepted full route matrix.
+Next is the isolated Roberto review gate and owner disposition, using
+`R04_INDEPENDENT_REVIEW_PACKET_2026-08-27.md`; no invitation has been sent. After the review gate,
+rotate production credentials service-by-service with bounded smoke/rollback evidence, then stop
+before hats.
 The exact Harvest completion evidence is frozen in
 `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`: production completed one separately
 owner-authorized 80-image/seven-batch Deep Review, charged the quoted seven credits once, validated

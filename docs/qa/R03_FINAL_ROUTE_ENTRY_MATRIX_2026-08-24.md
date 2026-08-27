@@ -81,6 +81,17 @@ deployed application candidate named below.
 - The repository test runner also discovered stale nested checkout folders as duplicate Jest
   projects. The canonical frontend suite is now rooted only in `src` and `tests`, so retained local
   checkouts cannot multiply or contaminate a verification run.
+- Evidence-driven cleanup then classified the two apparent JS/TS twins as intentional narrow
+  compatibility wrappers after correcting the scanner's CRLF/leading-comment handling. Strict
+  scanning on PR `#835` reports zero duplicate modules, API orphans, legacy client callers or
+  banned-source findings and 15 compatibility wrappers. Frontend CI run `33039857257` passed;
+  merge `f322d440add3d63bb6e417b4d750913f487a2f5f` deployed through Render as
+  `dep-da7rvnbl550s73cup6eg`. This scanner/documentation-only merge retained the exact application
+  bundle `index-d10983ff4bac311d0b50cfd1851a22aa.js?v=422fb1c227eb`. Representative Personal, Nature,
+  Lives and Admin production routes remained healthy, and Admin retained its semantic main and
+  security coverage. The runtime-identical evidence closes the affected post-cleanup rerun without
+  repeating accepted route batches or pretending that no-runtime-change cleanup created new
+  product evidence.
 - The in-app Browser route/DOM evidence is retained. Screenshot capture was unavailable during
   the earlier route slice, so no screenshot or full visual-viewport acceptance is claimed from it.
   The later Admin sign-in used the owner's Chrome saved credential with owner-completed Windows
