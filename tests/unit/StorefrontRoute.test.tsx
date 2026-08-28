@@ -64,7 +64,8 @@ jest.mock("@/api/apiRequest", () => ({
 }));
 
 jest.mock("@/utils/photoUploads", () => ({
-  persistImageUri: (...args: any[]) => mockPersistImageUri(...args)
+  persistImageUri: (...args: any[]) => mockPersistImageUri(...args),
+  resolveImageUri: (uri: string | null | undefined) => String(uri || "")
 }));
 
 jest.mock("@/utils/growPhotoAttachment", () => ({
