@@ -2,13 +2,14 @@
 
 Date locked for concept review: 2026-08-27
 
-Status: twenty owner-source conversions are visually approved, one registered owner-source
-directions remain open, and GP-09 plus GP-16 are owner-approved extra variants rather than new
-source coverage. The older sixteen-slot package is not the completion boundary; all 21 rows
-in `OWNER_SOURCE_REGISTER.md` require an explicit disposition. GP-10 Loden Signal was retired before approval because it
+Status: all 21 registered owner sources now have an explicit owner-approved disposition:
+twenty source-faithful conversions plus GP-24, the owner-directed day-theme replacement that
+supersedes the remaining `FDGN4955.PNG` tonal-script direction. GP-09 and GP-16 are approved
+extra variants rather than new source coverage. The older sixteen-slot package is not the
+completion boundary. GP-10 Loden Signal was retired before approval because it
 was introduced from a supplier/catalog direction rather than an owner-selected design source,
 and its emblem treatment changed the source design instead of performing a brand-only swap.
-GP-06, GP-08, GP-11, GP-12, GP-13 and GP-14 are owner-approved custom color, textile, trim or color-blocking directions rather
+GP-06, GP-08, GP-11, GP-12, GP-13, GP-14 and GP-24 are owner-approved custom color, textile, trim or color-blocking directions rather
 than claimed factory colorways. Concept art is not manufactured inventory. Custom feasibility, the local
 decorator, wholesale cost, availability at order time, digitized machine files and physical
 sew-outs remain open.
@@ -58,14 +59,16 @@ quality requirement.
 | GP-21 | Heritage Merlot | custom BLV600-style warm-cream crown / burgundy brim, button and snap – Premium Wool; supplier confirmation required | owner source `PUMD5290.PNG`: cream/burgundy structured flat-brim direction with burgundy/gold raised embroidery | established circuit leaf in burgundy with antique-gold nodes/veins above the burgundy GrowPath/gold AI wordmark; small gold GPAI, burgundy/gold branching path and small burgundy rear wordmark | owner approved 2026-08-27; no rope, triangle, bag, number, genetics text, shield, sticker or manufacturer mark; custom color blocking, raised-embroidery limits, digitizing and exact-blank sew-out remain production gates |
 | GP-22 | Circuit Night A-Frame | BLV556 Surplus Black – Cotton Twill | owner source `MCXG5769.PNG`: black cotton-twill pinch-front technology direction | established neon-lime circuit leaf above white GrowPath/blue AI wordmark; small white/blue GPAI, blue branching path and very small white/blue rear wordmark | owner approved 2026-08-27 on the real stock supplier blank; BLVNK documents the crown as structured, so that fact controls over the source sheet's unstructured label; no rope, arch slogan, sticker or manufacturer mark; exact thread match and sew-out remain production gates |
 | GP-23 | Blackout Path Lockup | BLV600 Heritage Black – Premium Wool | owner source `KVQV2209.PNG`: black tonal structured flat-brim direction with a centered emblem-plus-wordmark lockup | established circuit leaf above restrained GrowPathAI wordmark; small GPAI, branching path and rear wordmark, all in low-sheen charcoal-black tonal thread | owner approved 2026-08-27 on the real stock supplier blank; distinct from GP-03's emblem-only front; no bag, number, genetics text, triangle, rope, sticker or manufacturer mark; exact tonal thread match and sew-out remain production gates |
+| GP-24 | Circuit Leaf Day A-Frame | custom BLV600-style cream crown / forest-green flat brim and top button – Premium Wool; supplier confirmation required | owner-approved `NNNI1535.PNG` GrowPathAI day-theme layout, explicitly replacing and closing the remaining `FDGN4955.PNG` tonal-script direction | green circuit leaf above the green GrowPathAI wordmark; GPAI and branching-path side marks; rear arch text; no rope | owner approved 2026-08-27; exact image is retained as the controlling visual; premium custom-cost/retail tier; supplier color-block feasibility, rear-text legibility, digitizing and exact-blank sew-out remain production gates |
 
 ## Shared placement contract
 
 - Front art stays within the envelope in `EMBROIDERY_DIGITIZER_HANDOFF.md` and avoids
   crowding the center seam or rope.
 - `GPAI` is the right-side mark; the branching-path mark is the left-side mark.
-- The rear is a single small `GrowPathAI` wordmark. Large rear slogans from early concepts
-  are retired for this collection.
+- The rear is normally a single small `GrowPathAI` wordmark. GP-24 is the explicit exception:
+  its owner-approved day-theme source retains the small rear arch text shown in the controlling
+  visual, subject to physical sew-out legibility.
 - Flat embroidery is default. Only GP-01 may test shallow raised detail, and only on the
   outer leaf border.
 - GP-14's prism grid belongs to the custom all-over textile, not the embroidery file. The
@@ -85,8 +88,8 @@ quality requirement.
 - `heritage-contrast-concept-sheet.png`: GP-05 through GP-08.
 - `gramps-rope-cord-concept-sheet.png`: GP-09 through GP-12.
 - `patch-script-concept-sheet.png`: GP-13 through GP-16.
-- GP-17 is retained as its individual owner-approved image because it was added after the four
-  aggregate sheets were locked.
+- GP-17 through GP-24 are retained as individual owner-approved images because they were added
+  after the four aggregate sheets were locked.
 
 The aggregate concept sheets are historical review aids. When an individual owner-approved
 hat conflicts with a sheet, the individual file and the collection-matrix disposition control.
@@ -129,7 +132,7 @@ revision traceability and are not approved designs.
 ## Open production gates
 
 1. Confirm wholesale account access, current color availability, minimums, sample/blank costs,
-   shipping and lead time. For GP-06, GP-08, GP-11, GP-12, GP-13 and GP-14, obtain a written custom-color, textile, trim or color-blocking quote,
+   shipping and lead time. For GP-06, GP-08, GP-11, GP-12, GP-13, GP-14 and GP-24, obtain a written custom-color, textile, trim or color-blocking quote,
    tooling/setup cost, minimum, lead time and repeat-order terms; price them as premium hats.
    GP-11 also requires written confirmation of a durable, legible text-bearing rope method.
    For GP-09, obtain written confirmation that the factory rope can be removed without visible

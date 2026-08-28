@@ -87,14 +87,16 @@ conversion or an explicit owner rejection/duplicate disposition.
 | `MCXG5769.PNG` | GP-22 Circuit Night A-Frame | approved |
 | `KZJV0657.PNG` | GP-15 Royal Signal | approved |
 | `KVQV2209.PNG` | GP-23 Blackout Path Lockup | approved |
-| `NNNI1535.PNG` | GP-07 Glacier Contrast | approved; the later owner-approved white/black treatment controls |
+| `NNNI1535.PNG` | GP-07 Glacier Contrast; GP-24 Circuit Leaf Day A-Frame reuses the original day-theme layout | approved; GP-07 retains the later white/black treatment, while GP-24 retains the original cream/forest design as the owner's replacement for `FDGN4955.PNG` |
 | `FTRU8917.PNG` | GP-02 Deep Canopy | approved |
 | `MTSN8249.PNG` | GP-13 Rasta Circuit Patch | approved |
 | `LANR8844.PNG` | GP-14 Prism Terrain | approved |
 | `PWVH4651.PNG` | GP-04 Night Current | approved |
-| `FDGN4955.PNG` | no one-to-one final conversion retained | open |
+| `FDGN4955.PNG` | GP-24 Circuit Leaf Day A-Frame | owner-approved supersession; the owner replaced the tonal-script direction with the established `NNNI1535.PNG` day-theme layout |
 
-Current source coverage: **20 approved / 21 registered; 1 open**. GP-18 closes the pale
+Current source disposition: **21 complete / 21 registered; 0 open**. Twenty rows close through
+source-faithful GrowPathAI conversions; GP-24 closes the final `FDGN4955.PNG` row through the
+owner's explicit supersession with the established `NNNI1535.PNG` day-theme layout. GP-18 closes the pale
 light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550 Sage/Olive Gramps blank
 with its factory rope retained. GP-19 closes `GYSG2238.PNG` with its black/purple color block,
 purple rope, original script-path treatment and green rear leaf retained. GP-09 and GP-16 remain
@@ -108,3 +110,8 @@ blank while preserving its neon-lime circuit leaf and white/blue GrowPathAI trea
 supplier's structured crown supersedes the source sheet's unsupported unstructured claim.
 GP-23 closes `KVQV2209.PNG` on stock BLV600 Heritage Black with the source-faithful
 emblem-plus-wordmark lockup and all established marks rendered in low-sheen tonal black.
+GP-24 closes `FDGN4955.PNG` as an approved supersession rather than a claimed one-to-one
+conversion: cream crown, forest-green brim/button, circuit leaf above the GrowPathAI wordmark,
+GPAI and branching-path side marks, rear arch text and no rope. The controlling image is the
+owner's existing `NNNI1535.PNG`; the exact custom two-tone blank and rear-text sew-out remain
+production gates.

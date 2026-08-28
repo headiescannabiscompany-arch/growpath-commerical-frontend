@@ -42,11 +42,13 @@ rerun without manufacturing a runtime change or repeating the already accepted f
 The isolated Roberto review gate remains pending under
 `R04_INDEPENDENT_REVIEW_PACKET_2026-08-27.md`; the owner-approved invitation was sent from
 `support@growpathai.com` on 2026-08-27. The owner then explicitly resumed R-05. Hat concept
-execution is now active without fabricating reviewer findings: twenty-two GrowPathAI-only approved concept images
+execution is now active without fabricating reviewer findings: twenty-three GrowPathAI-only approved concept images
 are mapped to real published BLVNK models/textiles/colorways in
 `assets/brands/growpathai/hat-collection-2026/`, with four multi-view sheets, reusable SVG art,
-a stitch sequence, digitizer handoff and machine-file register. R-05 is not complete: twenty
-of 21 registered owner sources have approved one-to-one conversions and one remains open.
+a stitch sequence, digitizer handoff and machine-file register. All 21 registered owner-source
+rows now have an explicit approved disposition: twenty source-faithful conversions plus GP-24,
+the owner's approved replacement of the remaining `FDGN4955.PNG` tonal-script direction with
+the established cream/forest `NNNI1535.PNG` GrowPathAI day-theme layout.
 GP-18 closes the pale light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550
 Sage/Olive blank with its factory rope retained. GP-09 remains a darker-treatment variant, and
 GP-19 closes `GYSG2238.PNG` while retaining its black/purple color block, purple rope, script-path
@@ -59,6 +61,9 @@ neon-lime circuit leaf and white/blue technology lockup while truthfully using B
 documented structured pinch-front construction.
 GP-23 closes `KVQV2209.PNG` on stock BLV600 Heritage Black with the source-faithful
 front emblem-plus-wordmark lockup and low-sheen tonal-black decoration throughout.
+GP-24 closes `FDGN4955.PNG` by explicit owner supersession with a custom cream crown,
+forest-green brim/button, circuit-leaf/wordmark front, GPAI and branching-path side marks,
+rear arch text and no rope; supplier color-block feasibility and exact-blank sew-out remain gates.
 The owner-approved GP-16 corduroy image is an extra material variant of an already-covered source,
 not the last owner-source disposition and not evidence that visual work is complete.
 Live
@@ -82,7 +87,7 @@ result. Do not reopen, resend or rewrite either operation. The owner retained th
 result and private draft for review; optional permanent deletion, public publication and Facebook
 sharing remain later explicit owner actions rather than incomplete P-08 implementation.
 
-Proceed from the active R-05 package through all 21 registered owner-source dispositions,
+Proceed from the active R-05 package with the 21 registered owner-source dispositions frozen,
 exact supplier/decorator
 facts, returned embroidery files and physical sample approval, then the zero-stock research
 presentation and any owner-priced trials. Roberto findings, if returned, remain separately

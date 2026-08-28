@@ -29,12 +29,13 @@ digitize.
 | GP-21 Heritage Merlot | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom cream/burgundy blank, raised burgundy/gold digitizing, DST/native file and exact-blank sew-out pending |
 | GP-22 Circuit Night A-Frame | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; neon-lime/white/blue thread match, DST/native file and exact-blank BLV556 Black sew-out pending |
 | GP-23 Blackout Path Lockup | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; low-sheen tonal-black thread match, DST/native file and exact-blank BLV600 Black sew-out pending |
+| GP-24 Circuit Leaf Day A-Frame | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom cream/forest blank, green thread match, rear-arch legibility, DST/native file and exact-blank sew-out pending |
 
 When files arrive, add their exact filename, SHA-256, dimensions, stitch count, color count,
 machine/native format, sample photo, disposition and superseding revision. A file is not
 production-approved merely because it opens in embroidery software.
 
 Concept approval and production approval are separate gates. GP-01 through GP-09, plus GP-11,
-GP-12 through GP-23 approved visuals
+GP-12 through GP-24 approved visuals
 are recorded in `approved-concepts/` with SHA-256 values in `SHA256SUMS.txt`. They do not claim
 that a custom blank, machine file or physical sample already exists.

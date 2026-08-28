@@ -86,3 +86,8 @@ GP-23,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,
 GP-23,right,source-art/gpai-monogram.svg,34x14,flat low-sheen satin,"charcoal black tonal",Small side mark at owner-approved scale,digitizer_required
 GP-23,left,source-art/branching-path.svg,31x17,flat low-sheen satin,"charcoal black tonal",Use established branching-path geometry with open node centers,digitizer_required
 GP-23,back,source-art/growpathai-wordmark.svg,42x7,flat low-sheen satin,"charcoal black tonal",Single very small wordmark centered above opening,digitizer_required
+GP-24,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,78x58,flat satin,"forest green; leaf green",Established circuit leaf above GrowPathAI wordmark at the controlling day-theme scale,digitizer_required
+GP-24,right,source-art/gpai-monogram.svg,34x14,flat satin,"forest green; leaf green",Small side mark at owner-approved scale,digitizer_required
+GP-24,left,source-art/branching-path.svg,31x17,flat satin,"forest green; leaf green",Use established branching-path geometry with open node centers,digitizer_required
+GP-24,back,"custom arched text: GROWS • SOIL • TOOLS • COURSES • COMMUNITY",66x18,flat satin,"forest green",Retain the small two-line arch shown in the controlling visual only if the exact-blank sew-out remains legible,digitizer_required
+GP-24,blank,custom BLV600-style cream crown with forest-green flat brim and top button,n/a,manufacturer-specific,"cream; forest green",No rope; custom color blocking and exact supplier feasibility require written confirmation,manufacturer_confirmation_required

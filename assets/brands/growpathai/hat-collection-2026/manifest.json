@@ -7,8 +7,8 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "22 approved concept images; source coverage 20 of 21",
-    "allOwnerSourcesDispositioned": false,
+    "ownerConceptApproval": "23 approved concept images; all 21 registered owner sources dispositioned",
+    "allOwnerSourcesDispositioned": true,
     "digitizerSelected": false,
     "machineFilesApproved": false,
     "physicalSewoutsApproved": false
@@ -18,7 +18,7 @@
     "role": "candidate blank distributor",
     "wholesalePriceConfirmed": false,
     "liveVariantAvailabilityConfirmed": false,
-    "customColorwaysPending": ["GP-06", "GP-08", "GP-11", "GP-12", "GP-14", "GP-19", "GP-21"],
+    "customColorwaysPending": ["GP-06", "GP-08", "GP-11", "GP-12", "GP-14", "GP-19", "GP-21", "GP-24"],
     "customModificationsPending": ["GP-09 factory rope removal", "GP-13 rasta brim piping and bordered patch", "GP-17 rope attachment", "GP-19 purple rope attachment"]
   },
   "conceptSheets": [
@@ -49,7 +49,8 @@
     "approved-concepts/gp-20-mono-signal-approved.png",
     "approved-concepts/gp-21-heritage-merlot-approved.png",
     "approved-concepts/gp-22-circuit-night-a-frame-approved.png",
-    "approved-concepts/gp-23-blackout-path-lockup-approved.png"
+    "approved-concepts/gp-23-blackout-path-lockup-approved.png",
+    "approved-concepts/gp-24-circuit-leaf-day-a-frame-approved.png"
   ],
   "sourceArt": [
     "source-art/circuit-leaf.svg",
@@ -72,8 +73,8 @@
   },
   "legacyConceptSlotCount": 16,
   "registeredOwnerSourceCount": 21,
-  "approvedOwnerSourceCoverageCount": 20,
-  "openOwnerSourceCoverageCount": 1,
+  "approvedOwnerSourceCoverageCount": 21,
+  "openOwnerSourceCoverageCount": 0,
   "reviewCandidateCount": 0,
   "thirdPartyMarksIncluded": false,
   "tripleBagGeneticsProductCreated": false

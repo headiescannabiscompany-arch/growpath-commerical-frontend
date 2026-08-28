@@ -32,3 +32,4 @@ d8e2d79c79ffe53f4db9308db8d0cb9b027394fb55b75445ebfe09004f113213  approved-conce
 4b43f2de1610545b579c814fa43cf873829b4c2b6786121b5d8c8bbbd269d26a  approved-concepts/gp-21-heritage-merlot-approved.png
 7d10ad287397102a9c29d97a250eb6e0b156dcb550b1b04872e498ab87e57270  approved-concepts/gp-22-circuit-night-a-frame-approved.png
 48e0401df313d4ce364bab8b1edb588a2ca7f8ce280b74b1028064e684dd4163  approved-concepts/gp-23-blackout-path-lockup-approved.png
+bb0f867ec1120b8ff39c58e84a4e349490caa6d11b5859a75e123bf4d975fa38  approved-concepts/gp-24-circuit-leaf-day-a-frame-approved.png

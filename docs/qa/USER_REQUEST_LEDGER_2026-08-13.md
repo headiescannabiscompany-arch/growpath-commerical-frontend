@@ -327,9 +327,9 @@ any conflicting aggregate-sheet panel. The owner's master visual-review folder i
 
 Owner correction, 2026-08-27: the older 16-slot concept package is not the visual-completion
 boundary. The owner registered 21 source files and expects every source to receive an explicit
-one-to-one GrowPathAI conversion or explicit rejection/duplicate disposition. Seventeen sources
-currently have approved conversions; `PUMD5290.PNG`, `MCXG5769.PNG`, `KVQV2209.PNG`, and
-`FDGN4955.PNG` remain open. GP-16 is an owner-approved
+one-to-one GrowPathAI conversion or explicit rejection/duplicate disposition. All 21 are now
+dispositioned: twenty source-faithful conversions plus GP-24, the owner's approved replacement
+of `FDGN4955.PNG` with the established `NNNI1535.PNG` GrowPathAI day-theme layout. GP-16 is an owner-approved
 corduroy material variant of the already-covered `OBJU0610.PNG` direction, but it does not
 close another source and must not be described as 16-of-16 completion.
 
@@ -396,9 +396,10 @@ close another source and must not be described as 16-of-16 completion.
       GrowPathAI hat design set against the approved BLVNK blank. Produce accurate front,
       left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
-      small rear wordmarks; retain approved source files and final review images. Sixteen
-      active mapped concepts and four historical multi-view review sheets now exist. Twenty
-      one-to-one owner-source conversions are approved out of the 21-source roster; the legacy
+      small rear wordmarks; retain approved source files and final review images. Twenty-three
+      approved concept images and four historical multi-view review sheets now exist. All 21
+      registered owner sources are dispositioned; twenty use source-faithful conversions and
+      GP-24 uses the owner's explicit supersession of the final tonal-script direction. The legacy
       16-slot package is not the completion count. GP-07 is locked to the real BLV600 White & Black blank with a black
       circuit-leaf-only front, black side marks and a small black rear wordmark. GP-09 is retained separately as a real
       BLV550 Sage/Olive nylon supplier variant with the factory rope removed and dark-olive
@@ -434,8 +435,11 @@ close another source and must not be described as 16-of-16 completion.
       Circuit Night A-Frame closes `MCXG5769.PNG` on stock BLV556 Surplus Black cotton twill.
       GP-23 Blackout Path Lockup closes `KVQV2209.PNG` on stock BLV600 Heritage Black with
       the source-faithful front emblem-plus-wordmark lockup in low-sheen tonal-black thread.
-      Remaining owner-art disposition, exact source-art refinements,
-      digitized files and sew-out corrections remain.
+      GP-24 Circuit Leaf Day A-Frame closes `FDGN4955.PNG` through the owner's explicit
+      replacement with the existing cream/forest `NNNI1535.PNG` day-theme layout: circuit leaf
+      above the GrowPathAI wordmark, GPAI and branching-path side marks, rear arch text and no
+      rope. Owner-art disposition is complete; exact custom-blank feasibility, source-art
+      refinements, digitized files and sew-out corrections remain.
 - [~] Complete the embroidery package for every approved placement. Reusable SVG sources,
       size/placement/thread/density guidance, stitch sequence and file register are retained.
       A selected digitizer must return `DST` plus editable native source, stitch chart/count
