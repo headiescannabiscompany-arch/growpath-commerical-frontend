@@ -5,9 +5,10 @@ production-ready, listed products, inventory, machine files or authorization to 
 
 Current review candidate:
 
-- `gp-24-day-tonal-script-review.png` — owner-source conversion of `FDGN4955.PNG`.
-  Cream crown, forest-green flat brim and top button, raised tonal GrowPathAI script front,
-  tonal GPAI side mark, and no rope. The pale two-tone colorway is a custom build pending
-  supplier/decorator feasibility and cost approval.
+- `gp-24-circuit-leaf-day-a-frame-review.png` — owner-directed replacement for the open
+  `FDGN4955.PNG` tonal-script direction, using the established GrowPathAI day-theme layout
+  from `NNNI1535.PNG`: cream crown, forest-green brim and top button, circuit leaf above
+  the GrowPathAI wordmark, GPAI and branching-path side marks, rear arch text, and no rope.
+  The exact two-tone build remains custom pending supplier/decorator feasibility and cost approval.
 
 Approved images live in `../approved-concepts/`.
