@@ -397,7 +397,7 @@ close another source and must not be described as 16-of-16 completion.
       left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
       small rear wordmarks; retain approved source files and final review images. Sixteen
-      active mapped concepts and four historical multi-view review sheets now exist. Nineteen
+      active mapped concepts and four historical multi-view review sheets now exist. Twenty
       one-to-one owner-source conversions are approved out of the 21-source roster; the legacy
       16-slot package is not the completion count. GP-07 is locked to the real BLV600 White & Black blank with a black
       circuit-leaf-only front, black side marks and a small black rear wordmark. GP-09 is retained separately as a real
@@ -432,6 +432,8 @@ close another source and must not be described as 16-of-16 completion.
       GP-20 Mono Signal closes `GEOT0660.PNG` on stock BLV600 Black; GP-21 Heritage Merlot
       closes `PUMD5290.PNG` as a custom cream/burgundy BLV600-style direction; and GP-22
       Circuit Night A-Frame closes `MCXG5769.PNG` on stock BLV556 Surplus Black cotton twill.
+      GP-23 Blackout Path Lockup closes `KVQV2209.PNG` on stock BLV600 Heritage Black with
+      the source-faithful front emblem-plus-wordmark lockup in low-sheen tonal-black thread.
       Remaining owner-art disposition, exact source-art refinements,
       digitized files and sew-out corrections remain.
 - [~] Complete the embroidery package for every approved placement. Reusable SVG sources,

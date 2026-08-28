@@ -7,7 +7,7 @@
     "inventoryAvailable": 0,
     "checkoutEnabled": false,
     "manufacturedInventoryConfirmed": false,
-    "ownerConceptApproval": "21 approved concept images; source coverage 19 of 21",
+    "ownerConceptApproval": "22 approved concept images; source coverage 20 of 21",
     "allOwnerSourcesDispositioned": false,
     "digitizerSelected": false,
     "machineFilesApproved": false,
@@ -48,7 +48,8 @@
     "approved-concepts/gp-19-night-bloom-path-approved.png",
     "approved-concepts/gp-20-mono-signal-approved.png",
     "approved-concepts/gp-21-heritage-merlot-approved.png",
-    "approved-concepts/gp-22-circuit-night-a-frame-approved.png"
+    "approved-concepts/gp-22-circuit-night-a-frame-approved.png",
+    "approved-concepts/gp-23-blackout-path-lockup-approved.png"
   ],
   "sourceArt": [
     "source-art/circuit-leaf.svg",
@@ -71,8 +72,8 @@
   },
   "legacyConceptSlotCount": 16,
   "registeredOwnerSourceCount": 21,
-  "approvedOwnerSourceCoverageCount": 19,
-  "openOwnerSourceCoverageCount": 2,
+  "approvedOwnerSourceCoverageCount": 20,
+  "openOwnerSourceCoverageCount": 1,
   "reviewCandidateCount": 0,
   "thirdPartyMarksIncluded": false,
   "tripleBagGeneticsProductCreated": false

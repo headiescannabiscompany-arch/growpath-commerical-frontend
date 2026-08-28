@@ -86,7 +86,7 @@ conversion or an explicit owner rejection/duplicate disposition.
 | `PUMD5290.PNG` | GP-21 Heritage Merlot | approved |
 | `MCXG5769.PNG` | GP-22 Circuit Night A-Frame | approved |
 | `KZJV0657.PNG` | GP-15 Royal Signal | approved |
-| `KVQV2209.PNG` | no one-to-one final conversion retained | open |
+| `KVQV2209.PNG` | GP-23 Blackout Path Lockup | approved |
 | `NNNI1535.PNG` | GP-07 Glacier Contrast | approved; the later owner-approved white/black treatment controls |
 | `FTRU8917.PNG` | GP-02 Deep Canopy | approved |
 | `MTSN8249.PNG` | GP-13 Rasta Circuit Patch | approved |
@@ -94,7 +94,7 @@ conversion or an explicit owner rejection/duplicate disposition.
 | `PWVH4651.PNG` | GP-04 Night Current | approved |
 | `FDGN4955.PNG` | no one-to-one final conversion retained | open |
 
-Current source coverage: **19 approved / 21 registered; 2 open**. GP-18 closes the pale
+Current source coverage: **20 approved / 21 registered; 1 open**. GP-18 closes the pale
 light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550 Sage/Olive Gramps blank
 with its factory rope retained. GP-19 closes `GYSG2238.PNG` with its black/purple color block,
 purple rope, original script-path treatment and green rear leaf retained. GP-09 and GP-16 remain
@@ -106,3 +106,5 @@ supplier feasibility and exact-blank sew-out.
 GP-22 closes `MCXG5769.PNG` on the stock BLV556 Surplus Black cotton-twill pinch-front
 blank while preserving its neon-lime circuit leaf and white/blue GrowPathAI treatment; the
 supplier's structured crown supersedes the source sheet's unsupported unstructured claim.
+GP-23 closes `KVQV2209.PNG` on stock BLV600 Heritage Black with the source-faithful
+emblem-plus-wordmark lockup and all established marks rendered in low-sheen tonal black.

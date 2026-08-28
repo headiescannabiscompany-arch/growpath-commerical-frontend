@@ -2,7 +2,7 @@
 
 Date locked for concept review: 2026-08-27
 
-Status: nineteen owner-source conversions are visually approved, two registered owner-source
+Status: twenty owner-source conversions are visually approved, one registered owner-source
 directions remain open, and GP-09 plus GP-16 are owner-approved extra variants rather than new
 source coverage. The older sixteen-slot package is not the completion boundary; all 21 rows
 in `OWNER_SOURCE_REGISTER.md` require an explicit disposition. GP-10 Loden Signal was retired before approval because it
@@ -57,6 +57,7 @@ quality requirement.
 | GP-20 | Mono Signal | BLV600 Black – Premium Wool | owner source `GEOT0660.PNG`: clean black/white minimal lockup | established white circuit leaf above restrained white uppercase GrowPathAI wordmark; small white GPAI, branching-path and rear wordmark | owner approved 2026-08-27 on the real stock supplier blank; corrected circuit leaf controls and the rejected tree-emblem draft is excluded; flat embroidery and exact-blank sew-out remain production gates |
 | GP-21 | Heritage Merlot | custom BLV600-style warm-cream crown / burgundy brim, button and snap – Premium Wool; supplier confirmation required | owner source `PUMD5290.PNG`: cream/burgundy structured flat-brim direction with burgundy/gold raised embroidery | established circuit leaf in burgundy with antique-gold nodes/veins above the burgundy GrowPath/gold AI wordmark; small gold GPAI, burgundy/gold branching path and small burgundy rear wordmark | owner approved 2026-08-27; no rope, triangle, bag, number, genetics text, shield, sticker or manufacturer mark; custom color blocking, raised-embroidery limits, digitizing and exact-blank sew-out remain production gates |
 | GP-22 | Circuit Night A-Frame | BLV556 Surplus Black – Cotton Twill | owner source `MCXG5769.PNG`: black cotton-twill pinch-front technology direction | established neon-lime circuit leaf above white GrowPath/blue AI wordmark; small white/blue GPAI, blue branching path and very small white/blue rear wordmark | owner approved 2026-08-27 on the real stock supplier blank; BLVNK documents the crown as structured, so that fact controls over the source sheet's unstructured label; no rope, arch slogan, sticker or manufacturer mark; exact thread match and sew-out remain production gates |
+| GP-23 | Blackout Path Lockup | BLV600 Heritage Black – Premium Wool | owner source `KVQV2209.PNG`: black tonal structured flat-brim direction with a centered emblem-plus-wordmark lockup | established circuit leaf above restrained GrowPathAI wordmark; small GPAI, branching path and rear wordmark, all in low-sheen charcoal-black tonal thread | owner approved 2026-08-27 on the real stock supplier blank; distinct from GP-03's emblem-only front; no bag, number, genetics text, triangle, rope, sticker or manufacturer mark; exact tonal thread match and sew-out remain production gates |
 
 ## Shared placement contract
 

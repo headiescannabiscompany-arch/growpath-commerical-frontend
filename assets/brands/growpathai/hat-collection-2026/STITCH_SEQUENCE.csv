@@ -82,3 +82,7 @@ GP-22,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,
 GP-22,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; electric blue",Small side mark at owner-approved scale,digitizer_required
 GP-22,left,source-art/branching-path.svg,31x17,flat satin,"electric blue",Use established branching-path geometry with open node centers,digitizer_required
 GP-22,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"white; electric blue",Single very small wordmark centered above opening; no arch slogan,digitizer_required
+GP-23,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,76x57,flat low-sheen satin,"charcoal black tonal",Established enclosed circuit leaf above restrained wordmark; retain tonal visibility without glossy contrast,digitizer_required
+GP-23,right,source-art/gpai-monogram.svg,34x14,flat low-sheen satin,"charcoal black tonal",Small side mark at owner-approved scale,digitizer_required
+GP-23,left,source-art/branching-path.svg,31x17,flat low-sheen satin,"charcoal black tonal",Use established branching-path geometry with open node centers,digitizer_required
+GP-23,back,source-art/growpathai-wordmark.svg,42x7,flat low-sheen satin,"charcoal black tonal",Single very small wordmark centered above opening,digitizer_required
