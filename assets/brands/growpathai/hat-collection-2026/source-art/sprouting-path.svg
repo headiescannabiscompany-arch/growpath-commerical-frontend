@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 70" role="img" aria-labelledby="title desc">
+  <title id="title">GrowPathAI sprouting path embroidery source</title>
+  <desc id="desc">Flowing underline path with two attached leaves pointing upward.</desc>
+  <g fill="none" stroke="#6F2DA8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 48C58 62 123 60 176 45C197 39 214 33 229 25"/>
+    <path d="M188 41C187 26 191 15 202 7"/>
+  </g>
+  <path d="M199 11C187 10 180 17 181 29C191 29 198 23 199 11Z" fill="#6F2DA8"/>
+  <path d="M203 10C211 1 222 1 229 8C223 18 214 22 204 19Z" fill="#6F2DA8"/>
+</svg>

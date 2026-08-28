@@ -51,3 +51,12 @@ The allowed question is `Would you buy this hat for {candidatePrice}?` after the
 Captuer Headwear identified BLVNK HEADWEAR as its exclusive distributor for unbranded Captuer blank goods. BLVNK is therefore recorded as the candidate blank-body supplier, not as the decorator or confirmed manufacturer-of-record. Local decoration, digitization, physical samples, exact blank selection, costs, and owner approval remain open. See `../../HAT_PRODUCTION_BRIEF_2026-08-12.md`.
 
 The sage trial presentation uses the public BLVNK `GRAMPS SNAPBACK` `SAGE/OLIVE - Grandpa Nylon` photograph as a visual fabric/color reference. That reference does not select a production blank, prove color accuracy on a physical sample, or authorize representing the generated trial presentation as manufactured inventory.
+
+## 2026 collection execution
+
+The owner resumed the hat gate on 2026-08-27. The rights-clean GrowPathAI translation of the
+retained Triple Bag style directions is stored in `../hat-collection-2026/`. That package
+contains sixteen concept mappings, four multi-view sheets, official BLVNK product-image
+references, reusable source SVGs, a stitch sequence, digitizer handoff and an honest machine-
+file register. `DST`, editable embroidery sources, physical sew-outs, wholesale/decoration
+costs and owner sample approval remain open and cannot be inferred from the concept sheets.

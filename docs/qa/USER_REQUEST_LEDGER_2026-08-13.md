@@ -310,26 +310,141 @@ GrowPathAI-branded collection. Triple Bag Genetics has no hat product, listing, 
 trial, public advertisement, inventory or checkout scope unless the owner later confirms
 that a separate company and its rights/ownership requirements exist.
 
+Owner decision, 2026-08-27: R-05 is resumed. The collection must use real supplier textiles
+and colorways and must include stitch files, not concept images alone. Sixteen rights-clean
+GrowPathAI concepts, four multi-view review sheets, official BLVNK references, reusable SVG
+source art, a placement/thread/stitch plan and an explicit machine-file register are retained
+in `assets/brands/growpathai/hat-collection-2026/`. Returned `DST`/native embroidery files,
+decorator selection, exact-blank sew-outs, live wholesale availability/cost and owner sample
+approval remain open.
+
+Owner decision, 2026-08-27: review and correct the collection one hat at a time. Preserve the
+approved Triple Bag-style blank, color blocking and overall silhouette, but replace only the
+branding with established GrowPathAI-owned marks. Do not invent shields, wings, flames,
+fronds, bursts or decorative emblem frames. An individual owner-approved concept supersedes
+any conflicting aggregate-sheet panel. The owner's master visual-review folder is
+`C:\Users\jcind\Pictures\growpath hats`; repository copies remain the production record.
+
+Owner correction, 2026-08-27: the older 16-slot concept package is not the visual-completion
+boundary. The owner registered 21 source files and expects every source to receive an explicit
+one-to-one GrowPathAI conversion or explicit rejection/duplicate disposition. All 21 are now
+dispositioned: twenty source-faithful conversions plus GP-24, the owner's approved replacement
+of `FDGN4955.PNG` with the established `NNNI1535.PNG` GrowPathAI day-theme layout. GP-16 is an owner-approved
+corduroy material variant of the already-covered `OBJU0610.PNG` direction, but it does not
+close another source and must not be described as 16-of-16 completion.
+
 - [x] Historical GrowPathAI and Triple Bag Genetics concept images, exact hashes, brand
       manifests, approved emblems, and a production brief are retained as design input;
       retained TBG material is not approval to make or publish a TBG product.
 - [x] The owner approved the black Circuit Leaf GrowPathAI concept and the revised
       tonal-sage concept with a longer structured brim and small rear `GROWPATHAI` mark.
+- [x] The owner approved GP-01 Circuit Crimson on 2026-08-27: the real stock BLV600 Maroon
+      premium-wool blank with a restrained 46 x 45 mm antique-gold circuit leaf, right gold
+      `GPAI`, left gold branching-path mark and small rear gold `GrowPathAI`. Machine-file,
+      exact-blank sew-out and optional shallow outer-border foam proof remain open.
+- [x] The owner approved GP-02 Deep Canopy on 2026-08-27: the real stock BLV600 Army Olive
+      premium-wool blank with a restrained 46 x 45 mm darker-olive tonal circuit leaf, right
+      tonal `GPAI`, left tonal branching-path mark and small rear tonal `GrowPathAI`. Final
+      thread-card match, machine file and exact-blank sew-out remain open.
+- [x] The owner approved GP-03 Midnight Stealth on 2026-08-27: the real stock BLV600 Black
+      premium-wool blank with a restrained 46 x 45 mm low-sheen black circuit leaf, sparse
+      deep-forest node accents, right tonal `GPAI`, left tonal branching-path mark and small
+      rear tonal `GrowPathAI`. Final thread-card contrast, machine file and exact-blank sew-out
+      remain open.
+- [x] The owner approved GP-04 Night Current on 2026-08-27: the real stock BLV600 Navy
+      premium-wool blank with a custom white `GrowPath` script, GrowPath-blue `AI`, restrained
+      path underline and small white/blue right-side `GPAI`. The final front scale is 92.5% of
+      the first script mockup (approximately 100 x 29 mm); there is no front circuit leaf. The
+      left branching-path mark, small rear `GrowPathAI`, custom script digitization, machine
+      file and exact-blank sew-out remain open.
+- [x] The owner approved GP-05 Signal Classic on 2026-08-27: the real stock BLV600 Navy & Red
+      premium-wool blank with an original white GrowPathAI athletic script, restrained
+      signal-red inline/shadow, signal-red `AI` with white outline and small white/red
+      right-side `GPAI`. The left branching-path mark, small rear `GrowPathAI`, original
+      script digitization, machine file and exact-blank sew-out remain open.
+- [x] The owner approved GP-17 Redline Circuit Rope on 2026-08-27 as the controlling conversion
+      of source design #6: the real stock BLV600 Black premium-wool blank with a front-only
+      white circuit-leaf outline, signal-red internal paths/nodes, small red/white right-side
+      `GPAI`, and a narrow black rope with restrained red/white braid accents. It is separate
+      from GP-06 Volt Path. Custom rope-attachment feasibility/cost, left branching-path mark,
+      small rear `GrowPathAI`, machine file and exact-blank sew-out remain open.
+- [x] The owner approved GP-06 Volt Path on 2026-08-27: a custom BLV600-style matte-black
+      crown with banana-yellow brim/button, clean circuit leaf, `GrowPathAI` wordmark, right
+      `GPAI`, left branching-path mark and small rear `GrowPathAI`. It may cost more and is a
+      premium retail tier. The stock heather-charcoal draft and rejected shield/burst version
+      are retired. Custom supplier confirmation, pricing, digitizing and sew-out remain open.
+- [x] The owner approved one GP-08 Royal Current blue/purple hat on 2026-08-27: custom royal-
+      blue crown, purple brim/button, retained green circuit leaf, white/blue `GrowPathAI`,
+      attached purple sprouting path with two upward leaves, right `GPAI`, left branching-path
+      mark and small rear `GrowPathAI`. The no-green-emblem draft is retired. Custom supplier
+      confirmation, premium pricing, digitizing and sew-out remain open.
+- [x] The owner approved GP-11 Day Path on 2026-08-27: custom cream/stone crown with burgundy
+      brim/button/rope, dark-and-burgundy `GrowPathAI` with attached upward sprout, right
+      `GPAI`, left branching-path mark and small rear `GrowPathAI`. Its complete rope wording is
+      retained as design intent but requires written manufacturing-method, legibility and
+      durability confirmation. Custom supplier pricing, digitizing and sew-out remain open.
 - [x] BLVNK HEADWEAR is recorded as the candidate blank-body source based on the retained
       supplier email; no exact model, fabric, cost, or production claim is invented.
 - [x] A zero-stock, unpriced, non-checkout `Would you buy this at this price?` trial flow
       exists with Yes/Maybe/No, one revisable response per account, aggregate results,
       and explicit `not for sale` language.
-- [ ] Complete the exact BLVNK blank specification first: model, construction, fabric,
-      available color match, brim profile, sample, unit/sample cost, minimums, lead time,
-      and local embroidery/decoration approval. This is the prerequisite for final hat
-      mockups, meaningful price research, product records, inventory, checkout,
-      production, or shipping.
-- [ ] Translate every owner-selected Triple Bag-style concept into the complete
+- [~] Exact candidate BLVNK models, published construction/fabrics, real factory colorways
+      and public retail reference prices are recorded for BLV600, BLV550, BLV551, BLV603 and BLV556.
+      Live wholesale availability, blank/sample/decorated cost, minimums, shipping, lead time,
+      decorator selection and physical sample approval remain open.
+- [~] Translate every owner-selected Triple Bag-style concept into the complete
       GrowPathAI hat design set against the approved BLVNK blank. Produce accurate front,
       left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
-      small rear wordmarks; retain approved source files and final review images.
+      small rear wordmarks; retain approved source files and final review images. Twenty-three
+      approved concept images and four historical multi-view review sheets now exist. All 21
+      registered owner sources are dispositioned; twenty use source-faithful conversions and
+      GP-24 uses the owner's explicit supersession of the final tonal-script direction. The legacy
+      16-slot package is not the completion count. GP-07 is locked to the real BLV600 White & Black blank with a black
+      circuit-leaf-only front, black side marks and a small black rear wordmark. GP-09 is retained separately as a real
+      BLV550 Sage/Olive nylon supplier variant with the factory rope removed and dark-olive
+      embroidery; GP-18 separately closes the pale light-green-on-light-green `CNKY2160.PNG`
+      direction on the real BLV550 Sage/Olive Gramps with its factory rope retained. Rope-removal
+      durability remains a GP-09 production gate. GP-19 closes `GYSG2238.PNG` with its black
+      crown, purple brim/button/rope, original white/blue GrowPathAI script, attached purple
+      sprouting path, blue side path and small green rear circuit leaf. GP-10 Loden Signal is retired: it was not derived from an
+      owner-selected source and its draft improperly changed the emblem treatment. The 21-file
+      owner roster and brand-swap-only conversion contract are locked in
+      `assets/brands/growpathai/hat-collection-2026/OWNER_SOURCE_REGISTER.md`. GP-12 Orange
+      Tonal Circuit is owner-approved from `RMUS4022.PNG`: smooth structured burnt-orange
+      crown/brim/button, unchanged darker-tonal circuit leaf at the source emblem footprint and
+      a small tonal `GPAI` side mark; no triangle, bag, frame, rope, front wording, ornament,
+      sticker or manufacturer mark. The exact custom blank/thread match, unseen left/rear
+      placements, digitizing and sew-out remain production gates. GP-13 Rasta Circuit Patch
+      is owner-approved from `MTSN8249.PNG`: black structured
+      flat-brim, source-faithful red/yellow/green bordered patch and brim-edge piping, unchanged
+      circuit leaf above the GrowPathAI wordmark, and a small GPAI side mark replacing RAW.
+      The custom trim/patch method, durability, cost, digitizing and exact-blank sew-out remain
+      production gates. GP-14 Prism Terrain is owner-approved from `LANR8844.PNG`: the source-
+      faithful greenish-grey all-over prism textile on a structured flat-brim, unchanged
+      unenclosed circuit leaf at the source emblem footprint and small GPAI replacing the side
+      manufacturer mark. The earlier stock-camo/patch substitution is retired; custom printing,
+      registration, colorfastness, cost, digitizing and exact-blank sew-out remain gates.
+      GP-15 Royal Signal is owner-approved from `KZJV0657.PNG`: the real stock BLV600 Royal
+      premium-wool blank, unchanged neon-green circuit leaf above the uppercase GrowPathAI
+      wordmark and a small neon-green `GPAI` side mark at the source scale. The earlier Air
+      Blue micro-corduroy/underline substitution is retired; live availability, final thread
+      match, unseen left/rear placements, digitizing and exact-blank sew-out remain gates.
+      GP-20 Mono Signal closes `GEOT0660.PNG` on stock BLV600 Black; GP-21 Heritage Merlot
+      closes `PUMD5290.PNG` as a custom cream/burgundy BLV600-style direction; and GP-22
+      Circuit Night A-Frame closes `MCXG5769.PNG` on stock BLV556 Surplus Black cotton twill.
+      GP-23 Blackout Path Lockup closes `KVQV2209.PNG` on stock BLV600 Heritage Black with
+      the source-faithful front emblem-plus-wordmark lockup in low-sheen tonal-black thread.
+      GP-24 Circuit Leaf Day A-Frame closes `FDGN4955.PNG` through the owner's explicit
+      replacement with the existing cream/forest `NNNI1535.PNG` day-theme layout: circuit leaf
+      above the GrowPathAI wordmark, GPAI and branching-path side marks, rear arch text and no
+      rope. Owner-art disposition is complete; exact custom-blank feasibility, source-art
+      refinements, digitized files and sew-out corrections remain.
+- [~] Complete the embroidery package for every approved placement. Reusable SVG sources,
+      size/placement/thread/density guidance, stitch sequence and file register are retained.
+      A selected digitizer must return `DST` plus editable native source, stitch chart/count
+      and machine settings; each must pass a photographed sew-out on the exact blank before
+      production approval.
 - [x] Give the `admin@growpathai.com` Admin identity the governed Commercial toolset and
       use the Admin/GrowPathAI brand—not Living Soil Labs—to own and present GrowPathAI
       hat research. Backend PR `#156` (`f49fae1f`) and frontend PR `#558`
@@ -350,6 +465,17 @@ that a separate company and its rights/ownership requirements exist.
       listings are complete, run owner-priced purchase-intent trials for every approved
       hat concept. Verify response, revision, aggregation, and close behavior while
       inventory remains zero and no item can be purchased.
+- [ ] After all designs, stitch files, exact-blank sew-outs, supplier/decorator costs and
+      owner pricing are approved, publish the Facebook and GrowPathAI launch package. Use a
+      two-stage minimum-25 flow: first collect revocable, no-payment interest against an
+      inventory-zero listing with checkout disabled; then send a time-limited final Stripe
+      offer. Only paid orders count toward production. If the paid minimum is missed, cancel
+      and promptly refund rather than treating interest responses or expiring card holds as
+      funded orders. Keep campaign status, price, deadline, fulfillment window and refund
+      terms identical on GrowPathAI and Facebook. Facebook posts must deep-link to the same
+      GrowPathAI collection/design pages; those pages must expose native/Web Share and a copy
+      link while remaining the canonical campaign record. The controlling launch contract is in
+      `assets/brands/growpathai/hat-collection-2026/COLLECTION_SPEC.md`.
 
 ## App Store and final release
 

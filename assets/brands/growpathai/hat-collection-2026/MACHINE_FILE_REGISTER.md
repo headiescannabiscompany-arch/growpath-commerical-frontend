@@ -1,0 +1,41 @@
+# GrowPathAI Hat Machine-File Register
+
+No `DST` or editable native embroidery file is approved yet. This is intentional: final
+machine files depend on the exact blank, hoop, machine, backing, topping, thread and physical
+sew-out. The collection's SVG sources and stitch sequence are ready for a local decorator to
+digitize.
+
+| Concept range | Source art | Digitizer assigned | DST returned | Native source returned | Sew-out | Owner approval |
+|---|---|---|---|---|---|---|
+| GP-07 Glacier Contrast | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; black thread match, DST/native file and exact-blank sew-out pending |
+| GP-01 Circuit Crimson | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; DST/native file and exact-blank sew-out pending |
+| GP-02 Deep Canopy | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; tonal thread match, DST/native file and exact-blank sew-out pending |
+| GP-03 Midnight Stealth | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; low-sheen tonal thread match, DST/native file and exact-blank sew-out pending |
+| GP-04 Night Current | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; custom script digitization, DST/native file and exact-blank sew-out pending |
+| GP-05 Signal Classic | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; original athletic-script digitization, DST/native file and exact-blank sew-out pending |
+| GP-06 Volt Path | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom blank, DST/native file and exact-blank sew-out pending |
+| GP-08 Royal Current | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom blank, DST/native file and exact-blank sew-out pending |
+| GP-09 Sage Circuit | ready; owner-approved modified-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; rope-removal durability, DST/native file and altered-blank sew-out pending |
+| GP-12 Orange Tonal Circuit | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom solid-orange blank, darker tonal thread match, DST/native file and exact-blank sew-out pending |
+| GP-11 Day Path | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom blank/rope method, DST/native file and exact-blank sew-out pending |
+| GP-13 Rasta Circuit Patch | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom patch/trim feasibility, DST/native file and exact-blank sew-out pending |
+| GP-14 Prism Terrain | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom all-over print feasibility, thread match, DST/native file and exact-blank sew-out pending |
+| GP-15 Royal Signal | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; neon-green thread match, DST/native file and exact-blank sew-out pending |
+| GP-16 Night Script Cord | ready; owner-approved stock-blank variant image retained; duplicates already-covered OBJU0610 direction | no | no | no | not run | concept approved 2026-08-27 as an extra material variant; does not close another owner source; DST/native file and exact-blank sew-out pending |
+| GP-17 Redline Circuit Rope | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; custom rope attachment, DST/native file and exact-blank sew-out pending |
+| GP-18 Pale Sage Gramps | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; pale tonal thread match, DST/native file and exact-blank BLV550 sew-out pending; factory olive rope retained |
+| GP-19 Night Bloom Path | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom black/purple blank and rope, script/path digitizing, DST/native file and exact-blank sew-out pending |
+| GP-20 Mono Signal | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; white flat-thread match, DST/native file and exact-blank BLV600 Black sew-out pending |
+| GP-21 Heritage Merlot | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom cream/burgundy blank, raised burgundy/gold digitizing, DST/native file and exact-blank sew-out pending |
+| GP-22 Circuit Night A-Frame | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; neon-lime/white/blue thread match, DST/native file and exact-blank BLV556 Black sew-out pending |
+| GP-23 Blackout Path Lockup | ready; owner-approved stock-blank concept image retained | no | no | no | not run | concept approved 2026-08-27; low-sheen tonal-black thread match, DST/native file and exact-blank BLV600 Black sew-out pending |
+| GP-24 Circuit Leaf Day A-Frame | ready; owner-approved custom concept image retained | no | no | no | not run | concept approved 2026-08-27; custom cream/forest blank, green thread match, rear-arch legibility, DST/native file and exact-blank sew-out pending |
+
+When files arrive, add their exact filename, SHA-256, dimensions, stitch count, color count,
+machine/native format, sample photo, disposition and superseding revision. A file is not
+production-approved merely because it opens in embroidery software.
+
+Concept approval and production approval are separate gates. GP-01 through GP-09, plus GP-11,
+GP-12 through GP-24 approved visuals
+are recorded in `approved-concepts/` with SHA-256 values in `SHA256SUMS.txt`. They do not claim
+that a custom blank, machine file or physical sample already exists.

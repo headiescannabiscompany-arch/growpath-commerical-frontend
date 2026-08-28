@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "growpathai-hat-collection-v2",
+  "updatedAt": "2026-08-27",
+  "brand": "GrowPathAI",
+  "state": {
+    "listingState": "unpublished",
+    "inventoryAvailable": 0,
+    "checkoutEnabled": false,
+    "manufacturedInventoryConfirmed": false,
+    "ownerConceptApproval": "23 approved concept images; all 21 registered owner sources dispositioned",
+    "allOwnerSourcesDispositioned": true,
+    "digitizerSelected": false,
+    "machineFilesApproved": false,
+    "physicalSewoutsApproved": false
+  },
+  "supplier": {
+    "name": "BLVNK HEADWEAR",
+    "role": "candidate blank distributor",
+    "wholesalePriceConfirmed": false,
+    "liveVariantAvailabilityConfirmed": false,
+    "customColorwaysPending": ["GP-06", "GP-08", "GP-11", "GP-12", "GP-14", "GP-19", "GP-21", "GP-24"],
+    "customModificationsPending": ["GP-09 factory rope removal", "GP-13 rasta brim piping and bordered patch", "GP-17 rope attachment", "GP-19 purple rope attachment"]
+  },
+  "conceptSheets": [
+    "heritage-core-concept-sheet.png",
+    "heritage-contrast-concept-sheet.png",
+    "gramps-rope-cord-concept-sheet.png",
+    "patch-script-concept-sheet.png"
+  ],
+  "ownerApprovedConcepts": [
+    "approved-concepts/gp-01-circuit-crimson-approved.png",
+    "approved-concepts/gp-02-deep-canopy-approved.png",
+    "approved-concepts/gp-03-midnight-stealth-approved.png",
+    "approved-concepts/gp-04-night-current-approved.png",
+    "approved-concepts/gp-05-signal-classic-approved.png",
+    "approved-concepts/gp-06-volt-path-approved.png",
+    "approved-concepts/gp-07-glacier-contrast-approved.png",
+    "approved-concepts/gp-08-royal-current-approved.png",
+    "approved-concepts/gp-09-sage-circuit-approved.png",
+    "approved-concepts/gp-11-day-path-approved.png",
+    "approved-concepts/gp-12-orange-tonal-approved.png",
+    "approved-concepts/gp-13-rasta-circuit-patch-approved.png",
+    "approved-concepts/gp-14-prism-terrain-approved.png",
+    "approved-concepts/gp-15-royal-signal-approved.png",
+    "approved-concepts/gp-16-night-script-cord-approved.png",
+    "approved-concepts/gp-17-redline-circuit-rope-approved.png",
+    "approved-concepts/gp-18-pale-sage-gramps-approved.png",
+    "approved-concepts/gp-19-night-bloom-path-approved.png",
+    "approved-concepts/gp-20-mono-signal-approved.png",
+    "approved-concepts/gp-21-heritage-merlot-approved.png",
+    "approved-concepts/gp-22-circuit-night-a-frame-approved.png",
+    "approved-concepts/gp-23-blackout-path-lockup-approved.png",
+    "approved-concepts/gp-24-circuit-leaf-day-a-frame-approved.png"
+  ],
+  "sourceArt": [
+    "source-art/circuit-leaf.svg",
+    "source-art/branching-path.svg",
+    "source-art/gpai-monogram.svg",
+    "source-art/growpathai-wordmark.svg",
+    "source-art/growpathai-script.svg",
+    "source-art/sprouting-path.svg",
+    "source-art/grow-together-patch.svg",
+    "source-art/prism-terrain-patch.svg"
+  ],
+  "productionFiles": {
+    "digitizerHandoff": "EMBROIDERY_DIGITIZER_HANDOFF.md",
+    "stitchSequence": "STITCH_SEQUENCE.csv",
+    "machineFileRegister": "MACHINE_FILE_REGISTER.md",
+    "ownerSourceRegister": "OWNER_SOURCE_REGISTER.md",
+    "decoratorQuotePacket": "DECORATOR_QUOTE_PACKET.md",
+    "dstFilesPresent": false,
+    "nativeEmbroideryFilesPresent": false
+  },
+  "legacyConceptSlotCount": 16,
+  "registeredOwnerSourceCount": 21,
+  "approvedOwnerSourceCoverageCount": 21,
+  "openOwnerSourceCoverageCount": 0,
+  "reviewCandidateCount": 0,
+  "thirdPartyMarksIncluded": false,
+  "tripleBagGeneticsProductCreated": false
+}

@@ -21,8 +21,9 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
-**Current active cursor (2026-08-27):** P-08, the professional crawl, evidence-driven cleanup,
-and the post-cleanup affected-gate freeze are closed.
+**Current active cursor (2026-08-27):** R-05 GrowPathAI hats is active by explicit owner
+resumption. P-08, the professional crawl, evidence-driven cleanup, and the post-cleanup
+affected-gate freeze are closed and must not be rebuilt without a reproduced regression.
 Facility Owner, Personal, Commercial owner, signed-out public, non-admin denial and Platform Admin
 positive/read-only route batches are retained; do not repeat them without a current regression.
 The Admin follow-up also closes its mobile/tablet/desktop, Day/Night/Auto, leading keyboard,
@@ -38,12 +39,38 @@ merge changed only scanner/documentation artifacts, the deployed application bun
 and Admin production routes retained their expected headings and error-free states; Admin retained
 its semantic main landmark and loaded security coverage. This closes the affected post-cleanup
 rerun without manufacturing a runtime change or repeating the already accepted full route matrix.
-Next is the isolated Roberto review gate and owner disposition, using
-`R04_INDEPENDENT_REVIEW_PACKET_2026-08-27.md`. The owner-approved invitation was sent from
-`support@growpathai.com` on 2026-08-27; separate-account creation, any explicitly limited test-
-workspace access, returned findings and item-by-item owner disposition remain open. After the
-review gate, rotate production credentials service-by-service with bounded smoke/rollback
-evidence, then stop before hats.
+The isolated Roberto review gate remains pending under
+`R04_INDEPENDENT_REVIEW_PACKET_2026-08-27.md`; the owner-approved invitation was sent from
+`support@growpathai.com` on 2026-08-27. The owner then explicitly resumed R-05. Hat concept
+execution is now active without fabricating reviewer findings: twenty-three GrowPathAI-only approved concept images
+are mapped to real published BLVNK models/textiles/colorways in
+`assets/brands/growpathai/hat-collection-2026/`, with four multi-view sheets, reusable SVG art,
+a stitch sequence, digitizer handoff and machine-file register. All 21 registered owner-source
+rows now have an explicit approved disposition: twenty source-faithful conversions plus GP-24,
+the owner's approved replacement of the remaining `FDGN4955.PNG` tonal-script direction with
+the established cream/forest `NNNI1535.PNG` GrowPathAI day-theme layout.
+GP-18 closes the pale light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550
+Sage/Olive blank with its factory rope retained. GP-09 remains a darker-treatment variant, and
+GP-19 closes `GYSG2238.PNG` while retaining its black/purple color block, purple rope, script-path
+treatment and green rear leaf. GP-20 closes `GEOT0660.PNG` on stock BLV600 Black with the
+established white circuit leaf and GrowPathAI marks; its rejected tree-emblem draft is excluded.
+GP-21 closes `PUMD5290.PNG` with its cream/burgundy construction and raised burgundy/gold
+GrowPathAI embroidery; supplier feasibility and its exact-blank sew-out remain production gates.
+GP-22 closes `MCXG5769.PNG` on stock BLV556 Surplus Black cotton twill, retaining the
+neon-lime circuit leaf and white/blue technology lockup while truthfully using BLVNK's
+documented structured pinch-front construction.
+GP-23 closes `KVQV2209.PNG` on stock BLV600 Heritage Black with the source-faithful
+front emblem-plus-wordmark lockup and low-sheen tonal-black decoration throughout.
+GP-24 closes `FDGN4955.PNG` by explicit owner supersession with a custom cream crown,
+forest-green brim/button, circuit-leaf/wordmark front, GPAI and branching-path side marks,
+rear arch text and no rope; supplier color-block feasibility and exact-blank sew-out remain gates.
+The owner-approved GP-16 corduroy image is an extra material variant of an already-covered source,
+not the last owner-source disposition and not evidence that visual work is complete.
+Live
+wholesale availability/cost, decorator selection, returned `DST` plus editable source, exact-
+blank sew-outs, owner sample approval, zero-stock website research presentation and any later
+owner-priced trials remain open. Production credential rotation remains a separately named
+pre-store action and must not be conflated with hat approval.
 The exact Harvest completion evidence is frozen in
 `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`: production completed one separately
 owner-authorized 80-image/seven-batch Deep Review, charged the quoted seven credits once, validated
@@ -60,10 +87,12 @@ result. Do not reopen, resend or rewrite either operation. The owner retained th
 result and private draft for review; optional permanent deletion, public publication and Facebook
 sharing remain later explicit owner actions rather than incomplete P-08 implementation.
 
-Proceed in canonical order: initial frozen-SHA professional crawl and fixes, evidence-driven dead-
-code cleanup, post-cleanup frozen-SHA release rerun, isolated outside-review suggestions, owner
-review, then stop before hats. App Store and Play Store work remain last. The older batch cursor
-below is retained history and cannot override this slice.
+Proceed from the active R-05 package with the 21 registered owner-source dispositions frozen,
+exact supplier/decorator
+facts, returned embroidery files and physical sample approval, then the zero-stock research
+presentation and any owner-priced trials. Roberto findings, if returned, remain separately
+itemized and owner-disposed rather than silently merged. App Store and Play Store work remains
+last. The older batch cursor below is retained history and cannot override this slice.
 
 The 2026-08-25 safe non-Harvest production increment is complete: C-01/C-04/C-05 own-
 Commercial entitlement and Admin entry are accepted; S-02/S-03 upload, exact quota,

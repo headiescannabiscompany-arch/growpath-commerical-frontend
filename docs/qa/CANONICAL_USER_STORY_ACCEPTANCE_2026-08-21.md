@@ -451,6 +451,11 @@ tax, HR, legal, POS, procurement, dispatch or autonomous operations.
   multi-view art with correct emblem placement, scale and rights. No TBG product or mark
   is listed or trialed. Approved GrowPathAI concepts may appear as zero-stock `Not for
 sale` research trials; third-party marks remain excluded until separately cleared.
+  The owner resumed this gate on 2026-08-27. Acceptance also requires reusable source art,
+  placement/size/thread/stitch specifications, a decorator-returned `DST` and editable native
+  embroidery file for every used placement, and a passing physical sew-out on the exact blank.
+  A visual rendering, SVG or untested auto-digitized file cannot satisfy machine-file or
+  sample acceptance.
 - R-06: App Store and Play Store work starts only after R-05. Credentials, Sentry, builds,
   physical-device smoke, privacy/data rights, listing metadata, submission and monitoring all
   pass without weakening release gates.

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 92" role="img" aria-labelledby="title desc">
+  <title id="title">GrowPathAI circuit leaf embroidery source</title>
+  <desc id="desc">Single-color, open-line circuit leaf designed for embroidery digitizing.</desc>
+  <g fill="none" stroke="#8EEA36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 82C18 69 22 55 22 39C22 20 39 8 69 6C71 36 61 62 35 74C25 79 17 81 10 82Z"/>
+    <path d="M10 86L57 24"/>
+    <path d="M23 68L18 57L18 48"/>
+    <path d="M29 60L28 45L28 35"/>
+    <path d="M36 51L38 34L38 23"/>
+    <path d="M43 43L49 30L49 19"/>
+    <path d="M50 35L60 27L63 19"/>
+    <path d="M28 69L42 70L53 68"/>
+    <path d="M34 61L49 61L61 57"/>
+    <path d="M40 53L56 51L66 45"/>
+    <path d="M47 45L61 39L69 33"/>
+    <path d="M54 36L66 28"/>
+    <circle cx="18" cy="47" r="3.1"/>
+    <circle cx="28" cy="34" r="3.1"/>
+    <circle cx="38" cy="22" r="3.1"/>
+    <circle cx="49" cy="18" r="3.1"/>
+    <circle cx="63" cy="18" r="3.1"/>
+    <circle cx="54" cy="68" r="3.1"/>
+    <circle cx="62" cy="57" r="3.1"/>
+    <circle cx="67" cy="45" r="3.1"/>
+    <circle cx="69" cy="33" r="3.1"/>
+  </g>
+</svg>
