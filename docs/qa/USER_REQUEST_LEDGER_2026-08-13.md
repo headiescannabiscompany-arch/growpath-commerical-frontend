@@ -389,7 +389,7 @@ close another source and must not be described as 16-of-16 completion.
       exists with Yes/Maybe/No, one revisable response per account, aggregate results,
       and explicit `not for sale` language.
 - [~] Exact candidate BLVNK models, published construction/fabrics, real factory colorways
-      and public retail reference prices are recorded for BLV600, BLV550, BLV551 and BLV603.
+      and public retail reference prices are recorded for BLV600, BLV550, BLV551, BLV603 and BLV556.
       Live wholesale availability, blank/sample/decorated cost, minimums, shipping, lead time,
       decorator selection and physical sample approval remain open.
 - [~] Translate every owner-selected Triple Bag-style concept into the complete
@@ -397,11 +397,10 @@ close another source and must not be described as 16-of-16 completion.
       left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
       small rear wordmarks; retain approved source files and final review images. Sixteen
-      active mapped concepts and four historical multi-view review sheets now exist. Fifteen
-      owner-source conversions are approved out of the 21-source roster; the legacy 16-slot
-      package is not the completion count. GP-07 is locked to the real BLV600 White & Black blank with a black
-      circuit-leaf-only front, black side marks and a small black rear wordmark. Seventeen
-      one-to-one owner-source conversions are approved. GP-09 is retained separately as a real
+      active mapped concepts and four historical multi-view review sheets now exist. Nineteen
+      one-to-one owner-source conversions are approved out of the 21-source roster; the legacy
+      16-slot package is not the completion count. GP-07 is locked to the real BLV600 White & Black blank with a black
+      circuit-leaf-only front, black side marks and a small black rear wordmark. GP-09 is retained separately as a real
       BLV550 Sage/Olive nylon supplier variant with the factory rope removed and dark-olive
       embroidery; GP-18 separately closes the pale light-green-on-light-green `CNKY2160.PNG`
       direction on the real BLV550 Sage/Olive Gramps with its factory rope retained. Rope-removal
@@ -430,6 +429,9 @@ close another source and must not be described as 16-of-16 completion.
       wordmark and a small neon-green `GPAI` side mark at the source scale. The earlier Air
       Blue micro-corduroy/underline substitution is retired; live availability, final thread
       match, unseen left/rear placements, digitizing and exact-blank sew-out remain gates.
+      GP-20 Mono Signal closes `GEOT0660.PNG` on stock BLV600 Black; GP-21 Heritage Merlot
+      closes `PUMD5290.PNG` as a custom cream/burgundy BLV600-style direction; and GP-22
+      Circuit Night A-Frame closes `MCXG5769.PNG` on stock BLV556 Surplus Black cotton twill.
       Remaining owner-art disposition, exact source-art refinements,
       digitized files and sew-out corrections remain.
 - [~] Complete the embroidery package for every approved placement. Reusable SVG sources,

@@ -42,11 +42,11 @@ rerun without manufacturing a runtime change or repeating the already accepted f
 The isolated Roberto review gate remains pending under
 `R04_INDEPENDENT_REVIEW_PACKET_2026-08-27.md`; the owner-approved invitation was sent from
 `support@growpathai.com` on 2026-08-27. The owner then explicitly resumed R-05. Hat concept
-execution is now active without fabricating reviewer findings: twenty GrowPathAI-only approved concept images
+execution is now active without fabricating reviewer findings: twenty-one GrowPathAI-only approved concept images
 are mapped to real published BLVNK models/textiles/colorways in
 `assets/brands/growpathai/hat-collection-2026/`, with four multi-view sheets, reusable SVG art,
-a stitch sequence, digitizer handoff and machine-file register. R-05 is not complete: eighteen
-of 21 registered owner sources have approved one-to-one conversions and three remain open.
+a stitch sequence, digitizer handoff and machine-file register. R-05 is not complete: nineteen
+of 21 registered owner sources have approved one-to-one conversions and two remain open.
 GP-18 closes the pale light-green-on-light-green `CNKY2160.PNG` direction on the real BLV550
 Sage/Olive blank with its factory rope retained. GP-09 remains a darker-treatment variant, and
 GP-19 closes `GYSG2238.PNG` while retaining its black/purple color block, purple rope, script-path
@@ -54,6 +54,9 @@ treatment and green rear leaf. GP-20 closes `GEOT0660.PNG` on stock BLV600 Black
 established white circuit leaf and GrowPathAI marks; its rejected tree-emblem draft is excluded.
 GP-21 closes `PUMD5290.PNG` with its cream/burgundy construction and raised burgundy/gold
 GrowPathAI embroidery; supplier feasibility and its exact-blank sew-out remain production gates.
+GP-22 closes `MCXG5769.PNG` on stock BLV556 Surplus Black cotton twill, retaining the
+neon-lime circuit leaf and white/blue technology lockup while truthfully using BLVNK's
+documented structured pinch-front construction.
 The owner-approved GP-16 corduroy image is an extra material variant of an already-covered source,
 not the last owner-source disposition and not evidence that visual work is complete.
 Live

@@ -78,3 +78,7 @@ GP-21,right,source-art/gpai-monogram.svg,34x14,flat satin,"antique gold",Small s
 GP-21,left,source-art/branching-path.svg,31x17,flat satin,"burgundy; antique gold",Use established branching-path geometry with open node centers,digitizer_required
 GP-21,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"burgundy",Single very small wordmark centered above opening,digitizer_required
 GP-21,blank,custom BLV600-style cream crown with burgundy brim button and snap,n/a,manufacturer-specific,"warm cream; burgundy",No rope; custom color blocking and exact supplier feasibility require written confirmation,manufacturer_confirmation_required
+GP-22,front,source-art/circuit-leaf.svg plus source-art/growpathai-wordmark.svg,78x58,flat satin,"neon lime; white; electric blue",Established enclosed circuit leaf above white GrowPath and blue AI at owner-approved source scale,digitizer_required
+GP-22,right,source-art/gpai-monogram.svg,34x14,flat satin,"white; electric blue",Small side mark at owner-approved scale,digitizer_required
+GP-22,left,source-art/branching-path.svg,31x17,flat satin,"electric blue",Use established branching-path geometry with open node centers,digitizer_required
+GP-22,back,source-art/growpathai-wordmark.svg,42x7,flat satin,"white; electric blue",Single very small wordmark centered above opening; no arch slogan,digitizer_required

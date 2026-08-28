@@ -2,7 +2,7 @@
 
 Date locked for concept review: 2026-08-27
 
-Status: eighteen owner-source conversions are visually approved, three registered owner-source
+Status: nineteen owner-source conversions are visually approved, two registered owner-source
 directions remain open, and GP-09 plus GP-16 are owner-approved extra variants rather than new
 source coverage. The older sixteen-slot package is not the completion boundary; all 21 rows
 in `OWNER_SOURCE_REGISTER.md` require an explicit disposition. GP-10 Loden Signal was retired before approval because it
@@ -21,6 +21,7 @@ sew-outs remain open.
 | BLV550 Gramps | <https://blvnkheadwear.com/products/gramps-snapback> | soft-hand nylon; pinch front; flat bill; 5 mm rope; classic snapback; mid 2.5/5; OSFA | $36.99 | rope-front nylon concepts |
 | BLV551 Gramps Corduroy | <https://blvnkheadwear.com/products/gramps-corduroy-snapback> | irregular-wale corduroy; internal stand-up stay; pinch front; flat bill; 5 mm rope; classic snapback; mid 2.5/5; OSFA | $34.99 | fashion corduroy and patch concepts |
 | BLV603 Cord Classic | <https://blvnkheadwear.com/products/the-cord-classic-snapback> | premium micro corduroy; structured six-panel; cotton-twill liner; flat bill; 3 mm rope; classic snapback; mid/high 3.5/5; OSFA | $35.99 | structured micro-corduroy concept |
+| BLV556 Surplus | <https://blvnkheadwear.com/products/surplus-snapback> | soft lightweight cotton twill; structured pinch-front crown; flat bill; embroidered eyelets; classic snapback; mid 2.5/5; OSFA | $31.99 | black cotton-twill technology/A-frame direction |
 
 The prices above are public retail observations, not wholesale, decorated, sample, shipping
 or landed costs. The public pages may simultaneously show a selected variant as backordered
@@ -55,6 +56,7 @@ quality requirement.
 | GP-19 | Night Bloom Path | custom BLV600-style matte-black crown / electric-purple brim and button – Premium Wool, with a narrow purple rope added; supplier/decorator confirmation required | owner source `GYSG2238.PNG`: black/purple/blue script-and-path direction | original white GrowPathAI script with blue `AI`, attached purple sprouting underline, small white/blue GPAI, blue branching path and small green rear circuit leaf | owner approved 2026-08-27; no invented emblem or removed rear leaf; custom color blocking, rope attachment, digitizing and exact-blank sew-out remain production gates |
 | GP-20 | Mono Signal | BLV600 Black – Premium Wool | owner source `GEOT0660.PNG`: clean black/white minimal lockup | established white circuit leaf above restrained white uppercase GrowPathAI wordmark; small white GPAI, branching-path and rear wordmark | owner approved 2026-08-27 on the real stock supplier blank; corrected circuit leaf controls and the rejected tree-emblem draft is excluded; flat embroidery and exact-blank sew-out remain production gates |
 | GP-21 | Heritage Merlot | custom BLV600-style warm-cream crown / burgundy brim, button and snap – Premium Wool; supplier confirmation required | owner source `PUMD5290.PNG`: cream/burgundy structured flat-brim direction with burgundy/gold raised embroidery | established circuit leaf in burgundy with antique-gold nodes/veins above the burgundy GrowPath/gold AI wordmark; small gold GPAI, burgundy/gold branching path and small burgundy rear wordmark | owner approved 2026-08-27; no rope, triangle, bag, number, genetics text, shield, sticker or manufacturer mark; custom color blocking, raised-embroidery limits, digitizing and exact-blank sew-out remain production gates |
+| GP-22 | Circuit Night A-Frame | BLV556 Surplus Black – Cotton Twill | owner source `MCXG5769.PNG`: black cotton-twill pinch-front technology direction | established neon-lime circuit leaf above white GrowPath/blue AI wordmark; small white/blue GPAI, blue branching path and very small white/blue rear wordmark | owner approved 2026-08-27 on the real stock supplier blank; BLVNK documents the crown as structured, so that fact controls over the source sheet's unstructured label; no rope, arch slogan, sticker or manufacturer mark; exact thread match and sew-out remain production gates |
 
 ## Shared placement contract
 
