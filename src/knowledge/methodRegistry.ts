@@ -1114,6 +1114,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "slug-gated public storefront preview actions with truthful setup guidance",
       "single-flight Commercial storefront loading and mutually exclusive storefront, product, media, and setup-task actions with retained drafts",
       "active-only owner Storefront products and a read-only unavailable Product detail state",
+      "image-first owner Product catalog review with API-host normalization for legacy uploads and publication-gated public/share actions",
       "single-flight Commercial order and analytics requests with retained last-good data, explicit cancellation confirmation, and truthful failure-versus-zero states",
       "explicit dispensary discovery by state or user-authorized distance with published linked inventory and external-site or in-store-pickup handoff",
       "composable regulated business roles kept separate from jurisdiction authorization and transaction capability",

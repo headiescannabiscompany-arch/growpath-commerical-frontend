@@ -29,6 +29,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { publicGrowInterests } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
+import { resolveImageUri } from "@/utils/photoUploads";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
@@ -460,7 +461,7 @@ export default function PublicProductRoute() {
           <AppCard>
             {product.imageUrl ? (
               <Image
-                source={{ uri: product.imageUrl }}
+                source={{ uri: resolveImageUri(product.imageUrl) }}
                 style={styles.productImage}
                 resizeMode="cover"
                 accessibilityLabel={`${product.name || "Product"} image`}

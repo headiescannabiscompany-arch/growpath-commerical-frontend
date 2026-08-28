@@ -23,7 +23,21 @@ export function resolveImageUri(uri: string | null | undefined) {
       const pointsAtLocalApi = ["localhost", "127.0.0.1", "0.0.0.0"].includes(
         parsed.hostname
       );
-      if (api && pointsAtLocalApi && !["localhost", "127.0.0.1"].includes(api.hostname)) {
+      const isApiUploadPath =
+        parsed.pathname.startsWith("/uploads/") ||
+        parsed.pathname.startsWith("/api/videos/uploads/") ||
+        parsed.pathname.startsWith("/api/evidence-assets/uploads/");
+      const apiRootHost = api?.hostname.replace(/^api\./i, "");
+      const pointsAtFirstPartyWebHost = Boolean(
+        apiRootHost &&
+        (parsed.hostname === apiRootHost || parsed.hostname.endsWith(`.${apiRootHost}`))
+      );
+      if (
+        api &&
+        isApiUploadPath &&
+        parsed.origin !== api.origin &&
+        (pointsAtLocalApi || pointsAtFirstPartyWebHost)
+      ) {
         return `${api.origin}${parsed.pathname}${parsed.search}`;
       }
     } catch {

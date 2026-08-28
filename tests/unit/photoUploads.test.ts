@@ -33,6 +33,12 @@ describe("photo upload persistence helpers", () => {
     expect(resolveImageUri("file:///tmp/photo.jpg")).toBe("file:///tmp/photo.jpg");
   });
 
+  it("repairs legacy first-party upload URLs that point at the web host", () => {
+    expect(resolveImageUri("http://localhost:8081/uploads/legacy-hat.jpg")).toBe(
+      `${API_URL}/uploads/legacy-hat.jpg`
+    );
+  });
+
   it("uploads local image uris and keeps existing persisted urls", async () => {
     const urls = await persistImageUris([
       "/uploads/existing.jpg",

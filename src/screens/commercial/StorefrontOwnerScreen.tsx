@@ -21,7 +21,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
-import { persistImageUri } from "@/utils/photoUploads";
+import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 import { currentPublicUrl } from "@/utils/publicLinks";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
@@ -109,13 +109,13 @@ function splitTextList(value: string) {
 }
 
 function productImage(product: AnyRec) {
-  return (
+  return resolveImageUri(
     product.imageUrl ||
-    product.thumbnailUrl ||
-    product.photoUrl ||
-    product.gallery?.[0] ||
-    product.images?.[0] ||
-    ""
+      product.thumbnailUrl ||
+      product.photoUrl ||
+      product.gallery?.[0] ||
+      product.images?.[0] ||
+      ""
   );
 }
 
@@ -222,12 +222,12 @@ function campaignBody(campaign: AnyRec) {
 }
 
 function campaignImage(campaign: AnyRec) {
-  return (
+  return resolveImageUri(
     campaign.imageUrl ||
-    campaign.creativeImageUrl ||
-    campaign.thumbnailUrl ||
-    campaign.videoThumbnailUrl ||
-    ""
+      campaign.creativeImageUrl ||
+      campaign.thumbnailUrl ||
+      campaign.videoThumbnailUrl ||
+      ""
   );
 }
 

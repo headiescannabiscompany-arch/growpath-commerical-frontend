@@ -692,7 +692,26 @@ export default function CommercialProductsRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Current products</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Visual catalog review
+        </Text>
+        <Text style={styles.body}>
+          Review every saved product photo, candidate price, description, and readiness
+          state here before publication. Draft/private products remain owner-only and
+          cannot be opened or shared from the public storefront.
+        </Text>
+        <View style={styles.conceptTrialNotice}>
+          <Text style={styles.conceptTrialTitle}>25-person hat interest goal</Text>
+          <Text style={styles.conceptTrialText}>
+            Use Product Trials for an approved not-for-sale purchase-intent test. A Yes,
+            Maybe, or No response measures interest only; it does not charge anyone,
+            reserve inventory, or promise production. Complete supplier, sample, landed
+            cost, checkout, and launch review separately before collecting money.
+          </Text>
+          <View style={styles.actions}>
+            <ActionLink href="/home/commercial/trials" label="Open Product Trials" />
+          </View>
+        </View>
         {products.length ? (
           <View style={styles.list}>
             {products.map((product) => {
@@ -708,11 +727,27 @@ export default function CommercialProductsRoute({
                       resizeMode="cover"
                       accessibilityLabel={`${product.name || "Product"} thumbnail`}
                     />
-                  ) : null}
+                  ) : (
+                    <View style={styles.productThumbPlaceholder}>
+                      <Text style={styles.productThumbPlaceholderText}>No image</Text>
+                    </View>
+                  )}
                   <View style={styles.productMain}>
-                    <Text style={styles.productTitle}>
-                      {product.name || "Untitled product"}
-                    </Text>
+                    <View style={styles.productHeadingRow}>
+                      <Text style={styles.productTitle}>
+                        {product.name || "Untitled product"}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.statusPill,
+                          product.status === "published"
+                            ? styles.publishedPill
+                            : styles.draftPill
+                        ]}
+                      >
+                        {product.status === "published" ? "Published" : "Private draft"}
+                      </Text>
+                    </View>
                     <Text style={styles.productMeta}>
                       {[
                         (product as any).category,
@@ -769,17 +804,21 @@ export default function CommercialProductsRoute({
                       label="Open Detail"
                     />
                     {storefrontSlug ? (
-                      <ActionLink
-                        href={`/store/${encodeURIComponent(storefrontSlug)}/products/${encodeURIComponent(String(id))}`}
-                        label="Public Detail"
-                      />
+                      product.status === "published" ? (
+                        <ActionLink
+                          href={`/store/${encodeURIComponent(storefrontSlug)}/products/${encodeURIComponent(String(id))}`}
+                          label="View and Share Public Page"
+                        />
+                      ) : null
                     ) : (
                       <ActionLink
                         href="/home/commercial/storefront"
                         label="Set Up Storefront"
                       />
                     )}
-                    <ActionLink href="/home/commercial/feed" label="Create Campaign" />
+                    {product.status === "published" ? (
+                      <ActionLink href="/home/commercial/feed" label="Create Campaign" />
+                    ) : null}
                   </View>
                 </View>
               );
@@ -1061,7 +1100,10 @@ export function createCommercialProductsStyles(palette: ThemePalette) {
     },
     classificationTitle: { color: palette.warning, fontWeight: "900" },
     list: {
-      gap: 10,
+      alignItems: "stretch",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
       marginTop: 12
     },
     productRow: {
@@ -1069,26 +1111,87 @@ export function createCommercialProductsStyles(palette: ThemePalette) {
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
-      flexDirection: "row",
-      flexWrap: "wrap",
+      flexBasis: 300,
+      flexDirection: "column",
+      flexGrow: 1,
       gap: 10,
       justifyContent: "space-between",
+      maxWidth: 430,
+      minWidth: 270,
       padding: 10
     },
     productThumb: {
+      aspectRatio: 1,
       backgroundColor: palette.surfaceStrong,
       borderRadius: radius.card,
-      height: 82,
-      width: 112
+      width: "100%"
+    },
+    productThumbPlaceholder: {
+      alignItems: "center",
+      aspectRatio: 1,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderStyle: "dashed",
+      borderWidth: 1,
+      justifyContent: "center",
+      width: "100%"
+    },
+    productThumbPlaceholderText: {
+      color: palette.textMuted,
+      fontSize: 13,
+      fontWeight: "800"
     },
     productMain: {
       flex: 1,
-      minWidth: 240
+      minWidth: 0
+    },
+    productHeadingRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "space-between"
     },
     productTitle: {
       color: palette.text,
       fontSize: 15,
       fontWeight: "900"
+    },
+    statusPill: {
+      borderRadius: 999,
+      fontSize: 11,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 4
+    },
+    publishedPill: {
+      backgroundColor: palette.success,
+      color: palette.accentText
+    },
+    draftPill: {
+      backgroundColor: palette.surfaceMuted,
+      color: palette.textMuted
+    },
+    conceptTrialNotice: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 12,
+      padding: 12
+    },
+    conceptTrialTitle: {
+      color: palette.text,
+      fontSize: 14,
+      fontWeight: "900"
+    },
+    conceptTrialText: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 5
     },
     productMeta: {
       color: palette.textMuted,
