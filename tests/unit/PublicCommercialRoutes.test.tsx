@@ -564,7 +564,11 @@ describe("public commercial routes", () => {
     expect(mockLinkHrefs).not.toContain("/home/personal/forum");
     expect(screen.getByText("Buy")).toBeTruthy();
     expect(screen.getByText("External Link")).toBeTruthy();
-    expect(screen.getByText("Share Product")).toBeTruthy();
+    expect(screen.getByText("Share this product")).toBeTruthy();
+    expect(screen.getByText("Copy Link")).toBeTruthy();
+    expect(screen.getByText("Facebook")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Share Veg Mix" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Copy link for Veg Mix" })).toBeTruthy();
     expect(screen.getByText("Report Product")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Report Veg Mix" })).toBeTruthy();
     expect(screen.queryByText("Back to Store")).toBeNull();

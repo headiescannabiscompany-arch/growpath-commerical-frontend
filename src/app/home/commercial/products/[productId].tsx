@@ -177,7 +177,6 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   );
   const [product, setProduct] = useState<Product | null>(null);
   const [effectiveness, setEffectiveness] = useState<any>(null);
-  const [status, setStatus] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [productLineId, setProductLineId] = useState("");
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
@@ -201,10 +200,11 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
   const [message, setMessage] = useState("");
+  const [confirmUnpublish, setConfirmUnpublish] = useState(false);
 
   const hydrate = useCallback((next: Product | null) => {
     setProduct(next);
-    setStatus(next?.status || "draft");
+    setConfirmUnpublish(false);
     setImageUrl(productImage(next));
     setProductLineId(next?.productLineId || next?.linkedProductLineId || "");
     setPrice(priceInputValue(next));
@@ -252,9 +252,9 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
     load();
   }, [load]);
 
-  async function saveChanges() {
+  async function saveChanges(statusOverride?: Product["status"]) {
     if (!productId) return;
-    const nextStatus = (status.trim() || "draft") as Product["status"];
+    const nextStatus = statusOverride || product?.status || "draft";
     let persistedImageUrl = imageUrl.trim() || null;
     const nextProduct = {
       ...(product || {}),
@@ -358,7 +358,13 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         }
       } as Partial<Product>);
       hydrate(res?.product ?? res?.item ?? res);
-      setMessage("Product updated.");
+      setMessage(
+        nextStatus === "published"
+          ? "Product saved and published."
+          : product?.status === "published"
+            ? "Product saved as a private draft."
+            : "Product details saved."
+      );
     } catch (err) {
       setError(err);
     } finally {
@@ -657,14 +663,56 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
 
       <AppCard>
         <Text style={styles.cardTitle}>Update Product</Text>
+        <View style={styles.publicationBox}>
+          <Text style={styles.publicationTitle}>Publication</Text>
+          <Text style={styles.publicationState}>
+            {product?.status === "published" ? "Published" : "Private draft"}
+          </Text>
+          <Text style={styles.publicationBody}>
+            Saving details keeps the current visibility. Publishing saves this form and
+            makes the product public only when every required public field is complete.
+          </Text>
+          {product?.status !== "published" ? (
+            publicFieldMissingSetup(
+              productMissingSetup({
+                ...(product || {}),
+                imageUrl: imageUrl.trim(),
+                price: parsePrice(price),
+                unitSize: unitSize.trim(),
+                growInterests: splitList(growInterests),
+                shortDescription: shortDescription.trim(),
+                description: shortDescription.trim(),
+                externalPurchaseUrl: regulatedCannabis ? "" : externalPurchaseUrl.trim(),
+                stripePriceId: regulatedCannabis ? "" : stripePriceId.trim(),
+                status: "draft"
+              } as Product)
+            ).length ? (
+              <Text style={styles.warningText}>
+                Publish blocked: complete{" "}
+                {publicFieldMissingSetup(
+                  productMissingSetup({
+                    ...(product || {}),
+                    imageUrl: imageUrl.trim(),
+                    price: parsePrice(price),
+                    unitSize: unitSize.trim(),
+                    growInterests: splitList(growInterests),
+                    shortDescription: shortDescription.trim(),
+                    description: shortDescription.trim(),
+                    externalPurchaseUrl: regulatedCannabis
+                      ? ""
+                      : externalPurchaseUrl.trim(),
+                    stripePriceId: regulatedCannabis ? "" : stripePriceId.trim(),
+                    status: "draft"
+                  } as Product)
+                ).join(", ")}
+                .
+              </Text>
+            ) : (
+              <Text style={styles.readyText}>Ready to publish.</Text>
+            )
+          ) : null}
+        </View>
         <View style={styles.formGrid}>
-          <TextInput
-            accessibilityLabel="Commercial product detail status"
-            onChangeText={setStatus}
-            placeholder="draft, published, archived"
-            style={styles.input}
-            value={status}
-          />
           <TextInput
             accessibilityLabel="Commercial product detail image URL"
             autoCapitalize="none"
@@ -885,17 +933,71 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
           value={batchLot}
         />
         {message ? <Text style={styles.success}>{message}</Text> : null}
-        <Pressable
-          accessibilityLabel="Save commercial product detail"
-          accessibilityRole="button"
-          disabled={saving || !productId}
-          onPress={saveChanges}
-          style={[styles.primaryAction, saving || !productId ? styles.disabled : null]}
-        >
-          <Text style={styles.primaryActionText}>
-            {saving ? "Saving..." : "Save Product Detail"}
-          </Text>
-        </Pressable>
+        <View style={styles.lifecycleActions}>
+          <Pressable
+            accessibilityLabel="Save commercial product detail"
+            accessibilityRole="button"
+            disabled={saving || !productId}
+            onPress={() => void saveChanges()}
+            style={[styles.primaryAction, saving || !productId ? styles.disabled : null]}
+          >
+            <Text style={styles.primaryActionText}>
+              {saving ? "Saving..." : "Save Product Details"}
+            </Text>
+          </Pressable>
+          {product?.status === "published" ? (
+            confirmUnpublish ? (
+              <View style={styles.confirmBox}>
+                <Text style={styles.publicationBody}>
+                  This removes the public page but preserves the product and its setup.
+                </Text>
+                <View style={styles.lifecycleActions}>
+                  <Pressable
+                    accessibilityLabel="Confirm unpublish commercial product"
+                    accessibilityRole="button"
+                    disabled={saving}
+                    onPress={() => void saveChanges("draft")}
+                    style={[styles.dangerAction, saving && styles.disabled]}
+                  >
+                    <Text style={styles.dangerActionText}>Confirm Unpublish</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityLabel="Cancel unpublish commercial product"
+                    accessibilityRole="button"
+                    disabled={saving}
+                    onPress={() => setConfirmUnpublish(false)}
+                    style={styles.action}
+                  >
+                    <Text style={styles.actionText}>Keep Published</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              <Pressable
+                accessibilityLabel="Unpublish commercial product"
+                accessibilityRole="button"
+                disabled={saving}
+                onPress={() => setConfirmUnpublish(true)}
+                style={[styles.action, saving && styles.disabled]}
+              >
+                <Text style={styles.actionText}>Unpublish Product</Text>
+              </Pressable>
+            )
+          ) : (
+            <Pressable
+              accessibilityLabel="Publish commercial product"
+              accessibilityRole="button"
+              disabled={saving || !productId}
+              onPress={() => void saveChanges("published")}
+              style={[
+                styles.publishAction,
+                saving || !productId ? styles.disabled : null
+              ]}
+            >
+              <Text style={styles.publishActionText}>Save and Publish Product</Text>
+            </Pressable>
+          )}
+        </View>
       </AppCard>
     </AppPage>
   );
@@ -960,6 +1062,41 @@ export function createCommercialProductDetailStyles(palette: ThemePalette) {
     metricLabel: { color: palette.textMuted, fontSize: 12, marginTop: 2 },
     warningBox: { gap: 6, marginTop: 10 },
     warningText: { color: palette.warning, fontSize: 13, fontWeight: "700" },
+    publicationBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 5,
+      marginTop: 12,
+      padding: 12
+    },
+    publicationTitle: { color: palette.text, fontSize: 14, fontWeight: "900" },
+    publicationState: { color: palette.link, fontSize: 13, fontWeight: "900" },
+    publicationBody: { color: palette.textSoft, fontSize: 13, lineHeight: 19 },
+    readyText: { color: palette.success, fontSize: 13, fontWeight: "900" },
+    lifecycleActions: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    confirmBox: { gap: 6, width: "100%" },
+    publishAction: {
+      backgroundColor: palette.success,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    publishActionText: { color: palette.accentText, fontSize: 13, fontWeight: "900" },
+    dangerAction: {
+      backgroundColor: palette.warning,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    dangerActionText: { color: palette.accentText, fontSize: 13, fontWeight: "900" },
     warningRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
     warningPill: {
       backgroundColor: palette.surfaceMuted,
