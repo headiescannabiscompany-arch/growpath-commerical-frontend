@@ -572,7 +572,9 @@ export default function PublicProductRoute() {
               </View>
             ) : null}
 
-            <ProductPurchaseIntentControl product={product} />
+            {product.purchaseIntentEnabled ? (
+              <ProductPurchaseIntentControl product={product} />
+            ) : null}
 
             <View style={styles.actionRow}>
               {canCheckout ? (
