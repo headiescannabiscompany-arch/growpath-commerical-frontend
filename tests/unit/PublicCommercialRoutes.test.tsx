@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Linking } from "react-native";
 
 import PublicBrandProfileRoute, {
   createStyles as createBrandProfileStyles
@@ -120,6 +121,8 @@ const publicPayload = {
       name: "Veg Mix",
       description: "Nitrogen-forward veg support.",
       imageUrl: "https://example.com/veg-mix.jpg",
+      socialPreviewUrl:
+        "https://api.growpathai.com/api/commercial/storefront/public/living-soil-labs/products/product-1/share?v=abc123",
       priceCents: 2500,
       productLineId: "line-1",
       unitSize: "5 lb bag",
@@ -510,6 +513,7 @@ describe("public commercial routes", () => {
   });
 
   it("loads a public product detail page with storefront navigation", async () => {
+    const openUrlSpy = jest.spyOn(Linking, "openURL").mockResolvedValue(true as any);
     const screen = render(<PublicProductRoute />);
 
     await waitFor(() =>
@@ -568,6 +572,10 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Copy Link")).toBeTruthy();
     expect(screen.getByText("Copy Post")).toBeTruthy();
     expect(screen.getByText("Facebook")).toBeTruthy();
+    fireEvent.press(screen.getByRole("link", { name: "Share Veg Mix to Facebook" }));
+    expect(decodeURIComponent(String(openUrlSpy.mock.calls[0]?.[0] || ""))).toContain(
+      "https://api.growpathai.com/api/commercial/storefront/public/living-soil-labs/products/product-1/share?v=abc123"
+    );
     expect(screen.getByRole("button", { name: "Share Veg Mix" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Copy link for Veg Mix" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Copy post for Veg Mix" })).toBeTruthy();
@@ -598,6 +606,7 @@ describe("public commercial routes", () => {
         })
       )
     );
+    openUrlSpy.mockRestore();
   });
 
   it("keeps a semantic product heading and shared recovery path on load failure", async () => {

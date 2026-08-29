@@ -1117,7 +1117,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "active-only owner Storefront products and a read-only unavailable Product detail state",
       "image-first owner Product catalog review with API-host normalization for legacy uploads and publication-gated public/share actions",
       "named single-flight Product save, publish, confirmed unpublish, and fully-configured batch-publish actions with exact-image canonical social sharing",
-      "server-rendered social previews limited to exact published non-hidden Products with public-API normalization for legacy first-party uploads, saved image, name, price, description, storefront identity, and canonical Product destination, plus a complete copy-post fallback",
+      "server-rendered, deterministically versioned social previews limited to exact published non-hidden Products with public-API normalization for legacy first-party uploads, saved image, name, price, description, storefront identity, a normal-browser redirect to the canonical Product destination, and a complete copy-post fallback",
       "single-flight Commercial order and analytics requests with retained last-good data, explicit cancellation confirmation, and truthful failure-versus-zero states",
       "explicit dispensary discovery by state or user-authorized distance with published linked inventory and external-site or in-store-pickup handoff",
       "composable regulated business roles kept separate from jurisdiction authorization and transaction capability",

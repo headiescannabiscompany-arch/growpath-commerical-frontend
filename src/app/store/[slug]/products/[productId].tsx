@@ -633,7 +633,10 @@ export default function PublicProductRoute() {
             path={`/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(requestedProductId)}`}
             description={product?.shortDescription || product?.description || ""}
             priceLabel={money(product, storefront)}
-            socialPreviewUrl={`${API_URL || "https://api.growpathai.com"}/api/commercial/storefront/public/${encodeURIComponent(slug)}/products/${encodeURIComponent(requestedProductId)}/share`}
+            socialPreviewUrl={
+              product?.socialPreviewUrl ||
+              `${API_URL || "https://api.growpathai.com"}/api/commercial/storefront/public/${encodeURIComponent(slug)}/products/${encodeURIComponent(requestedProductId)}/share`
+            }
           />
 
           <AppCard>
