@@ -14,7 +14,10 @@ import {
 import { listCommercialFeedCampaigns } from "@/api/commercialFeed";
 import { type FieldObservation, listPublicFieldObservations } from "@/api/fieldStudies";
 import { searchContent } from "@/api/marketplace";
-import { searchPublicStorefronts } from "@/api/storefront";
+import {
+  discoverPublicProductsAndTrials,
+  searchPublicStorefronts
+} from "@/api/storefront";
 import { searchVideos } from "@/api/videos";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -23,6 +26,7 @@ import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { purchaseIntentConceptById } from "@/config/commerceConceptTrials";
 import {
   plantIdentificationActionLabel,
   plantIdentificationDestination
@@ -70,11 +74,20 @@ function idOf(row: any) {
 }
 
 function titleOf(row: any, fallback: string) {
-  return String(row?.title || row?.businessName || row?.name || fallback);
+  return String(
+    row?.title || row?.conceptTitle || row?.businessName || row?.name || fallback
+  );
 }
 
 function summaryOf(row: any) {
-  return String(row?.summary || row?.description || row?.bio || row?.body || "");
+  return String(
+    row?.summary ||
+      row?.shortDescription ||
+      row?.description ||
+      row?.bio ||
+      row?.body ||
+      ""
+  );
 }
 
 export function discoverImageOf(row: any) {
@@ -107,6 +120,25 @@ export function discoverLiveHref(row: any) {
   return `/live-session?sessionId=${encodeURIComponent(String(row?.linkedLiveId || ""))}`;
 }
 
+export function discoverCatalogHref(row: any) {
+  const exact = String(row?.publicHref || "").trim();
+  if (exact) return exact;
+  const slug = storeSlug(row);
+  const id = idOf(row);
+  if (row?.discoveryType === "product" && slug && id) {
+    return `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(id)}`;
+  }
+  return slug ? `/store/${encodeURIComponent(slug)}` : "/store";
+}
+
+export function discoverCatalogImageOf(row: any) {
+  const direct = discoverImageOf(row);
+  if (direct) return direct;
+  if (row?.discoveryType !== "trial") return "";
+  const concept = purchaseIntentConceptById(row?.conceptAssetId);
+  return concept ? Image.resolveAssetSource(concept.image)?.uri || "" : "";
+}
+
 function storeSlug(row: any) {
   return String(
     row?.slug || row?.storefrontSlug || row?.brandSlug || row?.publicSlug || ""
@@ -134,6 +166,7 @@ export default function DiscoverDirectory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [feed, setFeed] = useState<any[]>([]);
+  const [catalog, setCatalog] = useState<any[]>([]);
   const [stores, setStores] = useState<any[]>([]);
   const [marketplace, setMarketplace] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
@@ -146,6 +179,7 @@ export default function DiscoverDirectory() {
     setError("");
     const [
       feedResult,
+      catalogResult,
       storeResult,
       marketResult,
       courseResult,
@@ -153,6 +187,7 @@ export default function DiscoverDirectory() {
       natureResult
     ] = await Promise.allSettled([
       listCommercialFeedCampaigns({ q: q || undefined, sort: "new", limit: 18 }),
+      discoverPublicProductsAndTrials({ q: q || undefined, limit: 24 }),
       searchPublicStorefronts({ q: q || undefined, limit: 18 }),
       searchContent(q, undefined),
       import("@/api/courses").then((api) =>
@@ -172,6 +207,11 @@ export default function DiscoverDirectory() {
         ? rows(feedResult.value, ["campaigns", "results"])
         : []
     );
+    setCatalog(
+      catalogResult.status === "fulfilled"
+        ? rows(catalogResult.value, ["items", "products", "trials"])
+        : []
+    );
     setStores(
       storeResult.status === "fulfilled"
         ? rows(storeResult.value, ["storefronts", "brands"])
@@ -186,6 +226,7 @@ export default function DiscoverDirectory() {
     if (
       [
         feedResult,
+        catalogResult,
         storeResult,
         marketResult,
         courseResult,
@@ -206,7 +247,7 @@ export default function DiscoverDirectory() {
     const ordinaryFeed = feed.filter(
       (row) => !row.linkedProductId && !row.linkedTrialId && !row.linkedLiveId
     );
-    const products = feed.filter(
+    const promotedProducts = feed.filter(
       (row) => row.linkedProductId || row.linkedProductLineId || row.linkedTrialId
     );
     const lives = feed.filter((row) => row.linkedLiveId);
@@ -228,6 +269,25 @@ export default function DiscoverDirectory() {
         thumbnailUrl: discoverImageOf(row)
       };
     });
+    const catalogIds = new Set(catalog.map((row) => idOf(row)).filter(Boolean));
+    const uniquePromotedProducts = promotedProducts.filter(
+      (row) =>
+        !catalogIds.has(String(row?.linkedProductId || "")) &&
+        !catalogIds.has(String(row?.linkedTrialId || ""))
+    );
+    const catalogResults = catalog.map((row) => ({
+      id: `${String(row?.discoveryType || "catalog")}:${idOf(row)}`,
+      title: titleOf(row, row?.discoveryType === "trial" ? "Product trial" : "Product"),
+      summary:
+        summaryOf(row) ||
+        String(row?.question || row?.disclosure || row?.storefrontName || ""),
+      href: discoverCatalogHref(row),
+      thumbnailUrl: discoverCatalogImageOf(row),
+      meta:
+        row?.discoveryType === "trial"
+          ? "Concept trial · Not for sale"
+          : String(row?.storefrontName || "Published product")
+    }));
 
     return [
       {
@@ -307,8 +367,8 @@ export default function DiscoverDirectory() {
         title: "Products, Offers & Trials",
         ranking: "Recent & relevant",
         empty: "No matching products, offers, or trials.",
-        results: feedResults(products),
-        browseHref: "/feed"
+        results: [...catalogResults, ...feedResults(uniquePromotedProducts)],
+        browseHref: "/store"
       },
       {
         key: "marketplace",
@@ -353,7 +413,16 @@ export default function DiscoverDirectory() {
         browseHref: "/lives"
       }
     ];
-  }, [activeQuery, courses, entitlements.mode, feed, marketplace, stores, videos]);
+  }, [
+    activeQuery,
+    catalog,
+    courses,
+    entitlements.mode,
+    feed,
+    marketplace,
+    stores,
+    videos
+  ]);
 
   function search() {
     const q = query.trim();

@@ -5,6 +5,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 const mockPush = jest.fn();
 const mockSearchVideos = jest.fn();
 const mockListPublicFieldObservations = jest.fn();
+const mockDiscoverPublicProductsAndTrials = jest.fn();
 let mockThemeMode: "day" | "night" = "night";
 let mockWorkspaceMode: "personal" | "commercial" | "facility" = "personal";
 
@@ -40,7 +41,9 @@ jest.mock("@/api/marketplace", () => ({
   searchContent: jest.fn(async () => [])
 }));
 jest.mock("@/api/storefront", () => ({
-  searchPublicStorefronts: jest.fn(async () => [])
+  searchPublicStorefronts: jest.fn(async () => []),
+  discoverPublicProductsAndTrials: (...args: any[]) =>
+    mockDiscoverPublicProductsAndTrials(...args)
 }));
 jest.mock("@/api/fieldStudies", () => ({
   listPublicFieldObservations: (...args: any[]) =>
@@ -90,6 +93,7 @@ describe("Discover video search", () => {
     mockPush.mockReset();
     mockSearchVideos.mockReset();
     mockListPublicFieldObservations.mockReset();
+    mockDiscoverPublicProductsAndTrials.mockReset();
     mockThemeMode = "night";
     mockWorkspaceMode = "personal";
     mockSearchVideos.mockResolvedValue([
@@ -103,6 +107,7 @@ describe("Discover video search", () => {
       }
     ]);
     mockListPublicFieldObservations.mockResolvedValue([]);
+    mockDiscoverPublicProductsAndTrials.mockResolvedValue({ items: [] });
   });
 
   it("resolves available discovery art and exact course/live destinations", () => {
@@ -182,6 +187,46 @@ describe("Discover video search", () => {
     expect(mockPush).toHaveBeenCalledWith("/field-observations");
     fireEvent.press(screen.getByLabelText("Open Discovery Nature globe"));
     expect(mockPush).toHaveBeenCalledWith("/field-observations");
+  });
+
+  it("shows published products and public trials without requiring feed campaigns", async () => {
+    mockDiscoverPublicProductsAndTrials.mockResolvedValue({
+      items: [
+        {
+          id: "hat-1",
+          discoveryType: "product",
+          name: "Night Script Cord",
+          shortDescription: "Navy corduroy hat",
+          imageUrl: "https://cdn.example.com/night-script.png",
+          storefrontName: "GrowPathAI",
+          storefrontSlug: "growpathai",
+          publicHref: "/store/growpathai/products/hat-1"
+        },
+        {
+          id: "trial-1",
+          discoveryType: "trial",
+          conceptTitle: "GrowPathAI Circuit Leaf — Midnight",
+          conceptAssetId: "growpathai-hat-circuit-leaf-midnight-purchase-intent-trial",
+          question: "Would you buy this hat for $49?",
+          storefrontSlug: "growpathai",
+          publicHref: "/store/growpathai#product-trials"
+        }
+      ]
+    });
+
+    render(<DiscoverDirectory />);
+
+    await waitFor(() => expect(screen.getByText("Night Script Cord")).toBeTruthy());
+    expect(screen.getByText("GrowPathAI Circuit Leaf — Midnight")).toBeTruthy();
+    expect(mockDiscoverPublicProductsAndTrials).toHaveBeenCalledWith({
+      q: undefined,
+      limit: 24
+    });
+
+    fireEvent.press(screen.getByLabelText("Open Night Script Cord"));
+    expect(mockPush).toHaveBeenCalledWith("/store/growpathai/products/hat-1");
+    fireEvent.press(screen.getByLabelText("Open GrowPathAI Circuit Leaf — Midnight"));
+    expect(mockPush).toHaveBeenCalledWith("/store/growpathai#product-trials");
   });
 
   it.each(["day", "night"] as const)(
