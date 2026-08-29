@@ -27,8 +27,8 @@ import { useAuth } from "@/auth/AuthContext";
 import ReportModal from "@/components/ReportModal";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { publicGrowInterests } from "@/utils/publicCommerce";
-import { sharePublicLink } from "@/utils/publicLinks";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -390,22 +390,6 @@ export default function PublicProductRoute() {
     }
   }
 
-  async function shareProduct() {
-    try {
-      const result = await sharePublicLink(
-        product?.name || "GrowPath product",
-        `/store/${slug}/products/${requestedProductId}`
-      );
-      setFeedback(
-        result.method === "web-clipboard"
-          ? "Product link copied."
-          : "Product link ready to share."
-      );
-    } catch (err: any) {
-      setFeedback(err?.message || "Unable to share product.");
-    }
-  }
-
   const externalUrl = publicProductExternalUrl(product, storefront);
   const canCheckout = productCanCheckout(product, storefront);
   const licensedTransferOnly = isRegulatedCannabisProduct(product);
@@ -619,9 +603,6 @@ export default function PublicProductRoute() {
                   Checkout is not available for this product.
                 </Text>
               ) : null}
-              <Pressable style={styles.secondaryButton} onPress={shareProduct}>
-                <Text style={styles.secondaryButtonText}>Share Product</Text>
-              </Pressable>
               {auth.isAuthed ? (
                 <Pressable
                   accessibilityRole="button"
@@ -634,6 +615,12 @@ export default function PublicProductRoute() {
               ) : null}
             </View>
           </AppCard>
+
+          <PublicShareActions
+            heading="Share this product"
+            title={product?.name || "GrowPath product"}
+            path={`/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(requestedProductId)}`}
+          />
 
           <AppCard>
             <Text style={styles.cardTitle}>Product Context</Text>

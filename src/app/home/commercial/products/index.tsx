@@ -12,7 +12,7 @@ import {
 } from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
-import { createProduct, fetchProducts, Product } from "@/api/products";
+import { createProduct, fetchProducts, Product, updateProduct } from "@/api/products";
 import { fetchStorefront } from "@/api/storefront";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
@@ -156,6 +156,10 @@ function productMissingSetup(product: Product) {
   return missing;
 }
 
+function publicFieldMissingSetup(product: Product) {
+  return productMissingSetup(product).filter((item) => item !== "published");
+}
+
 function formPublishBlockers(form: ProductForm) {
   const blockers: string[] = [];
   if (!hasText(form.imageUrl)) blockers.push("add image");
@@ -209,6 +213,8 @@ export default function CommercialProductsRoute({
   const [creatingTaskForProductId, setCreatingTaskForProductId] = useState("");
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState<any>(null);
+  const [confirmPublishReady, setConfirmPublishReady] = useState(false);
+  const [publishingReady, setPublishingReady] = useState(false);
 
   const publishedCount = useMemo(
     () => products.filter((product) => product.status === "published").length,
@@ -226,6 +232,14 @@ export default function CommercialProductsRoute({
   );
   const publishBlockers = formPublishBlockers(form);
   const publishToggleDisabled = form.status === "draft" && publishBlockers.length > 0;
+  const readyDrafts = useMemo(
+    () =>
+      products.filter(
+        (product) =>
+          product.status !== "published" && publicFieldMissingSetup(product).length === 0
+      ),
+    [products]
+  );
 
   async function loadProducts() {
     setLoading(true);
@@ -358,6 +372,35 @@ export default function CommercialProductsRoute({
       setError(err);
     } finally {
       setCreatingTaskForProductId("");
+    }
+  }
+
+  async function publishAllReadyDrafts() {
+    if (!readyDrafts.length || publishingReady) return;
+    setPublishingReady(true);
+    setFeedback("");
+    setError(null);
+    let published = 0;
+    try {
+      for (const product of readyDrafts) {
+        const id = productId(product);
+        if (!id) continue;
+        await updateProduct(String(id), { status: "published" });
+        published += 1;
+      }
+      setConfirmPublishReady(false);
+      setFeedback(
+        `Published ${published} ready product${published === 1 ? "" : "s"}. Public pages and sharing are now available.`
+      );
+      await loadProducts();
+    } catch (err) {
+      setError(err);
+      setFeedback(
+        `Published ${published} product${published === 1 ? "" : "s"} before the failure. Review the remaining drafts and retry.`
+      );
+      await loadProducts();
+    } finally {
+      setPublishingReady(false);
     }
   }
 
@@ -700,6 +743,59 @@ export default function CommercialProductsRoute({
           state here before publication. Draft/private products remain owner-only and
           cannot be opened or shared from the public storefront.
         </Text>
+        <View style={styles.publicationBox}>
+          <Text style={styles.conceptTrialTitle}>Publish completed products</Text>
+          <Text style={styles.conceptTrialText}>
+            {readyDrafts.length
+              ? `${readyDrafts.length} private draft${readyDrafts.length === 1 ? " is" : "s are"} fully configured and ready. Incomplete drafts will not be changed.`
+              : "No fully configured private drafts are waiting to publish."}
+          </Text>
+          {readyDrafts.length ? (
+            confirmPublishReady ? (
+              <View style={styles.confirmBox}>
+                <Text style={styles.warningText}>
+                  Publish all {readyDrafts.length} ready drafts now? This makes their
+                  public pages and social share links available.
+                </Text>
+                <View style={styles.actions}>
+                  <Pressable
+                    accessibilityLabel="Confirm publish all ready commercial products"
+                    accessibilityRole="button"
+                    disabled={publishingReady}
+                    onPress={() => void publishAllReadyDrafts()}
+                    style={[styles.primaryAction, publishingReady && styles.disabled]}
+                  >
+                    <Text style={styles.primaryActionText}>
+                      {publishingReady
+                        ? "Publishing..."
+                        : "Confirm Publish Ready Products"}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityLabel="Cancel publish all ready commercial products"
+                    accessibilityRole="button"
+                    disabled={publishingReady}
+                    onPress={() => setConfirmPublishReady(false)}
+                    style={styles.action}
+                  >
+                    <Text style={styles.actionText}>Cancel</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              <Pressable
+                accessibilityLabel="Publish all ready commercial products"
+                accessibilityRole="button"
+                onPress={() => setConfirmPublishReady(true)}
+                style={styles.primaryAction}
+              >
+                <Text style={styles.primaryActionText}>
+                  Publish All {readyDrafts.length} Ready Drafts
+                </Text>
+              </Pressable>
+            )
+          ) : null}
+        </View>
         <View style={styles.conceptTrialNotice}>
           <Text style={styles.conceptTrialTitle}>25-person hat interest goal</Text>
           <Text style={styles.conceptTrialText}>
@@ -1182,6 +1278,15 @@ export function createCommercialProductsStyles(palette: ThemePalette) {
       marginTop: 12,
       padding: 12
     },
+    publicationBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 12,
+      padding: 12
+    },
+    confirmBox: { gap: 6, marginTop: 8 },
     conceptTrialTitle: {
       color: palette.text,
       fontSize: 14,

@@ -2218,6 +2218,85 @@ describe("commercial workflow pages", () => {
     );
   });
 
+  it("publishes every fully configured draft from the visual catalog after confirmation", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/products" && !options) {
+        return Promise.resolve({
+          products: [
+            {
+              id: "hat-ready-1",
+              name: "Ready Hat One",
+              status: "draft",
+              imageUrl: "https://example.com/hat-one.jpg",
+              shortDescription: "Approved hat concept one.",
+              price: 49,
+              unitSize: "One size",
+              growInterests: ["community"],
+              externalPurchaseUrl: "https://example.com/hat-one"
+            },
+            {
+              id: "hat-ready-2",
+              name: "Ready Hat Two",
+              status: "draft",
+              imageUrl: "https://example.com/hat-two.jpg",
+              shortDescription: "Approved hat concept two.",
+              price: 59,
+              unitSize: "One size",
+              growInterests: ["community"],
+              externalPurchaseUrl: "https://example.com/hat-two"
+            },
+            {
+              id: "hat-incomplete",
+              name: "Incomplete Hat",
+              status: "draft"
+            }
+          ]
+        });
+      }
+      if (path === "/api/commercial/storefront") {
+        return Promise.resolve({ storefront: { slug: "growpathai" } });
+      }
+      if (
+        path.startsWith("/api/commercial/products/hat-ready-") &&
+        options?.method === "PATCH"
+      ) {
+        return Promise.resolve({
+          product: { id: path.split("/").pop(), ...options.body }
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialProductsRoute />);
+
+    await waitFor(() => expect(screen.getByText("Ready Hat One")).toBeTruthy());
+    expect(
+      screen.getByText(/2 private drafts are fully configured and ready/)
+    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Publish all ready commercial products"));
+    fireEvent.press(
+      screen.getByLabelText("Confirm publish all ready commercial products")
+    );
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/products/hat-ready-1",
+        expect.objectContaining({ method: "PATCH", body: { status: "published" } })
+      )
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/commercial/products/hat-ready-2",
+      expect.objectContaining({ method: "PATCH", body: { status: "published" } })
+    );
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([path, options]) =>
+          path === "/api/commercial/products/hat-incomplete" &&
+          options?.method === "PATCH"
+      )
+    ).toBe(false);
+  });
+
   it("keeps a blank draft product price unset instead of converting it to zero", async () => {
     const screen = render(<CommercialProductsRoute />);
 
@@ -2294,10 +2373,6 @@ describe("commercial workflow pages", () => {
     ).toBeTruthy();
 
     fireEvent.changeText(
-      screen.getByLabelText("Commercial product detail status"),
-      "draft"
-    );
-    fireEvent.changeText(
       screen.getByLabelText("Commercial product detail image URL"),
       "https://example.com/base-updated.jpg"
     );
@@ -2365,7 +2440,8 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial product detail batch or lot"),
       "LOT-BASE-2026"
     );
-    fireEvent.press(screen.getByLabelText("Save commercial product detail"));
+    fireEvent.press(screen.getByLabelText("Unpublish commercial product"));
+    fireEvent.press(screen.getByLabelText("Confirm unpublish commercial product"));
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
@@ -2441,11 +2517,7 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() => expect(screen.getByText("Incomplete Product")).toBeTruthy());
 
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial product detail status"),
-      "published"
-    );
-    fireEvent.press(screen.getByLabelText("Save commercial product detail"));
+    fireEvent.press(screen.getByLabelText("Publish commercial product"));
 
     await waitFor(() =>
       expect(screen.getByText(/Product publish blocked: missing/)).toBeTruthy()

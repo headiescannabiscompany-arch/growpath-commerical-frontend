@@ -56,17 +56,24 @@ export default function PublicShareActions({ title, path, heading = "Share" }: P
       </Text>
       <View style={styles.actions}>
         <Pressable
+          accessibilityLabel={`Share ${title}`}
           accessibilityRole="button"
           onPress={openShareSheet}
           style={styles.primary}
         >
           <Text style={styles.primaryText}>Share</Text>
         </Pressable>
-        <Pressable accessibilityRole="button" onPress={copyLink} style={styles.secondary}>
+        <Pressable
+          accessibilityLabel={`Copy link for ${title}`}
+          accessibilityRole="button"
+          onPress={copyLink}
+          style={styles.secondary}
+        >
           <Text style={styles.secondaryText}>Copy Link</Text>
         </Pressable>
         {targets.map((target) => (
           <Pressable
+            accessibilityLabel={`Share ${title} to ${target.label}`}
             accessibilityRole="link"
             key={target.key}
             onPress={() => Linking.openURL(target.href)}
