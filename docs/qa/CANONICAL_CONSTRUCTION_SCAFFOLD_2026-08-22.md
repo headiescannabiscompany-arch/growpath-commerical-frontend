@@ -377,6 +377,18 @@ evidence and no-resend/refund history.
 8. Begin App Store and Play Store work last, including credentials, Sentry, builds,
    physical-device smoke, privacy/data-rights, listing, submission, monitoring and rollback.
 
+Batch 8 reconciliation, 2026-08-29: R-03 is retained as accepted on frontend
+`63a0bd2a2257e757c6f50bdc9d7de8b7eb2b1ffa` and backend
+`ff1e8b66e4e33e94eed1b48cd4503313649b57ca`. Complete frontend CI run `33269478735` and
+production preflight run `33269478722` passed, as did the release scan, 324-route/225-backend-route
+surface audit, corruption/export/workflow guards and canonical live-URL verification. The earlier
+cross-role crawl remains authoritative for unaffected routes; the later catalog/share slice has its
+own affected production acceptance under R-05 and must not reopen the rest of the application.
+R-04 is now an exact external blocker: production contains no account for
+`roberto.tomas.cuentas@gmail.com`, so review cannot begin until that reviewer creates and verifies
+a separate identity. Credential rotation remains sequenced after R-04 and must not be bulk-run or
+marked complete while this blocker exists.
+
 ## Story-to-assembly index
 
 This table guarantees every canonical row has a construction home. Paths are ownership

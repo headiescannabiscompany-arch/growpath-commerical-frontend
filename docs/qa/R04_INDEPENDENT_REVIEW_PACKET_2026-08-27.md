@@ -1,9 +1,10 @@
 # R-04 independent reviewer packet
 
 Date prepared: 2026-08-27  
-Status: invitation sent; separate-account creation and review pending
+Status: blocked on separate-account creation; invitation sent and production account search completed
 Reviewer: `roberto.tomas.cuentas@gmail.com`  
-Production frontend freeze: `f322d440add3d63bb6e417b4d750913f487a2f5f`
+Production frontend freeze: `63a0bd2a2257e757c6f50bdc9d7de8b7eb2b1ffa`
+Production backend freeze: `ff1e8b66e4e33e94eed1b48cd4503313649b57ca`
 
 Invitation evidence: on 2026-08-27 the owner explicitly approved `invite rob`. GrowPathAI Support
 sent the bounded review invitation from `support@growpathai.com` to the reviewer address above.
@@ -12,6 +13,12 @@ outbound message was accepted by Gmail; it does not prove delivery, account crea
 acceptance. The invitation directs Roberto to `https://growpathai.com/register`, prohibits use of
 owner/Admin credentials, starts with Personal, withholds Platform Admin, and reserves any
 Commercial/Facility test access for a later explicit grant.
+
+Production checkpoint, 2026-08-29: the signed-in Platform Admin searched the Accounts surface for
+the exact reviewer email and received no matching user row. This is evidence that a separate
+reviewer identity is not yet available in GrowPathAI; it is not evidence of failed email delivery.
+R-04 must remain blocked until Roberto creates and verifies his own account. The owner account and
+Platform Admin credentials are not an acceptable substitute.
 
 ## Purpose and boundary
 

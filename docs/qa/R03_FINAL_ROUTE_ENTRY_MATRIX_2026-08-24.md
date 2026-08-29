@@ -118,6 +118,27 @@ deployed application candidate named below.
   physical screen-reader evidence plus named external provider/human mutation gates remain open;
   they are not inferred from DOM, theme or keyboard evidence.
 
+## Post-catalog frozen-candidate reconciliation — 2026-08-29
+
+- Frozen frontend: `63a0bd2a2257e757c6f50bdc9d7de8b7eb2b1ffa`.
+- Frozen backend: `ff1e8b66e4e33e94eed1b48cd4503313649b57ca`.
+- Frontend CI run `33269478735` passed dependency installation, Expo version/Doctor checks,
+  production dependency audit, lint, TypeScript, sensitive-copy and Browser-workflow guards,
+  delivery verification and the complete test batch.
+- Production Build Preflight run `33269478722` passed on the same frontend SHA.
+- Local frozen-source gates passed: release scan (1,139 files), complete surface audit (324
+  frontend routes and 225 backend route declarations; zero errors/warnings), 32-module system
+  audit, 11-point Codex workflow contract, and placeholder/corruption/export verification.
+- Canonical production URL verification passed Privacy, Terms, Support, Communities, Personal
+  grow deep link, account deletion, workspace choice/switch, gift claim, API health and API
+  readiness. Evidence is retained at
+  `docs/qa/evidence/R03_LIVE_URLS_2026-08-29.json`.
+- The runtime changes after cleanup are concentrated in the owner-approved catalog/share slice.
+  Its separate R-05 production evidence covers 24 Products, two trials, exact product pages,
+  crawler previews/images/redirects and nine verified Facebook posts. Therefore the retained
+  cross-role crawl remains authoritative for unaffected routes; this reconciliation closes the
+  affected post-catalog rerun without pretending automated route enumeration is a new visual crawl.
+
 `Back` means the visible Back control returns to the named parent without changing the
 selected workspace. Unless narrowed below, every row owns loading, honest empty, populated,
 permission/error and reload states. Dynamic IDs are represented as `:id`.

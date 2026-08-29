@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-08-29T19:03:49.391Z",
+  "frontendSha": "63a0bd2a2257e757c6f50bdc9d7de8b7eb2b1ffa",
+  "backendSha": "ff1e8b66e4e33e94eed1b48cd4503313649b57ca",
+  "results": [
+    { "name": "privacy", "url": "https://growpathai.com/privacy", "status": 200, "finalUrl": "https://growpathai.com/privacy" },
+    { "name": "terms", "url": "https://growpathai.com/terms", "status": 200, "finalUrl": "https://growpathai.com/terms" },
+    { "name": "support", "url": "https://growpathai.com/support", "status": 200, "finalUrl": "https://growpathai.com/support" },
+    { "name": "communities", "url": "https://growpathai.com/communities", "status": 200, "finalUrl": "https://growpathai.com/communities" },
+    { "name": "personal-grow-deep-link", "url": "https://growpathai.com/home/personal/grows/reload-check/journal", "status": 200, "finalUrl": "https://growpathai.com/home/personal/grows/reload-check/journal" },
+    { "name": "delete-account", "url": "https://growpathai.com/account/delete", "status": 200, "finalUrl": "https://growpathai.com/account/delete" },
+    { "name": "workspace-choice", "url": "https://growpathai.com/account/workspace", "status": 200, "finalUrl": "https://growpathai.com/account/workspace" },
+    { "name": "workspace-switch", "url": "https://growpathai.com/account/mode", "status": 200, "finalUrl": "https://growpathai.com/account/mode" },
+    { "name": "gift-claim", "url": "https://growpathai.com/claim-gift", "status": 200, "finalUrl": "https://growpathai.com/claim-gift" },
+    { "name": "api-health", "url": "https://api.growpathai.com/health", "status": 200, "finalUrl": "https://api.growpathai.com/health" },
+    { "name": "api-ready", "url": "https://api.growpathai.com/ready", "status": 200, "finalUrl": "https://api.growpathai.com/ready" },
+    { "name": "api-health-api", "url": "https://api.growpathai.com/api/health", "status": 200, "finalUrl": "https://api.growpathai.com/api/health" }
+  ]
+}
