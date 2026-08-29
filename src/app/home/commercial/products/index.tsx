@@ -863,7 +863,7 @@ export default function CommercialProductsRoute({
           </View>
           {eligibleHatProducts.length ? (
             confirmInterestMode ? (
-              <View style={styles.confirmPanel}>
+              <View style={styles.confirmBox}>
                 <Text style={styles.conceptTrialText}>
                   Enable Yes / Maybe / No purchase interest on all{" "}
                   {eligibleHatProducts.length}
