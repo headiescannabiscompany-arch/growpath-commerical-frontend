@@ -132,11 +132,12 @@ export function discoverCatalogHref(row: any) {
 }
 
 export function discoverCatalogImageOf(row: any) {
-  const direct = discoverImageOf(row);
-  if (direct) return direct;
-  if (row?.discoveryType !== "trial") return "";
-  const concept = purchaseIntentConceptById(row?.conceptAssetId);
-  return concept ? Image.resolveAssetSource(concept.image)?.uri || "" : "";
+  return discoverImageOf(row);
+}
+
+export function discoverCatalogImageSourceOf(row: any) {
+  if (row?.discoveryType !== "trial") return null;
+  return purchaseIntentConceptById(row?.conceptAssetId)?.image || null;
 }
 
 function storeSlug(row: any) {
@@ -283,6 +284,7 @@ export default function DiscoverDirectory() {
         String(row?.question || row?.disclosure || row?.storefrontName || ""),
       href: discoverCatalogHref(row),
       thumbnailUrl: discoverCatalogImageOf(row),
+      thumbnailSource: discoverCatalogImageSourceOf(row),
       meta:
         row?.discoveryType === "trial"
           ? "Concept trial · Not for sale"
@@ -655,11 +657,11 @@ export default function DiscoverDirectory() {
                       pressed && styles.buttonPressed
                     ]}
                   >
-                    {result.thumbnailUrl ? (
+                    {result.thumbnailSource || result.thumbnailUrl ? (
                       <Image
                         accessibilityLabel={`${result.title} thumbnail`}
                         resizeMode="cover"
-                        source={{ uri: result.thumbnailUrl }}
+                        source={result.thumbnailSource || { uri: result.thumbnailUrl }}
                         style={styles.resultImage}
                       />
                     ) : null}

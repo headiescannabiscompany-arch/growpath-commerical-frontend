@@ -81,6 +81,7 @@ jest.mock("@/theme/appTheme", () => {
 
 import DiscoverDirectory, {
   createDiscoverVideoFilterStyles,
+  discoverCatalogImageSourceOf,
   discoverCourseHref,
   discoverImageOf,
   discoverLiveHref,
@@ -120,6 +121,15 @@ describe("Discover video search", () => {
     expect(discoverLiveHref({ linkedLiveId: "live / 1" })).toBe(
       "/live-session?sessionId=live%20%2F%201"
     );
+  });
+
+  it("uses the bundled approved concept image without web-only Image APIs", () => {
+    expect(
+      discoverCatalogImageSourceOf({
+        discoveryType: "trial",
+        conceptAssetId: "growpathai-hat-circuit-leaf-midnight-purchase-intent-trial"
+      })
+    ).toBeTruthy();
   });
 
   it("keeps explicit QA-only and test-only courses out of customer discovery", () => {
