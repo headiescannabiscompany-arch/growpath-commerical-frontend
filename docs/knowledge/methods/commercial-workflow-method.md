@@ -176,6 +176,8 @@ A purchase-intent concept trial is market research, not a product sale or produc
 
 Do not publish a concept trial whose artwork still awaits owner approval or whose visible third-party marks still require rights review. Internal design review does not authorize public display.
 
+Shared Discover indexes the public Commercial catalog directly. A published, non-hidden Product on a published storefront must be discoverable with its exact saved image and exact Product destination without requiring a separate Feed campaign. An explicitly public purchase-intent concept trial may also appear with its approved concept image, not-for-sale disclosure, and owning storefront destination. Draft, hidden, testing, test-only, QA-only, synthetic, rights-blocked, or owner-unapproved records remain excluded. Feed campaigns may promote these records but are not a prerequisite for catalog discovery.
+
 Commercial AI may recommend review-only operating procedure or checklist drafts from the
 shared approved starter library. A recommendation must identify its starter version,
 explain why it fits the selected records, preserve missing inputs as unknown, and require

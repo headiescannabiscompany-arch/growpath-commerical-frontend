@@ -100,3 +100,15 @@ export async function searchPublicStorefronts(
     method: "GET"
   });
 }
+
+export async function discoverPublicProductsAndTrials(
+  options: { q?: string; limit?: number } = {}
+) {
+  const params = new URLSearchParams();
+  if (options.q) params.set("q", options.q);
+  if (options.limit) params.set("limit", String(options.limit));
+  const query = params.toString();
+  return apiRequest(`${STOREFRONT_BASE}/public/discover${query ? `?${query}` : ""}`, {
+    method: "GET"
+  });
+}

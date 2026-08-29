@@ -49,3 +49,15 @@ contains a machine payload, the export keeps any readable owner-authored prefix 
 the owner back to the private GrowPath record for the detailed evidence. Long prose is
 bounded so one event cannot make the exported timeline unusable; the private source record
 remains authoritative and unchanged.
+
+Published Commercial product links provide a stable crawler-safe preview document with
+the exact product title, bounded description, price, canonical product URL and a public
+social-image derivative. The preview document must not automatically redirect with
+JavaScript or meta refresh: social platforms may revalidate through that redirect and
+replace the product card with generic application metadata. A normal owner-visible link
+opens the canonical GrowPathAI product page. The crawler document's `og:url` and HTML
+canonical link must both identify the stable preview document itself; the product-page URL
+belongs only in the owner-visible link. This prevents a platform from following canonical
+metadata into the generic application shell during background revalidation. Acceptance
+requires checking the resulting published social post after background revalidation, not
+merely seeing a temporary image inside a post composer.

@@ -683,7 +683,7 @@ export default function PublicStorefrontRoute() {
           ) : null}
 
           {trials.length ? (
-            <View style={styles.profilePanel}>
+            <View nativeID="product-trials" style={styles.profilePanel}>
               <Text style={styles.profileTitle}>Product Trial Proof</Text>
               {trials.slice(0, 3).map((trial) =>
                 trial?.trialType === "purchase_intent_concept" ? (
