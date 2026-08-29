@@ -12,7 +12,13 @@ import {
 } from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
-import { createProduct, fetchProducts, Product, updateProduct } from "@/api/products";
+import {
+  createProduct,
+  enableProductPurchaseIntent,
+  fetchProducts,
+  Product,
+  updateProduct
+} from "@/api/products";
 import { fetchStorefront } from "@/api/storefront";
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
@@ -215,6 +221,8 @@ export default function CommercialProductsRoute({
   const [error, setError] = useState<any>(null);
   const [confirmPublishReady, setConfirmPublishReady] = useState(false);
   const [publishingReady, setPublishingReady] = useState(false);
+  const [confirmInterestMode, setConfirmInterestMode] = useState(false);
+  const [enablingInterestMode, setEnablingInterestMode] = useState(false);
 
   const publishedCount = useMemo(
     () => products.filter((product) => product.status === "published").length,
@@ -238,6 +246,28 @@ export default function CommercialProductsRoute({
         (product) =>
           product.status !== "published" && publicFieldMissingSetup(product).length === 0
       ),
+    [products]
+  );
+  const eligibleHatProducts = useMemo(
+    () =>
+      products.filter((product) => {
+        const search = [
+          product.name,
+          product.category,
+          product.productType,
+          ...(product.growInterests || [])
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return (
+          product.status === "published" &&
+          product.regulatedCannabis !== true &&
+          productPrice(product) > 0 &&
+          !(Number(product.inventoryCount || 0) > 0) &&
+          /\b(?:hat|hats|headwear)\b/.test(search)
+        );
+      }),
     [products]
   );
 
@@ -401,6 +431,30 @@ export default function CommercialProductsRoute({
       await loadProducts();
     } finally {
       setPublishingReady(false);
+    }
+  }
+
+  async function enableHatInterestMode() {
+    if (!eligibleHatProducts.length || enablingInterestMode) return;
+    setEnablingInterestMode(true);
+    setFeedback("");
+    setError(null);
+    try {
+      const result = await enableProductPurchaseIntent(
+        eligibleHatProducts.map((product) => String(productId(product))),
+        25
+      );
+      setConfirmInterestMode(false);
+      setFeedback(
+        `Enabled the 25-customer purchase-interest trial on ${Number(
+          result?.enabledCount || 0
+        )} published hat products. No inventory, order, checkout, or payment was created.`
+      );
+      await loadProducts();
+    } catch (err) {
+      setError(err);
+    } finally {
+      setEnablingInterestMode(false);
     }
   }
 
@@ -807,6 +861,55 @@ export default function CommercialProductsRoute({
           <View style={styles.actions}>
             <ActionLink href="/home/commercial/trials" label="Open Product Trials" />
           </View>
+          {eligibleHatProducts.length ? (
+            confirmInterestMode ? (
+              <View style={styles.confirmPanel}>
+                <Text style={styles.conceptTrialText}>
+                  Enable Yes / Maybe / No purchase interest on all{" "}
+                  {eligibleHatProducts.length}
+                  eligible published hats with a goal of 25 Yes responses each? This will
+                  keep inventory at zero and disable checkout while interest mode is open.
+                </Text>
+                <View style={styles.actions}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Confirm enable purchase interest for all eligible hats"
+                    disabled={enablingInterestMode}
+                    onPress={() => void enableHatInterestMode()}
+                    style={[
+                      styles.primaryAction,
+                      enablingInterestMode && styles.disabled
+                    ]}
+                  >
+                    <Text style={styles.primaryActionText}>
+                      {enablingInterestMode
+                        ? "Enabling..."
+                        : "Confirm Enable on All Hats"}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={enablingInterestMode}
+                    onPress={() => setConfirmInterestMode(false)}
+                    style={styles.action}
+                  >
+                    <Text style={styles.actionText}>Cancel</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Enable 25-customer purchase interest on all eligible hats"
+                onPress={() => setConfirmInterestMode(true)}
+                style={styles.primaryAction}
+              >
+                <Text style={styles.primaryActionText}>
+                  Enable Interest on All {eligibleHatProducts.length} Hats
+                </Text>
+              </Pressable>
+            )
+          ) : null}
         </View>
         {products.length ? (
           <View style={styles.list}>
@@ -856,7 +959,10 @@ export default function CommercialProductsRoute({
                             ).toUpperCase()}`
                           : "Price TBD",
                         product.status || "draft",
-                        (product as any).externalPurchaseUrl ? "external link" : null
+                        (product as any).externalPurchaseUrl ? "external link" : null,
+                        (product as any).purchaseIntentEnabled
+                          ? `interest goal ${(product as any).purchaseIntentTarget || 25}`
+                          : null
                       ]
                         .filter(Boolean)
                         .join(" | ")}

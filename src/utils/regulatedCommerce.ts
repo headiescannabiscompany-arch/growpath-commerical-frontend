@@ -22,6 +22,7 @@ function publicWebUrl(value: unknown) {
 }
 
 export function publicProductCanCheckout(product: any, storefront?: any) {
+  if (product?.purchaseIntentEnabled === true) return false;
   if (
     isRegulatedCannabisProduct(product) ||
     isDispensaryStorefront(storefront) ||
@@ -35,6 +36,7 @@ export function publicProductCanCheckout(product: any, storefront?: any) {
 }
 
 export function publicProductExternalUrl(product: any, storefront?: any) {
+  if (product?.purchaseIntentEnabled === true) return "";
   const regulatedCannabis = isRegulatedCannabisProduct(product);
   const dispensary =
     isDispensaryStorefront(storefront) || isDispensaryStorefront(product);

@@ -30,6 +30,14 @@ export type Product = {
   specs?: Record<string, any>;
   growInterests?: string[];
   inventoryCount?: number | null;
+  purchaseIntentEnabled?: boolean;
+  purchaseIntentTarget?: number;
+  purchaseIntentSummary?: {
+    yes: number;
+    maybe: number;
+    no: number;
+    total: number;
+  };
   inventoryItemId?: string | null;
   inventoryItem?: {
     id?: string;
@@ -77,6 +85,23 @@ export async function updateProduct(productId: string, data: Partial<Product>) {
   return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}`, {
     method: "PATCH",
     body: data
+  });
+}
+
+export async function enableProductPurchaseIntent(productIds: string[], target = 25) {
+  return apiRequest(`${PRODUCTS_BASE}/purchase-intent/bulk-enable`, {
+    method: "POST",
+    body: { productIds, target }
+  });
+}
+
+export async function submitProductPurchaseIntent(
+  productId: string,
+  response: "yes" | "maybe" | "no"
+) {
+  return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}/purchase-intent`, {
+    method: "POST",
+    body: { response }
   });
 }
 

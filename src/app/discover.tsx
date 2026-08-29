@@ -22,6 +22,7 @@ import {
 import { searchVideos } from "@/api/videos";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import ProductPurchaseIntentControl from "@/components/commercial/ProductPurchaseIntentControl";
 import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlobe";
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -41,6 +42,7 @@ type Result = {
   thumbnailSource?: ImageSourcePropType;
   thumbnailUrl?: string;
   meta?: string;
+  purchaseIntentProduct?: any;
 };
 type Section = {
   key: string;
@@ -295,7 +297,11 @@ export default function DiscoverDirectory() {
       meta:
         row?.discoveryType === "trial"
           ? "Concept trial · Not for sale"
-          : String(row?.storefrontName || "Published product")
+          : row?.purchaseIntentEnabled
+            ? `${String(row?.storefrontName || "Published product")} · Interest open`
+            : String(row?.storefrontName || "Published product"),
+      purchaseIntentProduct:
+        row?.discoveryType === "product" && row?.purchaseIntentEnabled ? row : undefined
     }));
 
     return [
@@ -650,51 +656,63 @@ export default function DiscoverDirectory() {
                 contentContainerStyle={styles.rail}
               >
                 {section.results.slice(0, 12).map((result) => (
-                  <Pressable
+                  <View
                     key={`${section.key}-${result.id}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Open ${result.title}`}
-                    onPress={() => router.push(result.href as any)}
-                    style={({ pressed }) => [
+                    style={[
                       styles.resultCard,
                       {
                         backgroundColor: palette.surface,
                         borderColor: palette.border
-                      },
-                      pressed && styles.buttonPressed
+                      }
                     ]}
                   >
-                    {result.thumbnailSource || result.thumbnailUrl ? (
-                      <Image
-                        accessibilityLabel={`${result.title} thumbnail`}
-                        resizeMode="cover"
-                        source={result.thumbnailSource || { uri: result.thumbnailUrl }}
-                        style={styles.resultImage}
-                      />
-                    ) : null}
-                    <Text
-                      style={[styles.resultTitle, { color: palette.text }]}
-                      numberOfLines={2}
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Open ${result.title}`}
+                      onPress={() => router.push(result.href as any)}
+                      style={({ pressed }) => [
+                        styles.resultOpen,
+                        pressed && styles.buttonPressed
+                      ]}
                     >
-                      {result.title}
-                    </Text>
-                    {result.meta ? (
+                      {result.thumbnailSource || result.thumbnailUrl ? (
+                        <Image
+                          accessibilityLabel={`${result.title} thumbnail`}
+                          resizeMode="cover"
+                          source={result.thumbnailSource || { uri: result.thumbnailUrl }}
+                          style={styles.resultImage}
+                        />
+                      ) : null}
                       <Text
-                        style={[styles.resultMeta, { color: palette.textMuted }]}
+                        style={[styles.resultTitle, { color: palette.text }]}
                         numberOfLines={2}
                       >
-                        {result.meta}
+                        {result.title}
                       </Text>
+                      {result.meta ? (
+                        <Text
+                          style={[styles.resultMeta, { color: palette.textMuted }]}
+                          numberOfLines={2}
+                        >
+                          {result.meta}
+                        </Text>
+                      ) : null}
+                      {result.summary ? (
+                        <Text
+                          style={[styles.resultSummary, { color: palette.textMuted }]}
+                          numberOfLines={3}
+                        >
+                          {result.summary}
+                        </Text>
+                      ) : null}
+                    </Pressable>
+                    {result.purchaseIntentProduct ? (
+                      <ProductPurchaseIntentControl
+                        compact
+                        product={result.purchaseIntentProduct}
+                      />
                     ) : null}
-                    {result.summary ? (
-                      <Text
-                        style={[styles.resultSummary, { color: palette.textMuted }]}
-                        numberOfLines={3}
-                      >
-                        {result.summary}
-                      </Text>
-                    ) : null}
-                  </Pressable>
+                  </View>
                 ))}
               </ScrollView>
             ) : (
@@ -791,9 +809,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     borderWidth: 1,
     minHeight: 116,
-    padding: 14,
+    overflow: "hidden",
     width: 260
   },
+  resultOpen: { padding: 14 },
   resultTitle: { color: "#111827", fontSize: 16, fontWeight: "800" },
   resultImage: {
     borderRadius: radius.card,

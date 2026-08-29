@@ -646,6 +646,9 @@ describe("GrowPath knowledge registries", () => {
       "authenticated purchase-intent concept trials with owner-approved artwork, positive hypothetical price, explicit not-for-sale disclosure, one revisable response per account, and aggregate-only owner results"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "owner-enabled reusable Product purchase-interest mode with approved exact artwork, a configurable positive target defaulting to 25, one revisable response per authenticated account, aggregate progress in Discover and Product detail, and transaction suppression until a separate launch review"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "server-enforced Commercial course readiness with draft-only creation, save-before-publish, explicit unpublish, and published-content mutation lock"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -713,6 +716,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never let a purchase-intent concept trial create inventory, a reservation, an order, checkout, payment, shipping promise, production commitment, or public display of unapproved or rights-blocked artwork."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never hard-code purchase-interest behavior to one merchandise batch, enable it implicitly, or let an open Product interest trial expose inventory, reservation, checkout, external purchase handoff, payment, automatic production, or a delivery promise."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never publish an incomplete or unsaved Commercial course, accept typed lifecycle state, mutate published course content in place, or silently coerce an invalid paid price to zero."

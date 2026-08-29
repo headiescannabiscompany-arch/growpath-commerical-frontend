@@ -30,6 +30,14 @@ export type CommercialProduct = {
   growInterests?: string[];
   externalPurchaseUrl?: string;
   stripePriceId?: string;
+  purchaseIntentEnabled?: boolean;
+  purchaseIntentTarget?: number;
+  purchaseIntentSummary?: {
+    yes: number;
+    maybe: number;
+    no: number;
+    total: number;
+  };
   createdAt?: string;
   updatedAt?: string;
 };

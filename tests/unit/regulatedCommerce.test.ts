@@ -62,4 +62,15 @@ describe("regulated storefront commerce", () => {
     expect(publicProductCanCheckout(product)).toBe(true);
     expect(publicProductExternalUrl(product)).toBe("https://example.com/buy");
   });
+
+  test("withholds checkout and external handoff while product interest is open", () => {
+    const product = {
+      category: "headwear",
+      purchaseIntentEnabled: true,
+      stripePriceId: "price_must_not_be_used",
+      externalPurchaseUrl: "https://example.com/buy"
+    };
+    expect(publicProductCanCheckout(product)).toBe(false);
+    expect(publicProductExternalUrl(product)).toBe("");
+  });
 });

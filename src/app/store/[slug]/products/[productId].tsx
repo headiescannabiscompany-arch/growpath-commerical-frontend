@@ -29,6 +29,7 @@ import { useAuth } from "@/auth/AuthContext";
 import ReportModal from "@/components/ReportModal";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import ProductPurchaseIntentControl from "@/components/commercial/ProductPurchaseIntentControl";
 import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { publicGrowInterests } from "@/utils/publicCommerce";
 import { resolveImageUri } from "@/utils/photoUploads";
@@ -570,6 +571,8 @@ export default function PublicProductRoute() {
                 ) : null}
               </View>
             ) : null}
+
+            <ProductPurchaseIntentControl product={product} />
 
             <View style={styles.actionRow}>
               {canCheckout ? (
