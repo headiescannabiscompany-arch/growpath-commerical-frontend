@@ -276,7 +276,12 @@ export default function DiscoverDirectory() {
         !catalogIds.has(String(row?.linkedProductId || "")) &&
         !catalogIds.has(String(row?.linkedTrialId || ""))
     );
-    const catalogResults = catalog.map((row) => ({
+    const orderedCatalog = [
+      ...catalog.filter((row) => row?.discoveryType !== "trial").slice(0, 10),
+      ...catalog.filter((row) => row?.discoveryType === "trial").slice(0, 2),
+      ...catalog.filter((row) => row?.discoveryType !== "trial").slice(10)
+    ];
+    const catalogResults = orderedCatalog.map((row) => ({
       id: `${String(row?.discoveryType || "catalog")}:${idOf(row)}`,
       title: titleOf(row, row?.discoveryType === "trial" ? "Product trial" : "Product"),
       summary:

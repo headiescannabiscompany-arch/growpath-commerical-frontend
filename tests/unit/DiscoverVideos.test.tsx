@@ -239,6 +239,34 @@ describe("Discover video search", () => {
     expect(mockPush).toHaveBeenCalledWith("/store/growpathai#product-trials");
   });
 
+  it("keeps public trials inside the visible product rail when many products exist", async () => {
+    mockDiscoverPublicProductsAndTrials.mockResolvedValue({
+      items: [
+        ...Array.from({ length: 14 }, (_, index) => ({
+          id: `hat-${index + 1}`,
+          discoveryType: "product",
+          name: `Published hat ${index + 1}`,
+          imageUrl: `https://cdn.example.com/hat-${index + 1}.png`,
+          storefrontSlug: "growpathai"
+        })),
+        {
+          id: "trial-visible",
+          discoveryType: "trial",
+          conceptTitle: "GrowPathAI Circuit Leaf — Midnight",
+          conceptAssetId: "growpathai-hat-circuit-leaf-midnight-purchase-intent-trial",
+          storefrontSlug: "growpathai"
+        }
+      ]
+    });
+
+    render(<DiscoverDirectory />);
+
+    await waitFor(() =>
+      expect(screen.getByText("GrowPathAI Circuit Leaf — Midnight")).toBeTruthy()
+    );
+    expect(screen.queryByText("Published hat 12")).toBeNull();
+  });
+
   it.each(["day", "night"] as const)(
     "uses the active %s palette for selected video filters",
     async (mode) => {
