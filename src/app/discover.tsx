@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  type ImageSourcePropType,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -37,6 +38,7 @@ type Result = {
   title: string;
   summary?: string;
   href: string;
+  thumbnailSource?: ImageSourcePropType;
   thumbnailUrl?: string;
   meta?: string;
 };
