@@ -2065,6 +2065,18 @@ public visibility, or screenshot/video acceptance still called out below.
 
 ## G. Hat research and presentation
 
+- [x] Make each published hat product useful as its own share destination. Frontend merge
+      `ff3855ec409f5138d02e28225840fc371a454507` now renders the complete product image
+      without banner cropping, opens it in a full-image viewer, supplies exact-product social
+      targets and a full-text Copy Post fallback. Backend merges
+      `71ce6d837aed6c83563416492e805ae73a9c6c15` and
+      `3bf0106104fa665e7a353bd564b3dcf13d672c1b` provide public exact-product OG/Twitter
+      metadata and normalize legacy first-party uploads through the API media host. Production
+      acceptance on 2026-08-29 proved the Pale Sage product page/modal, Copy Post confirmation,
+      a public `200 image/jpeg` hat asset, and Facebook's real composer fetching the exact hat
+      image plus `GrowPathAI Pale Sage Tonal | GrowPathAI`. No Facebook post was created. Do
+      not rebuild this sharing/image foundation; remaining R-05 work is product/catalog content,
+      supplier/decorator approval, trials and the owner-controlled launch.
 - [ ] After the final live crawl, professional polish, and Roberto review gate,
       complete the remaining hat-research sequence in order: approve the exact BLVNK
       blank/sample/cost/decoration details; finish accurate multi-view GrowPathAI and

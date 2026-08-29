@@ -461,6 +461,14 @@ close another source and must not be described as 16-of-16 completion.
 - [x] Remove Triple Bag Genetics hats from active product scope. Historical concepts stay
       private as design references; no TBG mark or third-party mark is carried into the
       GrowPathAI collection without separate verified rights.
+- [x] Fix the reusable product-detail media/share foundation before any Facebook launch.
+      Frontend `ff3855ec409f5138d02e28225840fc371a454507` shows each product image uncropped,
+      supports a full-image viewer, exact social destinations and Copy Post. Backend
+      `71ce6d837aed6c83563416492e805ae73a9c6c15` plus
+      `3bf0106104fa665e7a353bd564b3dcf13d672c1b` serve exact-product OG/Twitter metadata and
+      an API-hosted first-party image. On 2026-08-29 Facebook's actual composer fetched the
+      Pale Sage hat image and exact product title. This is accepted infrastructure, not proof
+      that every hat listing is complete and not authorization or evidence of a Facebook post.
 - [ ] After the exact blank, final designs, brand ownership, and rights-cleared non-sale
       listings are complete, run owner-priced purchase-intent trials for every approved
       hat concept. Verify response, revision, aggregation, and close behavior while
