@@ -566,9 +566,17 @@ describe("public commercial routes", () => {
     expect(screen.getByText("External Link")).toBeTruthy();
     expect(screen.getByText("Share this product")).toBeTruthy();
     expect(screen.getByText("Copy Link")).toBeTruthy();
+    expect(screen.getByText("Copy Post")).toBeTruthy();
     expect(screen.getByText("Facebook")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Share Veg Mix" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Copy link for Veg Mix" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Copy post for Veg Mix" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "View full image for Veg Mix" })
+    ).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "View full image for Veg Mix" }));
+    expect(screen.getByLabelText("Full image for Veg Mix")).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Close full product image" }));
     expect(screen.getByText("Report Product")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Report Veg Mix" })).toBeTruthy();
     expect(screen.queryByText("Back to Store")).toBeNull();

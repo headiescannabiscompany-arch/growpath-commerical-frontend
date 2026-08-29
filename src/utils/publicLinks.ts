@@ -1,19 +1,46 @@
 import { Platform, Share } from "react-native";
 
 export function currentPublicUrl(path: string) {
+  if (/^https?:\/\//i.test(path)) return path;
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   const location = (globalThis as any)?.window?.location;
   if (typeof location?.origin === "string") return `${location.origin}${cleanPath}`;
   return `https://growpathai.com${cleanPath}`;
 }
 
-export async function sharePublicLink(title: string, path: string) {
+export type PublicShareDetails = {
+  description?: string;
+  priceLabel?: string;
+  socialPreviewUrl?: string;
+};
+
+export function publicShareMessage(
+  title: string,
+  path: string,
+  details: PublicShareDetails = {}
+) {
   const url = currentPublicUrl(path);
+  return [title, details.priceLabel, details.description, url]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join("\n");
+}
+
+export async function sharePublicLink(
+  title: string,
+  path: string,
+  details: PublicShareDetails = {}
+) {
+  const url = currentPublicUrl(path);
+  const text = [details.priceLabel, details.description]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join(" — ");
   const nav = (globalThis as any)?.navigator;
 
   if (Platform.OS === "web") {
     if (typeof nav?.share === "function") {
-      await nav.share({ title, url });
+      await nav.share({ title, text, url });
       return { method: "web-share", url };
     }
     if (typeof nav?.clipboard?.writeText === "function") {
@@ -22,7 +49,7 @@ export async function sharePublicLink(title: string, path: string) {
     }
   }
 
-  await Share.share({ title, message: url, url });
+  await Share.share({ title, message: publicShareMessage(title, path, details), url });
   return { method: "native-share", url };
 }
 
@@ -34,23 +61,34 @@ export type PublicShareTarget = {
 
 export function buildPublicShareTargets(
   title: string,
-  path: string
+  path: string,
+  details: PublicShareDetails = {}
 ): PublicShareTarget[] {
   const url = currentPublicUrl(path);
   const encodedUrl = encodeURIComponent(url);
+  const previewUrl = details.socialPreviewUrl
+    ? currentPublicUrl(details.socialPreviewUrl)
+    : url;
+  const encodedPreviewUrl = encodeURIComponent(previewUrl);
   const encodedTitle = encodeURIComponent(title);
-  const encodedMessage = encodeURIComponent(`${title}\n${url}`);
+  const encodedMessage = encodeURIComponent(publicShareMessage(title, path, details));
+  const encodedSummary = encodeURIComponent(
+    [title, details.priceLabel, details.description]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)
+      .join(" — ")
+  );
 
   return [
     {
       key: "facebook",
       label: "Facebook",
-      href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodedPreviewUrl}`
     },
     {
       key: "x",
       label: "X",
-      href: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`
+      href: `https://twitter.com/intent/tweet?text=${encodedSummary}&url=${encodedUrl}`
     },
     {
       key: "bluesky",
@@ -65,7 +103,7 @@ export function buildPublicShareTargets(
     {
       key: "linkedin",
       label: "LinkedIn",
-      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedPreviewUrl}`
     },
     {
       key: "email",

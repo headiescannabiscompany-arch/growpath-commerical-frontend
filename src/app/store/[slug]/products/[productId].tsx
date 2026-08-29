@@ -4,6 +4,7 @@ import {
   Alert,
   Image,
   Linking,
+  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -14,6 +15,7 @@ import {
 import { Link, useLocalSearchParams } from "expo-router";
 
 import { checkoutProduct } from "@/api/products";
+import { API_URL } from "@/api/apiRequest";
 import {
   checkPublicProductAccess,
   fetchPublicStorefront,
@@ -205,6 +207,7 @@ export default function PublicProductRoute() {
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
   const [reportVisible, setReportVisible] = useState(false);
+  const [imagePreviewVisible, setImagePreviewVisible] = useState(false);
   const [destinationCountry, setDestinationCountry] = useState("");
   const [destinationSubdivision, setDestinationSubdivision] = useState("");
   const [accessResult, setAccessResult] = useState<PublicProductAccessResult | null>(
@@ -444,12 +447,20 @@ export default function PublicProductRoute() {
           {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
           <AppCard>
             {product.imageUrl ? (
-              <Image
-                source={{ uri: resolveImageUri(product.imageUrl) }}
-                style={styles.productImage}
-                resizeMode="cover"
-                accessibilityLabel={`${product.name || "Product"} image`}
-              />
+              <Pressable
+                accessibilityLabel={`View full image for ${product.name || "product"}`}
+                accessibilityRole="button"
+                onPress={() => setImagePreviewVisible(true)}
+                style={styles.productImageButton}
+              >
+                <Image
+                  source={{ uri: resolveImageUri(product.imageUrl) }}
+                  style={styles.productImage}
+                  resizeMode="contain"
+                  accessibilityLabel={`${product.name || "Product"} image`}
+                />
+                <Text style={styles.imageHint}>View full image</Text>
+              </Pressable>
             ) : null}
             <Text style={styles.cardTitle}>{product.name || "Product"}</Text>
             {product.description ? (
@@ -620,6 +631,9 @@ export default function PublicProductRoute() {
             heading="Share this product"
             title={product?.name || "GrowPath product"}
             path={`/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(requestedProductId)}`}
+            description={product?.shortDescription || product?.description || ""}
+            priceLabel={money(product, storefront)}
+            socialPreviewUrl={`${API_URL || "https://api.growpathai.com"}/api/commercial/storefront/public/${encodeURIComponent(slug)}/products/${encodeURIComponent(requestedProductId)}/share`}
           />
 
           <AppCard>
@@ -957,6 +971,31 @@ export default function PublicProductRoute() {
           setFeedback("Product report submitted for administrator review.")
         }
       />
+      <Modal
+        animationType="fade"
+        transparent
+        visible={Boolean(product?.imageUrl) && imagePreviewVisible}
+        onRequestClose={() => setImagePreviewVisible(false)}
+      >
+        <View style={styles.imagePreviewOverlay}>
+          <View style={styles.imagePreviewCard}>
+            <Image
+              accessibilityLabel={`Full image for ${product?.name || "product"}`}
+              resizeMode="contain"
+              source={{ uri: resolveImageUri(product?.imageUrl || "") }}
+              style={styles.imagePreview}
+            />
+            <Pressable
+              accessibilityLabel="Close full product image"
+              accessibilityRole="button"
+              onPress={() => setImagePreviewVisible(false)}
+              style={styles.imagePreviewClose}
+            >
+              <Text style={styles.imagePreviewCloseText}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </AppPage>
   );
 }
@@ -975,12 +1014,46 @@ export function createStyles(palette: ThemePalette) {
       padding: 8
     },
     cardTitle: { color: palette.text, fontSize: 18, fontWeight: "800", marginBottom: 8 },
-    productImage: {
+    productImageButton: {
+      backgroundColor: palette.surfaceMuted,
       borderRadius: radius.card,
-      height: 260,
       marginBottom: 14,
+      overflow: "hidden"
+    },
+    productImage: {
+      height: 320,
       width: "100%"
     },
+    imageHint: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "800",
+      paddingBottom: 10,
+      textAlign: "center"
+    },
+    imagePreviewOverlay: {
+      alignItems: "center",
+      backgroundColor: "rgba(0,0,0,0.92)",
+      flex: 1,
+      justifyContent: "center",
+      padding: 16
+    },
+    imagePreviewCard: {
+      alignItems: "center",
+      height: "100%",
+      justifyContent: "center",
+      maxWidth: 1200,
+      width: "100%"
+    },
+    imagePreview: { flex: 1, width: "100%" },
+    imagePreviewClose: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 12,
+      paddingHorizontal: 20,
+      paddingVertical: 12
+    },
+    imagePreviewCloseText: { color: palette.accentText, fontWeight: "900" },
     bodyText: { color: palette.textSoft, lineHeight: 20, marginBottom: 10 },
     meta: { color: palette.textMuted, lineHeight: 19 },
     interests: { color: palette.link, fontSize: 12, fontWeight: "800" },

@@ -5,6 +5,7 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import {
   buildPublicShareTargets,
   currentPublicUrl,
+  publicShareMessage,
   sharePublicLink
 } from "@/utils/publicLinks";
 
@@ -12,17 +13,34 @@ type Props = {
   title: string;
   path: string;
   heading?: string;
+  description?: string;
+  priceLabel?: string;
+  socialPreviewUrl?: string;
 };
 
-export default function PublicShareActions({ title, path, heading = "Share" }: Props) {
+export default function PublicShareActions({
+  title,
+  path,
+  heading = "Share",
+  description,
+  priceLabel,
+  socialPreviewUrl
+}: Props) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [feedback, setFeedback] = useState("");
-  const targets = useMemo(() => buildPublicShareTargets(title, path), [path, title]);
+  const shareDetails = useMemo(
+    () => ({ description, priceLabel, socialPreviewUrl }),
+    [description, priceLabel, socialPreviewUrl]
+  );
+  const targets = useMemo(
+    () => buildPublicShareTargets(title, path, shareDetails),
+    [path, shareDetails, title]
+  );
 
   async function openShareSheet() {
     try {
-      const result = await sharePublicLink(title, path);
+      const result = await sharePublicLink(title, path, shareDetails);
       setFeedback(
         result.method.includes("clipboard") ? "Link copied." : "Share options opened."
       );
@@ -42,6 +60,21 @@ export default function PublicShareActions({ title, path, heading = "Share" }: P
       setFeedback("Link copied.");
     } catch (error: any) {
       setFeedback(error?.message || "Unable to copy the link.");
+    }
+  }
+
+  async function copyPost() {
+    try {
+      const nav = (globalThis as any)?.navigator;
+      const message = publicShareMessage(title, path, shareDetails);
+      if (typeof nav?.clipboard?.writeText !== "function") {
+        await sharePublicLink(title, path, shareDetails);
+        return;
+      }
+      await nav.clipboard.writeText(message);
+      setFeedback("Product post copied.");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to copy the product post.");
     }
   }
 
@@ -70,6 +103,14 @@ export default function PublicShareActions({ title, path, heading = "Share" }: P
           style={styles.secondary}
         >
           <Text style={styles.secondaryText}>Copy Link</Text>
+        </Pressable>
+        <Pressable
+          accessibilityLabel={`Copy post for ${title}`}
+          accessibilityRole="button"
+          onPress={copyPost}
+          style={styles.secondary}
+        >
+          <Text style={styles.secondaryText}>Copy Post</Text>
         </Pressable>
         {targets.map((target) => (
           <Pressable
