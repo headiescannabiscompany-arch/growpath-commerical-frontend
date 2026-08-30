@@ -1089,7 +1089,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "readable owner-scoped Product Trial record pickers with an explicit advanced ID fallback",
       "single-flight Product Trial creation with positive whole-number plant counts and retained failed drafts",
       "authenticated purchase-intent concept trials with owner-approved artwork, positive hypothetical price, explicit not-for-sale disclosure, one revisable response per account, and aggregate-only owner results",
-      "owner-enabled reusable Product purchase-interest mode with approved exact artwork, a configurable positive target defaulting to 25, one revisable response per authenticated account, aggregate progress in Discover and Product detail, and transaction suppression until a separate launch review",
+      "owner-enabled reusable Product purchase-interest mode with approved exact artwork, a configurable positive target defaulting to 25, one revisable response per authenticated account, aggregate progress in Discover, the owning public storefront product card, and Product detail, and transaction suppression until a separate launch review",
       "mutually exclusive single-flight Product Trial detail, claim-review, and evidence-task writes",
       "readable owner-scoped Product Batch record pickers with an explicit advanced ID fallback",
       "single-flight Product Batch creation and AI prefill with non-negative numeric validation and owner-value preservation",

@@ -23,6 +23,7 @@ const mockFetchPublicStorefront = jest.fn();
 const mockCheckPublicProductAccess = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
 const mockStartCourseCheckout = jest.fn();
+const mockSubmitProductPurchaseIntent = jest.fn();
 const mockLinkHrefs: string[] = [];
 let mockRouteParams: Record<string, string> = {
   slug: "living-soil-labs",
@@ -80,7 +81,9 @@ jest.mock("@/api/storefront", () => ({
 }));
 
 jest.mock("@/api/products", () => ({
-  checkoutProduct: jest.fn()
+  checkoutProduct: jest.fn(),
+  submitProductPurchaseIntent: (...args: any[]) =>
+    mockSubmitProductPurchaseIntent(...args)
 }));
 
 jest.mock("@/api/coursePayments", () => ({
@@ -93,7 +96,8 @@ jest.mock("@/api/commercialAnalytics", () => ({
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ isAuthed: true, user: { id: "viewer-1" } })
+  useAuth: () => ({ isAuthed: true, user: { id: "viewer-1" } }),
+  useOptionalAuth: () => ({ isAuthed: true, user: { id: "viewer-1" } })
 }));
 
 jest.mock("@/components/ReportModal", () => () => null);
@@ -251,6 +255,7 @@ describe("public commercial routes", () => {
     mockCheckPublicProductAccess.mockReset();
     mockRecordCommercialAnalyticsEvent.mockReset();
     mockStartCourseCheckout.mockReset();
+    mockSubmitProductPurchaseIntent.mockReset();
     mockLinkHrefs.length = 0;
     mockRouteParams = {
       slug: "living-soil-labs",
@@ -259,6 +264,10 @@ describe("public commercial routes", () => {
     };
     mockRecordCommercialAnalyticsEvent.mockResolvedValue({ success: true });
     mockStartCourseCheckout.mockResolvedValue({});
+    mockSubmitProductPurchaseIntent.mockResolvedValue({
+      response: "yes",
+      summary: { yes: 5, maybe: 2, no: 1, total: 8 }
+    });
     mockFetchPublicStorefront.mockResolvedValue(publicPayload);
     mockCheckPublicProductAccess.mockResolvedValue({
       allowed: false,
@@ -439,6 +448,34 @@ describe("public commercial routes", () => {
         })
       )
     );
+  });
+
+  it("shows reusable purchase-interest answers on every enabled storefront product", async () => {
+    mockFetchPublicStorefront.mockResolvedValue({
+      ...publicPayload,
+      products: [
+        {
+          ...publicPayload.products[1],
+          purchaseIntentEnabled: true,
+          purchaseIntentTarget: 25,
+          purchaseIntentSummary: { yes: 4, maybe: 2, no: 1, total: 7 }
+        }
+      ]
+    });
+    const screen = render(<PublicStorefrontRoute />);
+
+    await waitFor(() => expect(screen.getByText("Bloom Mix")).toBeTruthy());
+    expect(screen.getByText("25-customer production goal")).toBeTruthy();
+    expect(screen.getByText("4 yes · goal 25")).toBeTruthy();
+    expect(screen.getByLabelText("yes — purchase interest for Bloom Mix")).toBeTruthy();
+    expect(screen.getByLabelText("maybe — purchase interest for Bloom Mix")).toBeTruthy();
+    expect(screen.getByLabelText("no — purchase interest for Bloom Mix")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("yes — purchase interest for Bloom Mix"));
+    await waitFor(() =>
+      expect(mockSubmitProductPurchaseIntent).toHaveBeenCalledWith("product-2", "yes")
+    );
+    expect(screen.getByText("5 yes · goal 25")).toBeTruthy();
   });
 
   it("shows dispensary inventory with website and pickup handoff but no checkout", async () => {

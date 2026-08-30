@@ -19,6 +19,7 @@ import {
   type CommercialAnalyticsEvent
 } from "@/api/commercialAnalytics";
 import AppPage from "@/components/layout/AppPage";
+import ProductPurchaseIntentControl from "@/components/commercial/ProductPurchaseIntentControl";
 import PurchaseIntentTrialCard from "@/components/commercial/PurchaseIntentTrialCard";
 import {
   extractPublicCommercialPayload,
@@ -490,6 +491,9 @@ export default function PublicStorefrontRoute() {
                       ) : null}
                     </View>
                   </View>
+                  {product?.purchaseIntentEnabled ? (
+                    <ProductPurchaseIntentControl compact product={product} />
+                  ) : null}
                 </View>
               );
             })

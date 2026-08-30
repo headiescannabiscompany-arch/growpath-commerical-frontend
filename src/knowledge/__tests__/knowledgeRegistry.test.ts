@@ -646,7 +646,7 @@ describe("GrowPath knowledge registries", () => {
       "authenticated purchase-intent concept trials with owner-approved artwork, positive hypothetical price, explicit not-for-sale disclosure, one revisable response per account, and aggregate-only owner results"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
-      "owner-enabled reusable Product purchase-interest mode with approved exact artwork, a configurable positive target defaulting to 25, one revisable response per authenticated account, aggregate progress in Discover and Product detail, and transaction suppression until a separate launch review"
+      "owner-enabled reusable Product purchase-interest mode with approved exact artwork, a configurable positive target defaulting to 25, one revisable response per authenticated account, aggregate progress in Discover, the owning public storefront product card, and Product detail, and transaction suppression until a separate launch review"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "server-enforced Commercial course readiness with draft-only creation, save-before-publish, explicit unpublish, and published-content mutation lock"
