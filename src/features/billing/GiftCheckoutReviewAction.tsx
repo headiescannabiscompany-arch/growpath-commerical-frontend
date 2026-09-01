@@ -15,6 +15,7 @@ import { OFFERS_GIFT_RETURN_PATH, safeLoginPath } from "@/utils/authReturnPath";
 
 type Props = {
   material: GiftCheckoutReviewMaterial;
+  labelPrefix?: string;
   recipientValid: boolean;
   configured: boolean;
   onFeedback: GiftCheckoutReviewFeedback;
@@ -82,11 +83,18 @@ export default function GiftCheckoutReviewAction({ ...props }: Props) {
 
 function SignedInGiftCheckoutReviewAction({
   material,
+  labelPrefix,
   recipientValid,
   configured,
   onFeedback,
   openCheckoutUrl
 }: Props) {
+  const planLabel =
+    material.plan === "facility"
+      ? "Facility"
+      : material.plan === "commercial"
+        ? "Commercial"
+        : "Pro";
   const { palette } = useAppTheme();
   const router = useRouter();
   const styles = useMemo(() => createGiftCheckoutReviewStyles(palette), [palette]);
@@ -123,7 +131,7 @@ function SignedInGiftCheckoutReviewAction({
           <Text style={styles.eyebrow}>Server-confirmed total</Text>
           <Text style={styles.amount}>{amount}</Text>
           <Text style={styles.copy}>
-            One prepaid {quote.interval === "monthly" ? "month" : "year"} of Pro, quantity
+            One prepaid {quote.interval === "monthly" ? "month" : "year"} of {planLabel}, quantity
             one. It does not renew. Stripe can charge this total only after you confirm
             below.
           </Text>
@@ -162,7 +170,14 @@ function SignedInGiftCheckoutReviewAction({
           </Pressable>
         </View>
       ) : (
-        <View style={styles.review} accessibilityLabel="Gift price pending server quote">
+        <View
+          style={styles.review}
+          accessibilityLabel={
+            labelPrefix
+              ? `${labelPrefix} gift price pending server quote`
+              : "Gift price pending server quote"
+          }
+        >
           <Text style={styles.pendingTitle}>Price hidden until secure review</Text>
           <Text style={styles.copy}>
             GrowPath will request the current one-time total from the server after the
@@ -170,7 +185,11 @@ function SignedInGiftCheckoutReviewAction({
             checkout or payment.
           </Text>
           <Pressable
-            accessibilityLabel="Review authoritative gift price"
+            accessibilityLabel={
+              labelPrefix
+                ? `Review ${labelPrefix} authoritative gift price`
+                : "Review authoritative gift price"
+            }
             accessibilityRole="button"
             accessibilityState={{ disabled: busy || !recipientValid || !configured }}
             disabled={busy || !recipientValid || !configured}

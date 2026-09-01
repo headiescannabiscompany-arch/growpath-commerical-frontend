@@ -445,7 +445,7 @@ describe("purchaser gift subscription API", () => {
     { currency: ["usd"] },
     { currency: { toString: (): string => "usd" } },
     { unexpected: true },
-    { gift: sentGift({ plan: "commercial", amountCents: 1000, paidAt: null }) },
+    { gift: sentGift({ plan: "enterprise", amountCents: 1000, paidAt: null }) },
     { gift: sentGift({ interval: "weekly", amountCents: 1000, paidAt: null }) }
   ])("rejects contradictory reconciliation data %p", async (override) => {
     mockApiRequest.mockResolvedValue(

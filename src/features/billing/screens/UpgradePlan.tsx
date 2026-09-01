@@ -99,18 +99,7 @@ export default function UpgradePlan() {
 
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
   const giftRecipientValid = isLikelyEmail(giftRecipientValue);
-  const purchasablePlans = giftMode
-    ? BILLING_PLANS.filter((plan) => plan.key === "pro")
-    : plans;
-  const giftCheckoutMaterial = useMemo(() => {
-    return {
-      plan: "pro" as const,
-      interval,
-      recipientEmail: giftRecipientValue,
-      recipientName: giftRecipientName,
-      message: giftMessage
-    };
-  }, [giftMessage, giftRecipientName, giftRecipientValue, interval]);
+  const purchasablePlans = giftMode ? BILLING_PLANS : plans;
   const handleGiftFeedback = useCallback((tone: FeedbackTone, message: string) => {
     setFeedbackTone(tone);
     setFeedback(message);
@@ -259,11 +248,11 @@ export default function UpgradePlan() {
       </View>
 
       <AppCard style={styles.giftCard}>
-        <Text style={styles.eyebrow}>Prepaid Pro gift</Text>
+        <Text style={styles.eyebrow}>Prepaid subscription gift</Text>
         <Text style={styles.cardTitle}>Buy for someone else</Text>
         <Text style={styles.cardDesc}>
           {giftCheckoutConfigured
-            ? "Give one prepaid month or year of Pro. Access starts when the recipient claims it and does not renew."
+            ? "Give one prepaid month or year of Pro, Commercial, or Facility access. Access starts when the recipient claims it and does not renew."
             : "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."}
         </Text>
         <View style={styles.segment}>
@@ -354,7 +343,7 @@ export default function UpgradePlan() {
               }}
             />
             <Text style={styles.helper}>
-              The recipient receives a one-time claim link. Their prepaid Pro access
+              The recipient receives a one-time claim link. Their selected prepaid access
               begins on a successful claim and ends after the selected month or year.
             </Text>
           </>
@@ -427,7 +416,7 @@ export default function UpgradePlan() {
               ) : null}
               <Text style={styles.billingNote}>
                 {giftMode
-                  ? `One prepaid ${interval === "monthly" ? "month" : "year"} of Pro. Starts when claimed and does not renew.`
+                  ? `One prepaid ${interval === "monthly" ? "month" : "year"} of ${plan.title}. Starts when claimed and does not renew.`
                   : formatPlanBillingNote(plan.key, interval)}
               </Text>
               <Text style={styles.sectionLabel}>Billing next</Text>
@@ -447,7 +436,14 @@ export default function UpgradePlan() {
 
               {giftMode ? (
                 <GiftCheckoutReviewAction
-                  material={giftCheckoutMaterial}
+                  labelPrefix={plan.title}
+                  material={{
+                    plan: plan.key,
+                    interval,
+                    recipientEmail: giftRecipientValue,
+                    recipientName: giftRecipientName,
+                    message: giftMessage
+                  }}
                   recipientValid={giftRecipientValid}
                   configured={giftCheckoutConfigured}
                   onFeedback={handleGiftFeedback}

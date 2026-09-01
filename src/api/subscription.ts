@@ -219,11 +219,12 @@ export async function resendSentGift(
 }
 
 export type GiftCheckoutInterval = "monthly" | "yearly";
+export type GiftCheckoutPlan = "pro" | "commercial" | "facility";
 
 export type GiftCheckoutQuote = {
   schemaVersion: "gift_quote_v1";
   version: 1;
-  plan: "pro";
+  plan: GiftCheckoutPlan;
   interval: GiftCheckoutInterval;
   quantity: 1;
   amountCents: number;
@@ -235,7 +236,7 @@ export type GiftCheckoutQuote = {
 };
 
 export type GiftCheckoutQuoteRequest = {
-  plan: "pro";
+  plan: GiftCheckoutPlan;
   interval: GiftCheckoutInterval;
   checkoutAttemptId: string;
   giftRecipientEmail: string;
@@ -253,7 +254,7 @@ function isGiftCheckoutQuote(value: unknown): value is GiftCheckoutQuote {
   return Boolean(
     quote.schemaVersion === "gift_quote_v1" &&
     quote.version === 1 &&
-    quote.plan === "pro" &&
+    ["pro", "commercial", "facility"].includes(String(quote.plan || "")) &&
     ["monthly", "yearly"].includes(String(quote.interval || "")) &&
     quote.quantity === 1 &&
     Number.isSafeInteger(quote.amountCents) &&
@@ -279,7 +280,7 @@ export async function createGiftCheckoutQuote(
   request: GiftCheckoutQuoteRequest
 ): Promise<GiftCheckoutQuote> {
   const body = {
-    plan: "pro" as const,
+    plan: request.plan,
     interval: request.interval,
     checkoutAttemptId: request.checkoutAttemptId.trim(),
     giftRecipientEmail: request.giftRecipientEmail.trim().toLowerCase(),
@@ -333,7 +334,7 @@ export type GiftCheckoutReconcileRequest = {
 export type GiftCheckoutRecoveryAttempt = {
   checkoutAttemptId: string;
   checkoutState: "reserved" | "creating" | "creation_unknown" | "open";
-  plan: "pro";
+  plan: GiftCheckoutPlan;
   interval: GiftCheckoutInterval;
   amountCents: number;
   currency: string;
@@ -390,7 +391,7 @@ function isGiftCheckoutRecoveryStatus(
       attempt.checkoutState
     ) &&
     typeof attempt.plan === "string" &&
-    attempt.plan === "pro" &&
+    ["pro", "commercial", "facility"].includes(String(attempt.plan || "")) &&
     typeof attempt.interval === "string" &&
     ["monthly", "yearly"].includes(attempt.interval) &&
     Number.isSafeInteger(attempt.amountCents) &&
@@ -466,7 +467,7 @@ function isGiftCheckoutReconcileResult(
   const giftValid = isSentGift(result.gift);
   const giftContractValid =
     giftValid &&
-    result.gift.plan === "pro" &&
+    ["pro", "commercial", "facility"].includes(String(result.gift.plan || "")) &&
     ["monthly", "yearly"].includes(result.gift.interval) &&
     result.amountCents === result.gift.amountCents &&
     result.currency === result.gift.currency;

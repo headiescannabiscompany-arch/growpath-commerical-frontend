@@ -231,7 +231,7 @@ describe("UpgradePlan pricing", () => {
       "friend@example.com"
     );
     fireEvent.press(screen.getByLabelText("One year of prepaid access"));
-    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+    fireEvent.press(screen.getByLabelText("Review Pro Grower authoritative gift price"));
 
     await waitFor(() => expect(screen.getByText("$45.67")).toBeTruthy());
     expect(createCheckoutSession).not.toHaveBeenCalled();
@@ -271,7 +271,7 @@ describe("UpgradePlan pricing", () => {
       screen.getByLabelText("Gift recipient email"),
       "friend@example.com"
     );
-    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+    fireEvent.press(screen.getByLabelText("Review Pro Grower authoritative gift price"));
     await waitFor(() => expect(screen.getByText("$17.75")).toBeTruthy());
     fireEvent.press(screen.getByLabelText("Confirm and continue - $17.75"));
 
@@ -280,7 +280,7 @@ describe("UpgradePlan pricing", () => {
     );
     expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Gift message"), "Edited note");
-    expect(screen.queryByLabelText("Review authoritative gift price")).toBeNull();
+    expect(screen.queryByLabelText("Review Pro Grower authoritative gift price")).toBeNull();
     expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);
     expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);

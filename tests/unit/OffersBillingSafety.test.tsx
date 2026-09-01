@@ -411,16 +411,16 @@ describe("Offers billing safety", () => {
     );
     fireEvent.press(screen.getByLabelText("Gift subscription mode"));
 
-    expect(screen.getByLabelText("Gift price pending server quote")).toBeTruthy();
+    expect(screen.getByLabelText("Pro Grower gift price pending server quote")).toBeTruthy();
     expect(screen.queryByText("$10")).toBeNull();
-    expect(screen.getByLabelText("Review authoritative gift price")).toBeDisabled();
+    expect(screen.getByLabelText("Review Pro Grower authoritative gift price")).toBeDisabled();
     fireEvent.changeText(
       screen.getByLabelText("Gift recipient email"),
       " Friend@Example.com "
     );
     fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Casey");
     fireEvent.changeText(screen.getByLabelText("Gift message"), "Enjoy this");
-    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+    fireEvent.press(screen.getByLabelText("Review Pro Grower authoritative gift price"));
 
     await waitFor(() => expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1));
     const quoteRequest = (createGiftCheckoutQuote as jest.Mock).mock.calls[0][0];
@@ -475,15 +475,15 @@ describe("Offers billing safety", () => {
       screen.getByLabelText("Gift recipient email"),
       "friend@example.com"
     );
-    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+    fireEvent.press(screen.getByLabelText("Review Pro Grower authoritative gift price"));
     await waitFor(() => expect(screen.getByText("$12.34")).toBeTruthy());
     const firstId = (createGiftCheckoutQuote as jest.Mock).mock.calls[0][0]
       .checkoutAttemptId;
 
     fireEvent.changeText(screen.getByLabelText("Gift message"), "Changed after review");
     await waitFor(() => expect(screen.queryByText("$12.34")).toBeNull());
-    expect(screen.getByLabelText("Review authoritative gift price")).toBeEnabled();
-    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+    expect(screen.getByLabelText("Review Pro Grower authoritative gift price")).toBeEnabled();
+    fireEvent.press(screen.getByLabelText("Review Pro Grower authoritative gift price"));
 
     await waitFor(() => expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(2));
     const secondId = (createGiftCheckoutQuote as jest.Mock).mock.calls[1][0]
@@ -518,8 +518,8 @@ describe("Offers billing safety", () => {
       "friend@example.com"
     );
 
-    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
-    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+    fireEvent.press(screen.getByLabelText("Review Pro Grower authoritative gift price"));
+    fireEvent.press(screen.getByLabelText("Review Pro Grower authoritative gift price"));
     await waitFor(() => expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1));
     await act(async () => {
       resolveQuote(giftQuote());
@@ -540,7 +540,7 @@ describe("Offers billing safety", () => {
 
     fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Edited");
     await waitFor(() => expect(screen.queryByText("$12.34")).toBeNull());
-    expect(screen.queryByLabelText("Review authoritative gift price")).toBeNull();
+    expect(screen.queryByLabelText("Review Pro Grower authoritative gift price")).toBeNull();
     expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
     expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);
@@ -570,7 +570,7 @@ describe("Offers billing safety", () => {
       first.getByLabelText("Gift recipient email"),
       "friend@example.com"
     );
-    fireEvent.press(first.getByLabelText("Review authoritative gift price"));
+    fireEvent.press(first.getByLabelText("Review Pro Grower authoritative gift price"));
     await waitFor(() => expect(first.getByText("$12.34")).toBeTruthy());
     fireEvent.press(first.getByLabelText("Confirm and continue - $12.34"));
     await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(1));

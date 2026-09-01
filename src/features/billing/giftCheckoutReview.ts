@@ -5,6 +5,7 @@ import {
   createGiftCheckoutQuote,
   getGiftCheckoutRecovery,
   type GiftCheckoutInterval,
+  type GiftCheckoutPlan,
   type GiftCheckoutQuote
 } from "@/api/subscription";
 import {
@@ -18,7 +19,7 @@ import {
 import { requireMatchingGiftCheckoutCreateResult } from "@/features/billing/giftCheckoutCreateResult";
 
 export type GiftCheckoutReviewMaterial = GiftCheckoutFingerprintInput & {
-  plan: "pro";
+  plan: GiftCheckoutPlan;
   interval: GiftCheckoutInterval;
   recipientEmail: string;
 };
@@ -187,7 +188,7 @@ export function useGiftCheckoutReview({
       const attempt = await prepareGiftCheckoutQuoteAttempt(material);
       if (!activeRef.current) return false;
       const quote = await createGiftCheckoutQuote({
-        plan: "pro",
+        plan: material.plan,
         interval: material.interval,
         checkoutAttemptId: attempt.checkoutAttemptId,
         giftRecipientEmail: material.recipientEmail,
@@ -287,7 +288,7 @@ export function useGiftCheckoutReview({
       let response: Awaited<ReturnType<typeof createCheckoutSession>>;
       try {
         response = await createCheckoutSession({
-          plan: "pro",
+          plan: material.plan,
           interval: material.interval,
           giftMode: true,
           giftRecipientEmail: material.recipientEmail.trim().toLowerCase(),

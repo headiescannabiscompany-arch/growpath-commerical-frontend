@@ -866,7 +866,8 @@ export default function LiveSessionScreen({ route }) {
             </View>
           ) : null}
 
-          {session.sessionType === "premiere" ? null : isGrowPathHosted && hostedPlayback?.playerUrl ? (
+          {session.sessionType === "premiere" ? null : isGrowPathHosted &&
+            hostedPlayback?.playerUrl ? (
             <View style={styles.embedWrap}>
               <GrowPathHostedLivePlayer playerUrl={String(hostedPlayback.playerUrl)} />
             </View>
@@ -975,6 +976,17 @@ export default function LiveSessionScreen({ route }) {
                 Messages can appear in the host&apos;s GrowPath OBS overlay. Outside
                 giveaway pickers remain controlled by the streamer.
               </Text>
+              {auth.isAuthed ? (
+                <Link href="/offers?gift=1" asChild>
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel="Gift a subscription during this live chat"
+                    style={[styles.secondaryBtn, styles.completedBtn]}
+                  >
+                    <Text style={styles.secondaryBtnText}>Gift a Sub</Text>
+                  </Pressable>
+                </Link>
+              ) : null}
               {chatLoading ? <ActivityIndicator color={palette.accent} /> : null}
               {chatError ? <Text style={styles.error}>{chatError}</Text> : null}
               <View style={styles.chatList}>
@@ -1575,6 +1587,6 @@ export function createStyles(palette) {
       fontFamily: "monospace",
       padding: 10
     },
-    disabled: { opacity: 0.55 }
+    disabled: { opacity: 0.55 },
   });
 }
