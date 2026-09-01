@@ -21,7 +21,9 @@ import {
   type GrowTimelinePublicCopyInput,
   type GrowTimelinePublicPreview
 } from "@/api/growTimelineCopies";
+import { createFeedPost } from "@/api/feed";
 import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
+import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import { timelineEventPhotos } from "@/features/grows/timeline";
 import {
@@ -32,6 +34,7 @@ import {
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sharePublicLink } from "@/utils/publicLinks";
+import { currentPublicUrl } from "@/utils/publicLinks";
 import { resolveImageUri } from "@/utils/photoUploads";
 
 export default function GrowTimelineShare({
@@ -59,6 +62,7 @@ export default function GrowTimelineShare({
   const [preview, setPreview] = useState<GrowTimelinePublicPreview | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [postingToFeed, setPostingToFeed] = useState(false);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
 
@@ -232,6 +236,25 @@ export default function GrowTimelineShare({
 
   const publicPath = current?.token ? `/grow-timeline/${current.token}` : "";
 
+  const postToFeed = async () => {
+    if (!current || !publicPath) return;
+    setPostingToFeed(true);
+    setError("");
+    try {
+      await createFeedPost({
+        text: `${current.title}\n\nExplore the horizontal Visual Grow Story: ${currentPublicUrl(publicPath)}`,
+        photos: current.photos?.[0]?.url ? [current.photos[0].url] : []
+      });
+      setFeedback("The Visual Grow Story was posted to the GrowPath feed.");
+    } catch (caught: any) {
+      setError(
+        caught?.message || "The Visual Grow Story could not be posted to the feed."
+      );
+    } finally {
+      setPostingToFeed(false);
+    }
+  };
+
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.content}>
       <Text accessibilityRole="header" style={styles.title}>
@@ -262,6 +285,17 @@ export default function GrowTimelineShare({
             </Pressable>
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel="Post visual grow story to GrowPath feed"
+              style={styles.primaryButton}
+              disabled={postingToFeed}
+              onPress={() => void postToFeed()}
+            >
+              <Text style={styles.primaryText}>
+                {postingToFeed ? "Posting…" : "Post to GrowPath Feed"}
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
               accessibilityLabel="Share published grow timeline"
               style={styles.secondaryButton}
               onPress={() => void sharePublicLink(current.title, publicPath)}
@@ -278,6 +312,13 @@ export default function GrowTimelineShare({
               <Text style={styles.dangerText}>Withdraw Link</Text>
             </Pressable>
           </View>
+          <PublicShareActions
+            heading="Share Visual Grow Story"
+            title={current.title}
+            description={current.description}
+            path={publicPath}
+            socialPreviewUrl={current.socialPreviewUrl}
+          />
         </View>
       ) : null}
 
@@ -307,7 +348,11 @@ export default function GrowTimelineShare({
             }}
           />
 
-          <Text style={styles.label}>Public timeline layout</Text>
+          <Text style={styles.sectionTitle}>1. Choose the shared story format</Text>
+          <Text style={styles.help}>
+            This controls what viewers receive. The event rows below only control privacy
+            and are not the shared layout.
+          </Text>
           <View style={styles.actions} accessibilityLabel="Public timeline layout">
             {(["visual", "list"] as const).map((option) => (
               <Pressable
@@ -324,13 +369,16 @@ export default function GrowTimelineShare({
                 }}
               >
                 <Text style={styles.secondaryText}>
-                  {option === "visual" ? "Visual Flowchart" : "Detailed List"}
+                  {presentation === option ? "✓ " : ""}
+                  {option === "visual"
+                    ? "Horizontal Visual Grow Story"
+                    : "Vertical Detailed List"}
                 </Text>
               </Pressable>
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>Events</Text>
+          <Text style={styles.sectionTitle}>2. Choose private entries to include</Text>
           <Text style={styles.help}>
             {selectedEventIds.size} of {events.length} saved events selected.
           </Text>
