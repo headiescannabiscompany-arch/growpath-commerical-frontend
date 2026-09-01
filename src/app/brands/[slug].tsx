@@ -110,7 +110,10 @@ export default function PublicBrandProfileRoute() {
 
   async function shareProfile() {
     try {
-      const result = await sharePublicLink(name, `/brands/${slug}`);
+      const result = await sharePublicLink(name, `/brands/${slug}`, {
+        description,
+        socialPreviewUrl: storefront?.socialPreviewUrl
+      });
       setFeedback(
         result.method === "web-clipboard"
           ? "Brand profile link copied."

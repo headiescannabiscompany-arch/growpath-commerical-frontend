@@ -61,7 +61,10 @@ export default function PublicGrowTimelineRoute() {
   }, [load]);
 
   const path = token ? `/grow-timeline/${token}` : "";
-  const targets = copy ? buildPublicShareTargets(copy.title, path) : [];
+  const shareDetails = copy
+    ? { description: copy.description, socialPreviewUrl: copy.socialPreviewUrl }
+    : {};
+  const targets = copy ? buildPublicShareTargets(copy.title, path, shareDetails) : [];
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.content}>
@@ -118,7 +121,7 @@ export default function PublicGrowTimelineRoute() {
               accessibilityRole="button"
               accessibilityLabel="Share or copy grow timeline link"
               style={styles.primaryButton}
-              onPress={() => void sharePublicLink(copy.title, path)}
+              onPress={() => void sharePublicLink(copy.title, path, shareDetails)}
             >
               <Text style={styles.primaryText}>Share / Copy Link</Text>
             </Pressable>

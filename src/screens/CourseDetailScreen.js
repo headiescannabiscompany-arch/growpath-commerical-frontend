@@ -753,7 +753,9 @@ export default function CourseDetailScreen({ route, navigation = null }) {
         <PublicShareActions
           title={course?.title || course?.name || "GrowPath course"}
           path={`/courses?courseId=${encodeURIComponent(loadedCourseId)}`}
+          description={course?.summary || course?.description}
           heading="Share this course"
+          socialPreviewUrl={course?.socialPreviewUrl}
         />
       ) : null}
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}

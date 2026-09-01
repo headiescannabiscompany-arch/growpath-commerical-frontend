@@ -198,7 +198,11 @@ export default function PublicStorefrontRoute() {
     try {
       const result = await sharePublicLink(
         storefront?.name || "GrowPath storefront",
-        `/store/${slug}`
+        `/store/${slug}`,
+        {
+          description: storefront?.description,
+          socialPreviewUrl: storefront?.socialPreviewUrl
+        }
       );
       setFeedback(
         result.method === "web-clipboard"

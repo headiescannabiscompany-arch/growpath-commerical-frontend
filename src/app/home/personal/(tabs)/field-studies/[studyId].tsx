@@ -347,7 +347,12 @@ function FieldStudyDetailContent() {
         ) : null}
         {study.visibility !== "private" && publicPath ? (
           <Pressable
-            onPress={() => void sharePublicLink(study.title, publicPath)}
+            onPress={() =>
+              void sharePublicLink(study.title, publicPath, {
+                description: study.description,
+                socialPreviewUrl: `https://api.growpathai.com/api/personal/field-studies/public/studies/${encodeURIComponent(study.slug)}/share`
+              })
+            }
             style={styles.secondaryButton}
           >
             <Text style={styles.secondaryText}>Share Public View</Text>

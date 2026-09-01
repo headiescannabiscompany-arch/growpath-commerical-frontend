@@ -35,6 +35,7 @@ export type SocialPost = {
   isHidden?: boolean;
   moderationStatus?: "clean" | "reported" | "reviewed" | "held" | string;
   moderationNotice?: string | null;
+  socialPreviewUrl?: string;
 };
 
 export type Guild = {

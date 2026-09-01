@@ -850,7 +850,9 @@ export default function ForumPostDetailRoute() {
           <PublicShareActions
             title={titleOf(post)}
             path={`/forum/post/${encodeURIComponent(id)}`}
+            description={String(post.content || post.body || "")}
             heading="Share this discussion"
+            socialPreviewUrl={post.socialPreviewUrl}
           />
         ) : null}
 

@@ -290,7 +290,11 @@ export default function PublicStorefrontCourseRoute() {
     try {
       const result = await sharePublicLink(
         publicItemTitle(course, "GrowPath course"),
-        `/store/${slug}/courses/${requestedCourseId}`
+        `/store/${slug}/courses/${requestedCourseId}`,
+        {
+          description: publicItemSummary(course),
+          socialPreviewUrl: course?.socialPreviewUrl
+        }
       );
       setFeedback(
         result.method === "web-clipboard"

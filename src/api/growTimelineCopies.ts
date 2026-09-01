@@ -28,6 +28,7 @@ export type GrowTimelinePublicCopy = {
   cannabisSpecific: boolean;
   publishedAt: string;
   withdrawnAt?: string | null;
+  socialPreviewUrl?: string;
 };
 
 export type GrowTimelinePublicPreview = {
