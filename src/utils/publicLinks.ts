@@ -31,7 +31,9 @@ export async function sharePublicLink(
   path: string,
   details: PublicShareDetails = {}
 ) {
-  const url = currentPublicUrl(path);
+  const url = details.socialPreviewUrl
+    ? currentPublicUrl(details.socialPreviewUrl)
+    : currentPublicUrl(path);
   const text = [details.priceLabel, details.description]
     .map((value) => String(value || "").trim())
     .filter(Boolean)
@@ -65,13 +67,14 @@ export function buildPublicShareTargets(
   details: PublicShareDetails = {}
 ): PublicShareTarget[] {
   const url = currentPublicUrl(path);
-  const encodedUrl = encodeURIComponent(url);
   const previewUrl = details.socialPreviewUrl
     ? currentPublicUrl(details.socialPreviewUrl)
     : url;
   const encodedPreviewUrl = encodeURIComponent(previewUrl);
   const encodedTitle = encodeURIComponent(title);
-  const encodedMessage = encodeURIComponent(publicShareMessage(title, path, details));
+  const encodedMessage = encodeURIComponent(
+    publicShareMessage(title, details.socialPreviewUrl || path, details)
+  );
   const encodedSummary = encodeURIComponent(
     [title, details.priceLabel, details.description]
       .map((value) => String(value || "").trim())
@@ -88,7 +91,7 @@ export function buildPublicShareTargets(
     {
       key: "x",
       label: "X",
-      href: `https://twitter.com/intent/tweet?text=${encodedSummary}&url=${encodedUrl}`
+      href: `https://twitter.com/intent/tweet?text=${encodedSummary}&url=${encodedPreviewUrl}`
     },
     {
       key: "bluesky",
@@ -98,7 +101,7 @@ export function buildPublicShareTargets(
     {
       key: "reddit",
       label: "Reddit",
-      href: `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}`
+      href: `https://www.reddit.com/submit?url=${encodedPreviewUrl}&title=${encodedTitle}`
     },
     {
       key: "linkedin",

@@ -35,9 +35,7 @@ describe("buildPublicShareTargets", () => {
     const x = targets.find((target) => target.key === "x");
 
     expect(decodeURIComponent(facebook?.href || "")).toContain(previewUrl);
-    expect(decodeURIComponent(x?.href || "")).toContain(
-      "https://growpathai.com/store/growpathai/products/abc"
-    );
+    expect(decodeURIComponent(x?.href || "")).toContain(previewUrl);
     expect(publicShareMessage("Night Script Cord", path, details)).toBe(
       "Night Script Cord\n$49.00\nNavy corduroy hat with red script embroidery.\nhttps://growpathai.com/store/growpathai/products/abc"
     );

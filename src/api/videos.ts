@@ -28,6 +28,7 @@ export type GrowPathVideo = {
   uploaderUserId?: string;
   mediaSource: LessonMediaSource;
   thumbnailUrl: string;
+  socialPreviewUrl?: string;
   durationSeconds: number;
   storageBytes?: number;
   mimeType?: string;

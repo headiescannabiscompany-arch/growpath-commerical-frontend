@@ -226,7 +226,9 @@ export default function VideoDetailRoute() {
           <PublicShareActions
             title={video.title || "GrowPath video"}
             path={`/videos/${encodeURIComponent(videoId)}`}
+            description={video.description}
             heading="Share this video"
+            socialPreviewUrl={video.socialPreviewUrl}
           />
           {video.tags?.length || video.growInterests?.length ? (
             <AppCard>
