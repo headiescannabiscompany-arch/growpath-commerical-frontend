@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -46,6 +47,7 @@ import {
 import { formatBytes, videoStorageFallback } from "@/features/videos/videoPresentation";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
 const VISIBILITY_OPTIONS: Array<{ value: VideoVisibility; label: string }> = [
   { value: "public", label: "Public" },
@@ -124,6 +126,7 @@ export default function VideosRoute() {
   const [visibility, setVisibility] = useState<VideoVisibility>("public");
   const [cannabisSpecific, setCannabisSpecific] = useState(false);
   const [mediaDraft, setMediaDraft] = useState(() => emptyLessonMediaDraft());
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [videoFile, setVideoFile] = useState<any>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const videoUploadKeyRef = useRef("");
@@ -243,6 +246,7 @@ export default function VideosRoute() {
     setVisibility("public");
     setCannabisSpecific(false);
     setMediaDraft(emptyLessonMediaDraft());
+    setThumbnailUrl("");
     setVideoFile(null);
     videoUploadKeyRef.current = "";
     setUploadProgress(null);
@@ -284,6 +288,21 @@ export default function VideosRoute() {
     }));
   }
 
+  async function pickThumbnail() {
+    setError(null);
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError(new Error("Photo-library permission is required to upload a thumbnail."));
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.9
+    });
+    if (result.canceled || !result.assets?.[0]?.uri) return;
+    setThumbnailUrl(result.assets[0].uri);
+  }
+
   function editVideo(video: GrowPathVideo) {
     setEditingId(video.id);
     setTitle(video.title);
@@ -293,6 +312,7 @@ export default function VideosRoute() {
     setVisibility(video.visibility);
     setCannabisSpecific(video.cannabisSpecific);
     setMediaDraft(lessonMediaDraftFromLesson(video));
+    setThumbnailUrl(video.thumbnailUrl || video.mediaSource?.thumbnailUrl || "");
     setVideoFile(null);
     videoUploadKeyRef.current = "";
     setMessage(`Editing ${video.title}.`);
@@ -337,6 +357,7 @@ export default function VideosRoute() {
           )
         : preview;
       if (!prepared?.mediaSource) throw new Error("Choose a video upload or video URL.");
+      const persistedThumbnailUrl = await persistImageUri(thumbnailUrl.trim());
       const input = {
         title: title.trim(),
         description: description.trim(),
@@ -346,7 +367,7 @@ export default function VideosRoute() {
         workspaceId:
           workspaceType === "facility" ? entitlements.facilityId || undefined : undefined,
         mediaSource: prepared.mediaSource,
-        thumbnailUrl: prepared.mediaSource.thumbnailUrl,
+        thumbnailUrl: persistedThumbnailUrl || prepared.mediaSource.thumbnailUrl,
         durationSeconds: durationSeconds(videoFile),
         storageBytes: Number(videoFile?.fileSize || 0),
         mimeType: String(videoFile?.mimeType || ""),
@@ -664,6 +685,43 @@ export default function VideosRoute() {
                   setMediaDraft(emptyLessonMediaDraft());
                 }}
               />
+              <Text style={styles.fieldLabel}>Video thumbnail</Text>
+              <Text style={styles.help}>
+                Upload a 16:9 image. This exact thumbnail is used on video cards and
+                social shares.
+              </Text>
+              <View style={styles.thumbnailActions}>
+                <Pressable
+                  accessibilityLabel="Upload video thumbnail"
+                  accessibilityRole="button"
+                  disabled={saving}
+                  onPress={() => void pickThumbnail()}
+                  style={[styles.secondaryButton, saving && styles.disabled]}
+                >
+                  <Text style={styles.secondaryText}>
+                    {thumbnailUrl ? "Replace thumbnail" : "Upload thumbnail"}
+                  </Text>
+                </Pressable>
+                {thumbnailUrl ? (
+                  <Pressable
+                    accessibilityLabel="Clear video thumbnail"
+                    accessibilityRole="button"
+                    disabled={saving}
+                    onPress={() => setThumbnailUrl("")}
+                    style={[styles.dangerButton, saving && styles.disabled]}
+                  >
+                    <Text style={styles.dangerText}>Clear</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+              {thumbnailUrl ? (
+                <Image
+                  accessibilityLabel="Video thumbnail preview"
+                  resizeMode="cover"
+                  source={{ uri: resolveImageUri(thumbnailUrl) }}
+                  style={styles.thumbnailPreview}
+                />
+              ) : null}
               {uploadProgress !== null ? (
                 <View
                   accessibilityLabel={`Uploading video ${uploadProgress} percent`}
@@ -964,6 +1022,23 @@ export const createVideosRouteStyles = (palette: ThemePalette) =>
       padding: 11
     },
     uploadProgressCopy: { flex: 1 },
+    thumbnailActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginBottom: 10,
+      marginTop: 8
+    },
+    thumbnailPreview: {
+      aspectRatio: 16 / 9,
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginBottom: 12,
+      maxWidth: 560,
+      width: "100%"
+    },
     primaryButton: {
       alignSelf: "flex-start",
       backgroundColor: palette.accent,
