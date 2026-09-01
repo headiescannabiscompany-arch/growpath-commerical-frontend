@@ -379,7 +379,7 @@ export default function GrowTimelineScreen({
       })),
     [visibleEvents]
   );
-  const shareHref = `${basePath}/grows/${encodeURIComponent(growId)}/share`;
+  const shareHref = `${basePath}/grows/${encodeURIComponent(growId)}/share?presentation=${view}`;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>

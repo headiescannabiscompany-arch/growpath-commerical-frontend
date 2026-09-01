@@ -24,6 +24,7 @@ export type GrowTimelinePublicCopy = {
   status: "published" | "withdrawn";
   title: string;
   description: string;
+  presentation: "visual" | "list";
   dateRange: { start: string; end: string };
   events: GrowTimelinePublicEvent[];
   photos: GrowTimelinePublicPhoto[];
@@ -36,6 +37,7 @@ export type GrowTimelinePublicCopy = {
 export type GrowTimelinePublicPreview = {
   title: string;
   description: string;
+  presentation: "visual" | "list";
   dateRange: { start: string; end: string };
   events: GrowTimelinePublicEvent[];
   photoCount: number;
@@ -45,6 +47,7 @@ export type GrowTimelinePublicPreview = {
 export type GrowTimelinePublicCopyInput = {
   title: string;
   description?: string;
+  presentation?: "visual" | "list";
   eventIds: string[];
   photoUrls: string[];
   start?: string;

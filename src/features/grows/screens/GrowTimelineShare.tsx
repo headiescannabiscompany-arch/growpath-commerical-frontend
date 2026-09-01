@@ -39,7 +39,10 @@ export default function GrowTimelineShare({
 }: {
   workspace?: GrowWorkspace;
 } = {}) {
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const { growId: rawGrowId, presentation: rawPresentation } = useLocalSearchParams<{
+    growId?: string | string[];
+    presentation?: string | string[];
+  }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const router = useRouter();
   const { palette } = useAppTheme();
@@ -49,6 +52,9 @@ export default function GrowTimelineShare({
   const [selectedPhotoUrls, setSelectedPhotoUrls] = useState<Set<string>>(new Set());
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [presentation, setPresentation] = useState<"visual" | "list">(
+    coerceParam(rawPresentation) === "list" ? "list" : "visual"
+  );
   const [current, setCurrent] = useState<GrowTimelinePublicCopy | null>(null);
   const [preview, setPreview] = useState<GrowTimelinePublicPreview | null>(null);
   const [loading, setLoading] = useState(true);
@@ -146,6 +152,7 @@ export default function GrowTimelineShare({
   const input = (): GrowTimelinePublicCopyInput => ({
     title: title.trim(),
     description: description.trim(),
+    presentation,
     eventIds: [...selectedEventIds],
     photoUrls: [...selectedPhotoUrls].filter((url) => availablePhotos.includes(url))
   });
@@ -300,6 +307,29 @@ export default function GrowTimelineShare({
             }}
           />
 
+          <Text style={styles.label}>Public timeline layout</Text>
+          <View style={styles.actions} accessibilityLabel="Public timeline layout">
+            {(["visual", "list"] as const).map((option) => (
+              <Pressable
+                key={option}
+                accessibilityRole="button"
+                accessibilityState={{ selected: presentation === option }}
+                style={[
+                  styles.secondaryButton,
+                  presentation === option && styles.selected
+                ]}
+                onPress={() => {
+                  setPresentation(option);
+                  setPreview(null);
+                }}
+              >
+                <Text style={styles.secondaryText}>
+                  {option === "visual" ? "Visual Flowchart" : "Detailed List"}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
           <Text style={styles.sectionTitle}>Events</Text>
           <Text style={styles.help}>
             {selectedEventIds.size} of {events.length} saved events selected.
@@ -376,7 +406,19 @@ export default function GrowTimelineShare({
                   This copy will use cannabis/hemp age and visibility controls.
                 </Text>
               ) : null}
-              <GrowTimelineFlow events={previewFlowEvents} />
+              {preview.presentation === "visual" ? (
+                <GrowTimelineFlow events={previewFlowEvents} />
+              ) : (
+                preview.events.map((event) => (
+                  <View key={event.id} style={styles.event}>
+                    <Text style={styles.eventTitle}>{event.title}</Text>
+                    <Text style={styles.eventMeta}>{fmtDate(event.timestamp)}</Text>
+                    {event.summary ? (
+                      <Text style={styles.eventSummary}>{event.summary}</Text>
+                    ) : null}
+                  </View>
+                ))
+              )}
             </View>
           ) : null}
 

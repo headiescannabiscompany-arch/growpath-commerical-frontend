@@ -129,21 +129,35 @@ export default function PublicGrowTimelineRoute() {
             ))}
           </View>
 
-          <GrowTimelineFlow
-            events={copy.events.map((event, index) => ({
-              id: event.id || `${event.timestamp}-${index}`,
-              title: event.title,
-              summary: event.summary,
-              timestamp: event.timestamp,
-              type: event.type,
-              highlights: event.tags,
-              photos: copy.photos
-                .filter((photo) =>
-                  photo.eventRef ? photo.eventRef === event.id : index === 0
-                )
-                .map((photo) => photo.url)
-            }))}
-          />
+          {copy.presentation === "list" ? (
+            <View style={styles.timeline}>
+              {copy.events.map((event) => (
+                <View key={event.id} style={styles.event}>
+                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventMeta}>{fmtDate(event.timestamp)}</Text>
+                  {event.summary ? (
+                    <Text style={styles.eventSummary}>{event.summary}</Text>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          ) : (
+            <GrowTimelineFlow
+              events={copy.events.map((event, index) => ({
+                id: event.id || `${event.timestamp}-${index}`,
+                title: event.title,
+                summary: event.summary,
+                timestamp: event.timestamp,
+                type: event.type,
+                highlights: event.tags,
+                photos: copy.photos
+                  .filter((photo) =>
+                    photo.eventRef ? photo.eventRef === event.id : index === 0
+                  )
+                  .map((photo) => photo.url)
+              }))}
+            />
+          )}
           {feedback ? <Text style={styles.success}>{feedback}</Text> : null}
           <Text style={styles.disclaimer}>
             This is a user-reviewed snapshot, not a compliance record or professional crop
@@ -232,6 +246,20 @@ const createStyles = (palette: ThemePalette) =>
       paddingHorizontal: 12,
       paddingVertical: 8
     },
+    timeline: { marginTop: 18 },
+    event: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderLeftColor: palette.accent,
+      borderLeftWidth: 4,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 12,
+      padding: 14
+    },
+    eventTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    eventMeta: { color: palette.textMuted, fontSize: 12, marginTop: 4 },
+    eventSummary: { color: palette.textSoft, lineHeight: 20, marginTop: 8 },
     disclaimer: { color: palette.textMuted, fontSize: 12, lineHeight: 18, marginTop: 24 },
     card: {
       backgroundColor: palette.surfaceMuted,
