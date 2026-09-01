@@ -21,6 +21,7 @@ import {
   type GrowTimelinePublicCopyInput,
   type GrowTimelinePublicPreview
 } from "@/api/growTimelineCopies";
+import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import { timelineEventPhotos } from "@/features/grows/timeline";
 import {
@@ -148,6 +149,24 @@ export default function GrowTimelineShare({
     eventIds: [...selectedEventIds],
     photoUrls: [...selectedPhotoUrls].filter((url) => availablePhotos.includes(url))
   });
+
+  const previewFlowEvents = useMemo(() => {
+    if (!preview) return [];
+    return preview.events.map((event, index) => {
+      const source = events.find((candidate) => String(candidate.id) === event.id);
+      return {
+        id: event.id || `${event.timestamp}-${index}`,
+        title: event.title,
+        summary: event.summary,
+        timestamp: event.timestamp,
+        type: event.type,
+        highlights: event.tags,
+        photos: source
+          ? timelineEventPhotos(source as any).filter((url) => selectedPhotoUrls.has(url))
+          : []
+      };
+    });
+  }, [events, preview, selectedPhotoUrls]);
 
   const review = async () => {
     if (!growId || !title.trim() || !selectedEventIds.size) return;
@@ -357,18 +376,7 @@ export default function GrowTimelineShare({
                   This copy will use cannabis/hemp age and visibility controls.
                 </Text>
               ) : null}
-              {preview.events.map((event, index) => (
-                <View
-                  key={`${event.timestamp}-${event.type}-${index}`}
-                  style={styles.event}
-                >
-                  <Text style={styles.eventTitle}>{event.title}</Text>
-                  <Text style={styles.eventMeta}>{fmtDate(event.timestamp)}</Text>
-                  {event.summary ? (
-                    <Text style={styles.eventSummary}>{event.summary}</Text>
-                  ) : null}
-                </View>
-              ))}
+              <GrowTimelineFlow events={previewFlowEvents} />
             </View>
           ) : null}
 

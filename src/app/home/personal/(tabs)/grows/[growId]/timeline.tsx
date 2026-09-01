@@ -13,6 +13,7 @@ import {
 
 import { type PersonalGrowTimelineEvent } from "@/api/grows";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
+import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -325,6 +326,7 @@ export default function GrowTimelineScreen({
   const [events, setEvents] = useState<PersonalGrowTimelineEvent[]>([]);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
   const [zoom, setZoom] = useState<GrowTimelineZoom>("lifecycle");
+  const [view, setView] = useState<"visual" | "list">("visual");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -360,6 +362,22 @@ export default function GrowTimelineScreen({
   const groupedEvents = useMemo(
     () => groupTimelineEvents(visibleEvents, zoom),
     [visibleEvents, zoom]
+  );
+  const flowEvents = useMemo(
+    () =>
+      visibleEvents.map((event) => ({
+        id: String(event.id),
+        title: event.title,
+        summary: event.summary,
+        timestamp: event.timestamp,
+        type: event.type,
+        photos: timelineEventPhotos(event as any),
+        highlights: [
+          ...eventPayloadDetails(event),
+          ...(Array.isArray(event.tags) ? event.tags : [])
+        ].slice(0, 4)
+      })),
+    [visibleEvents]
   );
   const shareHref = `${basePath}/grows/${encodeURIComponent(growId)}/share`;
 
@@ -447,6 +465,25 @@ export default function GrowTimelineScreen({
         })}
       </View>
 
+      <View style={styles.filterRow} accessibilityLabel="Timeline view">
+        {(["visual", "list"] as const).map((option) => {
+          const active = view === option;
+          return (
+            <Pressable
+              key={option}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              style={[styles.filter, active && styles.filterActive]}
+              onPress={() => setView(option)}
+            >
+              <Text style={[styles.filterText, active && styles.filterTextActive]}>
+                {option === "visual" ? "Visual Flow" : "Detailed List"}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
       {loading ? <ActivityIndicator color={palette.accent} /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -463,70 +500,73 @@ export default function GrowTimelineScreen({
         </Text>
       ) : null}
 
-      {groupedEvents.map((period) => (
-        <View key={period.key} style={styles.period}>
-          <Text accessibilityRole="header" style={styles.periodTitle}>
-            {periodLabel(period.key, zoom)}
-          </Text>
-          <Text style={styles.periodMeta}>
-            {period.items.length} saved {period.items.length === 1 ? "event" : "events"}
-          </Text>
-          {period.items.map((event) => {
-            const photos = timelineEventPhotos(event as any);
-            return (
-              <View key={event.id} style={styles.event}>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                <Text style={styles.eventMeta}>
-                  {eventKind(event)} | {fmtDate(event.timestamp)}
-                </Text>
-                {event.summary ? (
-                  <Text style={styles.eventSummary}>{event.summary}</Text>
-                ) : null}
-                {photos.length ? (
-                  <View style={styles.photoRow}>
-                    {photos
-                      .slice(0, zoom === "lifecycle" ? 1 : zoom === "month" ? 2 : 4)
-                      .map((photo, index) => (
-                        <Image
-                          key={`${photo}-${index}`}
-                          source={{ uri: resolveImageUri(photo) }}
-                          style={styles.photo}
-                          resizeMode="cover"
-                          accessibilityLabel={`Timeline photo for ${event.title}`}
-                        />
-                      ))}
-                  </View>
-                ) : null}
-                {eventPayloadDetails(event).map((detail) => (
-                  <Text key={detail} style={styles.detailRow}>
-                    {detail}
+      {view === "visual" && !loading ? <GrowTimelineFlow events={flowEvents} /> : null}
+
+      {view === "list" &&
+        groupedEvents.map((period) => (
+          <View key={period.key} style={styles.period}>
+            <Text accessibilityRole="header" style={styles.periodTitle}>
+              {periodLabel(period.key, zoom)}
+            </Text>
+            <Text style={styles.periodMeta}>
+              {period.items.length} saved {period.items.length === 1 ? "event" : "events"}
+            </Text>
+            {period.items.map((event) => {
+              const photos = timelineEventPhotos(event as any);
+              return (
+                <View key={event.id} style={styles.event}>
+                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventMeta}>
+                    {eventKind(event)} | {fmtDate(event.timestamp)}
                   </Text>
-                ))}
-                {sourceHref(event, growId, workspace) ? (
-                  <Link href={sourceHref(event, growId, workspace)} asChild>
-                    <Pressable
-                      style={styles.sourceAction}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${sourceLabel(event)}: ${event.title}`}
-                    >
-                      <Text style={styles.sourceActionText}>{sourceLabel(event)}</Text>
-                    </Pressable>
-                  </Link>
-                ) : null}
-                {Array.isArray(event.tags) && event.tags.length ? (
-                  <View style={styles.tags}>
-                    {event.tags.slice(0, 5).map((tag) => (
-                      <View key={tag} style={styles.tag}>
-                        <Text style={styles.tagText}>{tag}</Text>
-                      </View>
-                    ))}
-                  </View>
-                ) : null}
-              </View>
-            );
-          })}
-        </View>
-      ))}
+                  {event.summary ? (
+                    <Text style={styles.eventSummary}>{event.summary}</Text>
+                  ) : null}
+                  {photos.length ? (
+                    <View style={styles.photoRow}>
+                      {photos
+                        .slice(0, zoom === "lifecycle" ? 1 : zoom === "month" ? 2 : 4)
+                        .map((photo, index) => (
+                          <Image
+                            key={`${photo}-${index}`}
+                            source={{ uri: resolveImageUri(photo) }}
+                            style={styles.photo}
+                            resizeMode="cover"
+                            accessibilityLabel={`Timeline photo for ${event.title}`}
+                          />
+                        ))}
+                    </View>
+                  ) : null}
+                  {eventPayloadDetails(event).map((detail) => (
+                    <Text key={detail} style={styles.detailRow}>
+                      {detail}
+                    </Text>
+                  ))}
+                  {sourceHref(event, growId, workspace) ? (
+                    <Link href={sourceHref(event, growId, workspace)} asChild>
+                      <Pressable
+                        style={styles.sourceAction}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${sourceLabel(event)}: ${event.title}`}
+                      >
+                        <Text style={styles.sourceActionText}>{sourceLabel(event)}</Text>
+                      </Pressable>
+                    </Link>
+                  ) : null}
+                  {Array.isArray(event.tags) && event.tags.length ? (
+                    <View style={styles.tags}>
+                      {event.tags.slice(0, 5).map((tag) => (
+                        <View key={tag} style={styles.tag}>
+                          <Text style={styles.tagText}>{tag}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
+        ))}
 
       <PersonalFeedPlacement
         placement="bottom"

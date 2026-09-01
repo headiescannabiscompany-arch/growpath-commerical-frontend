@@ -2,6 +2,7 @@ import { apiRequest } from "@/api/apiRequest";
 import type { GrowWorkspace } from "@/features/grows/workspaceData";
 
 export type GrowTimelinePublicEvent = {
+  id: string;
   type: string;
   title: string;
   summary: string;
@@ -12,6 +13,7 @@ export type GrowTimelinePublicEvent = {
 export type GrowTimelinePublicPhoto = {
   url: string;
   label: string;
+  eventRef?: string;
 };
 
 export type GrowTimelinePublicCopy = {

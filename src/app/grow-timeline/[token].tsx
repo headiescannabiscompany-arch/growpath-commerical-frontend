@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,10 +14,10 @@ import {
   type GrowTimelinePublicCopy
 } from "@/api/growTimelineCopies";
 import ReportModal from "@/components/ReportModal";
+import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { resolveImageUri } from "@/utils/photoUploads";
 import {
   buildPublicShareTargets,
   currentPublicUrl,
@@ -102,20 +101,6 @@ export default function PublicGrowTimelineRoute() {
             <Text style={styles.restricted}>Age-restricted cannabis/hemp content</Text>
           ) : null}
 
-          {copy.photos.length ? (
-            <View style={styles.photoGrid}>
-              {copy.photos.map((photo, index) => (
-                <Image
-                  key={`${photo.url}-${index}`}
-                  accessibilityLabel={photo.label || "Grow timeline photo"}
-                  source={{ uri: resolveImageUri(photo.url) }}
-                  style={styles.photo}
-                  resizeMode="cover"
-                />
-              ))}
-            </View>
-          ) : null}
-
           <View style={styles.actions}>
             <Pressable
               accessibilityRole="button"
@@ -144,23 +129,21 @@ export default function PublicGrowTimelineRoute() {
             ))}
           </View>
 
-          <View style={styles.timeline}>
-            {copy.events.map((event, index) => (
-              <View
-                key={`${event.timestamp}-${event.type}-${index}`}
-                style={styles.event}
-              >
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                <Text style={styles.eventMeta}>{fmtDate(event.timestamp)}</Text>
-                {event.summary ? (
-                  <Text style={styles.eventSummary}>{event.summary}</Text>
-                ) : null}
-                {event.tags?.length ? (
-                  <Text style={styles.tags}>{event.tags.join(" · ")}</Text>
-                ) : null}
-              </View>
-            ))}
-          </View>
+          <GrowTimelineFlow
+            events={copy.events.map((event, index) => ({
+              id: event.id || `${event.timestamp}-${index}`,
+              title: event.title,
+              summary: event.summary,
+              timestamp: event.timestamp,
+              type: event.type,
+              highlights: event.tags,
+              photos: copy.photos
+                .filter((photo) =>
+                  photo.eventRef ? photo.eventRef === event.id : index === 0
+                )
+                .map((photo) => photo.url)
+            }))}
+          />
           {feedback ? <Text style={styles.success}>{feedback}</Text> : null}
           <Text style={styles.disclaimer}>
             This is a user-reviewed snapshot, not a compliance record or professional crop
@@ -213,13 +196,6 @@ const createStyles = (palette: ThemePalette) =>
       paddingHorizontal: 10,
       paddingVertical: 7
     },
-    photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 20 },
-    photo: {
-      backgroundColor: palette.surfaceMuted,
-      borderRadius: radius.card,
-      height: 210,
-      width: 280
-    },
     actions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 20 },
     shareTargets: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
     primaryButton: {
@@ -256,21 +232,6 @@ const createStyles = (palette: ThemePalette) =>
       paddingHorizontal: 12,
       paddingVertical: 8
     },
-    timeline: { marginTop: 18 },
-    event: {
-      backgroundColor: palette.surfaceMuted,
-      borderColor: palette.border,
-      borderLeftColor: palette.accent,
-      borderLeftWidth: 4,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      marginTop: 12,
-      padding: 14
-    },
-    eventTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
-    eventMeta: { color: palette.textMuted, fontSize: 12, marginTop: 4 },
-    eventSummary: { color: palette.textSoft, lineHeight: 20, marginTop: 8 },
-    tags: { color: palette.accent, fontSize: 12, fontWeight: "700", marginTop: 8 },
     disclaimer: { color: palette.textMuted, fontSize: 12, lineHeight: 18, marginTop: 24 },
     card: {
       backgroundColor: palette.surfaceMuted,
