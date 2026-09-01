@@ -56,9 +56,7 @@ export default function PublicShareActions({
         await sharePublicLink(title, path, shareDetails);
         return;
       }
-      await nav.clipboard.writeText(
-        currentPublicUrl(socialPreviewUrl || path)
-      );
+      await nav.clipboard.writeText(currentPublicUrl(socialPreviewUrl || path));
       setFeedback("Link copied.");
     } catch (error: any) {
       setFeedback(error?.message || "Unable to copy the link.");
@@ -68,11 +66,7 @@ export default function PublicShareActions({
   async function copyPost() {
     try {
       const nav = (globalThis as any)?.navigator;
-      const message = publicShareMessage(
-        title,
-        socialPreviewUrl || path,
-        shareDetails
-      );
+      const message = publicShareMessage(title, socialPreviewUrl || path, shareDetails);
       if (typeof nav?.clipboard?.writeText !== "function") {
         await sharePublicLink(title, path, shareDetails);
         return;

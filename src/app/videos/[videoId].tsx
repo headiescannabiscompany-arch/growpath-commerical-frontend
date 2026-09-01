@@ -64,7 +64,8 @@ export default function VideoDetailRoute() {
     Boolean(ownerId) &&
     ownerId !== String(auth.user?.id || "") &&
     ownerId !== String(auth.user?._id || "");
-  const canEditThumbnail = auth.isAuthed && Boolean(ownerId) && ownerId === signedInUserId;
+  const canEditThumbnail =
+    auth.isAuthed && Boolean(ownerId) && ownerId === signedInUserId;
 
   useEffect(() => {
     let active = true;
