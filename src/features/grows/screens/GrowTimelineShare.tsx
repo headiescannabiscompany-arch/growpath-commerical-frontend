@@ -303,7 +303,12 @@ export default function GrowTimelineShare({
               accessibilityRole="button"
               accessibilityLabel="Share published grow timeline"
               style={styles.secondaryButton}
-              onPress={() => void sharePublicLink(current.title, publicPath)}
+              onPress={() =>
+                void sharePublicLink(current.title, publicPath, {
+                  description: current.description,
+                  socialPreviewUrl: current.socialPreviewUrl
+                })
+              }
             >
               <Text style={styles.secondaryText}>Share / Copy Link</Text>
             </Pressable>
