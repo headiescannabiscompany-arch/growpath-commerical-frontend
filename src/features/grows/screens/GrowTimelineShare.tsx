@@ -21,7 +21,7 @@ import {
   type GrowTimelinePublicCopyInput,
   type GrowTimelinePublicPreview
 } from "@/api/growTimelineCopies";
-import { createFeedPost } from "@/api/feed";
+import { createForumPost } from "@/api/communitySocial";
 import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
 import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
@@ -63,6 +63,7 @@ export default function GrowTimelineShare({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [postingToFeed, setPostingToFeed] = useState(false);
+  const [showEntrySelection, setShowEntrySelection] = useState(false);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
 
@@ -241,9 +242,13 @@ export default function GrowTimelineShare({
     setPostingToFeed(true);
     setError("");
     try {
-      await createFeedPost({
-        text: `${current.title}\n\nExplore the horizontal Visual Grow Story: ${currentPublicUrl(publicPath)}`,
-        photos: current.photos?.[0]?.url ? [current.photos[0].url] : []
+      await createForumPost({
+        title: current.title,
+        body: `${current.cannabisSpecific ? "Cannabis content.\n\n" : ""}Explore the horizontal Visual Grow Story: ${currentPublicUrl(publicPath)}`,
+        photos: current.photos?.[0]?.url ? [current.photos[0].url] : [],
+        tags: current.cannabisSpecific ? ["cannabis", "grow story"] : ["grow story"],
+        workspaceContext: workspace,
+        growId
       });
       setFeedback("The Visual Grow Story was posted to the GrowPath feed.");
     } catch (caught: any) {
@@ -378,39 +383,13 @@ export default function GrowTimelineShare({
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>2. Choose private entries to include</Text>
-          <Text style={styles.help}>
-            {selectedEventIds.size} of {events.length} saved events selected.
-          </Text>
-          {events.map((event) => {
-            const selected = selectedEventIds.has(String(event.id));
-            return (
-              <Pressable
-                key={String(event.id)}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: selected }}
-                accessibilityLabel={`${selected ? "Remove" : "Include"} ${event.title}`}
-                style={[styles.event, selected && styles.selected]}
-                onPress={() => toggleEvent(event)}
-              >
-                <Text style={styles.eventTitle}>
-                  {selected ? "✓ " : "○ "}
-                  {event.title}
-                </Text>
-                <Text style={styles.eventMeta}>{fmtDate(event.timestamp)}</Text>
-                {event.summary ? (
-                  <Text style={styles.eventSummary}>{event.summary}</Text>
-                ) : null}
-              </Pressable>
-            );
-          })}
-
+          <Text style={styles.sectionTitle}>2. Choose photos to include</Text>
           {availablePhotos.length ? (
             <>
-              <Text style={styles.sectionTitle}>Photos</Text>
               <Text style={styles.help}>
-                Selected photos are copied into a separate public-safe image. Originals
-                remain protected.
+                {selectedPhotoUrls.size} of {availablePhotos.length} available photos are
+                included. Each photo appears at its matching point in the Visual Grow
+                Story. Tap a photo only if you want to keep it private.
               </Text>
               <View style={styles.photoGrid}>
                 {availablePhotos.map((url) => {
@@ -430,14 +409,35 @@ export default function GrowTimelineShare({
                         resizeMode="cover"
                       />
                       <Text style={styles.photoLabel}>
-                        {selected ? "Included" : "Private"}
+                        {selected ? "✓ Included" : "Private"}
                       </Text>
                     </Pressable>
                   );
                 })}
               </View>
             </>
-          ) : null}
+          ) : (
+            <Text style={styles.help}>
+              No photos were found in the currently selected timeline entries.
+            </Text>
+          )}
+
+          <View style={styles.actions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Review public grow timeline preview"
+              accessibilityState={{
+                disabled: saving || !title.trim() || !selectedEventIds.size
+              }}
+              style={styles.primaryButton}
+              disabled={saving || !title.trim() || !selectedEventIds.size}
+              onPress={() => void review()}
+            >
+              <Text style={styles.primaryText}>
+                {saving ? "Preparing…" : "Preview Visual Grow Story"}
+              </Text>
+            </Pressable>
+          </View>
 
           {preview ? (
             <View style={styles.currentCard} accessibilityLabel="Public timeline preview">
@@ -470,6 +470,46 @@ export default function GrowTimelineShare({
             </View>
           ) : null}
 
+          <Text style={styles.sectionTitle}>3. Included timeline entries</Text>
+          <Text style={styles.help}>
+            {selectedEventIds.size} of {events.length} saved events selected. You can
+            preview immediately, or customize the entries used in the story.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${showEntrySelection ? "Hide" : "Customize"} included timeline entries`}
+            style={styles.secondaryButton}
+            onPress={() => setShowEntrySelection((visible) => !visible)}
+          >
+            <Text style={styles.secondaryText}>
+              {showEntrySelection ? "Hide Entry Selection" : "Customize Included Entries"}
+            </Text>
+          </Pressable>
+          {showEntrySelection
+            ? events.map((event) => {
+                const selected = selectedEventIds.has(String(event.id));
+                return (
+                  <Pressable
+                    key={String(event.id)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: selected }}
+                    accessibilityLabel={`${selected ? "Remove" : "Include"} ${event.title}`}
+                    style={[styles.event, selected && styles.selected]}
+                    onPress={() => toggleEvent(event)}
+                  >
+                    <Text style={styles.eventTitle}>
+                      {selected ? "✓ " : "○ "}
+                      {event.title}
+                    </Text>
+                    <Text style={styles.eventMeta}>{fmtDate(event.timestamp)}</Text>
+                    {event.summary ? (
+                      <Text style={styles.eventSummary}>{event.summary}</Text>
+                    ) : null}
+                  </Pressable>
+                );
+              })
+            : null}
+
           <View style={styles.actions}>
             <Pressable
               accessibilityRole="button"
@@ -479,20 +519,6 @@ export default function GrowTimelineShare({
               onPress={() => router.back()}
             >
               <Text style={styles.secondaryText}>Cancel</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Review public grow timeline preview"
-              accessibilityState={{
-                disabled: saving || !title.trim() || !selectedEventIds.size
-              }}
-              style={styles.primaryButton}
-              disabled={saving || !title.trim() || !selectedEventIds.size}
-              onPress={() => void review()}
-            >
-              <Text style={styles.primaryText}>
-                {saving ? "Preparing…" : "Review Public Preview"}
-              </Text>
             </Pressable>
             {preview ? (
               <Pressable

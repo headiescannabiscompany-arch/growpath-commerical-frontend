@@ -36,7 +36,12 @@ jest.mock("@/api/growTimelineCopies", () => ({
   withdrawGrowTimelineCopy: (...args: any[]) => mockWithdraw(...args)
 }));
 
-jest.mock("@/utils/publicLinks", () => ({ sharePublicLink: jest.fn() }));
+jest.mock("@/components/sharing/PublicShareActions", () => () => null);
+
+jest.mock("@/utils/publicLinks", () => ({
+  sharePublicLink: jest.fn(),
+  currentPublicUrl: (path: string) => `https://growpathai.com${path}`
+}));
 
 const events = [
   {
@@ -86,6 +91,7 @@ beforeEach(() => {
     },
     events: [
       {
+        id: "GrowLog:log-2:photo:0",
         type: "photo_added",
         title: "Week two photo",
         summary: "Photo selected for this grow timeline.",
@@ -102,6 +108,10 @@ describe("GrowTimelineShare", () => {
   it("reviews selections and publishes only after the owner presses publish", async () => {
     const screen = render(<GrowTimelineShare workspace="personal" />);
 
+    await waitFor(() =>
+      expect(screen.getByLabelText("Customize included timeline entries")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Customize included timeline entries"));
     await waitFor(() =>
       expect(screen.getByLabelText("Remove Week one note")).toBeTruthy()
     );
