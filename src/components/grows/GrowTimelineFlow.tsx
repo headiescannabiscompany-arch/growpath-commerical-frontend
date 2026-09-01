@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -18,7 +18,7 @@ export type GrowTimelineFlowEvent = {
 function readableType(value?: string) {
   return String(value || "milestone")
     .replace(/_/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function readableDate(value: string) {
@@ -44,22 +44,32 @@ export default function GrowTimelineFlow({
   const chronological = useMemo(
     () =>
       [...events].sort(
-        (left, right) =>
-          new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime()
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       ),
     [events]
   );
+  const [selectedId, setSelectedId] = useState(chronological[0]?.id || "");
+
+  useEffect(() => {
+    if (!chronological.some((event) => event.id === selectedId)) {
+      setSelectedId(chronological[0]?.id || "");
+    }
+  }, [chronological, selectedId]);
 
   if (!chronological.length) return <Text style={styles.empty}>{emptyText}</Text>;
+
+  const selected =
+    chronological.find((event) => event.id === selectedId) || chronological[0];
+  const highlights = (selected.highlights || []).filter(Boolean).slice(0, 8);
 
   return (
     <View accessibilityLabel="Visual grow timeline flowchart" style={styles.frame}>
       <View style={styles.headerRow}>
         <View>
           <Text style={styles.kicker}>VISUAL GROW STORY</Text>
-          <Text style={styles.heading}>From first record to latest milestone</Text>
+          <Text style={styles.heading}>Select a point to open the full entry</Text>
         </View>
-        <Text style={styles.count}>{chronological.length} steps</Text>
+        <Text style={styles.count}>{chronological.length} points</Text>
       </View>
       <ScrollView
         horizontal
@@ -67,70 +77,87 @@ export default function GrowTimelineFlow({
         contentContainerStyle={styles.flow}
         accessibilityLabel="Chronological grow milestones"
       >
+        <View style={styles.line} />
         {chronological.map((event, index) => {
           const photo = event.photos?.find(Boolean);
-          const highlights = (event.highlights || []).filter(Boolean).slice(0, 4);
+          const active = event.id === selected.id;
           return (
-            <React.Fragment key={event.id}>
-              <View style={styles.stepWrap}>
-                <View style={styles.nodeRow}>
-                  <View style={styles.node}>
-                    <Text style={styles.nodeText}>{index + 1}</Text>
-                  </View>
-                  <Text style={styles.date}>{readableDate(event.timestamp)}</Text>
-                </View>
-                <View style={styles.card}>
-                  {photo ? (
-                    <Image
-                      source={{ uri: resolveImageUri(photo) }}
-                      style={styles.photo}
-                      resizeMode="cover"
-                      accessibilityLabel={`Timeline photo for ${event.title}`}
-                    />
-                  ) : (
-                    <View style={styles.photoPlaceholder}>
-                      <Text style={styles.placeholderMark}>◎</Text>
-                      <Text style={styles.placeholderText}>Saved milestone</Text>
-                    </View>
-                  )}
-                  <View style={styles.cardBody}>
-                    <Text style={styles.type}>{readableType(event.type)}</Text>
-                    <Text style={styles.title}>{event.title}</Text>
-                    {event.summary ? (
-                      <Text numberOfLines={4} style={styles.summary}>
-                        {event.summary}
-                      </Text>
-                    ) : null}
-                    {highlights.length ? (
-                      <View style={styles.highlights}>
-                        {highlights.map((highlight) => (
-                          <View key={highlight} style={styles.highlight}>
-                            <Text numberOfLines={2} style={styles.highlightText}>
-                              {highlight}
-                            </Text>
-                          </View>
-                        ))}
-                      </View>
-                    ) : null}
-                    {event.photos && event.photos.length > 1 ? (
-                      <Text style={styles.morePhotos}>
-                        +{event.photos.length - 1} more photo
-                        {event.photos.length === 2 ? "" : "s"}
-                      </Text>
-                    ) : null}
-                  </View>
-                </View>
+            <Pressable
+              key={event.id}
+              accessibilityRole="button"
+              accessibilityLabel={`Open timeline entry ${index + 1}: ${event.title}`}
+              accessibilityState={{ selected: active }}
+              onPress={() => setSelectedId(event.id)}
+              style={styles.pointWrap}
+            >
+              <Text numberOfLines={1} style={styles.date}>
+                {readableDate(event.timestamp)}
+              </Text>
+              <View style={[styles.node, active && styles.nodeActive]}>
+                <Text style={[styles.nodeText, active && styles.nodeTextActive]}>
+                  {index + 1}
+                </Text>
               </View>
-              {index < chronological.length - 1 ? (
-                <View accessibilityElementsHidden style={styles.connector}>
-                  <View style={styles.connectorLine} />
-                  <Text style={styles.arrow}>›</Text>
+              {photo ? (
+                <Image
+                  source={{ uri: resolveImageUri(photo) }}
+                  style={[styles.thumbnail, active && styles.thumbnailActive]}
+                  resizeMode="cover"
+                  accessibilityLabel={`Timeline photo for ${event.title}`}
+                />
+              ) : (
+                <View style={[styles.marker, active && styles.thumbnailActive]}>
+                  <Text style={styles.markerText}>
+                    {readableType(event.type).slice(0, 2)}
+                  </Text>
                 </View>
-              ) : null}
-            </React.Fragment>
+              )}
+              <Text
+                numberOfLines={2}
+                style={[styles.pointTitle, active && styles.activeText]}
+              >
+                {event.title}
+              </Text>
+            </Pressable>
           );
         })}
       </ScrollView>
+      <View
+        accessibilityLabel={`Selected timeline entry: ${selected.title}`}
+        style={styles.detail}
+      >
+        <View style={styles.detailHeadingRow}>
+          <View style={styles.detailHeadingCopy}>
+            <Text style={styles.type}>{readableType(selected.type)}</Text>
+            <Text style={styles.detailTitle}>{selected.title}</Text>
+            <Text style={styles.detailDate}>{readableDate(selected.timestamp)}</Text>
+          </View>
+          <Text style={styles.openHint}>POINT {chronological.indexOf(selected) + 1}</Text>
+        </View>
+        {selected.summary ? <Text style={styles.summary}>{selected.summary}</Text> : null}
+        {selected.photos?.length ? (
+          <ScrollView horizontal contentContainerStyle={styles.photoStrip}>
+            {selected.photos.map((photo, index) => (
+              <Image
+                key={`${photo}-${index}`}
+                source={{ uri: resolveImageUri(photo) }}
+                style={styles.detailPhoto}
+                resizeMode="cover"
+                accessibilityLabel={`Photo ${index + 1} for ${selected.title}`}
+              />
+            ))}
+          </ScrollView>
+        ) : null}
+        {highlights.length ? (
+          <View style={styles.highlights}>
+            {highlights.map((highlight) => (
+              <View key={highlight} style={styles.highlight}>
+                <Text style={styles.highlightText}>{highlight}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -160,71 +187,91 @@ const createStyles = (palette: ThemePalette) =>
     },
     heading: { color: palette.text, fontSize: 18, fontWeight: "900", marginTop: 3 },
     count: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
-    flow: { alignItems: "flex-start", padding: 16, paddingBottom: 8 },
-    stepWrap: { width: 286 },
-    nodeRow: { alignItems: "center", flexDirection: "row", gap: 8, marginBottom: 8 },
+    flow: {
+      minWidth: "100%",
+      paddingHorizontal: 12,
+      paddingVertical: 20,
+      position: "relative"
+    },
+    line: {
+      backgroundColor: palette.accent,
+      height: 3,
+      left: 12,
+      position: "absolute",
+      right: 12,
+      top: 59
+    },
+    pointWrap: { alignItems: "center", marginHorizontal: 3, width: 132 },
+    date: { color: palette.textMuted, fontSize: 10, fontWeight: "800", marginBottom: 8 },
     node: {
       alignItems: "center",
-      backgroundColor: palette.accent,
-      borderRadius: 18,
-      height: 34,
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: 16,
+      borderWidth: 3,
+      height: 32,
       justifyContent: "center",
-      width: 34
+      width: 32,
+      zIndex: 2
     },
-    nodeText: { color: palette.accentText, fontWeight: "900" },
-    date: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
-    card: {
+    nodeActive: { backgroundColor: palette.accent, transform: [{ scale: 1.12 }] },
+    nodeText: { color: palette.accent, fontSize: 10, fontWeight: "900" },
+    nodeTextActive: { color: palette.accentText },
+    thumbnail: { borderRadius: 10, height: 72, marginTop: 10, width: 104 },
+    marker: {
+      alignItems: "center",
+      backgroundColor: palette.accentSoft,
+      borderRadius: 10,
+      height: 72,
+      justifyContent: "center",
+      marginTop: 10,
+      width: 104
+    },
+    markerText: { color: palette.accent, fontSize: 22, fontWeight: "900" },
+    thumbnailActive: { borderColor: palette.accent, borderWidth: 3 },
+    pointTitle: {
+      color: palette.textSoft,
+      fontSize: 11,
+      fontWeight: "800",
+      marginTop: 7,
+      textAlign: "center"
+    },
+    activeText: { color: palette.accent },
+    detail: {
       backgroundColor: palette.surface,
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
-      minHeight: 350,
-      overflow: "hidden"
+      marginHorizontal: 16,
+      marginTop: 8,
+      padding: 16
     },
-    photo: { backgroundColor: palette.page, height: 150, width: "100%" },
-    photoPlaceholder: {
-      alignItems: "center",
-      backgroundColor: palette.accentSoft,
-      height: 150,
-      justifyContent: "center"
-    },
-    placeholderMark: { color: palette.accent, fontSize: 42, fontWeight: "900" },
-    placeholderText: {
-      color: palette.accent,
+    detailHeadingRow: { flexDirection: "row", gap: 12, justifyContent: "space-between" },
+    detailHeadingCopy: { flex: 1 },
+    type: { color: palette.accent, fontSize: 11, fontWeight: "900", letterSpacing: 0.6 },
+    detailTitle: { color: palette.text, fontSize: 20, fontWeight: "900", marginTop: 4 },
+    detailDate: {
+      color: palette.textMuted,
       fontSize: 12,
-      fontWeight: "800",
+      fontWeight: "700",
       marginTop: 4
     },
-    cardBody: { padding: 14 },
-    type: { color: palette.accent, fontSize: 11, fontWeight: "900", letterSpacing: 0.6 },
-    title: { color: palette.text, fontSize: 17, fontWeight: "900", marginTop: 5 },
-    summary: { color: palette.textSoft, lineHeight: 19, marginTop: 8 },
-    highlights: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
+    openHint: { color: palette.accent, fontSize: 11, fontWeight: "900" },
+    summary: { color: palette.textSoft, lineHeight: 21, marginTop: 12 },
+    photoStrip: { gap: 10, paddingTop: 14 },
+    detailPhoto: { borderRadius: radius.card, height: 220, width: 300 },
+    highlights: { flexDirection: "row", flexWrap: "wrap", gap: 7, marginTop: 12 },
     highlight: {
       backgroundColor: palette.accentSoft,
       borderRadius: radius.card,
-      paddingHorizontal: 8,
-      paddingVertical: 6
+      paddingHorizontal: 9,
+      paddingVertical: 7
     },
     highlightText: {
       color: palette.accent,
       fontSize: 11,
       fontWeight: "800",
-      maxWidth: 220
+      maxWidth: 360
     },
-    morePhotos: {
-      color: palette.textMuted,
-      fontSize: 11,
-      fontWeight: "700",
-      marginTop: 9
-    },
-    connector: {
-      alignItems: "center",
-      flexDirection: "row",
-      marginHorizontal: 8,
-      marginTop: 198
-    },
-    connectorLine: { backgroundColor: palette.accent, height: 3, width: 28 },
-    arrow: { color: palette.accent, fontSize: 28, fontWeight: "900", marginLeft: -2 },
     empty: { color: palette.textMuted, marginTop: 16 }
   });
