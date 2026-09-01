@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
   Alert,
@@ -26,6 +27,7 @@ import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
 import ReportModal from "../components/ReportModal";
 import FollowButton from "../components/FollowButton";
 import { currentPublicUrl, sharePublicLink } from "../utils/publicLinks";
+import { persistImageUri, resolveImageUri } from "../utils/photoUploads";
 import {
   deleteLiveChatMessage,
   endLive,
@@ -47,13 +49,14 @@ function hasProviderStopPending(value) {
   );
 }
 
-export function buildLiveShareTargets(title, sessionId) {
-  const url = currentPublicUrl(
+export function buildLiveShareTargets(title, sessionId, socialPreviewUrl = "") {
+  const canonicalUrl = currentPublicUrl(
     `/live-session?sessionId=${encodeURIComponent(String(sessionId || ""))}`
   );
+  const url = socialPreviewUrl ? currentPublicUrl(socialPreviewUrl) : canonicalUrl;
   const message = `${String(title || "Watch this GrowPath live")} ${url}`;
   return {
-    url,
+    url: canonicalUrl,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
     x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`,
     bluesky: `https://bsky.app/intent/compose?text=${encodeURIComponent(message)}`,
@@ -91,6 +94,7 @@ export default function LiveSessionScreen({ route }) {
   const [reportVisible, setReportVisible] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [shareFeedback, setShareFeedback] = useState("");
+  const [thumbnailSaving, setThumbnailSaving] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [chatText, setChatText] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -286,14 +290,46 @@ export default function LiveSessionScreen({ route }) {
     "";
   const shareTargets = buildLiveShareTargets(
     session?.title,
-    session?._id || session?.id || sessionId
+    session?._id || session?.id || sessionId,
+    session?.socialPreviewUrl
   );
+  async function chooseLiveThumbnail() {
+    if (!sessionId || thumbnailSaving) return;
+    setErr("");
+    setShareFeedback("");
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setErr("Photo-library permission is required to upload a thumbnail.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.9
+    });
+    if (result.canceled || !result.assets?.[0]?.uri) return;
+    setThumbnailSaving(true);
+    try {
+      const thumbnailUrl = await persistImageUri(result.assets[0].uri);
+      if (!thumbnailUrl) throw new Error("Thumbnail upload did not return an image.");
+      const updated = await apiRequest(`/api/lives/${encodeURIComponent(sessionId)}`, {
+        method: "PUT",
+        body: { thumbnailUrl }
+      });
+      setSession(updated || session);
+      setShareFeedback("Live thumbnail saved. New social shares will use this image.");
+    } catch (error) {
+      setErr(String(error?.message || error || "Unable to save the live thumbnail."));
+    } finally {
+      setThumbnailSaving(false);
+    }
+  }
 
   async function shareGrowPathSession() {
     try {
       const result = await sharePublicLink(
         String(session?.title || "GrowPath live"),
-        `/live-session?sessionId=${encodeURIComponent(String(session?._id || session?.id || sessionId))}`
+        `/live-session?sessionId=${encodeURIComponent(String(session?._id || session?.id || sessionId))}`,
+        { description: session?.description, socialPreviewUrl: session?.socialPreviewUrl }
       );
       setShareFeedback(
         result.method === "web-clipboard"
@@ -308,7 +344,11 @@ export default function LiveSessionScreen({ route }) {
   async function copyGrowPathSession() {
     const clipboard = globalThis?.navigator?.clipboard;
     if (typeof clipboard?.writeText === "function") {
-      await clipboard.writeText(shareTargets.url);
+      await clipboard.writeText(
+        session?.socialPreviewUrl
+          ? currentPublicUrl(session.socialPreviewUrl)
+          : shareTargets.url
+      );
       setShareFeedback("GrowPath session link copied.");
       return;
     }
@@ -356,6 +396,7 @@ export default function LiveSessionScreen({ route }) {
   const signedInUserId = String(auth?.user?.id || auth?.user?._id || "");
   const canReport = Boolean(signedInUserId) && (!ownerId || ownerId !== signedInUserId);
   const isHost = Boolean(signedInUserId && ownerId === signedInUserId);
+  const canEditThumbnail = auth.isAuthed && isHost;
   const sessionStatus = String(session?.status || "").toLowerCase();
   const canStartExternalSession =
     isHost &&
@@ -755,6 +796,34 @@ export default function LiveSessionScreen({ route }) {
                 Share the GrowPath page so people can watch, RSVP, join chat, and return
                 for the replay.
               </Text>
+              {canEditThumbnail ? (
+                <View style={styles.liveThumbnailEditor}>
+                  <Text style={styles.liveThumbnailLabel}>Social thumbnail</Text>
+                  {session.thumbnailUrl ? (
+                    <Image
+                      accessibilityLabel="Current live sharing thumbnail"
+                      resizeMode="cover"
+                      source={{ uri: resolveImageUri(session.thumbnailUrl) }}
+                      style={styles.liveThumbnailPreview}
+                    />
+                  ) : null}
+                  <Pressable
+                    accessibilityLabel="Upload thumbnail for live sharing"
+                    accessibilityRole="button"
+                    disabled={thumbnailSaving}
+                    onPress={chooseLiveThumbnail}
+                    style={[styles.secondaryBtn, thumbnailSaving && styles.disabled]}
+                  >
+                    <Text style={styles.secondaryBtnText}>
+                      {thumbnailSaving
+                        ? "Saving thumbnail..."
+                        : session.thumbnailUrl
+                          ? "Replace thumbnail"
+                          : "Upload thumbnail"}
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : null}
               <View style={styles.actionRow}>
                 <Pressable
                   accessibilityRole="button"
@@ -1485,6 +1554,17 @@ export function createStyles(palette) {
       gap: 10,
       marginTop: 14,
       padding: 14
+    },
+    liveThumbnailEditor: { alignItems: "flex-start", gap: 9 },
+    liveThumbnailLabel: { color: palette.text, fontWeight: "900" },
+    liveThumbnailPreview: {
+      aspectRatio: 16 / 9,
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      maxWidth: 560,
+      width: "100%"
     },
     overlayUrl: {
       backgroundColor: palette.page,
