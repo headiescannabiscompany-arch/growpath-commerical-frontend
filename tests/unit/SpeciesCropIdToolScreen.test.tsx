@@ -49,6 +49,17 @@ function openLocationAndSharing(screen: any) {
 function chooseObservationDate(screen: any, date = "2026-08-12") {
   const label = "Species / Crop Identification Observation date";
   fireEvent.press(screen.getByLabelText(label));
+  const target = new Date(`${date}T12:00:00`);
+  const today = new Date();
+  const monthDifference =
+    (target.getFullYear() - today.getFullYear()) * 12 +
+    target.getMonth() -
+    today.getMonth();
+  const monthControl =
+    monthDifference < 0 ? `${label} previous month` : `${label} next month`;
+  for (let index = 0; index < Math.abs(monthDifference); index += 1) {
+    fireEvent.press(screen.getByLabelText(monthControl));
+  }
   fireEvent.press(screen.getByLabelText(`${label} day ${date}`));
   fireEvent.press(screen.getByLabelText(`${label} use selected date`));
 }
