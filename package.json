@@ -195,6 +195,7 @@
   },
   "overrides": {
     "brace-expansion": "$brace-expansion",
+    "browserslist": "4.28.8",
     "js-yaml": "5.2.3",
     "nanoid": "3.3.18",
     "postcss": "8.5.26",
