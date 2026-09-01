@@ -1,3 +1,4 @@
+import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -16,6 +17,7 @@ import {
   getVideo,
   GrowPathVideo,
   listVideoComments,
+  updateVideo,
   updateVideoComment,
   type VideoComment
 } from "@/api/videos";
@@ -30,6 +32,7 @@ import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { formatDuration } from "@/features/videos/videoPresentation";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
 export default function VideoDetailRoute() {
   const params = useLocalSearchParams<{ videoId?: string }>();
@@ -53,6 +56,7 @@ export default function VideoDetailRoute() {
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [commentSaving, setCommentSaving] = useState(false);
   const [commentError, setCommentError] = useState("");
+  const [thumbnailSaving, setThumbnailSaving] = useState(false);
   const ownerId = String(video?.owner?.id || "");
   const signedInUserId = String(auth.user?.id || auth.user?._id || "");
   const canReport =
@@ -60,6 +64,7 @@ export default function VideoDetailRoute() {
     Boolean(ownerId) &&
     ownerId !== String(auth.user?.id || "") &&
     ownerId !== String(auth.user?._id || "");
+  const canEditThumbnail = auth.isAuthed && Boolean(ownerId) && ownerId === signedInUserId;
 
   useEffect(() => {
     let active = true;
@@ -136,6 +141,34 @@ export default function VideoDetailRoute() {
       setComments((current) => current.filter((row) => row.id !== comment.id));
     } catch (err: any) {
       setCommentError(String(err?.message || err || "Comment not removed."));
+    }
+  }
+
+  async function chooseThumbnail() {
+    if (!video || thumbnailSaving) return;
+    setError(null);
+    setFeedback("");
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError(new Error("Photo-library permission is required to upload a thumbnail."));
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.9
+    });
+    if (result.canceled || !result.assets?.[0]?.uri) return;
+    setThumbnailSaving(true);
+    try {
+      const thumbnailUrl = await persistImageUri(result.assets[0].uri);
+      if (!thumbnailUrl) throw new Error("Thumbnail upload did not return an image.");
+      const updated = await updateVideo(video.id, { thumbnailUrl });
+      setVideo(updated.video);
+      setFeedback("Thumbnail saved. New social shares will use this image.");
+    } catch (err) {
+      setError(err);
+    } finally {
+      setThumbnailSaving(false);
     }
   }
 
@@ -223,6 +256,44 @@ export default function VideoDetailRoute() {
               playbackUrl: video.playbackUrl
             }}
           />
+          {canEditThumbnail ? (
+            <AppCard>
+              <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+                Video thumbnail
+              </Text>
+              <Text style={styles.discussionHint}>
+                Upload the exact 16:9 image used on GrowPathAI and social previews.
+              </Text>
+              {video.thumbnailUrl || video.mediaSource?.thumbnailUrl ? (
+                <Image
+                  accessibilityLabel="Current video thumbnail"
+                  resizeMode="cover"
+                  source={{
+                    uri: resolveImageUri(
+                      video.thumbnailUrl || video.mediaSource?.thumbnailUrl || ""
+                    )
+                  }}
+                  style={styles.thumbnailPreview}
+                />
+              ) : null}
+              <Pressable
+                accessibilityLabel="Upload thumbnail for this video"
+                accessibilityRole="button"
+                disabled={thumbnailSaving}
+                onPress={() => void chooseThumbnail()}
+                style={[styles.thumbnailButton, thumbnailSaving && styles.disabled]}
+              >
+                {thumbnailSaving ? (
+                  <ActivityIndicator color={palette.accentText} />
+                ) : null}
+                <Text style={styles.thumbnailButtonText}>
+                  {video.thumbnailUrl || video.mediaSource?.thumbnailUrl
+                    ? "Replace thumbnail"
+                    : "Upload thumbnail"}
+                </Text>
+              </Pressable>
+            </AppCard>
+          ) : null}
           <PublicShareActions
             title={video.title || "GrowPath video"}
             path={`/videos/${encodeURIComponent(videoId)}`}
@@ -496,6 +567,28 @@ export const createStyles = (palette: ThemePalette) =>
       padding: 10
     },
     sectionTitle: { color: palette.text, fontSize: 18, fontWeight: "800" },
+    thumbnailPreview: {
+      aspectRatio: 16 / 9,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 12,
+      maxWidth: 560,
+      width: "100%"
+    },
+    thumbnailButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    thumbnailButtonText: { color: palette.accentText, fontWeight: "900" },
     tags: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 9 },
     tag: {
       backgroundColor: palette.surfaceMuted,
