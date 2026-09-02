@@ -982,7 +982,10 @@ export default function LiveSessionScreen({ route }) {
                   <Pressable
                     accessibilityRole="link"
                     accessibilityLabel="Gift a subscription during this live chat"
-                    style={[styles.secondaryBtn, styles.completedBtn]}
+                    style={StyleSheet.flatten([
+                      styles.secondaryBtn,
+                      styles.completedBtn
+                    ])}
                   >
                     <Text style={styles.secondaryBtnText}>Gift a Sub</Text>
                   </Pressable>
