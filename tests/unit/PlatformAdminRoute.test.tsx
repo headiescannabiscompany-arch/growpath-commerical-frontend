@@ -499,7 +499,7 @@ describe("PlatformAdminRoute", () => {
     expect(screen.getByRole("button", { name: "Ban member@example.com" })).toBeTruthy();
     expect(
       screen.getByRole("button", {
-        name: "Review test-account cleanup for member@example.com"
+        name: "Review and remove test account member@example.com"
       })
     ).toBeTruthy();
 
@@ -679,10 +679,10 @@ describe("PlatformAdminRoute", () => {
     });
     const screen = render(<PlatformAdminRoute />);
     await waitFor(() =>
-      expect(screen.getByText("Review test-account cleanup")).toBeTruthy()
+      expect(screen.getByText("Review & remove test account")).toBeTruthy()
     );
 
-    fireEvent.press(screen.getByText("Review test-account cleanup"));
+    fireEvent.press(screen.getByText("Review & remove test account"));
     await waitFor(() =>
       expect(screen.getByText("Anonymize member@example.com")).toBeTruthy()
     );
@@ -695,7 +695,7 @@ describe("PlatformAdminRoute", () => {
       "Exact synthetic account anonymization confirmation"
     );
     fireEvent.changeText(confirmInput, nextConfirmation);
-    fireEvent.press(screen.getByText("Anonymize approved test account"));
+    fireEvent.press(screen.getByText("Remove approved test account"));
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
