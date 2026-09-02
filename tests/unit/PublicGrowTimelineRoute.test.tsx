@@ -71,8 +71,8 @@ describe("PublicGrowTimelineRoute", () => {
     const screen = render(<PublicGrowTimelineRoute />);
     await waitFor(() => expect(screen.getByText("Tomato season")).toBeTruthy());
     expect(screen.getByText("A reviewed public timeline.")).toBeTruthy();
-    expect(screen.getByText("Week one")).toBeTruthy();
-    expect(screen.getByLabelText("Grow timeline photo")).toBeTruthy();
+    expect(screen.getAllByText("Week one").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Timeline photo for Week one")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Report shared grow timeline"));
     expect(reportProps).toEqual(
