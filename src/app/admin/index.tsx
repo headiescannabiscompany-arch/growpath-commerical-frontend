@@ -719,6 +719,7 @@ export default function PlatformAdminRoute() {
   const [cleanupPreview, setCleanupPreview] = useState<SyntheticCleanupPreview | null>(
     null
   );
+  const [cleanupReviewId, setCleanupReviewId] = useState("");
   const [cleanupConfirmation, setCleanupConfirmation] = useState("");
   const [logoutConfirmationOpen, setLogoutConfirmationOpen] = useState(false);
   const [supportReopenReasons, setSupportReopenReasons] = useState<
@@ -1260,6 +1261,7 @@ export default function PlatformAdminRoute() {
 
   async function reviewSyntheticCleanup(target: AdminUser) {
     setBusyId(target._id);
+    setCleanupReviewId(target._id);
     setError("");
     setCleanupPreview(null);
     setCleanupConfirmation("");
@@ -1285,6 +1287,7 @@ export default function PlatformAdminRoute() {
       );
     } finally {
       setBusyId("");
+      setCleanupReviewId("");
     }
   }
 
@@ -2580,6 +2583,7 @@ export default function PlatformAdminRoute() {
         {orderedUsers.map((item) => (
           <AppCard
             key={item._id}
+            accessibilityLabel={`Admin account ${item.email}`}
             title={item.displayName || item.name || item.email}
             subtitle={`${item.email} · ${item.mode || "personal"} · ${item.plan || "free"}`}
           >
@@ -2653,83 +2657,104 @@ export default function PlatformAdminRoute() {
               {item.syntheticCleanupApproved === true ? (
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Review and remove test account ${item.email}`}
-                  accessibilityState={{ disabled: busyId === item._id }}
-                  disabled={busyId === item._id}
+                  accessibilityLabel={
+                    cleanupReviewId === item._id
+                      ? `Reviewing test account safety for ${item.email}`
+                      : `Review and remove test account ${item.email}`
+                  }
+                  accessibilityState={{
+                    disabled: Boolean(cleanupReviewId) || busyId === item._id
+                  }}
+                  disabled={Boolean(cleanupReviewId) || busyId === item._id}
                   style={styles.secondaryButton}
                   onPress={() => void reviewSyntheticCleanup(item)}
                 >
-                  <Text style={styles.secondaryText}>Review & remove test account</Text>
+                  <Text accessibilityLiveRegion="polite" style={styles.secondaryText}>
+                    {cleanupReviewId === item._id
+                      ? "Reviewing safety checks…"
+                      : "Review & remove test account"}
+                  </Text>
                 </Pressable>
               ) : null}
             </View>
+            {cleanupPreview?.target.id === item._id ? (
+              <View
+                accessibilityLabel={`Test account cleanup review for ${item.email}`}
+                style={styles.cleanupReview}
+              >
+                <Text style={styles.cleanupReviewTitle}>
+                  Anonymize {cleanupPreview.target.email}
+                </Text>
+                <Text style={styles.meta}>
+                  This is permanent. GrowPath will reuse the complete privacy deletion
+                  process and retain only records required for security, compliance,
+                  billing, disputes, or audit.
+                </Text>
+                <Text style={styles.meta}>
+                  Synthetic-account policy: approved · Safety blockers:{" "}
+                  {cleanupPreview.blockers.length || "none"} · Dry run:{" "}
+                  {cleanupPreview.ok && cleanupPreview.blockers.length === 0
+                    ? "passed"
+                    : "blocked"}
+                </Text>
+                {cleanupPreview.blockers.map((blocker) => (
+                  <Text key={blocker} style={styles.meta}>
+                    {syntheticCleanupBlockerLabel(blocker)}
+                  </Text>
+                ))}
+                {cleanupPreview.ok && cleanupPreview.blockers.length === 0 ? (
+                  <>
+                    <Text style={styles.meta}>
+                      Type this exact confirmation: {cleanupPreview.nextConfirmation}
+                    </Text>
+                    <TextInput
+                      {...inputThemeProps}
+                      accessibilityLabel="Exact synthetic account anonymization confirmation"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      placeholder="Paste the exact confirmation"
+                      value={cleanupConfirmation}
+                      onChangeText={setCleanupConfirmation}
+                      style={styles.input}
+                    />
+                  </>
+                ) : (
+                  <Text style={styles.meta}>
+                    Removal is disabled until every safety blocker is resolved.
+                  </Text>
+                )}
+                <View style={styles.actions}>
+                  {cleanupPreview.ok && cleanupPreview.blockers.length === 0 ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove approved test account ${item.email}`}
+                      disabled={
+                        busyId === cleanupPreview.target.id ||
+                        cleanupConfirmation !== cleanupPreview.nextConfirmation
+                      }
+                      style={styles.dangerButton}
+                      onPress={() => void executeSyntheticCleanup()}
+                    >
+                      <Text style={styles.dangerText}>Remove approved test account</Text>
+                    </Pressable>
+                  ) : null}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Cancel test account cleanup review ${item.email}`}
+                    style={styles.secondaryButton}
+                    onPress={() => {
+                      setCleanupPreview(null);
+                      setCleanupConfirmation("");
+                    }}
+                  >
+                    <Text style={styles.secondaryText}>Cancel</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : null}
           </AppCard>
         ))}
       </View>
-
-      {cleanupPreview ? (
-        <AppCard
-          title={`Anonymize ${cleanupPreview.target.email}`}
-          subtitle="This is permanent. GrowPath will reuse the complete privacy deletion process and retain only records required for security, compliance, billing, disputes, or audit."
-        >
-          <Text style={styles.meta}>
-            Synthetic-account policy: approved · Safety blockers:{" "}
-            {cleanupPreview.blockers.length || "none"} · Dry run:{" "}
-            {cleanupPreview.ok && cleanupPreview.blockers.length === 0
-              ? "passed"
-              : "blocked"}
-          </Text>
-          {cleanupPreview.blockers.map((blocker) => (
-            <Text key={blocker} style={styles.meta}>
-              {syntheticCleanupBlockerLabel(blocker)}
-            </Text>
-          ))}
-          {cleanupPreview.ok && cleanupPreview.blockers.length === 0 ? (
-            <>
-              <Text style={styles.meta}>
-                Type this exact confirmation: {cleanupPreview.nextConfirmation}
-              </Text>
-              <TextInput
-                {...inputThemeProps}
-                accessibilityLabel="Exact synthetic account anonymization confirmation"
-                autoCapitalize="none"
-                autoCorrect={false}
-                placeholder="Paste the exact confirmation"
-                value={cleanupConfirmation}
-                onChangeText={setCleanupConfirmation}
-                style={styles.input}
-              />
-            </>
-          ) : (
-            <Text style={styles.meta}>
-              Removal is disabled until every safety blocker is resolved.
-            </Text>
-          )}
-          <View style={styles.actions}>
-            {cleanupPreview.ok && cleanupPreview.blockers.length === 0 ? (
-              <Pressable
-                disabled={
-                  busyId === cleanupPreview.target.id ||
-                  cleanupConfirmation !== cleanupPreview.nextConfirmation
-                }
-                style={styles.dangerButton}
-                onPress={() => void executeSyntheticCleanup()}
-              >
-                <Text style={styles.dangerText}>Remove approved test account</Text>
-              </Pressable>
-            ) : null}
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={() => {
-                setCleanupPreview(null);
-                setCleanupConfirmation("");
-              }}
-            >
-              <Text style={styles.secondaryText}>Cancel</Text>
-            </Pressable>
-          </View>
-        </AppCard>
-      ) : null}
 
       <AppCard
         title="Admin work queue"
@@ -3590,6 +3615,19 @@ export const createPlatformAdminStyles = (palette: ThemePalette) =>
       color: palette.text,
       fontWeight: "900",
       textTransform: "capitalize"
+    },
+    cleanupReview: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 14,
+      padding: 12
+    },
+    cleanupReviewTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900"
     },
     evidencePreview: {
       backgroundColor: palette.surfaceMuted,

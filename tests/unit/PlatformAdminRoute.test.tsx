@@ -1,6 +1,6 @@
 import React from "react";
 import { ActivityIndicator, Linking, StyleSheet, TextInput } from "react-native";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
 
 import PlatformAdminRoute, {
   createPlatformAdminStyles,
@@ -54,10 +54,16 @@ jest.mock("@/components/layout/AppPage", () => {
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
-  return function MockAppCard({ title, titleLevel, subtitle, children }: any) {
+  return function MockAppCard({
+    title,
+    titleLevel,
+    subtitle,
+    children,
+    accessibilityLabel
+  }: any) {
     return React.createElement(
       View,
-      null,
+      { accessibilityLabel },
       React.createElement(
         Text,
         titleLevel ? { accessibilityRole: "header", "aria-level": titleLevel } : null,
@@ -665,20 +671,25 @@ describe("PlatformAdminRoute", () => {
 
   it("requires a successful dry run and exact confirmation before anonymizing a test account", async () => {
     const nextConfirmation = "ANONYMIZE user-1 member@example.com";
+    const preview = {
+      ok: true,
+      dryRun: true,
+      target: { id: "user-1", email: "member@example.com" },
+      allowlisted: true,
+      blockers: [],
+      deletionMode: "privacy_anonymization",
+      nextConfirmation
+    };
+    let resolvePreview: (value: typeof preview) => void = () => undefined;
+    const previewRequest = new Promise<typeof preview>((resolve) => {
+      resolvePreview = resolve;
+    });
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/admin/users/user-1/anonymize-synthetic-account") {
         if (options?.body?.execute) {
           return Promise.resolve({ ok: true, deletion: { deletionMode: "anonymized" } });
         }
-        return Promise.resolve({
-          ok: true,
-          dryRun: true,
-          target: { id: "user-1", email: "member@example.com" },
-          allowlisted: true,
-          blockers: [],
-          deletionMode: "privacy_anonymization",
-          nextConfirmation
-        });
+        return previewRequest;
       }
       if (path.startsWith("/api/admin/users")) {
         return Promise.resolve({
@@ -693,9 +704,21 @@ describe("PlatformAdminRoute", () => {
     );
 
     fireEvent.press(screen.getByText("Review & remove test account"));
+    await screen.findByText("Reviewing safety checks…");
+    expect(
+      screen.getByRole("button", {
+        name: "Reviewing test account safety for member@example.com"
+      }).props.accessibilityState
+    ).toEqual(expect.objectContaining({ disabled: true }));
+    resolvePreview(preview);
     await waitFor(() =>
       expect(screen.getByText("Anonymize member@example.com")).toBeTruthy()
     );
+    expect(
+      within(screen.getByLabelText("Admin account member@example.com")).getByText(
+        "Anonymize member@example.com"
+      )
+    ).toBeTruthy();
     expect(mockApiRequest).toHaveBeenCalledWith(
       "/api/admin/users/user-1/anonymize-synthetic-account",
       { method: "POST", body: { expectedEmail: "member@example.com" } }
