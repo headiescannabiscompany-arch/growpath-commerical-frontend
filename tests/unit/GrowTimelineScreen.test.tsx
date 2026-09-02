@@ -149,6 +149,8 @@ describe("GrowTimelineScreen", () => {
       expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith("personal", "grow-1")
     );
 
+    fireEvent.press(screen.getByText("Detailed List"));
+
     expect(screen.getByText("Possible pH drift")).toBeTruthy();
     expect(screen.getByText("Overall health: watch")).toBeTruthy();
     expect(screen.getByText("Feedback: 1 response(s)")).toBeTruthy();
@@ -196,6 +198,8 @@ describe("GrowTimelineScreen", () => {
     await waitFor(() =>
       expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith("personal", "grow-1")
     );
+
+    fireEvent.press(screen.getByText("Detailed List"));
 
     fireEvent.press(screen.getByText("Journal"));
     expect(screen.getByText("Watered blueberry")).toBeTruthy();
