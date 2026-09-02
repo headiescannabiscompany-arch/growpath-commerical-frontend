@@ -117,6 +117,7 @@ type AdminUser = {
   aiTokens?: number;
   maxTokens?: number;
   lastActiveAt?: string;
+  syntheticCleanupApproved?: boolean;
 };
 
 type SyntheticCleanupPreview = {
@@ -2649,16 +2650,18 @@ export default function PlatformAdminRoute() {
               >
                 <Text style={styles.dangerText}>Ban</Text>
               </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`Review and remove test account ${item.email}`}
-                accessibilityState={{ disabled: busyId === item._id }}
-                disabled={busyId === item._id}
-                style={styles.secondaryButton}
-                onPress={() => void reviewSyntheticCleanup(item)}
-              >
-                <Text style={styles.secondaryText}>Review & remove test account</Text>
-              </Pressable>
+              {item.syntheticCleanupApproved === true ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Review and remove test account ${item.email}`}
+                  accessibilityState={{ disabled: busyId === item._id }}
+                  disabled={busyId === item._id}
+                  style={styles.secondaryButton}
+                  onPress={() => void reviewSyntheticCleanup(item)}
+                >
+                  <Text style={styles.secondaryText}>Review & remove test account</Text>
+                </Pressable>
+              ) : null}
             </View>
           </AppCard>
         ))}

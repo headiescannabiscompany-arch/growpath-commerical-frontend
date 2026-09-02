@@ -503,10 +503,10 @@ describe("PlatformAdminRoute", () => {
     ).toBeTruthy();
     expect(screen.getByRole("button", { name: "Ban member@example.com" })).toBeTruthy();
     expect(
-      screen.getByRole("button", {
+      screen.queryByRole("button", {
         name: "Review and remove test account member@example.com"
       })
-    ).toBeTruthy();
+    ).toBeNull();
 
     fireEvent.press(
       screen.getByRole("button", { name: "Refresh tokens for member@example.com" })
@@ -680,6 +680,11 @@ describe("PlatformAdminRoute", () => {
           nextConfirmation
         });
       }
+      if (path.startsWith("/api/admin/users")) {
+        return Promise.resolve({
+          users: [{ ...member, syntheticCleanupApproved: true }]
+        });
+      }
       return defaultAdminApi(path);
     });
     const screen = render(<PlatformAdminRoute />);
@@ -731,6 +736,11 @@ describe("PlatformAdminRoute", () => {
             nextConfirmation: "ANONYMIZE user-1 member@example.com"
           })
         );
+      }
+      if (path.startsWith("/api/admin/users")) {
+        return Promise.resolve({
+          users: [{ ...member, syntheticCleanupApproved: true }]
+        });
       }
       return defaultAdminApi(path);
     });
