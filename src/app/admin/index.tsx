@@ -2597,13 +2597,13 @@ export default function PlatformAdminRoute() {
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Review test-account cleanup for ${item.email}`}
+                accessibilityLabel={`Review and remove test account ${item.email}`}
                 accessibilityState={{ disabled: busyId === item._id }}
                 disabled={busyId === item._id}
                 style={styles.secondaryButton}
                 onPress={() => void reviewSyntheticCleanup(item)}
               >
-                <Text style={styles.secondaryText}>Review test-account cleanup</Text>
+                <Text style={styles.secondaryText}>Review & remove test account</Text>
               </Pressable>
             </View>
           </AppCard>
@@ -2616,7 +2616,7 @@ export default function PlatformAdminRoute() {
           subtitle="This is permanent. GrowPath will reuse the complete privacy deletion process and retain only records required for security, compliance, billing, disputes, or audit."
         >
           <Text style={styles.meta}>
-            Exact production allowlist: approved · Safety blockers: none · Dry run: passed
+            Synthetic-account policy: approved · Safety blockers: none · Dry run: passed
           </Text>
           <Text style={styles.meta}>
             Type this exact confirmation: {cleanupPreview.nextConfirmation}
@@ -2640,7 +2640,7 @@ export default function PlatformAdminRoute() {
               style={styles.dangerButton}
               onPress={() => void executeSyntheticCleanup()}
             >
-              <Text style={styles.dangerText}>Anonymize approved test account</Text>
+              <Text style={styles.dangerText}>Remove approved test account</Text>
             </Pressable>
             <Pressable
               style={styles.secondaryButton}
