@@ -7,6 +7,7 @@ import PlatformAdminRoute, {
   moderationTargetHref,
   supportsModerationActions
 } from "@/app/admin";
+import { ApiError } from "@/api/apiRequest";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
@@ -24,9 +25,13 @@ jest.mock("expo-router", () => ({
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({ user: { id: "admin-1", role: mockRole }, logout: mockLogout })
 }));
-jest.mock("@/api/apiRequest", () => ({
-  apiRequest: (...args: any[]) => mockApiRequest(...args)
-}));
+jest.mock("@/api/apiRequest", () => {
+  const actual = jest.requireActual("@/api/apiRequest");
+  return {
+    ...actual,
+    apiRequest: (...args: any[]) => mockApiRequest(...args)
+  };
+});
 jest.mock("@/theme/appTheme", () => {
   const actual = jest.requireActual("@/theme/appTheme");
   return {
@@ -710,6 +715,37 @@ describe("PlatformAdminRoute", () => {
         }
       )
     );
+  });
+
+  it("shows dry-run safety blockers without exposing removal controls", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/admin/users/user-1/anonymize-synthetic-account") {
+        return Promise.reject(
+          new ApiError("HTTP_ERROR", 409, {
+            ok: false,
+            dryRun: true,
+            target: { id: "user-1", email: "member@example.com" },
+            allowlisted: true,
+            blockers: ["course_creator"],
+            deletionMode: "privacy_anonymization",
+            nextConfirmation: "ANONYMIZE user-1 member@example.com"
+          })
+        );
+      }
+      return defaultAdminApi(path);
+    });
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Review & remove test account");
+
+    fireEvent.press(screen.getByText("Review & remove test account"));
+
+    await screen.findByText("This account owns a course that must be handled first.");
+    expect(screen.getByText(/Safety blockers: 1 · Dry run: blocked/)).toBeTruthy();
+    expect(
+      screen.queryByLabelText("Exact synthetic account anonymization confirmation")
+    ).toBeNull();
+    expect(screen.queryByText("Remove approved test account")).toBeNull();
+    expect(screen.queryByText("HTTP_ERROR")).toBeNull();
   });
 
   it.each(["day", "night"] as const)(
