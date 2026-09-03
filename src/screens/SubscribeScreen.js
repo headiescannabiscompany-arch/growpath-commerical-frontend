@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Linking, Text } from "react-native";
+import { Alert, Linking, Platform, Text } from "react-native";
 
-import { createCheckoutSession, getSubscription } from "../api/subscription";
+import {
+  createCheckoutSession,
+  getSubscription,
+  verifyIapReceipt
+} from "../api/subscription";
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
-import {
-  formatVerifiedPlanPrice,
-  verifiedPlanQuote
-} from "../constants/pricing";
-import { useRecurringPriceQuotes } from "../hooks/useRecurringPriceQuotes";
+import { PRO_PLAN_PRICE_DISPLAY } from "../constants/pricing";
 import { colors, spacing } from "../theme/theme";
 import { resolveSubscriptionSafety } from "../features/billing/subscriptionSafety";
+import { buySubscription, initIAP } from "../utils/iap";
 import { openExternalUrl } from "../utils/openExternalUrl";
 
+function isNativePurchasePlatform() {
+  return Platform.OS === "ios" || Platform.OS === "android";
+}
+
 export default function SubscribeScreen({ navigation }) {
-  const { quotes } = useRecurringPriceQuotes();
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -29,6 +33,7 @@ export default function SubscribeScreen({ navigation }) {
 
   useEffect(() => {
     load();
+    if (isNativePurchasePlatform()) initIAP();
   }, []);
 
   async function goToStatus() {
@@ -58,10 +63,29 @@ export default function SubscribeScreen({ navigation }) {
     );
   }
 
+  async function verifyNativePurchase() {
+    const purchase = await buySubscription();
+    await verifyIapReceipt({
+      receipt: purchase.transactionReceipt,
+      platform: Platform.OS,
+      productId: purchase.productId,
+      transactionId: purchase.transactionId
+    });
+    Alert.alert(
+      "Verification submitted",
+      "Access unlocks after the backend confirms subscription status.",
+      [{ text: "Check Status", onPress: goToStatus }]
+    );
+  }
+
   async function handleUpgrade() {
     try {
       setLoading(true);
-      await openStripeCheckout();
+      if (isNativePurchasePlatform()) {
+        await verifyNativePurchase();
+      } else {
+        await openStripeCheckout();
+      }
     } catch (err) {
       Alert.alert("Error", err?.message || "Unable to start payment.");
     } finally {
@@ -71,8 +95,6 @@ export default function SubscribeScreen({ navigation }) {
 
   if (!status) return null;
   const access = resolveSubscriptionSafety(status);
-  const monthlyQuote = verifiedPlanQuote(quotes, "pro", "monthly");
-  const yearlyQuote = verifiedPlanQuote(quotes, "pro", "yearly");
 
   return (
     <ScreenContainer scroll>
@@ -92,15 +114,7 @@ export default function SubscribeScreen({ navigation }) {
           only after backend confirmation.
         </Text>
 
-        <Text style={styles.note}>
-          Secure Stripe checkout opens in your browser. Native in-app purchases are not
-          currently available.
-        </Text>
-
-        <Text style={styles.price}>
-          {formatVerifiedPlanPrice(monthlyQuote)}/month or{" "}
-          {formatVerifiedPlanPrice(yearlyQuote)}/year
-        </Text>
+        <Text style={styles.price}>{PRO_PLAN_PRICE_DISPLAY}</Text>
 
         {access.active ? (
           <>
@@ -122,15 +136,9 @@ export default function SubscribeScreen({ navigation }) {
         ) : (
           <>
             <PrimaryButton
-              title={
-                loading
-                  ? "Processing..."
-                  : monthlyQuote
-                    ? `Unlock Premium — ${formatVerifiedPlanPrice(monthlyQuote)}/month`
-                    : "Stripe pricing unavailable"
-              }
+              title={loading ? "Processing..." : "Unlock Premium"}
               onPress={handleUpgrade}
-              disabled={loading || !monthlyQuote}
+              disabled={loading}
             />
             <PrimaryButton
               title="View Plans & Pricing"

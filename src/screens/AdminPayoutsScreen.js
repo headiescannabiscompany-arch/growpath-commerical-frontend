@@ -1,8 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { getPayoutHistory } from "../api/creator.js";
+import { getPayoutHistory, markPayoutPaid } from "../api/creator.js";
 import ScreenContainer from "../components/ScreenContainer.js";
 import { radius } from "../theme/theme.js";
 
@@ -23,13 +31,11 @@ export default function AdminPayoutsScreen() {
   const canAdmin = entitlements.can(CAPABILITY_KEYS.CREATOR_PAYOUT_ADMIN);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [marking, setMarking] = useState(null);
   const [feedback, setFeedback] = useState("");
 
   const pending = useMemo(
-    () =>
-      history.filter((item) =>
-        ["held", "adjustment_pending"].includes(item.earningStatus)
-      ),
+    () => history.filter((item) => !item.paidOut && item.status !== "paid"),
     [history]
   );
 
@@ -54,14 +60,26 @@ export default function AdminPayoutsScreen() {
     load();
   }, [canAdmin]);
 
+  async function handleMarkPaid(payoutId) {
+    setMarking(payoutId);
+    setFeedback("");
+    try {
+      await markPayoutPaid(payoutId);
+      setFeedback("Payout marked paid. Backend payout history refreshed.");
+      await load();
+    } catch (error) {
+      Alert.alert("Error", error?.message || "Failed to mark as paid");
+    } finally {
+      setMarking(null);
+    }
+  }
+
   if (!canAdmin) {
     return (
       <ScreenContainer>
         <View style={styles.locked}>
           <Text style={styles.header}>Admin payouts unavailable</Text>
-          <Text style={styles.meta}>
-            This account does not have `CREATOR_PAYOUT_ADMIN`.
-          </Text>
+          <Text style={styles.meta}>This account does not have `CREATOR_PAYOUT_ADMIN`.</Text>
         </View>
       </ScreenContainer>
     );
@@ -69,11 +87,7 @@ export default function AdminPayoutsScreen() {
 
   return (
     <ScreenContainer scroll>
-      <Text style={styles.header}>Admin: Payout Reconciliation</Text>
-      <Text style={styles.meta}>
-        GrowPath cannot manually mark a bank payout paid. Stripe is the source of truth;
-        this view only surfaces earnings held for review or adjustment.
-      </Text>
+      <Text style={styles.header}>Admin: Payout Requests</Text>
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
       {loading ? (
         <ActivityIndicator size="large" />
@@ -83,6 +97,7 @@ export default function AdminPayoutsScreen() {
           data={pending}
           keyExtractor={(item) => String(item._id || item.id || item.createdAt)}
           renderItem={({ item }) => {
+            const id = String(item._id || item.id || "");
             return (
               <View style={styles.row}>
                 <View style={{ flex: 1 }}>
@@ -91,21 +106,25 @@ export default function AdminPayoutsScreen() {
                     {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
                   </Text>
                   <Text style={styles.creator}>
-                    Creator:{" "}
-                    {item.creatorName ||
-                      item.creatorId ||
-                      item.creator?.name ||
-                      "Unknown"}
+                    Creator: {item.creatorName || item.creatorId || item.creator?.name || "Unknown"}
                   </Text>
-                  <Text style={styles.meta}>Status: {item.earningStatus}</Text>
-                  <Text style={styles.meta}>Bank payout: verify in Stripe</Text>
+                  <Text style={styles.meta}>Status: {item.status || "pending"}</Text>
                 </View>
+                <TouchableOpacity
+                  style={[styles.markBtn, marking === id && styles.disabled]}
+                  onPress={() => handleMarkPaid(id)}
+                  disabled={!id || marking === id}
+                >
+                  {marking === id ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.markBtnText}>Mark as Paid</Text>
+                  )}
+                </TouchableOpacity>
               </View>
             );
           }}
-          ListEmptyComponent={
-            <Text style={styles.empty}>No held payout adjustments.</Text>
-          }
+          ListEmptyComponent={<Text style={styles.empty}>No pending payout requests.</Text>}
         />
       )}
     </ScreenContainer>
@@ -135,6 +154,14 @@ const styles = StyleSheet.create({
   date: { color: "#999", fontSize: 12, marginTop: 4 },
   creator: { color: "#34495e", fontSize: 13, marginTop: 2 },
   meta: { color: "#64748B", fontSize: 13, marginTop: 4 },
+  markBtn: {
+    backgroundColor: "#27ae60",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: radius.card,
+    marginLeft: 12
+  },
+  markBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
   empty: { textAlign: "center", color: "#888", marginTop: 40 },
   feedback: {
     color: "#334155",
@@ -142,5 +169,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     padding: 8,
     marginBottom: 10
-  }
+  },
+  disabled: { opacity: 0.6 }
 });

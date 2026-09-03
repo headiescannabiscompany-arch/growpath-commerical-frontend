@@ -17,20 +17,8 @@ export const MARKETPLACE_ROUTES = {
   GET_ANALYTICS: (contentId) => `/api/marketplace/${enc(contentId)}/analytics`,
   UPDATE_PRICING: (contentId) => `/api/marketplace/${enc(contentId)}/pricing`,
   DELETE_CONTENT: (contentId) => `/api/marketplace/${enc(contentId)}`,
-  PURCHASE: (contentId) => `/api/marketplace/${enc(contentId)}/purchase`,
-  DOWNLOAD: (contentId) => `/api/marketplace/${enc(contentId)}/download`
+  PURCHASE: (contentId) => `/api/marketplace/${enc(contentId)}/purchase`
 };
-
-function currentOrigin() {
-  const location = globalThis?.window?.location;
-  return typeof location?.origin === "string" ? location.origin : "";
-}
-
-function checkoutReturnUrl(origin, returnPath, status, contentId) {
-  const path = returnPath || "/marketplace";
-  const separator = path.includes("?") ? "&" : "?";
-  return `${origin}${path}${separator}checkout=${status}&contentId=${enc(contentId)}`;
-}
 
 function rows(payload) {
   if (Array.isArray(payload)) return payload;
@@ -227,18 +215,10 @@ export const deleteContent = async (contentId) => {
   }
 };
 
-export const purchaseContent = async (contentId, options = {}) => {
+export const purchaseContent = async (contentId) => {
   try {
-    const origin = currentOrigin();
-    const returnPath = options.returnPath || "/marketplace";
     const purchaseRes = await apiRequest(MARKETPLACE_ROUTES.PURCHASE(contentId), {
-      method: "POST",
-      body: origin
-        ? {
-            successUrl: checkoutReturnUrl(origin, returnPath, "success", contentId),
-            cancelUrl: checkoutReturnUrl(origin, returnPath, "canceled", contentId)
-          }
-        : {}
+      method: "POST"
     });
     return purchaseRes;
   } catch (error) {

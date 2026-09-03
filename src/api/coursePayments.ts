@@ -1,10 +1,5 @@
 import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
-import {
-  pollAuthoritativeCheckoutStatus,
-  type AuthoritativeCheckoutState,
-  type CheckoutReconciliation
-} from "../utils/buyerCheckoutRecovery";
 
 export type CoursePaymentStatus = {
   enrolled?: boolean;
@@ -15,11 +10,6 @@ export type CoursePaymentStatus = {
   disputeStatus?: string;
   earningsStatus?: string;
   enrollmentId?: string;
-  status?: string;
-};
-
-export type CourseAccessSnapshot = CoursePaymentStatus & {
-  enrollment?: unknown;
 };
 
 function idempotencyKey(prefix: string, courseId: string) {
@@ -43,8 +33,9 @@ function checkoutReturnUrl(
 ) {
   const path = returnPath || "/courses";
   const separator = path.includes("?") ? "&" : "?";
-  const encodedCourseId = encodeURIComponent(courseId);
-  return `${origin}${path}${separator}checkout=${status}&courseId=${encodedCourseId}&course=${encodedCourseId}`;
+  return `${origin}${path}${separator}checkout=${status}&course=${encodeURIComponent(
+    courseId
+  )}`;
 }
 
 export async function startCourseCheckout(
@@ -71,103 +62,6 @@ export async function getCoursePaymentStatus(
     method: "GET"
   });
   return response?.data ?? response ?? {};
-}
-
-const PAYMENT_RECORDED_COURSE_STATUSES = new Set([
-  "active",
-  "complete",
-  "completed",
-  "enrolled",
-  "fulfilled",
-  "paid",
-  "recorded"
-]);
-const PENDING_COURSE_STATUSES = new Set([
-  "checkout_pending",
-  "created",
-  "open",
-  "pending",
-  "processing",
-  "submitted"
-]);
-const TERMINAL_COURSE_STATUSES = new Set([
-  "canceled",
-  "cancelled",
-  "chargeback",
-  "disputed",
-  "expired",
-  "failed",
-  "refunded",
-  "revoked",
-  "void",
-  "voided"
-]);
-
-export function coursePaymentReconciliationState(
-  snapshot: CourseAccessSnapshot | null | undefined
-): AuthoritativeCheckoutState {
-  const statuses = [
-    snapshot?.paymentStatus,
-    snapshot?.checkoutStatus,
-    snapshot?.refundStatus,
-    snapshot?.status
-  ]
-    .map((value) =>
-      String(value || "")
-        .trim()
-        .toLowerCase()
-    )
-    .filter(Boolean);
-  if (statuses.some((status) => TERMINAL_COURSE_STATUSES.has(status))) {
-    return "terminal";
-  }
-  if (
-    ["open", "reported"].includes(
-      String(snapshot?.disputeStatus || "")
-        .trim()
-        .toLowerCase()
-    )
-  ) {
-    return "terminal";
-  }
-  if (snapshot?.enrolled === true || snapshot?.isEnrolled === true) return "confirmed";
-  if (statuses.some((status) => PENDING_COURSE_STATUSES.has(status))) return "pending";
-  if (statuses.some((status) => PAYMENT_RECORDED_COURSE_STATUSES.has(status))) {
-    return "pending";
-  }
-  return "unknown";
-}
-
-export async function getCourseAccessStatus(
-  courseId: string
-): Promise<CourseAccessSnapshot> {
-  const [paymentResult, enrollmentResult] = await Promise.allSettled([
-    getCoursePaymentStatus(courseId),
-    apiRequest(apiRoutes.COURSES.STATUS(courseId), { method: "GET" })
-  ]);
-  if (paymentResult.status === "rejected" && enrollmentResult.status === "rejected") {
-    throw paymentResult.reason;
-  }
-  const payment = paymentResult.status === "fulfilled" ? paymentResult.value : {};
-  const enrollmentResponse =
-    enrollmentResult.status === "fulfilled" ? enrollmentResult.value : {};
-  const enrollment = enrollmentResponse?.data ?? enrollmentResponse ?? {};
-  return { ...payment, ...enrollment };
-}
-
-export async function pollCourseAccessStatus(
-  courseId: string,
-  options: {
-    onSnapshot?: (snapshot: CourseAccessSnapshot) => void;
-    shouldContinue?: () => boolean;
-  } = {}
-): Promise<CheckoutReconciliation<CourseAccessSnapshot>> {
-  return pollAuthoritativeCheckoutStatus({
-    classify: coursePaymentReconciliationState,
-    onSnapshot: options.onSnapshot,
-    read: () => getCourseAccessStatus(courseId),
-    shouldContinue: options.shouldContinue
-  });
 }
 
 export async function requestCourseRefund(courseId: string, reason: string) {

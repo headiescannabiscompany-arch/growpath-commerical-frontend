@@ -93,14 +93,7 @@ const member = {
   subscriptionStatus: "active",
   accountStatus: "active",
   aiTokens: 2,
-  maxTokens: 100,
-  billingTruth: {
-    source: "stripe",
-    paymentState: "paid",
-    stripeLinked: true,
-    paidThrough: "2026-09-30T23:59:59.000Z",
-    trialExpiry: null
-  }
+  maxTokens: 100
 };
 const usage = {
   activeUsers: { last7Days: 5, last30Days: 12 },
@@ -236,87 +229,6 @@ const moderationCase = {
     }
   }
 };
-const restrictedModerationCase = {
-  _id: "restricted-case-1",
-  restricted: true,
-  caseKind: "restricted_severe_harm",
-  severity: "critical",
-  status: "reviewing",
-  action: "none",
-  targetType: "forumPost",
-  targetId: "must-stay-redacted-target",
-  subjectUserId: "must-stay-redacted-subject",
-  reason: "must-stay-redacted narrative",
-  actionHistory: [{ action: "must-stay-redacted-action" }],
-  evidenceSnapshot: {
-    content: { body: "must-stay-redacted evidence" },
-    classification: { category: "must-stay-redacted-category" }
-  },
-  reportCount: 1,
-  lastReportedAt: "2026-08-15T14:00:00.000Z"
-};
-const restrictedModerationReview = {
-  ...restrictedModerationCase,
-  subjectUserId: "subject-user-1",
-  createdAt: "2026-08-15T14:00:00.000Z",
-  updatedAt: "2026-08-15T14:05:00.000Z",
-  evidence: {
-    categories: ["human_trafficking"],
-    highestSeverity: "critical",
-    categoryCounts: { human_trafficking: 1 },
-    distinctTargetCount: 1,
-    dispositionProgress: {
-      retainedTargetCount: 1,
-      actionableTargetCount: 1,
-      completedTargetCount: 0,
-      remainingTargetCount: 1,
-      nonActionableTargetCount: 0,
-      unknownTargetCount: 0,
-      allTargetsDispositioned: false
-    },
-    caseDisposition: null,
-    targetHistory: [
-      {
-        targetType: "forumPost",
-        targetId: "restricted-post-1",
-        subjectUserId: "subject-user-1",
-        status: "active",
-        hasMediaReferences: true,
-        mediaReferenceCount: 2
-      }
-    ],
-    preActionHistory: [],
-    reports: [
-      {
-        reportId: "restricted-report-1",
-        reporterUserId: "reporter-user-1",
-        contentType: "forumPost",
-        contentId: "restricted-post-1",
-        category: "human_trafficking",
-        reason: "Repeated coercive recruitment was reported.",
-        status: "open",
-        createdAt: "2026-08-15T14:00:00.000Z",
-        resolvedAt: null
-      }
-    ],
-    reportWindow: {
-      ordering: "newest_first",
-      limit: 100,
-      returned: 1,
-      truncated: false
-    },
-    handling: {
-      minimumNecessary: true,
-      snapshotMode: "metadata_only",
-      rawMediaIncluded: false,
-      storageLocationsIncluded: false,
-      objectKeysIncluded: false,
-      secretsIncluded: false,
-      automaticExternalAuthorityContact: false,
-      automaticLawEnforcementContact: false
-    }
-  }
-};
 const harvestCalibrationCandidate = {
   feedbackId: "harvest-feedback-1",
   reviewId: "harvest-review-1",
@@ -346,8 +258,6 @@ function defaultAdminApi(path: string) {
   if (path === "/api/admin/usage") return Promise.resolve({ usage });
   if (path === "/api/admin/security-center") return Promise.resolve(securityCenter);
   if (path === "/api/admin/regulated-commerce") return Promise.resolve(regulatedCommerce);
-  if (path.startsWith("/api/admin/removed-users"))
-    return Promise.resolve({ ok: true, users: [], nextCursor: null });
   if (path.startsWith("/api/admin/users")) return Promise.resolve({ users: [member] });
   if (path === "/api/admin/moderation-cases")
     return Promise.resolve({ cases: [moderationCase] });
@@ -615,127 +525,6 @@ describe("PlatformAdminRoute", () => {
     );
   });
 
-  it("shows the server-authored billing source, Stripe link, payment state, and boundaries", async () => {
-    const screen = render(<PlatformAdminRoute />);
-    const billing = await screen.findByLabelText("Billing truth for member@example.com");
-
-    expect(within(billing).getByText("Billing source: Stripe")).toBeTruthy();
-    expect(within(billing).getByText("Stripe linked: Yes")).toBeTruthy();
-    expect(within(billing).getByText("Payment state: Paid")).toBeTruthy();
-    expect(within(billing).getByText(/Paid through: .*2026/)).toBeTruthy();
-    expect(within(billing).getByText("Trial expiry: Not reported")).toBeTruthy();
-  });
-
-  it("labels every billing source without inferring unresolved legacy access as free", async () => {
-    const sources = [
-      ["stripe", "Stripe"],
-      ["gift", "Gift"],
-      ["app_store", "App Store"],
-      ["free", "Free"],
-      ["complimentary", "Complimentary access"],
-      ["platform", "Protected platform account"],
-      ["test", "Test access"],
-      ["unknown", "Unknown / unresolved"]
-    ] as const;
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path.startsWith("/api/admin/users")) {
-        return Promise.resolve({
-          users: sources.map(([source], index) => ({
-            ...member,
-            _id: `billing-source-${source}`,
-            email: `${source}-${index}@example.com`,
-            billingTruth: {
-              source,
-              paymentState:
-                source === "stripe" || source === "gift" || source === "app_store"
-                  ? "paid"
-                  : "nonpaid",
-              stripeLinked: source === "stripe",
-              paidThrough: source === "free" ? null : "2026-08-01T00:00:00.000Z",
-              trialExpiry: null
-            }
-          }))
-        });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    for (const [source, label] of sources) {
-      const index = sources.findIndex(([candidate]) => candidate === source);
-      const billing = await screen.findByLabelText(
-        `Billing truth for ${source}-${index}@example.com`
-      );
-      expect(within(billing).getByText(`Billing source: ${label}`)).toBeTruthy();
-    }
-  });
-
-  it("keeps card-free local trials nonpaid even when a malformed row claims paid", async () => {
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path.startsWith("/api/admin/users")) {
-        return Promise.resolve({
-          users: [
-            {
-              ...member,
-              subscriptionStatus: "trialing",
-              billingTruth: {
-                source: "local_trial",
-                paymentState: "paid",
-                stripeLinked: false,
-                paidThrough: "2026-10-15T00:00:00.000Z",
-                trialExpiry: "2026-09-15T00:00:00.000Z"
-              }
-            }
-          ]
-        });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    const billing = await screen.findByLabelText("Billing truth for member@example.com");
-
-    expect(
-      within(billing).getByText("Billing source: Local / promotional trial (card-free)")
-    ).toBeTruthy();
-    expect(within(billing).getByText("Stripe linked: No")).toBeTruthy();
-    expect(within(billing).getByText("Payment state: Not paid")).toBeTruthy();
-    expect(within(billing).queryByText("Payment state: Paid")).toBeNull();
-    expect(
-      within(billing).getByText("Paid through: Not applicable to card-free trial")
-    ).toBeTruthy();
-    expect(within(billing).getByText(/Trial expiry: .*2026/)).toBeTruthy();
-  });
-
-  it("reports missing and invalid billing boundaries without exposing raw values", async () => {
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path.startsWith("/api/admin/users")) {
-        return Promise.resolve({
-          users: [
-            {
-              ...member,
-              billingTruth: {
-                source: "unknown",
-                paymentState: "nonpaid",
-                stripeLinked: false,
-                paidThrough: "2026-99-99T00:00:00.000Z",
-                trialExpiry: null
-              }
-            }
-          ]
-        });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    const billing = await screen.findByLabelText("Billing truth for member@example.com");
-
-    expect(within(billing).getByText("Paid through: Invalid date reported")).toBeTruthy();
-    expect(within(billing).getByText("Trial expiry: Not reported")).toBeTruthy();
-    expect(within(billing).queryByText(/2026-99-99/)).toBeNull();
-  });
-
   it("records an explicit audited Harvest refund", async () => {
     const screen = render(<PlatformAdminRoute />);
     await screen.findByText("Harvest provider reconciliation");
@@ -880,478 +669,23 @@ describe("PlatformAdminRoute", () => {
     );
   });
 
-  it("shows removal review for every server-approved nonprotected account and hides it for protected accounts", async () => {
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path.startsWith("/api/admin/users")) {
-        return Promise.resolve({
-          users: [
-            {
-              ...member,
-              accountRemovalReviewAllowed: true,
-              knownTestAccount: true,
-              ownerControlledTestAccount: false
-            },
-            {
-              ...member,
-              _id: "owner-account-2",
-              email: "owner-controlled@gmail.com",
-              accountRemovalReviewAllowed: true,
-              knownTestAccount: false,
-              ownerControlledTestAccount: false
-            },
-            {
-              ...member,
-              _id: "marked-account-3",
-              email: "marked-owner@gmail.com",
-              accountRemovalReviewAllowed: true,
-              knownTestAccount: false,
-              ownerControlledTestAccount: true
-            },
-            {
-              ...member,
-              _id: "admin-2",
-              email: "protected@example.com",
-              role: "admin",
-              accountRemovalReviewAllowed: false,
-              knownTestAccount: false,
-              ownerControlledTestAccount: false,
-              platformIdentityProtected: true
-            }
-          ]
-        });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-
-    expect(
-      await screen.findByRole("button", {
-        name: "Review account removal for member@example.com"
-      })
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("button", {
-        name: "Review account removal for owner-controlled@gmail.com"
-      })
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("button", {
-        name: "Review account removal for marked-owner@gmail.com"
-      })
-    ).toBeTruthy();
-    expect(
-      screen.queryByRole("button", {
-        name: "Review account removal for protected@example.com"
-      })
-    ).toBeNull();
-    expect(
-      within(screen.getByLabelText("Admin account protected@example.com")).getByText(
-        "Protected platform identity"
-      )
-    ).toBeTruthy();
-    expect(
-      screen.queryByRole("button", {
-        name: "Protect platform identity for protected@example.com"
-      })
-    ).toBeNull();
-    expect(screen.queryByRole("button", { name: /unprotect/i })).toBeNull();
-    expect(
-      within(screen.getByLabelText("Admin account member@example.com")).getByText(
-        "Known test account"
-      )
-    ).toBeTruthy();
-    expect(
-      within(
-        screen.getByLabelText("Admin account owner-controlled@gmail.com")
-      ).queryByText("Known test account")
-    ).toBeNull();
-    expect(
-      within(screen.getByLabelText("Admin account marked-owner@gmail.com")).getByText(
-        "Owner-marked test account"
-      )
-    ).toBeTruthy();
-  });
-
-  it("one-way protects a platform identity with a reason and exact confirmation", async () => {
-    const exactConfirmation = "PROTECT PLATFORM IDENTITY user-1 member@example.com";
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/users/user-1/platform-identity-protection") {
-        return Promise.resolve({
-          ok: true,
-          target: { id: "user-1" },
-          platformIdentityProtected: true,
-          alreadyProtected: false
-        });
-      }
-      if (path.startsWith("/api/admin/users")) {
-        return Promise.resolve({
-          users: [
-            {
-              ...member,
-              accountRemovalReviewAllowed: true,
-              platformIdentityProtected: false
-            }
-          ]
-        });
-      }
-      return defaultAdminApi(path);
-    });
-    const screen = render(<PlatformAdminRoute />);
-    const openProtection = await screen.findByRole("button", {
-      name: "Protect platform identity for member@example.com"
-    });
-
-    fireEvent.press(openProtection);
-    expect(
-      screen.getByLabelText("Platform identity protection for member@example.com")
-    ).toBeTruthy();
-    expect(screen.getByText(new RegExp(exactConfirmation))).toBeTruthy();
-    const confirmProtection = screen.getByRole("button", {
-      name: "Confirm platform identity protection for member@example.com"
-    });
-    expect(confirmProtection.props.accessibilityState).toEqual(
-      expect.objectContaining({ disabled: true })
-    );
-
-    fireEvent.changeText(
-      screen.getByLabelText("Exact platform identity protection confirmation"),
-      exactConfirmation
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Platform identity protection reason"),
-      "Primary platform owner account"
-    );
-    expect(confirmProtection.props.accessibilityState).toEqual(
-      expect.objectContaining({ disabled: false })
-    );
-    fireEvent.press(confirmProtection);
-
-    await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/admin/users/user-1/platform-identity-protection",
-        {
-          method: "PATCH",
-          body: {
-            expectedEmail: "member@example.com",
-            reason: "Primary platform owner account",
-            confirmation: exactConfirmation
-          }
-        }
-      )
-    );
-    expect(await screen.findByText("Protected platform identity")).toBeTruthy();
-    expect(
-      screen.queryByRole("button", {
-        name: "Protect platform identity for member@example.com"
-      })
-    ).toBeNull();
-    expect(
-      screen.queryByRole("button", {
-        name: "Review account removal for member@example.com"
-      })
-    ).toBeNull();
-    expect(screen.queryByRole("button", { name: /unprotect/i })).toBeNull();
-  });
-
-  it("cursor-lists only stripped archive records with private retention copy", async () => {
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/removed-users?limit=50") {
-        return Promise.resolve({
-          ok: true,
-          users: [
-            {
-              archiveId: "archive-1",
-              anonymizedUserId: "deleted-account-user-1",
-              status: "ready",
-              archivedAt: "2026-08-20T12:00:00.000Z",
-              purgeAfter: "2026-11-18T12:00:00.000Z",
-              legalHold: false,
-              purgedAt: null,
-              failureCode: ""
-            }
-          ],
-          nextCursor: "archive-1"
-        });
-      }
-      if (path === "/api/admin/removed-users?limit=50&cursor=archive-1") {
-        return Promise.resolve({
-          ok: true,
-          users: [
-            {
-              archiveId: "archive-2",
-              anonymizedUserId: "deleted-account-user-2",
-              status: "ready",
-              archivedAt: "2026-08-19T12:00:00.000Z",
-              purgeAfter: "2026-11-17T12:00:00.000Z",
-              legalHold: true,
-              purgedAt: null,
-              failureCode: ""
-            }
-          ],
-          nextCursor: null
-        });
-      }
-      return defaultAdminApi(path);
-    });
-    const screen = render(<PlatformAdminRoute />);
-
-    expect(await screen.findByText("deleted-account-user-1")).toBeTruthy();
-    expect(screen.getByText(/private 90-day evidence vault is not public/i)).toBeTruthy();
-    expect(
-      screen.getByText(
-        /never sold or used for advertising, recommendations, or AI training/i
-      )
-    ).toBeTruthy();
-    expect(
-      screen.getByText(/only a valid legal hold can require continued retention/i)
-    ).toBeTruthy();
-    expect(
-      within(screen.getByLabelText("Removed account archive archive-1")).getByText(
-        "Archive ID: archive-1"
-      )
-    ).toBeTruthy();
-    expect(screen.queryByText(/User requested account removal/)).toBeNull();
-    expect(screen.queryByText("former@example.com")).toBeNull();
-
-    fireEvent.press(screen.getByRole("button", { name: "Load more removed accounts" }));
-
-    expect(await screen.findByText("deleted-account-user-2")).toBeTruthy();
-    expect(mockApiRequest).toHaveBeenCalledWith(
-      "/api/admin/removed-users?limit=50&cursor=archive-1"
-    );
-    expect(
-      within(screen.getByLabelText("Removed account archive archive-2")).getByText(
-        /Paused by legal hold/
-      )
-    ).toBeTruthy();
-    expect(
-      screen.queryByRole("button", { name: "Load more removed accounts" })
-    ).toBeNull();
-  });
-
-  it("reviews and opens only approved removed-account case scopes with a one-use in-memory token", async () => {
-    const archiveId = "6a0000000000000000000001";
-    const evidenceRequestId = "6b0000000000000000000002";
-    const confirmation = `ACCESS ${archiveId} FOR ${evidenceRequestId}`;
-    mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/removed-users?limit=50") {
-        return Promise.resolve({
-          ok: true,
-          users: [
-            {
-              archiveId,
-              anonymizedUserId: "deleted-account-case-access",
-              status: "ready",
-              archivedAt: "2026-08-20T12:00:00.000Z",
-              purgeAfter: "2026-11-18T12:00:00.000Z",
-              legalHold: true,
-              purgedAt: null,
-              failureCode: ""
-            }
-          ],
-          nextCursor: null
-        });
-      }
-      if (
-        path === `/api/admin/removed-users/${archiveId}/case-access-review` &&
-        options?.method === "POST"
-      ) {
-        return Promise.resolve({
-          ok: true,
-          caseAccessOnly: true,
-          reviewToken: "one-use-case-review-token",
-          reviewExpiresAt: "2099-09-02T12:15:00.000Z",
-          scopes: ["account.identity"],
-          nextConfirmation: confirmation
-        });
-      }
-      if (
-        path === `/api/admin/removed-users/${archiveId}/case-access` &&
-        options?.method === "POST"
-      ) {
-        return Promise.resolve({
-          ok: true,
-          caseAccessOnly: true,
-          externalTransmissionPerformed: false,
-          archiveId,
-          evidenceRequestId,
-          dateWindow: { from: null, to: null },
-          itemCounts: { "account.identity": 1 },
-          data: { "account.identity": { retainedAccountId: "subject-1" } }
-        });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    fireEvent.press(
-      await screen.findByRole("button", {
-        name: `Open restricted case access for ${archiveId}`
-      })
-    );
-    fireEvent.changeText(
-      screen.getByLabelText(`Approved evidence request ID for ${archiveId}`),
-      evidenceRequestId
-    );
-    fireEvent.changeText(
-      screen.getByLabelText(`Restricted case access purpose for ${archiveId}`),
-      "Review the approved identity scope for this case."
-    );
-    fireEvent.press(
-      screen.getByRole("checkbox", {
-        name: "Case access scope Account identity"
-      })
-    );
-    fireEvent.changeText(
-      screen.getByLabelText(`Exact restricted case access confirmation for ${archiveId}`),
-      confirmation
-    );
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: `Review restricted case access for ${archiveId}`
-      })
-    );
-
-    const sharedBody = {
-      evidenceRequestId,
-      purpose: "Review the approved identity scope for this case.",
-      scopes: ["account.identity"],
-      minimumNecessaryAcknowledged: true,
-      confirmation
-    };
-    await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith(
-        `/api/admin/removed-users/${archiveId}/case-access-review`,
-        { method: "POST", body: sharedBody }
-      )
-    );
-    expect(screen.queryByText("one-use-case-review-token")).toBeNull();
-
-    fireEvent.press(
-      await screen.findByRole("button", {
-        name: `View approved case data for ${archiveId}`
-      })
-    );
-    await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith(
-        `/api/admin/removed-users/${archiveId}/case-access`,
-        {
-          method: "POST",
-          body: { ...sharedBody, reviewToken: "one-use-case-review-token" }
-        }
-      )
-    );
-    expect(await screen.findByText("Approved minimum-necessary case data")).toBeTruthy();
-    expect(screen.getByText(/retainedAccountId/)).toBeTruthy();
-    expect(
-      screen.queryByRole("button", {
-        name: `View approved case data for ${archiveId}`
-      })
-    ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: /download|share|publish|export/i })
-    ).toBeNull();
-  });
-
-  it("rejects an already-expired removed-account case-access review", async () => {
-    const archiveId = "6a0000000000000000000003";
-    const evidenceRequestId = "6b0000000000000000000004";
-    const confirmation = `ACCESS ${archiveId} FOR ${evidenceRequestId}`;
-    mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/removed-users?limit=50") {
-        return Promise.resolve({
-          users: [
-            {
-              archiveId,
-              anonymizedUserId: "deleted-account-expired-review",
-              status: "ready",
-              legalHold: true
-            }
-          ],
-          nextCursor: null
-        });
-      }
-      if (
-        path === `/api/admin/removed-users/${archiveId}/case-access-review` &&
-        options?.method === "POST"
-      ) {
-        return Promise.resolve({
-          ok: true,
-          caseAccessOnly: true,
-          reviewToken: "expired-token-not-rendered",
-          reviewExpiresAt: "2000-01-01T00:00:00.000Z"
-        });
-      }
-      return defaultAdminApi(path);
-    });
-    const screen = render(<PlatformAdminRoute />);
-    fireEvent.press(
-      await screen.findByRole("button", {
-        name: `Open restricted case access for ${archiveId}`
-      })
-    );
-    fireEvent.changeText(
-      screen.getByLabelText(`Approved evidence request ID for ${archiveId}`),
-      evidenceRequestId
-    );
-    fireEvent.changeText(
-      screen.getByLabelText(`Restricted case access purpose for ${archiveId}`),
-      "Approved minimum necessary case review."
-    );
-    fireEvent.press(
-      screen.getByRole("checkbox", { name: "Case access scope Account identity" })
-    );
-    fireEvent.changeText(
-      screen.getByLabelText(`Exact restricted case access confirmation for ${archiveId}`),
-      confirmation
-    );
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: `Review restricted case access for ${archiveId}`
-      })
-    );
-
-    expect(
-      await screen.findByText(/did not return a usable authorization/i)
-    ).toBeTruthy();
-    expect(screen.queryByText("expired-token-not-rendered")).toBeNull();
-    expect(
-      screen.queryByRole("button", {
-        name: `View approved case data for ${archiveId}`
-      })
-    ).toBeNull();
-  });
-
-  it("requires a successful dry run, category, detailed reason, permanent acknowledgement, and exact confirmation before removing an account", async () => {
+  it("requires a successful dry run and exact confirmation before anonymizing a test account", async () => {
     const nextConfirmation = "ANONYMIZE user-1 member@example.com";
     const preview = {
       ok: true,
       dryRun: true,
       target: { id: "user-1", email: "member@example.com" },
-      accountRemovalReviewAllowed: true,
-      knownTestAccount: true,
-      ownerControlledTestAccount: false,
+      allowlisted: true,
       blockers: [],
       deletionMode: "privacy_anonymization",
-      nextConfirmation,
-      reviewToken: "one-use-review-token-1",
-      reviewExpiresAt: "2099-09-02T12:15:00.000Z",
-      allowedRemovalCategories: [
-        "test_cleanup",
-        "user_request",
-        "policy_enforcement",
-        "security_fraud",
-        "legal_process",
-        "other"
-      ]
+      nextConfirmation
     };
     let resolvePreview: (value: typeof preview) => void = () => undefined;
     const previewRequest = new Promise<typeof preview>((resolve) => {
       resolvePreview = resolve;
     });
     mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/users/user-1/remove-account") {
+      if (path === "/api/admin/users/user-1/anonymize-synthetic-account") {
         if (options?.body?.execute) {
           return Promise.resolve({ ok: true, deletion: { deletionMode: "anonymized" } });
         }
@@ -1359,291 +693,91 @@ describe("PlatformAdminRoute", () => {
       }
       if (path.startsWith("/api/admin/users")) {
         return Promise.resolve({
-          users: [
-            {
-              ...member,
-              accountRemovalReviewAllowed: true,
-              knownTestAccount: true,
-              ownerControlledTestAccount: false
-            }
-          ]
+          users: [{ ...member, syntheticCleanupApproved: true }]
         });
       }
       return defaultAdminApi(path);
     });
     const screen = render(<PlatformAdminRoute />);
-    await waitFor(() => expect(screen.getByText("Review account removal")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText("Review & remove test account")).toBeTruthy()
+    );
 
-    fireEvent.press(screen.getByText("Review account removal"));
+    fireEvent.press(screen.getByText("Review & remove test account"));
     await screen.findByText("Reviewing safety checks…");
     expect(
       screen.getByRole("button", {
-        name: "Reviewing account removal safety for member@example.com"
+        name: "Reviewing test account safety for member@example.com"
       }).props.accessibilityState
     ).toEqual(expect.objectContaining({ disabled: true }));
     resolvePreview(preview);
     await waitFor(() =>
-      expect(screen.getByText("Remove member@example.com")).toBeTruthy()
+      expect(screen.getByText("Anonymize member@example.com")).toBeTruthy()
     );
     expect(
       within(screen.getByLabelText("Admin account member@example.com")).getByText(
-        "Remove member@example.com"
+        "Anonymize member@example.com"
       )
     ).toBeTruthy();
     expect(mockApiRequest).toHaveBeenCalledWith(
-      "/api/admin/users/user-1/remove-account",
+      "/api/admin/users/user-1/anonymize-synthetic-account",
       { method: "POST", body: { expectedEmail: "member@example.com" } }
     );
 
-    const permanentAcknowledgement = screen.getByRole("checkbox", {
-      name: "Acknowledge permanent account removal for member@example.com"
-    });
-    const executeButton = screen.getByRole("button", {
-      name: "Permanently remove account member@example.com"
-    });
-    expect(permanentAcknowledgement.props.accessibilityState).toEqual(
-      expect.objectContaining({ checked: false })
-    );
-    expect(executeButton.props.accessibilityState).toEqual(
-      expect.objectContaining({ disabled: true })
-    );
-
     const confirmInput = screen.getByLabelText(
-      "Exact account anonymization confirmation"
+      "Exact synthetic account anonymization confirmation"
     );
     fireEvent.changeText(confirmInput, nextConfirmation);
-    fireEvent.press(executeButton);
-    expect(
-      mockApiRequest.mock.calls.filter(
-        ([path, options]) =>
-          path === "/api/admin/users/user-1/remove-account" &&
-          options?.body?.execute === true
-      )
-    ).toHaveLength(0);
-
-    fireEvent.press(screen.getByRole("radio", { name: "Removal category User request" }));
-    fireEvent.changeText(
-      screen.getByLabelText("Detailed account removal reason"),
-      "User requested permanent account removal"
-    );
-    fireEvent.press(permanentAcknowledgement);
-    expect(permanentAcknowledgement.props.accessibilityState).toEqual(
-      expect.objectContaining({ checked: true })
-    );
-    expect(executeButton.props.accessibilityState).toEqual(
-      expect.objectContaining({ disabled: false })
-    );
-    fireEvent.press(executeButton);
+    fireEvent.press(screen.getByText("Remove approved test account"));
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/admin/users/user-1/remove-account",
+        "/api/admin/users/user-1/anonymize-synthetic-account",
         {
           method: "POST",
           body: {
             expectedEmail: "member@example.com",
             execute: true,
-            confirmation: nextConfirmation,
-            removalCategory: "user_request",
-            reason: "User requested permanent account removal",
-            permanentActionAcknowledged: true,
-            reviewToken: "one-use-review-token-1"
+            confirmation: nextConfirmation
           }
         }
       )
     );
   });
 
-  it("keeps execution disabled when a blocker-free review has no usable token", async () => {
-    const nextConfirmation = "ANONYMIZE user-1 member@example.com";
-    mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/users/user-1/remove-account" && !options?.body?.execute) {
-        return Promise.resolve({
-          ok: true,
-          dryRun: true,
-          target: { id: "user-1", email: "member@example.com" },
-          accountRemovalReviewAllowed: true,
-          blockers: [],
-          deletionMode: "privacy_anonymization",
-          nextConfirmation,
-          allowedRemovalCategories: ["user_request"],
-          reviewExpiresAt: "2099-09-02T12:15:00.000Z"
-        });
-      }
-      if (path.startsWith("/api/admin/users")) {
-        return Promise.resolve({
-          users: [{ ...member, accountRemovalReviewAllowed: true }]
-        });
-      }
-      return defaultAdminApi(path);
-    });
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Review account removal");
-
-    fireEvent.press(screen.getByText("Review account removal"));
-    await screen.findByText(/Review authorization is missing or expired/i);
-    fireEvent.press(screen.getByRole("radio", { name: "Removal category User request" }));
-    fireEvent.changeText(
-      screen.getByLabelText("Detailed account removal reason"),
-      "User requested permanent removal"
-    );
-    fireEvent.press(
-      screen.getByRole("checkbox", {
-        name: "Acknowledge permanent account removal for member@example.com"
-      })
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Exact account anonymization confirmation"),
-      nextConfirmation
-    );
-
-    const executeButton = screen.getByRole("button", {
-      name: "Permanently remove account member@example.com"
-    });
-    expect(executeButton.props.accessibilityState).toEqual(
-      expect.objectContaining({ disabled: true })
-    );
-    fireEvent.press(executeButton);
-    expect(
-      mockApiRequest.mock.calls.filter(
-        ([path, options]) =>
-          path === "/api/admin/users/user-1/remove-account" &&
-          options?.body?.execute === true
-      )
-    ).toHaveLength(0);
-  });
-
-  it("consumes a review token before a failed execution and requires a new review", async () => {
-    const nextConfirmation = "ANONYMIZE user-1 member@example.com";
-    let reviewCount = 0;
-    mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/users/user-1/remove-account") {
-        if (options?.body?.execute) {
-          return Promise.reject(new Error("Review token was already consumed."));
-        }
-        reviewCount += 1;
-        return Promise.resolve({
-          ok: true,
-          dryRun: true,
-          target: { id: "user-1", email: "member@example.com" },
-          accountRemovalReviewAllowed: true,
-          blockers: [],
-          deletionMode: "privacy_anonymization",
-          nextConfirmation,
-          allowedRemovalCategories: ["user_request"],
-          reviewToken: `one-use-review-token-${reviewCount}`,
-          reviewExpiresAt: "2099-09-02T12:15:00.000Z"
-        });
-      }
-      if (path.startsWith("/api/admin/users")) {
-        return Promise.resolve({
-          users: [{ ...member, accountRemovalReviewAllowed: true }]
-        });
-      }
-      return defaultAdminApi(path);
-    });
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Review account removal");
-
-    fireEvent.press(screen.getByText("Review account removal"));
-    await screen.findByText("Remove member@example.com");
-    fireEvent.press(screen.getByRole("radio", { name: "Removal category User request" }));
-    fireEvent.changeText(
-      screen.getByLabelText("Detailed account removal reason"),
-      "User requested permanent removal"
-    );
-    fireEvent.press(
-      screen.getByRole("checkbox", {
-        name: "Acknowledge permanent account removal for member@example.com"
-      })
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Exact account anonymization confirmation"),
-      nextConfirmation
-    );
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Permanently remove account member@example.com"
-      })
-    );
-
-    expect(await screen.findByText("Review token was already consumed.")).toBeTruthy();
-    expect(
-      screen.queryByLabelText("Account removal review for member@example.com")
-    ).toBeNull();
-    expect(mockApiRequest).toHaveBeenCalledWith(
-      "/api/admin/users/user-1/remove-account",
-      expect.objectContaining({
-        method: "POST",
-        body: expect.objectContaining({
-          execute: true,
-          reviewToken: "one-use-review-token-1"
-        })
-      })
-    );
-
-    fireEvent.press(screen.getByText("Review account removal"));
-    await waitFor(() => expect(reviewCount).toBe(2));
-    expect(
-      await screen.findByLabelText("Account removal review for member@example.com")
-    ).toBeTruthy();
-  });
-
   it("shows dry-run safety blockers without exposing removal controls", async () => {
     mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/users/user-1/remove-account") {
+      if (path === "/api/admin/users/user-1/anonymize-synthetic-account") {
         return Promise.reject(
           new ApiError("HTTP_ERROR", 409, {
             ok: false,
             dryRun: true,
             target: { id: "user-1", email: "member@example.com" },
-            accountRemovalReviewAllowed: true,
-            knownTestAccount: true,
-            ownerControlledTestAccount: false,
+            allowlisted: true,
             blockers: ["course_creator"],
             deletionMode: "privacy_anonymization",
-            nextConfirmation: "ANONYMIZE user-1 member@example.com",
-            allowedRemovalCategories: [
-              "test_cleanup",
-              "user_request",
-              "policy_enforcement",
-              "security_fraud",
-              "legal_process",
-              "other"
-            ]
+            nextConfirmation: "ANONYMIZE user-1 member@example.com"
           })
         );
       }
       if (path.startsWith("/api/admin/users")) {
         return Promise.resolve({
-          users: [
-            {
-              ...member,
-              accountRemovalReviewAllowed: true,
-              knownTestAccount: true,
-              ownerControlledTestAccount: false
-            }
-          ]
+          users: [{ ...member, syntheticCleanupApproved: true }]
         });
       }
       return defaultAdminApi(path);
     });
     const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Review account removal");
+    await screen.findByText("Review & remove test account");
 
-    fireEvent.press(screen.getByText("Review account removal"));
+    fireEvent.press(screen.getByText("Review & remove test account"));
 
     await screen.findByText("This account owns a course that must be handled first.");
     expect(screen.getByText(/Safety blockers: 1 · Dry run: blocked/)).toBeTruthy();
     expect(
-      screen.queryByLabelText("Exact account anonymization confirmation")
+      screen.queryByLabelText("Exact synthetic account anonymization confirmation")
     ).toBeNull();
-    expect(
-      screen.queryByRole("checkbox", {
-        name: "Acknowledge permanent account removal for member@example.com"
-      })
-    ).toBeNull();
-    expect(screen.queryByText("Permanently remove account")).toBeNull();
+    expect(screen.queryByText("Remove approved test account")).toBeNull();
     expect(screen.queryByText("HTTP_ERROR")).toBeNull();
   });
 
@@ -1655,10 +789,7 @@ describe("PlatformAdminRoute", () => {
       const themedStyles = createPlatformAdminStyles(palette);
       const screen = render(<PlatformAdminRoute />);
 
-      expect(screen.UNSAFE_getAllByType(ActivityIndicator)).not.toHaveLength(0);
-      for (const indicator of screen.UNSAFE_getAllByType(ActivityIndicator)) {
-        expect(indicator.props.color).toBe(palette.accent);
-      }
+      expect(screen.UNSAFE_getByType(ActivityIndicator).props.color).toBe(palette.accent);
       await waitFor(() => expect(screen.getByText("Online now")).toBeTruthy());
 
       expect(screen.getByRole("header", { name: "Administration" })).toHaveProp(
@@ -1726,12 +857,9 @@ describe("PlatformAdminRoute", () => {
       screen.UNSAFE_getAllByType(TextInput).forEach((input) => {
         expect(input.props.placeholderTextColor).toBe(palette.textMuted);
         expect(input.props.selectionColor).toBe(palette.accent);
-        const inputStyle = StyleSheet.flatten(input.props.style);
-        expect([palette.surface, palette.surfaceMuted]).toContain(
-          inputStyle.backgroundColor
-        );
-        expect(inputStyle).toEqual(
+        expect(StyleSheet.flatten(input.props.style)).toEqual(
           expect.objectContaining({
+            backgroundColor: palette.surface,
             borderColor: palette.border,
             color: palette.text
           })
@@ -1994,6 +1122,7 @@ describe("PlatformAdminRoute", () => {
     expect(screen.getByText(/Contact: officer@example.gov/)).toBeTruthy();
     expect(screen.getByText(/Signed subpoena received/)).toBeTruthy();
     expect(screen.getByText(/User notice: not_reviewed/)).toBeTruthy();
+    expect(screen.queryByText("Approve evidence request")).toBeNull();
     expect(screen.queryByText("Disclose account data")).toBeNull();
 
     fireEvent.changeText(
@@ -2017,239 +1146,6 @@ describe("PlatformAdminRoute", () => {
 
     fireEvent.press(screen.getByRole("button", { name: "Load retained audit" }));
     expect(await screen.findByText(/evidence request created/)).toBeTruthy();
-  });
-
-  it("records requester identity and authority verification during identity review", async () => {
-    const evidenceRequest = {
-      _id: "legal-identity-1",
-      requestType: "subpoena",
-      requesterName: "Officer Example",
-      requesterOrganization: "Example Agency",
-      requesterEmail: "officer@example.gov",
-      authorityDescription: "Signed subpoena presented for independent review.",
-      jurisdiction: "Maryland",
-      targetUserId: "6a0000000000000000000001",
-      scope: "Login activity for one specified day.",
-      status: "identity_review",
-      preservationHold: true,
-      userNoticeStatus: "not_reviewed",
-      evidenceItems: [],
-      createdBy: "admin-creator"
-    };
-    mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/evidence-requests" && !options) {
-        return Promise.resolve({ requests: [evidenceRequest] });
-      }
-      if (
-        path === "/api/admin/evidence-requests/legal-identity-1" &&
-        options?.method === "PATCH"
-      ) {
-        return Promise.resolve({ ok: true, request: evidenceRequest });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByLabelText("Requester verification review legal-identity-1");
-    fireEvent.changeText(
-      screen.getByLabelText("Review reason for subpoena request"),
-      "Identity and authority were independently verified."
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Requester identity verification method legal-identity-1"),
-      "Government photo identification"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Requester identity verification reference legal-identity-1"),
-      "Agency verification record IDV-101"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Requester authority verification method legal-identity-1"),
-      "Issuing court docket verification"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText(
-        "Requester authority verification reference legal-identity-1"
-      ),
-      "Court docket reference AUTH-202"
-    );
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Record identity and authority verification legal-identity-1"
-      })
-    );
-
-    await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/admin/evidence-requests/legal-identity-1",
-        {
-          method: "PATCH",
-          body: {
-            reason: "Identity and authority were independently verified.",
-            requesterIdentityVerification: {
-              verified: true,
-              method: "Government photo identification",
-              reference: "Agency verification record IDV-101"
-            },
-            requesterAuthorityVerification: {
-              verified: true,
-              method: "Issuing court docket verification",
-              reference: "Court docket reference AUTH-202"
-            }
-          }
-        }
-      )
-    );
-  });
-
-  it("lets only the legal-review stage submit a held minimum-necessary approval", async () => {
-    const evidenceRequest = {
-      _id: "legal-approval-1",
-      requestType: "search_warrant",
-      requesterName: "Agent Example",
-      requesterOrganization: "Example Agency",
-      requesterEmail: "agent@example.gov",
-      authorityDescription: "Signed warrant verified by agency counsel.",
-      jurisdiction: "Maryland",
-      targetUserId: "6a0000000000000000000001",
-      scope: "Account identity and one day of communications activity.",
-      status: "legal_review",
-      preservationHold: true,
-      userNoticeStatus: "not_reviewed",
-      requesterIdentityVerification: { verified: true, verifiedBy: "admin-reviewer" },
-      requesterAuthorityVerification: {
-        verified: true,
-        verifiedBy: "admin-reviewer"
-      },
-      evidenceItems: [],
-      createdBy: "admin-creator"
-    };
-    mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/evidence-requests" && !options) {
-        return Promise.resolve({ requests: [evidenceRequest] });
-      }
-      if (
-        path === "/api/admin/evidence-requests/legal-approval-1" &&
-        options?.method === "PATCH"
-      ) {
-        return Promise.resolve({ ok: true, request: evidenceRequest });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByLabelText("Legal approval review legal-approval-1");
-    fireEvent.changeText(
-      screen.getByLabelText("Review reason for search_warrant request"),
-      "Independent legal review approved this minimum scope."
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Reviewed jurisdiction legal-approval-1"),
-      "Maryland"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Jurisdiction determination legal-approval-1"),
-      "The issuing court has jurisdiction over the identified account records."
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Jurisdiction review reference legal-approval-1"),
-      "Legal review file JUR-303"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Minimum necessary description legal-approval-1"),
-      "Account identity fields only for the approved date window."
-    );
-    fireEvent.press(
-      screen.getByRole("checkbox", {
-        name: "Approve archive scope Account identity for legal-approval-1"
-      })
-    );
-    fireEvent.press(
-      screen.getByRole("radio", {
-        name: "User notice delayed for legal-approval-1"
-      })
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Authenticated approver name legal-approval-1"),
-      "Reviewing Counsel"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Authenticated approver email legal-approval-1"),
-      "COUNSEL@GROWPATHAI.COM"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Authenticated approver role legal-approval-1"),
-      "Configured legal approver"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Authenticated approver reference legal-approval-1"),
-      "Internal legal review LEG-404"
-    );
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Approve evidence request legal-approval-1"
-      })
-    );
-
-    await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/admin/evidence-requests/legal-approval-1",
-        {
-          method: "PATCH",
-          body: {
-            status: "approved",
-            reason: "Independent legal review approved this minimum scope.",
-            jurisdiction: "Maryland",
-            jurisdictionReview: {
-              reviewed: true,
-              determination:
-                "The issuing court has jurisdiction over the identified account records.",
-              reference: "Legal review file JUR-303"
-            },
-            minimumNecessaryScope:
-              "Account identity fields only for the approved date window.",
-            approvedArchiveScopes: ["account.identity"],
-            userNoticeStatus: "delayed",
-            legalReview: {
-              decision: "approve",
-              approverName: "Reviewing Counsel",
-              approverEmail: "counsel@growpathai.com",
-              approverRole: "Configured legal approver",
-              reference: "Internal legal review LEG-404"
-            }
-          }
-        }
-      )
-    );
-    expect(screen.queryByText("Disclose account data")).toBeNull();
-  });
-
-  it("renders a generic-admin redacted evidence request without sensitive controls", async () => {
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/evidence-requests") {
-        return Promise.resolve({
-          requests: [
-            {
-              _id: "legal-restricted-1",
-              restricted: true,
-              status: "identity_review",
-              preservationHold: true,
-              evidenceItemCount: 2,
-              createdAt: "2026-08-20T12:00:00.000Z",
-              updatedAt: "2026-08-21T12:00:00.000Z"
-            }
-          ]
-        });
-      }
-      return defaultAdminApi(path);
-    });
-    const screen = render(<PlatformAdminRoute />);
-    expect(
-      await screen.findByLabelText("Restricted evidence request legal-restricted-1")
-    ).toBeTruthy();
-    expect(screen.getByText(/hidden from general Admin access/i)).toBeTruthy();
-    expect(screen.queryByText("Begin identity review")).toBeNull();
-    expect(screen.queryByText("Disclose account data")).toBeNull();
   });
 
   it("creates only a scoped received evidence-request record", async () => {
@@ -2410,484 +1306,6 @@ describe("PlatformAdminRoute", () => {
     );
 
     expect(mockPush).toHaveBeenCalledWith("/forum/post/post-1");
-  });
-
-  it("keeps severe-harm cases redacted until an audited memory-only review is opened", async () => {
-    mockRouteParams = { moderationCaseId: "restricted-case-1" };
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/moderation-cases") {
-        return Promise.resolve({ cases: [restrictedModerationCase] });
-      }
-      if (path === "/api/admin/moderation-cases/restricted-case-1/restricted-review") {
-        return Promise.resolve({ ok: true, case: restrictedModerationReview });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Restricted severe-harm case · critical · reviewing");
-
-    expect(screen.queryByText("subject-user-1")).toBeNull();
-    expect(screen.queryByText(/must-stay-redacted/)).toBeNull();
-    expect(
-      screen.getByText(
-        /Reporter, subject, target, narrative, and evidence details remain hidden/
-      )
-    ).toBeTruthy();
-    expect(screen.queryByText(/Repeated coercive recruitment/)).toBeNull();
-    expect(screen.queryByText(/restricted-post-1/)).toBeNull();
-    expect(screen.queryByText(/automatic authority/i)).toBeNull();
-
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Open restricted safety review restricted-case-1"
-      })
-    );
-
-    await screen.findByText("Audited restricted safety review");
-    expect(screen.getByText(/Repeated coercive recruitment/)).toBeTruthy();
-    expect(screen.getByText(/Target restricted-post-1/)).toBeTruthy();
-    expect(screen.getByText(/No raw media, storage location/)).toBeTruthy();
-    expect(screen.queryByText(/contact law enforcement/i)).toBeNull();
-    expect(screen.queryByText("Open target")).toBeNull();
-    expect(mockPush).not.toHaveBeenCalled();
-
-    fireEvent.press(screen.getByText("Hide target"));
-    await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/admin/moderation-cases/restricted-case-1/action",
-        {
-          method: "POST",
-          body: {
-            action: "hide",
-            evidenceTargetType: "forumPost",
-            evidenceTargetId: "restricted-post-1"
-          }
-        }
-      )
-    );
-  });
-
-  it.each([
-    [
-      new ApiError(
-        "SEVERE_HARM_REVIEWER_REQUIRED",
-        403,
-        { code: "SEVERE_HARM_REVIEWER_REQUIRED" },
-        null
-      ),
-      /not configured for restricted severe-harm review/i
-    ],
-    [
-      new ApiError(
-        "SEVERE_HARM_CASE_NOT_ACTIVE",
-        409,
-        { code: "SEVERE_HARM_CASE_NOT_ACTIVE" },
-        null
-      ),
-      /restricted case is no longer active/i
-    ]
-  ])(
-    "clears restricted evidence and explains an audited review denial %#",
-    async (reviewError, expectedMessage) => {
-      mockApiRequest.mockImplementation((path: string) => {
-        if (path === "/api/admin/moderation-cases") {
-          return Promise.resolve({ cases: [restrictedModerationCase] });
-        }
-        if (path === "/api/admin/moderation-cases/restricted-case-1/restricted-review") {
-          return Promise.reject(reviewError);
-        }
-        return defaultAdminApi(path);
-      });
-
-      const screen = render(<PlatformAdminRoute />);
-      await screen.findByText("Restricted severe-harm case · critical · reviewing");
-      fireEvent.press(
-        screen.getByRole("button", {
-          name: "Open restricted safety review restricted-case-1"
-        })
-      );
-
-      expect(await screen.findByText(expectedMessage)).toBeTruthy();
-      expect(screen.queryByText("Audited restricted safety review")).toBeNull();
-      expect(screen.queryByText(/Repeated coercive recruitment/)).toBeNull();
-      expect(screen.queryByText(/restricted-post-1/)).toBeNull();
-      expect(screen.queryByText(/SEVERE_HARM_/)).toBeNull();
-    }
-  );
-
-  it("states the bounded latest-report limitation without implying legal escalation unlocks pagination", async () => {
-    const truncatedReview = {
-      ...restrictedModerationReview,
-      reportCount: 101,
-      evidence: {
-        ...restrictedModerationReview.evidence,
-        reportWindow: {
-          ordering: "newest_first",
-          limit: 100,
-          returned: 100,
-          truncated: true
-        }
-      }
-    };
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/moderation-cases") {
-        return Promise.resolve({ cases: [restrictedModerationCase] });
-      }
-      if (path === "/api/admin/moderation-cases/restricted-case-1/restricted-review") {
-        return Promise.resolve({ ok: true, case: truncatedReview });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Restricted severe-harm case · critical · reviewing");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Open restricted safety review restricted-case-1"
-      })
-    );
-
-    expect(
-      await screen.findByLabelText("Restricted report list is truncated")
-    ).toHaveTextContent(/latest 100 reports, up to the server limit of 100/i);
-    expect(
-      screen.queryByText(/legal-evidence workflow before further access/i)
-    ).toBeNull();
-  });
-
-  it("clears the restricted subject when escalation is canceled and when the review closes", async () => {
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/moderation-cases") {
-        return Promise.resolve({ cases: [restrictedModerationCase] });
-      }
-      if (path === "/api/admin/moderation-cases/restricted-case-1/restricted-review") {
-        return Promise.resolve({ ok: true, case: restrictedModerationReview });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Restricted severe-harm case · critical · reviewing");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Open restricted safety review restricted-case-1"
-      })
-    );
-    await screen.findByText("Audited restricted safety review");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Open preservation and legal escalation for restricted case restricted-case-1"
-      })
-    );
-
-    expect(screen.queryByLabelText("Evidence target user ID")).toBeNull();
-    expect(screen.getByText(/target account is bound to the restricted/i)).toBeTruthy();
-    fireEvent.press(screen.getByRole("button", { name: "Cancel evidence request" }));
-    expect(screen.queryByLabelText("Evidence target user ID")).toBeNull();
-    fireEvent.press(screen.getByRole("button", { name: "Open scoped request" }));
-    expect(screen.getByLabelText("Evidence target user ID").props.value).toBe("");
-    fireEvent.press(screen.getByRole("button", { name: "Cancel evidence request" }));
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Close restricted safety review restricted-case-1"
-      })
-    );
-
-    expect(screen.queryByText("Audited restricted safety review")).toBeNull();
-    expect(screen.queryByText(/Repeated coercive recruitment/)).toBeNull();
-  });
-
-  it("binds restricted preservation to the case without sending an editable target account", async () => {
-    mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/moderation-cases") {
-        return Promise.resolve({ cases: [restrictedModerationCase] });
-      }
-      if (path === "/api/admin/moderation-cases/restricted-case-1/restricted-review") {
-        return Promise.resolve({ ok: true, case: restrictedModerationReview });
-      }
-      if (
-        path === "/api/admin/moderation-cases/restricted-case-1/escalate-legal" &&
-        options?.method === "POST"
-      ) {
-        return Promise.resolve({ ok: true });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Restricted severe-harm case · critical · reviewing");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Open restricted safety review restricted-case-1"
-      })
-    );
-    await screen.findByText("Audited restricted safety review");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Open preservation and legal escalation for restricted case restricted-case-1"
-      })
-    );
-    fireEvent.changeText(screen.getByLabelText("Evidence requester name"), "Counsel");
-    fireEvent.changeText(
-      screen.getByLabelText("Evidence requester email"),
-      "counsel@example.gov"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Evidence authority description"),
-      "Verified internal preservation review"
-    );
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Create restricted preservation request for case restricted-case-1"
-      })
-    );
-
-    await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/admin/moderation-cases/restricted-case-1/escalate-legal",
-        {
-          method: "POST",
-          body: {
-            requestType: "preservation",
-            requesterName: "Counsel",
-            requesterOrganization: "",
-            requesterEmail: "counsel@example.gov",
-            authorityDescription: "Verified internal preservation review",
-            jurisdiction: "",
-            scope: "Restricted moderation case restricted-case-1",
-            dateFrom: null,
-            dateTo: null
-          }
-        }
-      )
-    );
-    expect(screen.queryByText("Audited restricted safety review")).toBeNull();
-    expect(screen.queryByLabelText("Evidence target user ID")).toBeNull();
-  });
-
-  it("clears restricted evidence when reviewer authorization is lost before an action", async () => {
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/moderation-cases") {
-        return Promise.resolve({ cases: [restrictedModerationCase] });
-      }
-      if (path === "/api/admin/moderation-cases/restricted-case-1/restricted-review") {
-        return Promise.resolve({ ok: true, case: restrictedModerationReview });
-      }
-      if (path === "/api/admin/moderation-cases/restricted-case-1/action") {
-        return Promise.reject(
-          new ApiError(
-            "SEVERE_HARM_REVIEWER_REQUIRED",
-            403,
-            { code: "SEVERE_HARM_REVIEWER_REQUIRED" },
-            null
-          )
-        );
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Restricted severe-harm case · critical · reviewing");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Open restricted safety review restricted-case-1"
-      })
-    );
-    await screen.findByText("Audited restricted safety review");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Hide restricted target restricted-post-1"
-      })
-    );
-
-    expect(
-      await screen.findByText(/not configured for restricted severe-harm review/i)
-    ).toBeTruthy();
-    expect(screen.queryByText("Audited restricted safety review")).toBeNull();
-    expect(screen.queryByText(/Repeated coercive recruitment/)).toBeNull();
-    expect(screen.queryByText(/SEVERE_HARM_/)).toBeNull();
-  });
-
-  it("exposes independent target actions when an aggregated case returns reviewed disposition state", async () => {
-    const multiTargetReview = {
-      ...restrictedModerationReview,
-      evidence: {
-        ...restrictedModerationReview.evidence,
-        distinctTargetCount: 2,
-        dispositionProgress: {
-          retainedTargetCount: 2,
-          actionableTargetCount: 2,
-          completedTargetCount: 0,
-          remainingTargetCount: 2,
-          nonActionableTargetCount: 0,
-          unknownTargetCount: 0,
-          allTargetsDispositioned: false
-        },
-        targetHistory: [
-          ...restrictedModerationReview.evidence.targetHistory,
-          {
-            targetType: "video",
-            targetId: "restricted-video-2",
-            status: "published",
-            hasMediaReferences: true,
-            mediaReferenceCount: 1
-          }
-        ]
-      }
-    };
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/moderation-cases") {
-        return Promise.resolve({ cases: [restrictedModerationCase] });
-      }
-      if (path === "/api/admin/moderation-cases/restricted-case-1/restricted-review") {
-        return Promise.resolve({ ok: true, case: multiTargetReview });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Restricted severe-harm case · critical · reviewing");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Open restricted safety review restricted-case-1"
-      })
-    );
-
-    expect(
-      await screen.findByRole("button", {
-        name: "Hide restricted target restricted-post-1"
-      })
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("button", {
-        name: "Hide restricted target restricted-video-2"
-      })
-    ).toBeTruthy();
-    expect(
-      screen.getByLabelText("Restricted target disposition progress")
-    ).toHaveTextContent(/0 of 2 actionable targets complete; 2 remain/i);
-    expect(
-      screen.getByRole("button", {
-        name: "Open preservation and legal escalation for restricted case restricted-case-1"
-      })
-    ).toBeTruthy();
-  });
-
-  it("requires a typed reviewed decision before closing remaining restricted targets", async () => {
-    mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/moderation-cases") {
-        return Promise.resolve({ cases: [restrictedModerationCase] });
-      }
-      if (path === "/api/admin/moderation-cases/restricted-case-1/restricted-review") {
-        return Promise.resolve({ ok: true, case: restrictedModerationReview });
-      }
-      if (
-        path === "/api/admin/moderation-cases/restricted-case-1/restricted-decision" &&
-        options?.method === "POST"
-      ) {
-        return Promise.resolve({ ok: true });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Restricted severe-harm case · critical · reviewing");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Open restricted safety review restricted-case-1"
-      })
-    );
-    await screen.findByText("Reviewed case-level no-action decision");
-
-    const decisionButton = screen.getByRole("button", {
-      name: "Close remaining restricted targets with reviewed decision restricted-case-1"
-    });
-    expect(decisionButton.props.accessibilityState.disabled).toBe(true);
-    fireEvent.changeText(
-      screen.getByLabelText("Restricted case-level decision reason restricted-case-1"),
-      "Reviewed all retained metadata and no further platform action is supported."
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Exact restricted case-level confirmation restricted-case-1"),
-      "CLOSE RESTRICTED CASE restricted-case-1"
-    );
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Close remaining restricted targets with reviewed decision restricted-case-1"
-      })
-    );
-
-    await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/admin/moderation-cases/restricted-case-1/restricted-decision",
-        {
-          method: "POST",
-          body: {
-            decision: "close_no_further_action",
-            reason:
-              "Reviewed all retained metadata and no further platform action is supported.",
-            confirmation: "CLOSE RESTRICTED CASE restricted-case-1"
-          }
-        }
-      )
-    );
-  });
-
-  it("shows a completed exact target without offering a second conflicting action", async () => {
-    const completedReview = {
-      ...restrictedModerationReview,
-      evidence: {
-        ...restrictedModerationReview.evidence,
-        dispositionProgress: {
-          retainedTargetCount: 1,
-          actionableTargetCount: 1,
-          completedTargetCount: 1,
-          remainingTargetCount: 0,
-          nonActionableTargetCount: 0,
-          unknownTargetCount: 0,
-          allTargetsDispositioned: true
-        },
-        targetHistory: [
-          {
-            ...restrictedModerationReview.evidence.targetHistory[0],
-            disposition: {
-              state: "completed",
-              action: "hide",
-              startedAt: "2026-08-15T14:06:00.000Z",
-              completedAt: "2026-08-15T14:07:00.000Z"
-            }
-          }
-        ]
-      }
-    };
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/moderation-cases") {
-        return Promise.resolve({ cases: [restrictedModerationCase] });
-      }
-      if (path === "/api/admin/moderation-cases/restricted-case-1/restricted-review") {
-        return Promise.resolve({ ok: true, case: completedReview });
-      }
-      return defaultAdminApi(path);
-    });
-
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Restricted severe-harm case · critical · reviewing");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Open restricted safety review restricted-case-1"
-      })
-    );
-
-    expect(
-      await screen.findByLabelText("Restricted target disposition restricted-post-1")
-    ).toHaveTextContent(/reviewed disposition completed: hide/i);
-    expect(
-      screen.queryByRole("button", {
-        name: "Hide restricted target restricted-post-1"
-      })
-    ).toBeNull();
-    expect(screen.queryByText("Reviewed case-level no-action decision")).toBeNull();
   });
 
   it("sends the enforced Forum moderation actions from the administrator review card", async () => {

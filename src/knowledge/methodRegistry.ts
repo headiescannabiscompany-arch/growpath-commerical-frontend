@@ -1288,7 +1288,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "A selected facility and authorization are required.",
       "Facility AI must use the selected authorized Facility subscription balance for display, reservation, refund, and usage history; never fall back to a member's individual balance.",
-      "A Facility may be funded by its own Stripe workspace subscription or by the owner's active account-level Facility plan for exactly the oldest active primary workspace; keep those authorities separate and fail closed when Stripe-backed account state cannot be verified.",
+      "Only a missing legacy Facility balance with an effective active or trialing owner Facility entitlement may be materialized; existing canceled or delinquent Facility subscription state remains authoritative.",
       "A confirmed Facility invitation must refresh canonical membership and enter the selected Facility without replacing the human's primary account.",
       "Never revoke Facility access when scheduling renewal cancellation, describe a paid-through date as another renewal, or treat a platform Admin label as Facility billing membership.",
       "Never replace an individual account with Facility membership or bypass the post-login choice when both workspaces are eligible.",

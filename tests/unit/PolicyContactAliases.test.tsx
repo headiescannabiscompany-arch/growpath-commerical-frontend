@@ -15,18 +15,6 @@ describe("public policy contact aliases", () => {
     expect(privacy.getByText(/privacy questions.*privacy@growpathai\.com/i)).toBeTruthy();
     expect(privacy.getByText(/legal notices.*legal@growpathai\.com/i)).toBeTruthy();
     expect(privacy.getByText(/security reports.*security@growpathai\.com/i)).toBeTruthy();
-    expect(
-      privacy.getByRole("header", { name: "Removed Account Evidence Vault" })
-    ).toBeTruthy();
-    expect(
-      privacy.getByText(/not public.*excluded from ordinary account exports/i)
-    ).toBeTruthy();
-    expect(
-      privacy.getByText(
-        /never sold or used for advertising, recommendations, or AI training/i
-      )
-    ).toBeTruthy();
-    expect(privacy.getByText(/default retention period is 90 days/i)).toBeTruthy();
 
     const terms = render(<TermsPage />);
 

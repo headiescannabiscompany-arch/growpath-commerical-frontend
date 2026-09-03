@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,12 +11,7 @@ import {
 } from "react-native";
 
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import {
-  createConnectPayoutDashboardLink,
-  getConnectPayoutStatus,
-  getEarningsByCourse,
-  getMyEarnings
-} from "../api/earnings";
+import { getEarningsByCourse, getMyEarnings, requestPayout } from "../api/earnings";
 import ScreenContainer from "../components/ScreenContainer";
 import { radius, spacing } from "../theme/theme";
 
@@ -43,7 +37,6 @@ export default function EarningsScreen({ navigation }) {
   const canView = entitlements.can(CAPABILITY_KEYS.CREATOR_EARNINGS_VIEW);
   const canRequest = entitlements.can(CAPABILITY_KEYS.CREATOR_PAYOUT_REQUEST);
   const [data, setData] = useState(null);
-  const [connectStatus, setConnectStatus] = useState(null);
   const [byCourse, setByCourse] = useState([]);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
@@ -51,7 +44,9 @@ export default function EarningsScreen({ navigation }) {
 
   const stats = data?.stats || {};
   const earnings = data?.earnings || [];
-  const heldOrAdjustmentPending = Number(stats.heldOrAdjustmentPending ?? 0);
+  const pendingAmount = Number(
+    stats.pendingPayout ?? stats.availableForPayout ?? stats.pending ?? 0
+  );
 
   async function loadEarnings() {
     if (!canView) {
@@ -61,17 +56,13 @@ export default function EarningsScreen({ navigation }) {
     setLoading(true);
     setFeedback("");
     try {
-      const [earningsResult, courseResult, connectResult] = await Promise.all([
+      const [earningsResult, courseResult] = await Promise.all([
         getMyEarnings(),
-        getEarningsByCourse().catch(() => []),
-        getConnectPayoutStatus()
+        getEarningsByCourse().catch(() => [])
       ]);
       setData(normalize(earningsResult));
-      setConnectStatus(connectResult?.status || connectResult || {});
       const coursePayload = courseResult?.data ?? courseResult;
-      setByCourse(
-        Array.isArray(coursePayload) ? coursePayload : coursePayload?.courses || []
-      );
+      setByCourse(Array.isArray(coursePayload) ? coursePayload : coursePayload?.courses || []);
     } catch (error) {
       setFeedback(error?.message || "Failed to load earnings.");
     } finally {
@@ -84,16 +75,15 @@ export default function EarningsScreen({ navigation }) {
   }, [canView]);
 
   async function handleRequestPayout() {
-    if (!canRequest || !connectStatus?.connected) return;
+    if (!canRequest || pendingAmount <= 0) return;
     setRequesting(true);
     setFeedback("");
     try {
-      const result = await createConnectPayoutDashboardLink();
-      if (!result?.url) throw new Error("Stripe payout dashboard link was unavailable.");
-      await Linking.openURL(result.url);
-      setFeedback("Stripe opened for authoritative balance and bank payout status.");
+      await requestPayout("stripe");
+      setFeedback("Payout request submitted. Status updates after backend processing.");
+      await loadEarnings();
     } catch (error) {
-      Alert.alert("Error", error?.message || "Failed to open Stripe payouts");
+      Alert.alert("Error", error?.message || "Failed to request payout");
     } finally {
       setRequesting(false);
     }
@@ -103,9 +93,10 @@ export default function EarningsScreen({ navigation }) {
     () => ({
       totalEarned: stats.totalEarned ?? stats.total ?? 0,
       totalSales: stats.totalSales ?? stats.sales ?? earnings.length,
-      heldOrAdjustmentPending
+      totalPaidOut: stats.totalPaidOut ?? stats.paidOut ?? 0,
+      pendingPayout: pendingAmount
     }),
-    [earnings.length, heldOrAdjustmentPending, stats]
+    [earnings.length, pendingAmount, stats]
   );
 
   if (!canView) {
@@ -136,9 +127,7 @@ export default function EarningsScreen({ navigation }) {
     <ScreenContainer>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.title}>Creator Earnings</Text>
-        <Text style={styles.subtitle}>
-          Track seller earnings here and verify bank payouts in Stripe.
-        </Text>
+        <Text style={styles.subtitle}>Track course sales, earnings, and payouts.</Text>
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
         <View style={styles.statsRow}>
@@ -154,53 +143,41 @@ export default function EarningsScreen({ navigation }) {
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>Stripe</Text>
-            <Text style={styles.statLabel}>Bank Payout Status</Text>
+            <Text style={styles.statValue}>{money(totals.totalPaidOut)}</Text>
+            <Text style={styles.statLabel}>Paid Out</Text>
           </View>
           <View style={[styles.statCard, styles.statCardPending]}>
-            <Text style={styles.statValue}>{money(totals.heldOrAdjustmentPending)}</Text>
-            <Text style={styles.statLabel}>Held / Adjustment</Text>
+            <Text style={styles.statValue}>{money(totals.pendingPayout)}</Text>
+            <Text style={styles.statLabel}>Pending</Text>
           </View>
         </View>
 
         <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Open Stripe Payouts"
           style={[
             styles.payoutBtn,
-            (!canRequest || !connectStatus?.connected || requesting) &&
+            (!canRequest || totals.pendingPayout <= 0 || requesting) &&
               styles.payoutBtnDisabled
           ]}
           onPress={handleRequestPayout}
-          disabled={!canRequest || !connectStatus?.connected || requesting}
+          disabled={!canRequest || totals.pendingPayout <= 0 || requesting}
         >
           <Text style={styles.payoutBtnText}>
-            {requesting ? "Opening Stripe..." : "Open Stripe Payouts"}
+            {requesting ? "Requesting..." : `Request Payout (${money(totals.pendingPayout)})`}
           </Text>
         </TouchableOpacity>
         {!canRequest ? (
           <Text style={styles.subtitle}>
-            Payout access requires `CREATOR_PAYOUT_REQUEST`.
-          </Text>
-        ) : !connectStatus?.connected ? (
-          <Text style={styles.subtitle}>
-            Connect Stripe in Profile &amp; Billing first.
+            Payout requests require `CREATOR_PAYOUT_REQUEST`.
           </Text>
         ) : null}
 
         <Text style={styles.sectionTitle}>Sales by Course</Text>
         {byCourse.length ? (
           byCourse.map((course) => (
-            <View
-              key={String(course._id || course.id || course.courseId)}
-              style={styles.saleCard}
-            >
-              <Text style={styles.saleTitle}>
-                {course.title || course.courseTitle || "Course"}
-              </Text>
+            <View key={String(course._id || course.id || course.courseId)} style={styles.saleCard}>
+              <Text style={styles.saleTitle}>{course.title || course.courseTitle || "Course"}</Text>
               <Text style={styles.saleFooter}>
-                {course.sales || course.totalSales || 0} sales |{" "}
-                {money(course.earnings || course.totalEarned)}
+                {course.sales || course.totalSales || 0} sales | {money(course.earnings || course.totalEarned)}
               </Text>
             </View>
           ))
@@ -243,10 +220,9 @@ export default function EarningsScreen({ navigation }) {
                     {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
                   </Text>
                 </View>
-                <Text style={styles.pending}>
-                  {item.earningStatus || "Recorded seller earning"}
+                <Text style={item.paidOut ? styles.paid : styles.pending}>
+                  {item.paidOut ? "Paid out" : item.status || "Pending payout"}
                 </Text>
-                <Text style={styles.saleFooter}>Bank payout: verify in Stripe</Text>
               </View>
             )}
           />
@@ -260,12 +236,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: spacing(4), paddingBottom: 100 },
   locked: { padding: spacing(4) },
-  loadingContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 40
-  },
+  loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40 },
   loadingText: { fontSize: 16, color: "#6B7280", marginTop: 8 },
   title: { fontSize: 28, fontWeight: "800", color: "#111827", marginBottom: 4 },
   subtitle: { fontSize: 14, color: "#6B7280", marginBottom: 16 },

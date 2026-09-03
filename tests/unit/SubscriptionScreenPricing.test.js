@@ -1,13 +1,13 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
+import { PRO_PLAN_PRICE_DISPLAY } from "../../src/constants/pricing";
 import SubscriptionScreen from "../../src/screens/SubscriptionScreen";
-import { getSubscription, getSubscriptionSetupStatus } from "../../src/api/subscription";
+import { getSubscription } from "../../src/api/subscription";
 
 jest.mock("../../src/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
-  getSubscription: jest.fn(),
-  getSubscriptionSetupStatus: jest.fn()
+  getSubscription: jest.fn()
 }));
 
 jest.mock("../../src/utils/openExternalUrl", () => ({
@@ -23,35 +23,14 @@ describe("SubscriptionScreen pricing", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     getSubscription.mockResolvedValue({ status: "inactive", plan: "free" });
-    getSubscriptionSetupStatus.mockResolvedValue({
-      catalogReady: true,
-      quotes: {
-        pro: {
-          monthly: {
-            available: true,
-            interval: "monthly",
-            unitAmount: 1000,
-            currency: "usd",
-            formattedAmount: "$10"
-          },
-          yearly: {
-            available: true,
-            interval: "yearly",
-            unitAmount: 10000,
-            currency: "usd",
-            formattedAmount: "$100"
-          }
-        }
-      }
-    });
   });
 
   it("uses shared Pro pricing and interval-neutral renewal copy", async () => {
     const screen = render(<SubscriptionScreen navigation={navigation} />);
 
-    await waitFor(() => expect(screen.getByText("Subscribe $10/month")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Subscribe Now")).toBeTruthy());
 
-    expect(screen.getByText("$10/month or $100/year")).toBeTruthy();
+    expect(screen.getByText(PRO_PLAN_PRICE_DISPLAY)).toBeTruthy();
     expect(screen.getByText("Forum/Q&A Access")).toBeTruthy();
     expect(screen.queryByText("Community Access")).toBeNull();
     expect(screen.queryByText(/auto-renew monthly/i)).toBeNull();
@@ -69,6 +48,6 @@ describe("SubscriptionScreen pricing", () => {
     const screen = render(<SubscriptionScreen navigation={navigation} />);
 
     await waitFor(() => expect(screen.getByText("Manage Subscription")).toBeTruthy());
-    expect(screen.queryByText("Subscribe $10/month")).toBeNull();
+    expect(screen.queryByText("Subscribe Now")).toBeNull();
   });
 });

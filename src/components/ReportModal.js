@@ -5,31 +5,6 @@ import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import ReportBugButton from "./ReportBugButton";
 
-export const REPORT_CATEGORY_OPTIONS = [
-  ["spam", "Spam"],
-  ["harassment", "Harassment"],
-  ["imminent_threat", "Imminent threat"],
-  ["child_exploitation", "Child exploitation"],
-  ["human_trafficking", "Human trafficking"],
-  ["repeated_hard_drug_sales", "Repeated hard-drug sales"],
-  ["danger", "Other immediate danger"],
-  ["exploitation", "Other exploitation"],
-  ["illegal_sales", "Other illegal sales"],
-  ["regulated_content_mislabeled", "Age/regulated content mislabeled"],
-  ["privacy", "Privacy"],
-  ["copyright", "Copyright"],
-  ["misinformation", "Misinformation"],
-  ["other", "Other"]
-];
-
-const URGENT_REPORT_CATEGORIES = new Set([
-  "imminent_threat",
-  "child_exploitation",
-  "human_trafficking",
-  "danger",
-  "exploitation"
-]);
-
 const ReportModal = ({
   visible,
   onClose,
@@ -109,7 +84,18 @@ const ReportModal = ({
           />
           <Text style={styles.label}>What best describes the problem?</Text>
           <View style={styles.categoryRow}>
-            {REPORT_CATEGORY_OPTIONS.map(([value, label]) => (
+            {[
+              ["spam", "Spam"],
+              ["harassment", "Harassment"],
+              ["danger", "Immediate danger"],
+              ["exploitation", "Exploitation"],
+              ["illegal_sales", "Illegal sales"],
+              ["regulated_content_mislabeled", "Age/regulated content mislabeled"],
+              ["privacy", "Privacy"],
+              ["copyright", "Copyright"],
+              ["misinformation", "Misinformation"],
+              ["other", "Other"]
+            ].map(([value, label]) => (
               <Pressable
                 key={value}
                 accessibilityRole="radio"
@@ -125,18 +111,11 @@ const ReportModal = ({
               </Pressable>
             ))}
           </View>
-          {URGENT_REPORT_CATEGORIES.has(category) ? (
+          {category === "danger" || category === "exploitation" ? (
             <Text style={styles.urgentHelp}>
               If someone is in immediate danger, contact local emergency services now.
               This report preserves information for GrowPathAI review but is not an
               emergency dispatch service.
-            </Text>
-          ) : null}
-          {category === "child_exploitation" ? (
-            <Text style={styles.urgentHelp}>
-              Do not download, copy, or redistribute suspected child-exploitation
-              material. Submit this report so the restricted safety workflow can preserve
-              available metadata for review.
             </Text>
           ) : null}
           {error ? (

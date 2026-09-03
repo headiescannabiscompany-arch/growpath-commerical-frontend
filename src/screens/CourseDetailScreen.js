@@ -33,10 +33,8 @@ import {
 } from "../api/courses";
 import { apiRequest } from "../api/apiRequest";
 import {
-  coursePaymentReconciliationState,
-  getCourseAccessStatus,
+  getCoursePaymentStatus,
   openCourseDispute,
-  pollCourseAccessStatus,
   requestCourseRefund,
   startCourseCheckout
 } from "../api/coursePayments";
@@ -53,11 +51,6 @@ import { lessonHasMedia } from "@/features/learning/lessonMedia";
 import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { resolveImageUri } from "../utils/photoUploads";
-import {
-  clearPendingBuyerCheckout,
-  readPendingBuyerCheckout,
-  rememberPendingBuyerCheckout
-} from "../utils/buyerCheckoutRecovery";
 
 function rowId(row) {
   return String(row?._id || row?.id || "");
@@ -107,14 +100,6 @@ function lessonTitle(lesson, index) {
   return String(lesson?.title || `Lesson ${index + 1}`);
 }
 
-function normalizeCheckoutResult(value) {
-  const normalized = String(value || "")
-    .trim()
-    .toLowerCase();
-  if (["cancel", "canceled", "cancelled"].includes(normalized)) return "canceled";
-  return normalized === "success" ? "success" : "";
-}
-
 async function openCheckoutUrl(url) {
   if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
     window.location.href = url;
@@ -130,27 +115,17 @@ export default function CourseDetailScreen({ route, navigation = null }) {
   const access = getLearningAccess(entitlements);
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
-  const courseParam = route?.params?.course;
-  const initialCourse =
-    courseParam && typeof courseParam === "object" ? courseParam : null;
-  const legacyCourseId = typeof courseParam === "string" ? courseParam : "";
-  const rawId =
-    route?.params?.id ||
-    route?.params?.courseId ||
-    legacyCourseId ||
-    rowId(initialCourse);
+  const initialCourse = route?.params?.course || null;
+  const rawId = route?.params?.id || route?.params?.courseId || rowId(initialCourse);
   const courseId = String(rawId || "");
-  const checkoutResult = normalizeCheckoutResult(route?.params?.checkout);
-  const checkoutHandledRef = useRef("");
-  const checkoutStartRef = useRef(false);
+  const checkoutResult = String(route?.params?.checkout || "").toLowerCase();
+  const checkoutHandledRef = useRef(false);
 
   const [course, setCourse] = useState(initialCourse);
   const [reviews, setReviews] = useState([]);
   const [enrollment, setEnrollment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [checkoutPending, setCheckoutPending] = useState(checkoutResult === "success");
-  const [reconcilingCheckout, setReconcilingCheckout] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [activeLesson, setActiveLesson] = useState(null);
   const [reportReason, setReportReason] = useState("");
@@ -298,13 +273,15 @@ export default function CourseDetailScreen({ route, navigation = null }) {
   const refreshPaymentStatus = useCallback(async () => {
     if (!loadedCourseId) return null;
     try {
-      const next = await getCourseAccessStatus(loadedCourseId);
+      const [payment, status] = await Promise.all([
+        getCoursePaymentStatus(loadedCourseId).catch(() => null),
+        getEnrollmentStatus(loadedCourseId).catch(() => null)
+      ]);
+      const next = {
+        ...(payment || {}),
+        ...(status?.data || status || {})
+      };
       setEnrollment(next);
-      const state = coursePaymentReconciliationState(next);
-      if (state === "confirmed" || state === "terminal") {
-        await clearPendingBuyerCheckout("course", loadedCourseId).catch(() => false);
-        setCheckoutPending(false);
-      }
       return next;
     } catch (error) {
       setFeedback(error?.message || "Unable to refresh payment status.");
@@ -312,112 +289,42 @@ export default function CourseDetailScreen({ route, navigation = null }) {
     }
   }, [loadedCourseId]);
 
-  const reconcileReturnedCheckout = useCallback(
-    async (options = {}) => {
-      if (!loadedCourseId) return null;
-      setReconcilingCheckout(true);
-      setCheckoutPending(true);
-      setFeedback("Checking server-confirmed payment and enrollment status...");
-      try {
-        const result = await pollCourseAccessStatus(loadedCourseId, {
-          onSnapshot: setEnrollment,
-          shouldContinue: options.shouldContinue
-        });
-        if (options.shouldContinue && !options.shouldContinue()) return result;
-        if (result.snapshot) setEnrollment(result.snapshot);
-        if (result.state === "confirmed") {
-          await clearPendingBuyerCheckout("course", loadedCourseId).catch(() => false);
-          setCheckoutPending(false);
-          setFeedback("Payment and enrollment are confirmed by the server.");
-        } else if (result.state === "terminal") {
-          await clearPendingBuyerCheckout("course", loadedCourseId).catch(() => false);
-          setCheckoutPending(false);
-          setFeedback(
-            "The server reports that this checkout did not create active access."
-          );
-        } else {
-          setFeedback(
-            "Checkout returned, but enrollment is still awaiting server confirmation. Another checkout is disabled while status is pending."
-          );
-        }
-        return result;
-      } catch (error) {
-        setFeedback(
-          error?.message ||
-            "Enrollment could not be confirmed yet. Another checkout remains disabled."
-        );
-        return null;
-      } finally {
-        setReconcilingCheckout(false);
-      }
-    },
-    [loadedCourseId]
-  );
-
   useEffect(() => {
-    if (loading || !loadedCourseId) return undefined;
-    let active = true;
-    void (async () => {
-      const stored = await readPendingBuyerCheckout("course").catch(() => null);
-      if (!active) return;
-      const recoveryKey = `${checkoutResult || "pending"}:${loadedCourseId}`;
-      if (checkoutHandledRef.current === recoveryKey) return;
-      if (checkoutResult === "canceled") {
-        checkoutHandledRef.current = recoveryKey;
-        await clearPendingBuyerCheckout("course", loadedCourseId).catch(() => false);
-        if (!active) return;
-        setCheckoutPending(false);
-        setFeedback(
-          "Checkout was canceled. Course access was not inferred from the return link."
-        );
-        return;
-      }
-      if (checkoutResult !== "success" && stored?.itemId !== loadedCourseId) return;
-      checkoutHandledRef.current = recoveryKey;
-      setCheckoutPending(true);
-      if (checkoutResult === "success" && stored?.itemId !== loadedCourseId) {
-        await rememberPendingBuyerCheckout("course", loadedCourseId).catch(() => null);
-      }
-      if (active) {
-        await reconcileReturnedCheckout({ shouldContinue: () => active });
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [checkoutResult, loading, loadedCourseId, reconcileReturnedCheckout]);
-
-  async function enroll() {
-    if (!loadedCourseId || checkoutStartRef.current) return;
-    if (isPaidCourse && checkoutPending) {
-      await reconcileReturnedCheckout();
+    if (loading || checkoutHandledRef.current || !checkoutResult) return;
+    checkoutHandledRef.current = true;
+    if (checkoutResult === "canceled") {
+      setFeedback("Checkout was canceled. No course access was changed.");
       return;
     }
-    checkoutStartRef.current = true;
+    if (checkoutResult !== "success") return;
+    void (async () => {
+      const next = await refreshPaymentStatus();
+      const confirmed = Boolean(next?.enrolled || next?.isEnrolled);
+      setFeedback(
+        confirmed
+          ? "Payment confirmed. This course is unlocked."
+          : "Payment submitted. Stripe confirmation is still processing; refresh status in a moment."
+      );
+    })();
+  }, [checkoutResult, loading, refreshPaymentStatus]);
+
+  async function enroll() {
+    if (!loadedCourseId) return;
     setSaving(true);
     setFeedback("");
     try {
       if (isPaidCourse) {
         const checkout = await startCourseCheckout(loadedCourseId);
-        const url =
-          checkout?.url ||
-          checkout?.checkoutUrl ||
-          checkout?.data?.url ||
-          checkout?.data?.checkoutUrl;
+        const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
         if (!url) {
           setFeedback("Checkout unavailable. The backend did not return a checkout URL.");
           return;
         }
-        setCheckoutPending(true);
-        await rememberPendingBuyerCheckout(
-          "course",
-          loadedCourseId,
-          `/courses?courseId=${encodeURIComponent(loadedCourseId)}`
-        ).catch(() => null);
         await openCheckoutUrl(url);
         setFeedback(
           "Checkout started. Access unlocks only after the backend confirms the webhook and enrollment status."
         );
+        await refreshPaymentStatus();
       } else {
         await enrollInCourse(loadedCourseId);
         setFeedback("Enrollment requested. Waiting for backend confirmation.");
@@ -426,7 +333,6 @@ export default function CourseDetailScreen({ route, navigation = null }) {
     } catch (error) {
       setFeedback(error?.message || "Unable to start enrollment.");
     } finally {
-      checkoutStartRef.current = false;
       setSaving(false);
     }
   }
@@ -891,22 +797,9 @@ export default function CourseDetailScreen({ route, navigation = null }) {
           )}
         </View>
       ) : !enrolled ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={isPaidCourse ? "Start course checkout" : "Enroll in course"}
-          accessibilityState={{ disabled: saving || checkoutPending }}
-          disabled={saving || checkoutPending}
-          onPress={enroll}
-          style={[styles.primaryBtn, (saving || checkoutPending) && styles.disabled]}
-        >
+        <Pressable disabled={saving} onPress={enroll} style={styles.primaryBtn}>
           <Text style={styles.primaryText}>
-            {checkoutPending
-              ? "Confirming Payment..."
-              : saving
-                ? "Saving..."
-                : isPaidCourse
-                  ? "Start Checkout"
-                  : "Enroll"}
+            {saving ? "Saving..." : isPaidCourse ? "Start Checkout" : "Enroll"}
           </Text>
         </Pressable>
       ) : (
@@ -927,17 +820,11 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             </Text>
           ) : null}
           <Pressable
-            accessibilityState={{ disabled: saving || reconcilingCheckout }}
-            disabled={saving || reconcilingCheckout}
+            disabled={saving}
             onPress={refreshPaymentStatus}
-            style={[
-              styles.secondaryBtn,
-              (saving || reconcilingCheckout) && styles.disabled
-            ]}
+            style={styles.secondaryBtn}
           >
-            <Text style={styles.secondaryText}>
-              {reconcilingCheckout ? "Confirming Status..." : "Refresh Status"}
-            </Text>
+            <Text style={styles.secondaryText}>Refresh Status</Text>
           </Pressable>
         </View>
       ) : null}

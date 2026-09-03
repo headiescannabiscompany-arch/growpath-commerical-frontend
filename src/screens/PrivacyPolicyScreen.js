@@ -6,7 +6,7 @@ import ScreenContainer from "../components/ScreenContainer";
 const PRIVACY_POLICY = `
 GrowPath Privacy Policy
 
-Last Updated: September 2, 2026
+Last Updated: December 12, 2025
 
 GrowPath ("we", "our", or "us") respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our mobile application.
 
@@ -34,10 +34,6 @@ We do not sell your personal information. We may share data with:
 - Service Providers: Hosting (MongoDB Atlas), payments (Stripe), analytics
 - Legal Requirements: When required by law or to protect our rights
 - Business Transfers: In the event of a merger or acquisition
-
-Removed Account Evidence Vault
-
-When an account is removed, GrowPath may preserve an encrypted, access-restricted snapshot of account information and metadata already stored by the service for safety, security, dispute handling, and valid legal process. Vault data is not public, is excluded from ordinary account exports, and is never sold or used for advertising, recommendations, or AI training. The default retention period is 90 days, after which the snapshot is securely purged unless a valid legal hold requires continued retention. Access and disclosure require the restricted Admin legal-and-safety workflow and are logged.
 
 For the full policy, visit our website or contact support.
 `;

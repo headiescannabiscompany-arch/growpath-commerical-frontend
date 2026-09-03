@@ -1,9 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Linking,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -19,22 +17,10 @@ import {
   purchaseContent,
   searchContent
 } from "../api/marketplace";
-import {
-  downloadMarketplaceContent,
-  getMarketplacePurchases,
-  marketplaceBuyerState,
-  marketplaceDownloadUrl,
-  pollMarketplaceBuyerStatus
-} from "../api/marketplaceBuyer";
 import ScreenContainer from "../components/ScreenContainer";
 import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { getCreatorName } from "../utils/creator";
-import {
-  clearPendingBuyerCheckout,
-  readPendingBuyerCheckout,
-  rememberPendingBuyerCheckout
-} from "../utils/buyerCheckoutRecovery";
 
 function rows(payload) {
   if (Array.isArray(payload)) return payload;
@@ -48,35 +34,13 @@ function rows(payload) {
 
 function hasMore(payload, count) {
   const data = payload?.data ?? payload ?? {};
-  const pagination = data?.pagination || {};
   if (typeof data.hasMore === "boolean") return data.hasMore;
-  if (typeof pagination.hasMore === "boolean") return pagination.hasMore;
-  if (typeof pagination.hasNextPage === "boolean") return pagination.hasNextPage;
-  if (Number(pagination.page) > 0 && Number(pagination.totalPages) > 0) {
-    return Number(pagination.page) < Number(pagination.totalPages);
-  }
   if (typeof data.nextPage === "number") return true;
   return count > 0;
 }
 
-function purchasedRows(payload) {
-  const purchases = Array.isArray(payload?.purchases) ? payload.purchases : [];
-  return purchases
-    .filter((purchase) => purchase?.upload && typeof purchase.upload === "object")
-    .map((purchase) => ({
-      ...purchase.upload,
-      accessStatus: "granted",
-      canDownload: true,
-      entitled: true,
-      hasAccess: true,
-      isPurchased: true,
-      purchaseId: purchase.purchaseId,
-      purchasedAt: purchase.purchasedAt
-    }));
-}
-
 function rowId(row) {
-  return String(row?._id || row?.id || row?.contentId || row?.uploadId || "");
+  return String(row?._id || row?.id || row?.contentId || "");
 }
 
 function priceLabel(item) {
@@ -86,37 +50,11 @@ function priceLabel(item) {
   return price > 0 ? `$${price.toFixed(2)}` : "Free";
 }
 
-function firstParam(value) {
-  return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
-}
-
-function normalizedCheckoutResult(value) {
-  const result = firstParam(value).toLowerCase();
-  if (["cancel", "canceled", "cancelled"].includes(result)) return "canceled";
-  return result === "success" ? "success" : "";
-}
-
-export async function openMarketplaceCheckoutUrl(url) {
-  if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
-    window.location.href = url;
-    return;
-  }
-  await Linking.openURL(url);
-}
-
-export default function MarketplaceScreen({ navigation, route } = {}) {
+export default function MarketplaceScreen({ navigation }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
-  const checkoutResult = normalizedCheckoutResult(route?.params?.checkout);
-  const returnedContentId = firstParam(
-    route?.params?.contentId ||
-      route?.params?.content ||
-      route?.params?.marketplace ||
-      route?.params?.itemId
-  );
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
-  const [showPurchased, setShowPurchased] = useState(false);
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [more, setMore] = useState(true);
@@ -125,13 +63,6 @@ export default function MarketplaceScreen({ navigation, route } = {}) {
   const [feedback, setFeedback] = useState("");
   const [selected, setSelected] = useState(null);
   const [purchasingId, setPurchasingId] = useState("");
-  const [pendingCheckoutId, setPendingCheckoutId] = useState(
-    checkoutResult === "success" ? returnedContentId : ""
-  );
-  const [downloadingId, setDownloadingId] = useState("");
-  const checkoutHandledRef = useRef("");
-  const buyerStatusRef = useRef(new Map());
-  const purchaseInFlightRef = useRef(new Set());
 
   const load = useCallback(
     async (nextPage = 1, opts = {}) => {
@@ -139,19 +70,12 @@ export default function MarketplaceScreen({ navigation, route } = {}) {
       else setLoading(true);
       setFeedback("");
       try {
-        const response = showPurchased
-          ? await getMarketplacePurchases(nextPage, 20)
-          : query.trim()
-            ? await searchContent(query.trim(), category || undefined)
-            : await browseMarketplace(category || undefined, nextPage, 20);
-        const nextRows = (showPurchased ? purchasedRows(response) : rows(response)).map(
-          (item) => ({
-            ...item,
-            ...(buyerStatusRef.current.get(rowId(item)) || {})
-          })
-        );
+        const response = query.trim()
+          ? await searchContent(query.trim(), category || undefined)
+          : await browseMarketplace(category || undefined, nextPage, 20);
+        const nextRows = rows(response);
         setItems((current) => (nextPage === 1 ? nextRows : [...current, ...nextRows]));
-        setMore((showPurchased || !query.trim()) && hasMore(response, nextRows.length));
+        setMore(!query.trim() && hasMore(response, nextRows.length));
         setPage(nextPage);
       } catch (error) {
         setFeedback(error?.message || "Unable to load storefront offers.");
@@ -161,105 +85,12 @@ export default function MarketplaceScreen({ navigation, route } = {}) {
         setRefreshing(false);
       }
     },
-    [category, query, showPurchased]
+    [category, query]
   );
 
   useEffect(() => {
     load(1);
   }, [load]);
-
-  const applyBuyerSnapshot = useCallback((snapshot) => {
-    const content = snapshot?.content;
-    if (!content || typeof content !== "object") return;
-    const id = rowId(content);
-    if (!id) return;
-    buyerStatusRef.current.set(id, content);
-    setSelected((current) =>
-      rowId(current) === id ? { ...current, ...content } : content
-    );
-    setItems((current) =>
-      current.map((item) => (rowId(item) === id ? { ...item, ...content } : item))
-    );
-  }, []);
-
-  const reconcileMarketplaceCheckout = useCallback(
-    async (id, options = {}) => {
-      if (!id) return null;
-      setPendingCheckoutId(id);
-      setPurchasingId(id);
-      if (!options.silent) {
-        setFeedback("Checking server-confirmed purchase and download access...");
-      }
-      try {
-        const result = await pollMarketplaceBuyerStatus(id, {
-          shouldContinue: options.shouldContinue
-        });
-        if (result.snapshot?.content) {
-          const detail = await getMarketplaceContent(id).catch(() => ({}));
-          applyBuyerSnapshot({
-            ...result.snapshot,
-            content: { ...detail, ...result.snapshot.content, uploadId: id }
-          });
-        }
-        if (result.state === "confirmed") {
-          await clearPendingBuyerCheckout("marketplace", id).catch(() => false);
-          setPendingCheckoutId("");
-          setFeedback("Purchase confirmed by the server. Download access is available.");
-        } else if (result.state === "terminal") {
-          await clearPendingBuyerCheckout("marketplace", id).catch(() => false);
-          setPendingCheckoutId("");
-          setFeedback(
-            "The server reports that this checkout did not grant download access."
-          );
-        } else {
-          setFeedback(
-            "Checkout returned, but the server has not confirmed download access yet. Another checkout is disabled while status is pending."
-          );
-        }
-        return result;
-      } finally {
-        setPurchasingId("");
-      }
-    },
-    [applyBuyerSnapshot]
-  );
-
-  useEffect(() => {
-    let active = true;
-    void (async () => {
-      const stored = await readPendingBuyerCheckout("marketplace").catch(() => null);
-      if (!active) return;
-      const targetId = returnedContentId || stored?.itemId || "";
-      const recoveryKey = `${checkoutResult || "pending"}:${targetId}`;
-      if (!targetId || checkoutHandledRef.current === recoveryKey) return;
-      checkoutHandledRef.current = recoveryKey;
-
-      if (checkoutResult === "canceled") {
-        await clearPendingBuyerCheckout("marketplace", targetId).catch(() => false);
-        if (!active) return;
-        setPendingCheckoutId("");
-        setFeedback(
-          "Checkout was canceled. No download access was inferred from the return link."
-        );
-        return;
-      }
-
-      if (stored?.itemId === targetId || checkoutResult === "success") {
-        setPendingCheckoutId(targetId);
-      }
-      if (checkoutResult === "success" && stored?.itemId !== targetId) {
-        await rememberPendingBuyerCheckout("marketplace", targetId, "/marketplace").catch(
-          () => null
-        );
-      }
-      await reconcileMarketplaceCheckout(targetId, {
-        shouldContinue: () => active
-      });
-    })();
-    return () => {
-      active = false;
-    };
-  }, [checkoutResult, reconcileMarketplaceCheckout, returnedContentId]);
 
   async function openItem(item) {
     const id = rowId(item);
@@ -270,11 +101,7 @@ export default function MarketplaceScreen({ navigation, route } = {}) {
     setLoading(true);
     setFeedback("");
     try {
-      const detail = id ? await getMarketplaceContent(id) : item;
-      setSelected({
-        ...detail,
-        ...(buyerStatusRef.current.get(id) || {})
-      });
+      setSelected(id ? await getMarketplaceContent(id) : item);
     } catch (error) {
       setFeedback(error?.message || "Unable to load storefront offer detail.");
       setSelected(item);
@@ -292,77 +119,34 @@ export default function MarketplaceScreen({ navigation, route } = {}) {
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
         <MarketplaceDetailContent
           item={selected}
-          checkoutPending={pendingCheckoutId === rowId(selected)}
-          downloading={downloadingId === rowId(selected)}
           purchasing={purchasingId === rowId(selected)}
           onPurchase={async () => {
             const id = rowId(selected);
-            if (!id || purchaseInFlightRef.current.has(id)) return;
-            if (pendingCheckoutId === id) {
-              await reconcileMarketplaceCheckout(id);
-              return;
-            }
-            purchaseInFlightRef.current.add(id);
+            if (!id) return;
             setPurchasingId(id);
             setFeedback("");
             try {
-              const response = await purchaseContent(id, {
-                returnPath: "/marketplace"
-              });
-              const url = String(
-                response?.url ||
-                  response?.checkoutUrl ||
-                  response?.data?.url ||
-                  response?.data?.checkoutUrl ||
-                  ""
-              ).trim();
-              if (url) {
-                setPendingCheckoutId(id);
-                await rememberPendingBuyerCheckout(
-                  "marketplace",
-                  id,
-                  "/marketplace"
-                ).catch(() => null);
-                await openMarketplaceCheckoutUrl(url);
-                setFeedback(
-                  "Checkout opened. Download access remains locked until the server confirms payment."
-                );
+              const response = await purchaseContent(id);
+              if (response?.url) {
+                setFeedback("Checkout created.");
+                if (typeof window !== "undefined" && window.location) {
+                  window.location.href = response.url;
+                } else {
+                  setFeedback("Checkout created.");
+                }
               } else {
-                setPendingCheckoutId(id);
-                await rememberPendingBuyerCheckout(
-                  "marketplace",
-                  id,
-                  "/marketplace"
-                ).catch(() => null);
-                await reconcileMarketplaceCheckout(id);
+                setSelected((current) => ({
+                  ...current,
+                  downloads: response?.downloads ?? current?.downloads,
+                  sales: response?.sales ?? current?.sales,
+                  revenue: response?.revenue ?? current?.revenue
+                }));
+                setFeedback("Added to your library.");
               }
             } catch (error) {
               setFeedback(error?.message || "Unable to start checkout.");
             } finally {
-              purchaseInFlightRef.current.delete(id);
               setPurchasingId("");
-            }
-          }}
-          onDownload={async () => {
-            const id = rowId(selected);
-            if (!id || pendingCheckoutId === id || downloadingId) return;
-            setDownloadingId(id);
-            setFeedback("Preparing a server-authorized download...");
-            try {
-              const url = marketplaceDownloadUrl(await downloadMarketplaceContent(id));
-              if (!url) {
-                throw new Error("The backend did not return a download URL.");
-              }
-              await openMarketplaceCheckoutUrl(url);
-              setFeedback(
-                "The authorized download was opened. GrowPath cannot confirm that the file was saved."
-              );
-              const result = await pollMarketplaceBuyerStatus(id);
-              if (result.snapshot) applyBuyerSnapshot(result.snapshot);
-            } catch (error) {
-              setFeedback(error?.message || "Unable to prepare this download.");
-            } finally {
-              setDownloadingId("");
             }
           }}
         />
@@ -378,78 +162,41 @@ export default function MarketplaceScreen({ navigation, route } = {}) {
             Storefront Offers
           </Text>
           <Text style={styles.subtitle}>
-            {showPurchased
-              ? "Your server-confirmed purchases. Downloads are authorized when opened."
-              : "Browse storefront offers from compatibility offer endpoints."}
+            Browse storefront offers from compatibility offer endpoints.
           </Text>
         </View>
       </View>
 
-      <View style={styles.modeControls}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Browse storefront offers"
-          accessibilityState={{ selected: !showPurchased }}
-          onPress={() => setShowPurchased(false)}
-          style={[styles.modeButton, !showPurchased && styles.modeButtonOn]}
-        >
-          <Text style={[styles.filterText, !showPurchased && styles.filterTextOn]}>
-            Browse
-          </Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="View purchased storefront offers"
-          accessibilityState={{ selected: showPurchased }}
-          onPress={() => {
-            setCategory("");
-            setQuery("");
-            setShowPurchased(true);
-          }}
-          style={[styles.modeButton, showPurchased && styles.modeButtonOn]}
-        >
-          <Text style={[styles.filterText, showPurchased && styles.filterTextOn]}>
-            Purchased
-          </Text>
-        </Pressable>
-      </View>
+      <TextInput
+        accessibilityLabel="Search storefront offers"
+        style={styles.search}
+        placeholder="Search storefront offers..."
+        placeholderTextColor={palette.textMuted}
+        value={query}
+        onChangeText={setQuery}
+        returnKeyType="search"
+        onSubmitEditing={() => load(1)}
+      />
 
-      {!showPurchased ? (
-        <TextInput
-          accessibilityLabel="Search storefront offers"
-          style={styles.search}
-          placeholder="Search storefront offers..."
-          placeholderTextColor={palette.textMuted}
-          value={query}
-          onChangeText={setQuery}
-          returnKeyType="search"
-          onSubmitEditing={() => load(1)}
-        />
-      ) : null}
-
-      {!showPurchased ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filters}
-        >
-          {["", "courses", "guides", "templates", "tools"].map((value) => (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ selected: category === value }}
-              key={value || "all"}
-              style={[styles.filterBtn, category === value && styles.filterBtnOn]}
-              onPress={() => setCategory(value)}
-            >
-              <Text
-                style={[styles.filterText, category === value && styles.filterTextOn]}
-              >
-                {value ? value : "all"}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      ) : null}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filters}
+      >
+        {["", "courses", "guides", "templates", "tools"].map((value) => (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ selected: category === value }}
+            key={value || "all"}
+            style={[styles.filterBtn, category === value && styles.filterBtnOn]}
+            onPress={() => setCategory(value)}
+          >
+            <Text style={[styles.filterText, category === value && styles.filterTextOn]}>
+              {value ? value : "all"}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
 
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
@@ -463,9 +210,7 @@ export default function MarketplaceScreen({ navigation, route } = {}) {
       {!loading && items.length === 0 ? (
         <View style={styles.emptyState}>
           <Text accessibilityRole="header" aria-level={2} style={styles.emptyText}>
-            {showPurchased
-              ? "No purchased storefront offers found."
-              : "No storefront offers found."}
+            No storefront offers found.
           </Text>
         </View>
       ) : (
@@ -504,7 +249,7 @@ export default function MarketplaceScreen({ navigation, route } = {}) {
             />
           }
           onEndReached={() => {
-            if (more && !loading && (showPurchased || !query.trim())) load(page + 1);
+            if (more && !loading && !query.trim()) load(page + 1);
           }}
           onEndReachedThreshold={0.4}
           contentContainerStyle={styles.listContent}
@@ -514,20 +259,10 @@ export default function MarketplaceScreen({ navigation, route } = {}) {
   );
 }
 
-export function MarketplaceDetailContent({
-  checkoutPending = false,
-  downloading = false,
-  item,
-  onDownload,
-  onPurchase,
-  purchasing
-}) {
+export function MarketplaceDetailContent({ item, onPurchase, purchasing }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const paid = Number(item?.priceCents || 0) > 0 || Number(item?.price || 0) > 0;
-  const entitlementState = marketplaceBuyerState(item);
-  const entitled = entitlementState === "confirmed";
-  const downloadDisabled = checkoutPending || downloading || (paid && !entitled);
   return (
     <View style={styles.detail}>
       <Text accessibilityRole="header" aria-level={1} style={styles.header}>
@@ -549,21 +284,17 @@ export function MarketplaceDetailContent({
             : item.included || item.contents}
         </Text>
       ) : null}
-      {onPurchase && !entitled ? (
+      {onPurchase ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={
             paid ? "Start storefront offer checkout" : "Get storefront offer"
           }
-          accessibilityState={{ disabled: Boolean(purchasing || checkoutPending) }}
-          disabled={purchasing || checkoutPending}
+          disabled={purchasing}
           onPress={onPurchase}
-          style={[
-            styles.purchaseButton,
-            (purchasing || checkoutPending) && styles.purchaseButtonDisabled
-          ]}
+          style={[styles.purchaseButton, purchasing && styles.purchaseButtonDisabled]}
         >
-          {purchasing || checkoutPending ? (
+          {purchasing ? (
             <ActivityIndicator color={palette.accentText} />
           ) : (
             <Text style={styles.purchaseText}>
@@ -571,37 +302,6 @@ export function MarketplaceDetailContent({
             </Text>
           )}
         </Pressable>
-      ) : null}
-      {checkoutPending ? (
-        <Text style={styles.meta}>
-          Server confirmation is pending. Another checkout and paid download are disabled.
-        </Text>
-      ) : null}
-      {onDownload ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Download storefront offer"
-          accessibilityState={{ disabled: downloadDisabled }}
-          disabled={downloadDisabled}
-          onPress={onDownload}
-          style={[
-            styles.downloadButton,
-            downloadDisabled && styles.purchaseButtonDisabled
-          ]}
-        >
-          {downloading ? (
-            <ActivityIndicator color={palette.text} />
-          ) : (
-            <Text style={styles.downloadText}>
-              {paid && !entitled ? "Download Locked" : "Download Item"}
-            </Text>
-          )}
-        </Pressable>
-      ) : null}
-      {paid && !entitled ? (
-        <Text style={styles.meta}>
-          Paid downloads unlock only after the server confirms purchase access.
-        </Text>
       ) : null}
       <Text style={styles.meta}>Status: {item?.status || "available"}</Text>
     </View>
@@ -624,16 +324,6 @@ export function createStyles(palette) {
       color: palette.text
     },
     filters: { marginBottom: 12 },
-    modeControls: { flexDirection: "row", gap: 8, marginBottom: 12 },
-    modeButton: {
-      backgroundColor: palette.surfaceMuted,
-      borderColor: palette.border,
-      borderRadius: radius.pill,
-      borderWidth: 1,
-      paddingHorizontal: 14,
-      paddingVertical: 8
-    },
-    modeButtonOn: { backgroundColor: palette.accent, borderColor: palette.accent },
     filterBtn: {
       paddingHorizontal: 14,
       paddingVertical: 8,
@@ -702,18 +392,6 @@ export function createStyles(palette) {
       paddingVertical: 11
     },
     purchaseButtonDisabled: { opacity: 0.6 },
-    purchaseText: { color: palette.accentText, fontWeight: "900" },
-    downloadButton: {
-      alignItems: "center",
-      backgroundColor: palette.surface,
-      borderColor: palette.border,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      justifyContent: "center",
-      minHeight: 44,
-      paddingHorizontal: 14,
-      paddingVertical: 11
-    },
-    downloadText: { color: palette.text, fontWeight: "900" }
+    purchaseText: { color: palette.accentText, fontWeight: "900" }
   });
 }

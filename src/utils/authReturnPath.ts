@@ -1,5 +1,4 @@
 import { parseClaimReturnPath } from "@/utils/claimReturnPath";
-import { COMPLIMENTARY_CLAIM_PATH } from "@/utils/complimentaryClaimTokenStore";
 
 export const GIFT_CHECKOUT_SUCCESS_PATH = "/account/gift-checkout/success";
 export const GIFT_CHECKOUT_CANCEL_PATH = "/account/gift-checkout/cancel";
@@ -163,11 +162,7 @@ export function isCanonicalLegacyCancelReturn(rawBrowserPath?: unknown): boolean
 }
 
 export function parseSafeLoginReturnPath(value: unknown): string {
-  return (
-    parseAuthReturnPath(value) ||
-    parseClaimReturnPath(value) ||
-    (value === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "")
-  );
+  return parseAuthReturnPath(value) || parseClaimReturnPath(value);
 }
 
 export function safeLoginPath(email: unknown, next: unknown): string {

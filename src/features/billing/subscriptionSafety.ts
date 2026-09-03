@@ -100,7 +100,7 @@ function accessMessage(
     case "iap":
       return "This access is managed by the app-store provider. Use its management link when one is available; GrowPath cannot cancel it here.";
     case "admin":
-      return "This complimentary access was granted by GrowPathAI. No payment was made, it does not renew, and there is no customer subscription to cancel.";
+      return "This access was granted administratively and has no customer subscription to cancel.";
     case "trial":
       return "Trial access is active. Review its provider terms or paid-through date; GrowPath does not expose cancellation without a confirmed cancellable Stripe subscription.";
     case "stripe":
@@ -128,11 +128,7 @@ export function resolveSubscriptionSafety(
   const active = cancelScheduled || explicitAccess || capabilityAccess;
   const source = sourceKind(record, trialing);
   const paidThroughValue =
-    record.currentPeriodEnd ||
-    record.expiry ||
-    record.giftEntitlementEndsAt ||
-    record.complimentaryEntitlementEndsAt ||
-    null;
+    record.currentPeriodEnd || record.expiry || record.giftEntitlementEndsAt || null;
   const paidThrough =
     typeof paidThroughValue === "string" && paidThroughValue.trim()
       ? paidThroughValue.trim()
@@ -152,7 +148,7 @@ export function resolveSubscriptionSafety(
   return {
     active,
     canCancel,
-    canOpenCheckout: loaded && !active && record.canStartCheckout !== false,
+    canOpenCheckout: loaded && !active,
     cancelScheduled,
     loaded,
     managementUrl,

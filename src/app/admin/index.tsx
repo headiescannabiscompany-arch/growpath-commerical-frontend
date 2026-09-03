@@ -16,7 +16,6 @@ import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
-import ComplimentaryGrantsAdminCard from "@/features/admin/ComplimentaryGrantsAdminCard";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -118,263 +117,20 @@ type AdminUser = {
   aiTokens?: number;
   maxTokens?: number;
   lastActiveAt?: string;
-  accountRemovalReviewAllowed?: boolean;
-  knownTestAccount?: boolean;
-  ownerControlledTestAccount?: boolean;
-  platformIdentityProtected?: boolean;
-  billingTruth?: {
-    source:
-      | "stripe"
-      | "gift"
-      | "app_store"
-      | "local_trial"
-      | "free"
-      | "complimentary"
-      | "platform"
-      | "test"
-      | "unknown";
-    paymentState: "paid" | "nonpaid";
-    stripeLinked: boolean;
-    paidThrough: string | null;
-    trialExpiry: string | null;
-  };
+  syntheticCleanupApproved?: boolean;
 };
 
-const ADMIN_BILLING_SOURCE_LABELS: Record<
-  NonNullable<AdminUser["billingTruth"]>["source"],
-  string
-> = {
-  stripe: "Stripe",
-  gift: "Gift",
-  app_store: "App Store",
-  local_trial: "Local / promotional trial (card-free)",
-  free: "Free",
-  complimentary: "Complimentary access",
-  platform: "Protected platform account",
-  test: "Test access",
-  unknown: "Unknown / unresolved"
-};
-
-function displayAdminBillingDate(value: string | null) {
-  const dateKey = String(value || "").slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return "Not reported";
-  const [year, month, day] = dateKey.split("-").map(Number);
-  const date = new Date(year, month - 1, day, 12);
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
-    return "Invalid date reported";
-  }
-  return date.toLocaleDateString();
-}
-
-function AdminBillingTruth({
-  target,
-  styles
-}: {
-  target: AdminUser;
-  styles: ReturnType<typeof createPlatformAdminStyles>;
-}) {
-  const truth = target.billingTruth;
-
-  if (!truth) {
-    return (
-      <View
-        accessibilityLabel={`Billing truth for ${target.email}`}
-        style={styles.billingTruth}
-      >
-        <Text accessibilityRole="header" style={styles.billingTruthTitle}>
-          Billing truth
-        </Text>
-        <Text accessibilityRole="alert" style={styles.meta}>
-          Billing truth was not reported by the server. Do not infer payment from the
-          account plan or subscription status.
-        </Text>
-      </View>
-    );
-  }
-
-  const isLocalTrial = truth.source === "local_trial";
-  const isPaid = truth.paymentState === "paid" && !isLocalTrial;
-
-  return (
-    <View
-      accessibilityLabel={`Billing truth for ${target.email}`}
-      style={styles.billingTruth}
-    >
-      <Text accessibilityRole="header" style={styles.billingTruthTitle}>
-        Billing truth
-      </Text>
-      <Text style={styles.meta}>
-        Billing source:{" "}
-        {ADMIN_BILLING_SOURCE_LABELS[truth.source] || ADMIN_BILLING_SOURCE_LABELS.unknown}
-      </Text>
-      <Text style={styles.meta}>Stripe linked: {truth.stripeLinked ? "Yes" : "No"}</Text>
-      <Text style={styles.meta}>Payment state: {isPaid ? "Paid" : "Not paid"}</Text>
-      <Text style={styles.meta}>
-        Paid through:{" "}
-        {isLocalTrial
-          ? "Not applicable to card-free trial"
-          : displayAdminBillingDate(truth.paidThrough)}
-      </Text>
-      <Text style={styles.meta}>
-        Trial expiry: {displayAdminBillingDate(truth.trialExpiry)}
-      </Text>
-    </View>
-  );
-}
-
-function platformIdentityProtectionConfirmation(target: AdminUser) {
-  return `PROTECT PLATFORM IDENTITY ${target._id} ${target.email.toLowerCase()}`;
-}
-
-type RemovalCategory =
-  | "test_cleanup"
-  | "user_request"
-  | "policy_enforcement"
-  | "security_fraud"
-  | "legal_process"
-  | "other";
-
-const REMOVAL_CATEGORY_LABELS: Record<RemovalCategory, string> = {
-  test_cleanup: "Test account cleanup",
-  user_request: "User request",
-  policy_enforcement: "Policy enforcement",
-  security_fraud: "Security or fraud",
-  legal_process: "Legal process",
-  other: "Other"
-};
-
-function isRemovalCategory(value: unknown): value is RemovalCategory {
-  return typeof value === "string" && value in REMOVAL_CATEGORY_LABELS;
-}
-
-type AccountRemovalPreview = {
+type SyntheticCleanupPreview = {
   ok: boolean;
   dryRun: boolean;
   target: { id: string; email: string };
-  accountRemovalReviewAllowed: boolean;
-  knownTestAccount?: boolean;
-  ownerControlledTestAccount?: boolean;
+  allowlisted: boolean;
   blockers: string[];
   deletionMode: string;
   nextConfirmation: string;
-  allowedRemovalCategories: RemovalCategory[];
-  reviewToken?: string;
-  reviewExpiresAt?: string;
 };
 
-function hasUsableAccountRemovalReview(preview: AccountRemovalPreview) {
-  if (typeof preview.reviewToken !== "string" || !preview.reviewToken.trim()) {
-    return false;
-  }
-  if (typeof preview.reviewExpiresAt !== "string") return false;
-  const expiresAt = new Date(preview.reviewExpiresAt).getTime();
-  return Number.isFinite(expiresAt) && expiresAt > Date.now();
-}
-
-type RemovedAdminUser = {
-  archiveId: string;
-  anonymizedUserId: string;
-  status?: string;
-  archivedAt?: string | null;
-  purgeAfter?: string | null;
-  legalHold?: boolean;
-  purgedAt?: string | null;
-  failureCode?: string;
-};
-
-const REMOVED_ACCOUNT_CASE_SCOPES = [
-  "account.identity",
-  "account.profile",
-  "account.subscription",
-  "account.security",
-  "account.operations",
-  "grow.lifecycle",
-  "grow.commercial_tools",
-  "ai.activity",
-  "communications.activity",
-  "community.activity",
-  "commerce.activity",
-  "courses.activity",
-  "payments.activity",
-  "moderation.safety",
-  "media.activity",
-  "facility.membership",
-  "facility.operations",
-  "creator.profile",
-  "businessdesk.commercial",
-  "businessdesk.facility_activity"
-] as const;
-
-type RemovedAccountCaseScope = (typeof REMOVED_ACCOUNT_CASE_SCOPES)[number];
-
-const REMOVED_ACCOUNT_CASE_SCOPE_LABELS: Record<RemovedAccountCaseScope, string> = {
-  "account.identity": "Account identity",
-  "account.profile": "Profile, preferences, and relationship metadata",
-  "account.subscription": "Subscriptions and payouts",
-  "account.security": "Security and account status",
-  "account.operations": "Support, audit, export, and delivery history",
-  "grow.lifecycle": "Grows, plants, logs, and tasks",
-  "grow.commercial_tools": "Recipes, soil mixes, pheno, profiles, and inventory",
-  "ai.activity": "AI tools and diagnoses",
-  "communications.activity": "Lives, chat, comments, and notifications",
-  "community.activity": "Feed, forum, posts, and community activity",
-  "commerce.activity": "Storefront, products, orders, and advertising",
-  "courses.activity": "Courses and learning activity",
-  "payments.activity": "Purchases, earnings, gifts, and billing records",
-  "moderation.safety": "Reports and moderation history",
-  "media.activity": "Media-record metadata",
-  "facility.membership": "Facility roles and memberships",
-  "facility.operations": "Facility operations and compliance participation",
-  "creator.profile": "Creator profile activity",
-  "businessdesk.commercial": "Commercial Business Desk",
-  "businessdesk.facility_activity": "Facility Business Desk activity"
-};
-
-type RemovedAccountCaseAccessDraft = {
-  evidenceRequestId: string;
-  purpose: string;
-  scopes: RemovedAccountCaseScope[];
-  confirmation: string;
-  reviewToken: string;
-  reviewExpiresAt: string;
-};
-
-type RemovedAccountCaseAccessResult = {
-  caseAccessOnly?: boolean;
-  externalTransmissionPerformed?: boolean;
-  archiveId: string;
-  evidenceRequestId: string;
-  dateWindow?: { from?: string | null; to?: string | null };
-  itemCounts?: Record<string, number>;
-  data?: Record<string, unknown>;
-};
-
-function removedAccountCaseConfirmation(archiveId: string, evidenceRequestId: string) {
-  return `ACCESS ${archiveId} FOR ${evidenceRequestId.trim()}`;
-}
-
-function emptyRemovedAccountCaseAccessDraft(): RemovedAccountCaseAccessDraft {
-  return {
-    evidenceRequestId: "",
-    purpose: "",
-    scopes: [],
-    confirmation: "",
-    reviewToken: "",
-    reviewExpiresAt: ""
-  };
-}
-
-function hasUsableRemovedAccountCaseReview(draft: RemovedAccountCaseAccessDraft) {
-  if (!draft.reviewToken || !draft.reviewExpiresAt) return false;
-  const expiresAt = new Date(draft.reviewExpiresAt).getTime();
-  return Number.isFinite(expiresAt) && expiresAt > Date.now();
-}
-
-const ACCOUNT_REMOVAL_BLOCKER_LABELS: Record<string, string> = {
+const SYNTHETIC_CLEANUP_BLOCKER_LABELS: Record<string, string> = {
   platform_admin: "This is a protected platform Admin account.",
   facility_owner: "This account owns a facility that must be handled first.",
   course_creator: "This account owns a course that must be handled first.",
@@ -382,27 +138,21 @@ const ACCOUNT_REMOVAL_BLOCKER_LABELS: Record<string, string> = {
     "This account has an active, trialing, past-due, or otherwise unsettled subscription.",
   stripe_customer: "This account is linked to a Stripe customer.",
   stripe_subscription: "This account is linked to a Stripe subscription.",
-  stripe_unsettled_invoice:
-    "Stripe reports an open, draft, or uncollectible invoice that must be resolved first.",
-  stripe_reconciliation_unavailable:
-    "Stripe could not be verified. Removal stays blocked until the live payment check succeeds.",
-  stripe_reconciliation_incomplete:
-    "Stripe returned more payment history than the bounded safety review could verify. Review it in Stripe before removal.",
   stripe_connect_account: "This account is linked to a Stripe Connect account.",
   gift_subscription: "This account is linked to a gift subscription."
 };
 
-function accountRemovalBlockerLabel(code: string) {
+function syntheticCleanupBlockerLabel(code: string) {
   return (
-    ACCOUNT_REMOVAL_BLOCKER_LABELS[code] ||
-    `Removal is blocked by retained account state: ${code.replace(/_/g, " ")}.`
+    SYNTHETIC_CLEANUP_BLOCKER_LABELS[code] ||
+    `Cleanup is blocked by retained account state: ${code.replace(/_/g, " ")}.`
   );
 }
 
-function blockedAccountRemovalPreview(
+function blockedSyntheticCleanupPreview(
   error: unknown,
   target: AdminUser
-): AccountRemovalPreview | null {
+): SyntheticCleanupPreview | null {
   if (!(error instanceof ApiError) || error.status !== 409) return null;
   const data = error.data;
   if (
@@ -412,38 +162,27 @@ function blockedAccountRemovalPreview(
     data.dryRun !== true ||
     data.target?.id !== target._id ||
     String(data.target?.email || "").toLowerCase() !== target.email.toLowerCase() ||
-    data.accountRemovalReviewAllowed !== true ||
+    data.allowlisted !== true ||
     !Array.isArray(data.blockers) ||
     data.blockers.length === 0 ||
     data.blockers.some((blocker: unknown) => typeof blocker !== "string") ||
     typeof data.deletionMode !== "string" ||
-    typeof data.nextConfirmation !== "string" ||
-    !Array.isArray(data.allowedRemovalCategories) ||
-    data.allowedRemovalCategories.length === 0 ||
-    data.allowedRemovalCategories.some(
-      (category: unknown) => !isRemovalCategory(category)
-    )
+    typeof data.nextConfirmation !== "string"
   ) {
     return null;
   }
-  return data as AccountRemovalPreview;
+  return data as SyntheticCleanupPreview;
 }
 
 type ModerationCase = {
   _id: string;
-  restricted?: boolean;
-  caseKind?: string;
-  targetType?: string;
-  targetId?: string;
-  reason?: string;
+  targetType: string;
+  targetId: string;
+  reason: string;
   severity: string;
   status: string;
   action: string;
   subjectUserId?: string;
-  reportCount?: number;
-  lastReportedAt?: string | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
   actionHistory?: Array<{
     action: string;
     reason?: string;
@@ -462,150 +201,6 @@ type ModerationCase = {
     content?: { title?: string; body?: string; content?: string; tags?: string[] };
   };
 };
-
-type RestrictedSevereTarget = {
-  targetType: string;
-  targetId: string;
-  subjectUserId?: string;
-  createdAt?: string | null;
-  updatedAt?: string | null;
-  status?: string;
-  isPublished?: boolean;
-  isHidden?: boolean;
-  hasMediaReferences?: boolean;
-  mediaReferenceCount?: number;
-  disposition?: {
-    state: "started" | "completed";
-    action: string;
-    actorUserId?: string;
-    startedAt?: string | null;
-    completedAt?: string | null;
-  };
-};
-
-type RestrictedSevereReview = ModerationCase & {
-  restricted: true;
-  caseKind: "restricted_severe_harm";
-  evidence: {
-    categories: string[];
-    highestSeverity?: string;
-    categoryCounts?: Record<string, number>;
-    distinctTargetCount?: number;
-    dispositionProgress?: {
-      retainedTargetCount: number;
-      actionableTargetCount: number;
-      completedTargetCount: number;
-      remainingTargetCount: number;
-      nonActionableTargetCount: number;
-      unknownTargetCount: number;
-      allTargetsDispositioned: boolean;
-    };
-    caseDisposition?: {
-      decision: string;
-      createdAt?: string | null;
-    } | null;
-    targetHistory: RestrictedSevereTarget[];
-    preActionHistory?: Array<{
-      action?: string;
-      actorUserId?: string;
-      capturedAt?: string | null;
-      target?: RestrictedSevereTarget;
-    }>;
-    reports: Array<{
-      reportId: string;
-      reporterUserId?: string;
-      contentType?: string;
-      contentId?: string;
-      category?: string;
-      reason?: string;
-      status?: string;
-      createdAt?: string | null;
-      resolvedAt?: string | null;
-    }>;
-    reportWindow?: {
-      ordering?: string;
-      limit?: number;
-      returned?: number;
-      truncated?: boolean;
-    };
-    handling: {
-      minimumNecessary?: boolean;
-      snapshotMode?: string;
-      rawMediaIncluded?: boolean;
-      storageLocationsIncluded?: boolean;
-      objectKeysIncluded?: boolean;
-      secretsIncluded?: boolean;
-      automaticExternalAuthorityContact?: boolean;
-      automaticLawEnforcementContact?: boolean;
-    };
-  };
-};
-
-function validRestrictedReviewTarget(value: unknown): value is RestrictedSevereTarget {
-  if (!value || typeof value !== "object") return false;
-  const target = value as RestrictedSevereTarget;
-  const disposition = target.disposition;
-  const dispositionValid =
-    disposition === undefined ||
-    (Boolean(disposition) &&
-      ["started", "completed"].includes(String(disposition.state || "")) &&
-      typeof disposition.action === "string" &&
-      Boolean(disposition.action.trim()));
-  return Boolean(
-    typeof target.targetType === "string" &&
-    target.targetType.trim() &&
-    typeof target.targetId === "string" &&
-    target.targetId.trim() &&
-    dispositionValid
-  );
-}
-
-function uniqueRestrictedReviewTargets(review: RestrictedSevereReview) {
-  const seen = new Set<string>();
-  return review.evidence.targetHistory.filter((target) => {
-    const key = `${target.targetType}:${target.targetId}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function validRestrictedDispositionProgress(value: unknown) {
-  if (!value || typeof value !== "object") return false;
-  const progress = value as NonNullable<
-    RestrictedSevereReview["evidence"]["dispositionProgress"]
-  >;
-  return (
-    [
-      progress.retainedTargetCount,
-      progress.actionableTargetCount,
-      progress.completedTargetCount,
-      progress.remainingTargetCount,
-      progress.nonActionableTargetCount,
-      progress.unknownTargetCount
-    ].every((count) => Number.isInteger(count) && count >= 0) &&
-    typeof progress.allTargetsDispositioned === "boolean"
-  );
-}
-
-function restrictedReviewErrorMessage(error: unknown, operation: "open" | "action") {
-  if (error instanceof ApiError) {
-    if (error.status === 403 || error.code === "SEVERE_HARM_REVIEWER_REQUIRED") {
-      return "Your Admin account is not configured for restricted severe-harm review. No case details were retained on this screen.";
-    }
-    if (error.status === 409 || error.code === "SEVERE_HARM_CASE_NOT_ACTIVE") {
-      return "This restricted case is no longer active. Refresh the Admin queue before taking any action.";
-    }
-    if (error.status === 404) {
-      return "This restricted case is no longer available in the active review lane.";
-    }
-  }
-  const fallback =
-    operation === "open"
-      ? "The audited restricted review could not be opened. No case details were retained on this screen."
-      : "The restricted moderation action did not complete. Reopen the audited review before trying again.";
-  return fallback;
-}
 
 function moderationPreview(item: ModerationCase) {
   const content = item.evidenceSnapshot?.content;
@@ -627,8 +222,8 @@ const MODERATABLE_TARGETS = new Set([
   "growTimelinePublicCopy"
 ]);
 
-export function supportsModerationActions(targetType?: string) {
-  return MODERATABLE_TARGETS.has(String(targetType || ""));
+export function supportsModerationActions(targetType: string) {
+  return MODERATABLE_TARGETS.has(targetType);
 }
 
 function matchesModerationTargetRoute(targetType: string, pathname: string) {
@@ -659,7 +254,6 @@ function matchesModerationTargetRoute(targetType: string, pathname: string) {
 }
 
 export function moderationTargetHref(item: ModerationCase) {
-  const targetType = String(item.targetType || "");
   const submitted = String(item.evidenceSnapshot?.targetUrl || "").trim();
   if (submitted) {
     try {
@@ -667,9 +261,9 @@ export function moderationTargetHref(item: ModerationCase) {
       if (
         (parsed.hostname === "growpathai.com" ||
           parsed.hostname.endsWith(".growpathai.com")) &&
-        matchesModerationTargetRoute(targetType, parsed.pathname)
+        matchesModerationTargetRoute(item.targetType, parsed.pathname)
       ) {
-        if (targetType === "course") {
+        if (item.targetType === "course") {
           parsed.searchParams.set("moderationCaseId", String(item._id || ""));
         }
         return `${parsed.pathname}${parsed.search}`;
@@ -680,34 +274,32 @@ export function moderationTargetHref(item: ModerationCase) {
   }
 
   const id = encodeURIComponent(String(item.targetId || ""));
-  if (targetType === "forumPost") return `/forum/post/${id}`;
-  if (targetType === "course") {
+  if (item.targetType === "forumPost") return `/forum/post/${id}`;
+  if (item.targetType === "course") {
     return `/courses?courseId=${id}&moderationCaseId=${encodeURIComponent(
       String(item._id || "")
     )}`;
   }
-  if (targetType === "video") return `/videos/${id}`;
-  if (targetType === "commercialPost") return `/feed?campaignId=${id}`;
-  if (targetType === "feedItem") return `/feed?feedItemId=${id}`;
-  if (targetType === "storefrontProduct") return `/store?q=${id}`;
-  if (targetType === "liveSession") return `/live-session?sessionId=${id}`;
-  return `/admin?targetType=${encodeURIComponent(targetType)}&targetId=${id}`;
+  if (item.targetType === "video") return `/videos/${id}`;
+  if (item.targetType === "commercialPost") return `/feed?campaignId=${id}`;
+  if (item.targetType === "feedItem") return `/feed?feedItemId=${id}`;
+  if (item.targetType === "storefrontProduct") return `/store?q=${id}`;
+  if (item.targetType === "liveSession") return `/live-session?sessionId=${id}`;
+  return `/admin?targetType=${encodeURIComponent(item.targetType)}&targetId=${id}`;
 }
 
 type EvidenceRequest = {
   _id: string;
-  restricted?: boolean;
-  requestType?: string;
-  requesterName?: string;
+  requestType: string;
+  requesterName: string;
   requesterOrganization?: string;
   requesterEmail?: string;
   authorityDescription?: string;
   jurisdiction?: string;
   targetUserId?: string | { _id?: string; email?: string; displayName?: string } | null;
-  scope?: string;
+  scope: string;
   status: string;
   preservationHold: boolean;
-  evidenceItemCount?: number;
   userNoticeStatus?: string;
   dateFrom?: string | null;
   dateTo?: string | null;
@@ -722,95 +314,10 @@ type EvidenceRequest = {
   }>;
   createdBy?: string | { _id?: string; email?: string } | null;
   reviewedBy?: string | { _id?: string; email?: string } | null;
-  approvedBy?: string | { _id?: string; email?: string } | null;
-  requesterIdentityVerification?: {
-    verified?: boolean;
-    method?: string;
-    reference?: string;
-    verifiedAt?: string | null;
-    verifiedBy?: string | { _id?: string; email?: string } | null;
-  };
-  requesterAuthorityVerification?: {
-    verified?: boolean;
-    method?: string;
-    reference?: string;
-    verifiedAt?: string | null;
-    verifiedBy?: string | { _id?: string; email?: string } | null;
-  };
-  jurisdictionReview?: {
-    reviewed?: boolean;
-    determination?: string;
-    reference?: string;
-    reviewedAt?: string | null;
-    reviewedBy?: string | { _id?: string; email?: string } | null;
-  };
-  minimumNecessaryScope?: string;
-  approvedArchiveScopes?: RemovedAccountCaseScope[];
-  legalReview?: {
-    decision?: string;
-    approverName?: string;
-    approverEmail?: string;
-    approverRole?: string;
-    reference?: string;
-    reviewedAt?: string | null;
-    reviewedBy?: string | { _id?: string; email?: string } | null;
-  };
   createdAt?: string;
   updatedAt?: string;
   closedAt?: string | null;
 };
-
-type EvidenceIdentityReviewDraft = {
-  identityMethod: string;
-  identityReference: string;
-  authorityMethod: string;
-  authorityReference: string;
-};
-
-type EvidenceLegalReviewDraft = {
-  jurisdiction: string;
-  jurisdictionDetermination: string;
-  jurisdictionReference: string;
-  minimumNecessaryScope: string;
-  approvedArchiveScopes: RemovedAccountCaseScope[];
-  userNoticeStatus: "" | "permitted" | "delayed" | "prohibited" | "sent";
-  approverName: string;
-  approverEmail: string;
-  approverRole: string;
-  approverReference: string;
-};
-
-function emptyEvidenceIdentityReviewDraft(): EvidenceIdentityReviewDraft {
-  return {
-    identityMethod: "",
-    identityReference: "",
-    authorityMethod: "",
-    authorityReference: ""
-  };
-}
-
-function evidenceLegalReviewDraft(item?: EvidenceRequest): EvidenceLegalReviewDraft {
-  const approvedArchiveScopes = Array.isArray(item?.approvedArchiveScopes)
-    ? item.approvedArchiveScopes.filter((scope): scope is RemovedAccountCaseScope =>
-        REMOVED_ACCOUNT_CASE_SCOPES.includes(scope as RemovedAccountCaseScope)
-      )
-    : [];
-  const notice = String(item?.userNoticeStatus || "");
-  return {
-    jurisdiction: item?.jurisdiction || "",
-    jurisdictionDetermination: "",
-    jurisdictionReference: "",
-    minimumNecessaryScope: item?.minimumNecessaryScope || "",
-    approvedArchiveScopes,
-    userNoticeStatus: ["permitted", "delayed", "prohibited", "sent"].includes(notice)
-      ? (notice as EvidenceLegalReviewDraft["userNoticeStatus"])
-      : "",
-    approverName: "",
-    approverEmail: "",
-    approverRole: "",
-    approverReference: ""
-  };
-}
 
 type AdminAuditEvent = {
   _id?: string;
@@ -1080,17 +587,6 @@ export default function PlatformAdminRoute() {
     reasonCodes: ""
   });
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [removedUsers, setRemovedUsers] = useState<RemovedAdminUser[]>([]);
-  const [removedUsersNextCursor, setRemovedUsersNextCursor] = useState<string | null>(
-    null
-  );
-  const [selectedRemovedArchiveId, setSelectedRemovedArchiveId] = useState("");
-  const [removedCaseAccessDrafts, setRemovedCaseAccessDrafts] = useState<
-    Record<string, RemovedAccountCaseAccessDraft>
-  >({});
-  const [removedCaseAccessResults, setRemovedCaseAccessResults] = useState<
-    Record<string, RemovedAccountCaseAccessResult | null>
-  >({});
   const orderedUsers = useMemo(() => {
     if (focusedTargetKind !== "user" || !focusedTargetId) return users;
     return [...users].sort((left, right) => {
@@ -1100,14 +596,6 @@ export default function PlatformAdminRoute() {
     });
   }, [focusedTargetId, focusedTargetKind, users]);
   const [moderationCases, setModerationCases] = useState<ModerationCase[]>([]);
-  // Restricted safety evidence is deliberately memory-only. It is never put in
-  // route params, persisted storage, exported files, or the generic Admin list.
-  const [restrictedCaseReviews, setRestrictedCaseReviews] = useState<
-    Record<string, RestrictedSevereReview | null>
-  >({});
-  const [restrictedCaseDecisionDrafts, setRestrictedCaseDecisionDrafts] = useState<
-    Record<string, { reason: string; confirmation: string }>
-  >({});
   const orderedModerationCases = useMemo(() => {
     if (!focusedModerationCaseId) return moderationCases;
     return [...moderationCases].sort((left, right) => {
@@ -1228,30 +716,17 @@ export default function PlatformAdminRoute() {
   const [noticeUser, setNoticeUser] = useState<AdminUser | null>(null);
   const [noticeSubject, setNoticeSubject] = useState("GrowPathAI account warning");
   const [noticeMessage, setNoticeMessage] = useState("");
-  const [cleanupPreview, setCleanupPreview] = useState<AccountRemovalPreview | null>(
+  const [cleanupPreview, setCleanupPreview] = useState<SyntheticCleanupPreview | null>(
     null
   );
   const [cleanupReviewId, setCleanupReviewId] = useState("");
   const [cleanupConfirmation, setCleanupConfirmation] = useState("");
-  const [removalCategory, setRemovalCategory] = useState<RemovalCategory | "">("");
-  const [removalReason, setRemovalReason] = useState("");
-  const [permanentActionAcknowledged, setPermanentActionAcknowledged] = useState(false);
-  const [platformProtectionTargetId, setPlatformProtectionTargetId] = useState("");
-  const [platformProtectionReason, setPlatformProtectionReason] = useState("");
-  const [platformProtectionConfirmation, setPlatformProtectionConfirmation] =
-    useState("");
   const [logoutConfirmationOpen, setLogoutConfirmationOpen] = useState(false);
   const [supportReopenReasons, setSupportReopenReasons] = useState<
     Record<string, string>
   >({});
   const [supportCaseNotes, setSupportCaseNotes] = useState<Record<string, string>>({});
   const [evidenceReasons, setEvidenceReasons] = useState<Record<string, string>>({});
-  const [evidenceIdentityReviewDrafts, setEvidenceIdentityReviewDrafts] = useState<
-    Record<string, EvidenceIdentityReviewDraft>
-  >({});
-  const [evidenceLegalReviewDrafts, setEvidenceLegalReviewDrafts] = useState<
-    Record<string, EvidenceLegalReviewDraft>
-  >({});
   const [evidenceAudit, setEvidenceAudit] = useState<
     Record<string, { loading: boolean; error: string; events: AdminAuditEvent[] }>
   >({});
@@ -1273,13 +748,9 @@ export default function PlatformAdminRoute() {
       const item = moderationCases.find((entry) => entry._id === focusedModerationCaseId);
       return {
         title: item
-          ? item.restricted
-            ? `Restricted severe-harm case · ${item.status}`
-            : `${item.targetType} moderation · ${item.status}`
+          ? `${item.targetType} moderation · ${item.status}`
           : `Moderation case ${focusedModerationCaseId}`,
-        detail: item?.restricted
-          ? "Reporter, subject, target, narrative, and evidence details remain hidden until an authorized audited review is opened below."
-          : item?.reason || "The linked case is not in the current result set."
+        detail: item?.reason || "The linked case is not in the current result set."
       };
     }
     if (focusedTargetKind === "securityissue" && focusedTargetId) {
@@ -1315,7 +786,7 @@ export default function PlatformAdminRoute() {
       const item = evidenceRequests.find((entry) => entry._id === focusedTargetId);
       return {
         title: item
-          ? `${(item.requestType || "restricted evidence request").replaceAll("_", " ")} · ${item.status}`
+          ? `${item.requestType.replaceAll("_", " ")} · ${item.status}`
           : `Legal/evidence request ${focusedTargetId}`,
         detail: item?.scope || "The linked request is not in the current result set."
       };
@@ -1366,8 +837,7 @@ export default function PlatformAdminRoute() {
         "Knowledge registry",
         "Method review",
         "Harvest calibration queue",
-        "Harvest provider reconciliation",
-        "Removed accounts"
+        "Harvest provider reconciliation"
       ];
       const settled = await Promise.allSettled([
         apiRequest("/api/admin/overview"),
@@ -1381,8 +851,7 @@ export default function PlatformAdminRoute() {
         apiRequest("/api/admin/knowledge-registry"),
         apiRequest("/api/admin/method-review-proposals"),
         apiRequest("/api/ai/training/harvest-trichome-calibration"),
-        apiRequest("/api/admin/harvest-operations?includeSettled=true"),
-        apiRequest("/api/admin/removed-users?limit=50")
+        apiRequest("/api/admin/harvest-operations?includeSettled=true")
       ]);
       const failures: string[] = [];
       const responseAt = (index: number) => {
@@ -1405,7 +874,6 @@ export default function PlatformAdminRoute() {
       const methodReviewResponse = responseAt(9);
       const harvestCalibrationResponse = responseAt(10);
       const harvestOperationsResponse = responseAt(11);
-      const removedUsersResponse = responseAt(12);
 
       if (overviewResponse) setOverview(overviewResponse.overview || null);
       if (usageResponse) setUsage(usageResponse.usage || null);
@@ -1439,35 +907,10 @@ export default function PlatformAdminRoute() {
         });
       if (usersResponse)
         setUsers(Array.isArray(usersResponse.users) ? usersResponse.users : []);
-      if (moderationResponse) {
-        const nextModerationCases = Array.isArray(moderationResponse.cases)
-          ? (moderationResponse.cases as ModerationCase[])
-          : [];
-        setModerationCases(nextModerationCases);
-        const retainedRestrictedCaseIds = new Set(
-          nextModerationCases
-            .filter(
-              (item) =>
-                item.restricted === true &&
-                ["open", "reviewing", "appealed"].includes(item.status)
-            )
-            .map((item) => item._id)
+      if (moderationResponse)
+        setModerationCases(
+          Array.isArray(moderationResponse.cases) ? moderationResponse.cases : []
         );
-        setRestrictedCaseReviews((current) =>
-          Object.fromEntries(
-            Object.entries(current).filter(([caseId]) =>
-              retainedRestrictedCaseIds.has(caseId)
-            )
-          )
-        );
-        setRestrictedCaseDecisionDrafts((current) =>
-          Object.fromEntries(
-            Object.entries(current).filter(([caseId]) =>
-              retainedRestrictedCaseIds.has(caseId)
-            )
-          )
-        );
-      }
       if (evidenceResponse)
         setEvidenceRequests(
           Array.isArray(evidenceResponse.requests) ? evidenceResponse.requests : []
@@ -1498,17 +941,6 @@ export default function PlatformAdminRoute() {
             ? harvestOperationsResponse.operations
             : []
         );
-      if (removedUsersResponse) {
-        setRemovedUsers(
-          Array.isArray(removedUsersResponse.users) ? removedUsersResponse.users : []
-        );
-        setRemovedUsersNextCursor(
-          typeof removedUsersResponse.nextCursor === "string" &&
-            removedUsersResponse.nextCursor
-            ? removedUsersResponse.nextCursor
-            : null
-        );
-      }
       setError(
         failures.length
           ? `Some administration sections could not load. ${failures.join("; ")}`
@@ -1520,214 +952,6 @@ export default function PlatformAdminRoute() {
       setLoading(false);
     }
   }, [isAdmin, query]);
-
-  async function loadMoreRemovedUsers() {
-    if (!removedUsersNextCursor || busyId === "removed-users-page") return;
-    setBusyId("removed-users-page");
-    setError("");
-    try {
-      const response = await apiRequest(
-        `/api/admin/removed-users?limit=50&cursor=${encodeURIComponent(
-          removedUsersNextCursor
-        )}`
-      );
-      const page = Array.isArray(response.users)
-        ? (response.users as RemovedAdminUser[])
-        : [];
-      setRemovedUsers((current) => {
-        const seenArchiveIds = new Set(current.map((item) => item.archiveId));
-        return [
-          ...current,
-          ...page.filter((item) => !seenArchiveIds.has(item.archiveId))
-        ];
-      });
-      setRemovedUsersNextCursor(
-        typeof response.nextCursor === "string" && response.nextCursor
-          ? response.nextCursor
-          : null
-      );
-    } catch (err: any) {
-      setError(err?.message || "Unable to load more removed-account archive records.");
-    } finally {
-      setBusyId("");
-    }
-  }
-
-  function updateRemovedCaseAccessDraft(
-    archiveId: string,
-    patch: Partial<RemovedAccountCaseAccessDraft>,
-    invalidateReview = true
-  ) {
-    setRemovedCaseAccessDrafts((current) => {
-      const existing = current[archiveId] || emptyRemovedAccountCaseAccessDraft();
-      return {
-        ...current,
-        [archiveId]: {
-          ...existing,
-          ...patch,
-          ...(invalidateReview ? { reviewToken: "", reviewExpiresAt: "" } : {})
-        }
-      };
-    });
-    if (invalidateReview) {
-      setRemovedCaseAccessResults((current) => ({ ...current, [archiveId]: null }));
-    }
-  }
-
-  function closeRemovedCaseAccess(archiveId: string) {
-    setSelectedRemovedArchiveId("");
-    setRemovedCaseAccessDrafts((current) => {
-      const next = { ...current };
-      delete next[archiveId];
-      return next;
-    });
-    setRemovedCaseAccessResults((current) => {
-      const next = { ...current };
-      delete next[archiveId];
-      return next;
-    });
-  }
-
-  async function reviewRemovedAccountCaseAccess(item: RemovedAdminUser) {
-    const archiveId = item.archiveId;
-    const draft =
-      removedCaseAccessDrafts[archiveId] || emptyRemovedAccountCaseAccessDraft();
-    const evidenceRequestId = draft.evidenceRequestId.trim();
-    const purpose = draft.purpose.trim();
-    const confirmation = removedAccountCaseConfirmation(archiveId, evidenceRequestId);
-    if (
-      !/^[a-f\d]{24}$/i.test(archiveId) ||
-      !/^[a-f\d]{24}$/i.test(evidenceRequestId) ||
-      purpose.length < 8 ||
-      draft.scopes.length === 0 ||
-      draft.confirmation !== confirmation
-    ) {
-      setError(
-        "Choose at least one minimum-necessary scope, enter the exact evidence-request ID and purpose, and type the exact restricted-access confirmation."
-      );
-      return;
-    }
-    setBusyId(`case-access-review-${archiveId}`);
-    setError("");
-    updateRemovedCaseAccessDraft(
-      archiveId,
-      { reviewToken: "", reviewExpiresAt: "" },
-      false
-    );
-    setRemovedCaseAccessResults((current) => ({ ...current, [archiveId]: null }));
-    try {
-      const response = await apiRequest<{
-        ok?: boolean;
-        caseAccessOnly?: boolean;
-        reviewToken?: string;
-        reviewExpiresAt?: string;
-      }>(`/api/admin/removed-users/${archiveId}/case-access-review`, {
-        method: "POST",
-        body: {
-          evidenceRequestId,
-          purpose,
-          scopes: draft.scopes,
-          minimumNecessaryAcknowledged: true,
-          confirmation
-        }
-      });
-      const reviewToken = String(response.reviewToken || "");
-      const reviewExpiresAt = String(response.reviewExpiresAt || "");
-      const expiry = new Date(reviewExpiresAt).getTime();
-      if (
-        response.ok !== true ||
-        response.caseAccessOnly !== true ||
-        !reviewToken ||
-        !Number.isFinite(expiry) ||
-        expiry <= Date.now()
-      ) {
-        throw new Error(
-          "The restricted case-access review did not return a usable authorization."
-        );
-      }
-      updateRemovedCaseAccessDraft(archiveId, { reviewToken, reviewExpiresAt }, false);
-    } catch (err: any) {
-      updateRemovedCaseAccessDraft(
-        archiveId,
-        { reviewToken: "", reviewExpiresAt: "" },
-        false
-      );
-      setError(err?.message || "Restricted case-access review failed safely.");
-    } finally {
-      setBusyId("");
-    }
-  }
-
-  async function executeRemovedAccountCaseAccess(item: RemovedAdminUser) {
-    const archiveId = item.archiveId;
-    const draft =
-      removedCaseAccessDrafts[archiveId] || emptyRemovedAccountCaseAccessDraft();
-    const evidenceRequestId = draft.evidenceRequestId.trim();
-    const purpose = draft.purpose.trim();
-    const confirmation = removedAccountCaseConfirmation(archiveId, evidenceRequestId);
-    if (!hasUsableRemovedAccountCaseReview(draft)) {
-      updateRemovedCaseAccessDraft(
-        archiveId,
-        { reviewToken: "", reviewExpiresAt: "" },
-        false
-      );
-      setError(
-        "The one-use restricted case-access review is missing or expired. Run the review again."
-      );
-      return;
-    }
-    const reviewToken = draft.reviewToken;
-    setBusyId(`case-access-execute-${archiveId}`);
-    setError("");
-    // Consume the UI copy before the request. A failed, repeated, or expired
-    // execution must always go through a new restricted review.
-    updateRemovedCaseAccessDraft(
-      archiveId,
-      { reviewToken: "", reviewExpiresAt: "" },
-      false
-    );
-    try {
-      const response = await apiRequest<
-        RemovedAccountCaseAccessResult & {
-          ok?: boolean;
-        }
-      >(`/api/admin/removed-users/${archiveId}/case-access`, {
-        method: "POST",
-        body: {
-          evidenceRequestId,
-          purpose,
-          scopes: draft.scopes,
-          minimumNecessaryAcknowledged: true,
-          confirmation,
-          reviewToken
-        }
-      });
-      if (
-        response.ok !== true ||
-        response.caseAccessOnly !== true ||
-        response.externalTransmissionPerformed !== false ||
-        response.archiveId !== archiveId ||
-        response.evidenceRequestId !== evidenceRequestId ||
-        !response.data ||
-        typeof response.data !== "object" ||
-        Array.isArray(response.data)
-      ) {
-        throw new Error("The restricted case-access response failed validation.");
-      }
-      setRemovedCaseAccessResults((current) => ({
-        ...current,
-        [archiveId]: response
-      }));
-    } catch (err: any) {
-      setRemovedCaseAccessResults((current) => ({ ...current, [archiveId]: null }));
-      setError(
-        err?.message ||
-          "Restricted case access failed safely. Run a new review before retrying."
-      );
-    } finally {
-      setBusyId("");
-    }
-  }
 
   async function reconcileHarvestOperation(item: HarvestReconciliationOperation) {
     const action = harvestReconciliationActions[item.operationId] || "refund";
@@ -1975,19 +1199,6 @@ export default function PlatformAdminRoute() {
     void load();
   }, [load]);
 
-  useEffect(() => {
-    if (isAdmin) return;
-    setRestrictedCaseReviews({});
-    setRestrictedCaseDecisionDrafts({});
-    setSourceModerationCaseId("");
-    setShowEvidenceRequestForm(false);
-    setEvidenceDraft((current) => ({
-      ...current,
-      targetUserId: "",
-      scope: ""
-    }));
-  }, [isAdmin]);
-
   const modeSummary = useMemo(
     () =>
       Object.entries(overview?.byMode || {})
@@ -2048,21 +1259,15 @@ export default function PlatformAdminRoute() {
     }
   }
 
-  async function reviewAccountRemoval(target: AdminUser) {
+  async function reviewSyntheticCleanup(target: AdminUser) {
     setBusyId(target._id);
     setCleanupReviewId(target._id);
     setError("");
-    setPlatformProtectionTargetId("");
-    setPlatformProtectionReason("");
-    setPlatformProtectionConfirmation("");
     setCleanupPreview(null);
     setCleanupConfirmation("");
-    setRemovalCategory("");
-    setRemovalReason("");
-    setPermanentActionAcknowledged(false);
     try {
-      const preview = await apiRequest<AccountRemovalPreview>(
-        `/api/admin/users/${target._id}/remove-account`,
+      const preview = await apiRequest<SyntheticCleanupPreview>(
+        `/api/admin/users/${target._id}/anonymize-synthetic-account`,
         {
           method: "POST",
           body: { expectedEmail: target.email }
@@ -2070,7 +1275,7 @@ export default function PlatformAdminRoute() {
       );
       setCleanupPreview(preview);
     } catch (err: unknown) {
-      const blockedPreview = blockedAccountRemovalPreview(err, target);
+      const blockedPreview = blockedSyntheticCleanupPreview(err, target);
       if (blockedPreview) {
         setCleanupPreview(blockedPreview);
         return;
@@ -2078,7 +1283,7 @@ export default function PlatformAdminRoute() {
       setError(
         err instanceof Error
           ? err.message
-          : "This account is protected from Admin removal review."
+          : "This account is not approved for synthetic cleanup."
       );
     } finally {
       setBusyId("");
@@ -2086,191 +1291,30 @@ export default function PlatformAdminRoute() {
     }
   }
 
-  async function protectPlatformIdentity(target: AdminUser) {
-    const expectedConfirmation = platformIdentityProtectionConfirmation(target);
-    if (
-      target.platformIdentityProtected === true ||
-      platformProtectionReason.trim().length < 8 ||
-      platformProtectionConfirmation !== expectedConfirmation
-    ) {
-      return;
-    }
-    setBusyId(target._id);
+  async function executeSyntheticCleanup() {
+    if (!cleanupPreview) return;
+    setBusyId(cleanupPreview.target.id);
     setError("");
     try {
-      const response = await apiRequest(
-        `/api/admin/users/${target._id}/platform-identity-protection`,
+      await apiRequest(
+        `/api/admin/users/${cleanupPreview.target.id}/anonymize-synthetic-account`,
         {
-          method: "PATCH",
+          method: "POST",
           body: {
-            expectedEmail: target.email.toLowerCase(),
-            reason: platformProtectionReason.trim(),
-            confirmation: expectedConfirmation
+            expectedEmail: cleanupPreview.target.email,
+            execute: true,
+            confirmation: cleanupConfirmation
           }
         }
       );
-      if (response.platformIdentityProtected !== true) {
-        throw new Error("Platform identity protection was not confirmed.");
-      }
-      setUsers((current) =>
-        current.map((item) =>
-          item._id === target._id
-            ? {
-                ...item,
-                platformIdentityProtected: true,
-                accountRemovalReviewAllowed: false
-              }
-            : item
-        )
-      );
       setCleanupPreview(null);
       setCleanupConfirmation("");
-      setRemovalCategory("");
-      setRemovalReason("");
-      setPermanentActionAcknowledged(false);
-      setPlatformProtectionTargetId("");
-      setPlatformProtectionReason("");
-      setPlatformProtectionConfirmation("");
-    } catch (err: any) {
-      setError(err?.message || "Platform identity protection failed safely.");
-    } finally {
-      setBusyId("");
-    }
-  }
-
-  async function executeAccountRemoval() {
-    if (
-      !cleanupPreview ||
-      !cleanupPreview.ok ||
-      cleanupPreview.dryRun !== true ||
-      cleanupPreview.accountRemovalReviewAllowed !== true ||
-      cleanupPreview.blockers.length > 0 ||
-      !hasUsableAccountRemovalReview(cleanupPreview) ||
-      !removalCategory ||
-      !cleanupPreview.allowedRemovalCategories.includes(removalCategory) ||
-      removalReason.trim().length < 8 ||
-      !permanentActionAcknowledged ||
-      cleanupConfirmation !== cleanupPreview.nextConfirmation
-    ) {
-      return;
-    }
-    const reviewedTarget = cleanupPreview.target;
-    const reviewToken = cleanupPreview.reviewToken as string;
-    const selectedRemovalCategory = removalCategory;
-    const detailedRemovalReason = removalReason.trim();
-    const exactConfirmation = cleanupConfirmation;
-    setBusyId(reviewedTarget.id);
-    setError("");
-    // A review authorization is one-use. Remove it from UI state before the
-    // request so errors, double clicks, and replay attempts all require a new review.
-    setCleanupPreview(null);
-    setCleanupConfirmation("");
-    setRemovalCategory("");
-    setRemovalReason("");
-    setPermanentActionAcknowledged(false);
-    try {
-      await apiRequest(`/api/admin/users/${reviewedTarget.id}/remove-account`, {
-        method: "POST",
-        body: {
-          expectedEmail: reviewedTarget.email,
-          execute: true,
-          confirmation: exactConfirmation,
-          removalCategory: selectedRemovalCategory,
-          reason: detailedRemovalReason,
-          permanentActionAcknowledged: true,
-          reviewToken
-        }
-      });
       await load();
     } catch (err: any) {
-      setError(err?.message || "Account removal failed safely.");
+      setError(err?.message || "Synthetic-account anonymization failed safely.");
     } finally {
       setBusyId("");
     }
-  }
-
-  async function openRestrictedCaseReview(item: ModerationCase) {
-    setBusyId(`restricted-review-${item._id}`);
-    setError("");
-    setRestrictedCaseReviews((current) => ({ ...current, [item._id]: null }));
-    try {
-      const response = await apiRequest<{
-        ok?: boolean;
-        case?: RestrictedSevereReview;
-      }>(`/api/admin/moderation-cases/${encodeURIComponent(item._id)}/restricted-review`);
-      const review = response.case;
-      if (
-        response.ok !== true ||
-        !review ||
-        String(review._id || "") !== item._id ||
-        review.restricted !== true ||
-        review.caseKind !== "restricted_severe_harm" ||
-        !Array.isArray(review.evidence?.targetHistory) ||
-        review.evidence.targetHistory.some(
-          (target) => !validRestrictedReviewTarget(target)
-        ) ||
-        (review.evidence.dispositionProgress !== undefined &&
-          !validRestrictedDispositionProgress(review.evidence.dispositionProgress)) ||
-        !Array.isArray(review.evidence?.reports) ||
-        review.evidence.reports.some(
-          (report) =>
-            !report ||
-            typeof report !== "object" ||
-            typeof report.reportId !== "string" ||
-            !report.reportId.trim()
-        ) ||
-        !Array.isArray(review.evidence?.categories) ||
-        review.evidence.categories.some((category) => typeof category !== "string") ||
-        review.evidence?.handling?.minimumNecessary !== true ||
-        review.evidence?.handling?.rawMediaIncluded !== false ||
-        review.evidence?.handling?.storageLocationsIncluded !== false ||
-        review.evidence?.handling?.objectKeysIncluded !== false ||
-        review.evidence?.handling?.secretsIncluded !== false ||
-        review.evidence?.handling?.automaticExternalAuthorityContact !== false ||
-        review.evidence?.handling?.automaticLawEnforcementContact !== false
-      ) {
-        throw new Error("The restricted review response failed validation.");
-      }
-      setRestrictedCaseReviews((current) => ({ ...current, [item._id]: review }));
-    } catch (err: any) {
-      setRestrictedCaseReviews((current) => ({ ...current, [item._id]: null }));
-      setError(restrictedReviewErrorMessage(err, "open"));
-    } finally {
-      setBusyId("");
-    }
-  }
-
-  function closeRestrictedCaseReview(caseId: string) {
-    setRestrictedCaseReviews((current) => {
-      const next = { ...current };
-      delete next[caseId];
-      return next;
-    });
-    setRestrictedCaseDecisionDrafts((current) => {
-      const next = { ...current };
-      delete next[caseId];
-      return next;
-    });
-    if (sourceModerationCaseId === caseId) {
-      setSourceModerationCaseId("");
-      setShowEvidenceRequestForm(false);
-      setEvidenceDraft((current) => ({
-        ...current,
-        targetUserId: "",
-        scope: ""
-      }));
-    }
-  }
-
-  function cancelEvidenceRequestForm() {
-    setShowEvidenceRequestForm(false);
-    if (!sourceModerationCaseId) return;
-    setSourceModerationCaseId("");
-    setEvidenceDraft((current) => ({
-      ...current,
-      targetUserId: "",
-      scope: ""
-    }));
   }
 
   async function moderateContent(
@@ -2286,75 +1330,17 @@ export default function PlatformAdminRoute() {
       | "unlock"
       | "pin"
       | "unpin"
-      | "move",
-    evidenceTarget?: { targetType: string; targetId: string }
+      | "move"
   ) {
     setBusyId(item._id);
-    setError("");
     try {
-      await apiRequest(
-        `/api/admin/moderation-cases/${encodeURIComponent(item._id)}/action`,
-        {
-          method: "POST",
-          body: {
-            action,
-            ...(action === "move" ? { category: moveCategory.trim() } : {}),
-            ...(evidenceTarget
-              ? {
-                  evidenceTargetType: evidenceTarget.targetType,
-                  evidenceTargetId: evidenceTarget.targetId
-                }
-              : {})
-          }
-        }
-      );
-      closeRestrictedCaseReview(item._id);
+      await apiRequest(`/api/admin/moderation-cases/${item._id}/action`, {
+        method: "POST",
+        body: { action, ...(action === "move" ? { category: moveCategory.trim() } : {}) }
+      });
       await load();
     } catch (err: any) {
-      if (evidenceTarget) {
-        closeRestrictedCaseReview(item._id);
-        setError(restrictedReviewErrorMessage(err, "action"));
-      } else {
-        setError(err?.message || "Content moderation action failed.");
-      }
-    } finally {
-      setBusyId("");
-    }
-  }
-
-  async function closeRestrictedCaseWithDecision(item: ModerationCase) {
-    const draft = restrictedCaseDecisionDrafts[item._id] || {
-      reason: "",
-      confirmation: ""
-    };
-    const reason = draft.reason.trim();
-    const confirmation = draft.confirmation.trim();
-    const expectedConfirmation = `CLOSE RESTRICTED CASE ${item._id}`;
-    if (reason.length < 20 || confirmation !== expectedConfirmation) {
-      setError(
-        "A reviewed reason of at least 20 characters and the exact restricted-case confirmation are required."
-      );
-      return;
-    }
-    setBusyId(`restricted-decision-${item._id}`);
-    setError("");
-    try {
-      await apiRequest(
-        `/api/admin/moderation-cases/${encodeURIComponent(item._id)}/restricted-decision`,
-        {
-          method: "POST",
-          body: {
-            decision: "close_no_further_action",
-            reason,
-            confirmation
-          }
-        }
-      );
-      closeRestrictedCaseReview(item._id);
-      await load();
-    } catch (err: any) {
-      closeRestrictedCaseReview(item._id);
-      setError(restrictedReviewErrorMessage(err, "action"));
+      setError(err?.message || "Content moderation action failed.");
     } finally {
       setBusyId("");
     }
@@ -2471,364 +1457,7 @@ export default function PlatformAdminRoute() {
     }
   }
 
-  async function recordEvidenceIdentityReview(item: EvidenceRequest) {
-    const reason = String(evidenceReasons[item._id] || "").trim();
-    const draft =
-      evidenceIdentityReviewDrafts[item._id] || emptyEvidenceIdentityReviewDraft();
-    if (
-      !reason ||
-      !draft.identityMethod.trim() ||
-      !draft.identityReference.trim() ||
-      !draft.authorityMethod.trim() ||
-      !draft.authorityReference.trim()
-    ) {
-      setError(
-        "A typed reason plus identity and authority verification methods and non-secret references are required."
-      );
-      return;
-    }
-    setBusyId(item._id);
-    setError("");
-    try {
-      await apiRequest(`/api/admin/evidence-requests/${item._id}`, {
-        method: "PATCH",
-        body: {
-          reason,
-          requesterIdentityVerification: {
-            verified: true,
-            method: draft.identityMethod.trim(),
-            reference: draft.identityReference.trim()
-          },
-          requesterAuthorityVerification: {
-            verified: true,
-            method: draft.authorityMethod.trim(),
-            reference: draft.authorityReference.trim()
-          }
-        }
-      });
-      setEvidenceReasons((current) => ({ ...current, [item._id]: "" }));
-      setEvidenceIdentityReviewDrafts((current) => {
-        const next = { ...current };
-        delete next[item._id];
-        return next;
-      });
-      await load();
-    } catch (err: any) {
-      setError(err?.message || "Identity and authority review failed safely.");
-    } finally {
-      setBusyId("");
-    }
-  }
-
-  async function approveEvidenceRequest(item: EvidenceRequest) {
-    const reason = String(evidenceReasons[item._id] || "").trim();
-    const draft = evidenceLegalReviewDrafts[item._id] || evidenceLegalReviewDraft(item);
-    const approverEmail = draft.approverEmail.trim().toLowerCase();
-    if (!item.preservationHold) {
-      setError(
-        "An active preservation hold is required before removed-account archive scopes can be approved."
-      );
-      return;
-    }
-    if (
-      !reason ||
-      !draft.jurisdiction.trim() ||
-      !draft.jurisdictionDetermination.trim() ||
-      !draft.jurisdictionReference.trim() ||
-      !draft.minimumNecessaryScope.trim() ||
-      draft.approvedArchiveScopes.length === 0 ||
-      !draft.userNoticeStatus ||
-      !draft.approverName.trim() ||
-      !approverEmail ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(approverEmail) ||
-      !draft.approverRole.trim() ||
-      !draft.approverReference.trim()
-    ) {
-      setError(
-        "Complete jurisdiction review, minimum-necessary archive scopes, notice decision, configured approver details, and a typed reason before approval."
-      );
-      return;
-    }
-    setBusyId(item._id);
-    setError("");
-    try {
-      await apiRequest(`/api/admin/evidence-requests/${item._id}`, {
-        method: "PATCH",
-        body: {
-          status: "approved",
-          reason,
-          jurisdiction: draft.jurisdiction.trim(),
-          jurisdictionReview: {
-            reviewed: true,
-            determination: draft.jurisdictionDetermination.trim(),
-            reference: draft.jurisdictionReference.trim()
-          },
-          minimumNecessaryScope: draft.minimumNecessaryScope.trim(),
-          approvedArchiveScopes: draft.approvedArchiveScopes,
-          userNoticeStatus: draft.userNoticeStatus,
-          legalReview: {
-            decision: "approve",
-            approverName: draft.approverName.trim(),
-            approverEmail,
-            approverRole: draft.approverRole.trim(),
-            reference: draft.approverReference.trim()
-          }
-        }
-      });
-      setEvidenceReasons((current) => ({ ...current, [item._id]: "" }));
-      setEvidenceLegalReviewDrafts((current) => {
-        const next = { ...current };
-        delete next[item._id];
-        return next;
-      });
-      await load();
-    } catch (err: any) {
-      setError(
-        err?.message ||
-          "Legal approval failed safely. The backend still requires an independent configured approver."
-      );
-    } finally {
-      setBusyId("");
-    }
-  }
-
-  function renderEvidenceIdentityReview(
-    item: EvidenceRequest,
-    draft: EvidenceIdentityReviewDraft,
-    reason: string
-  ) {
-    const setDraft = (patch: Partial<EvidenceIdentityReviewDraft>) =>
-      setEvidenceIdentityReviewDrafts((current) => ({
-        ...current,
-        [item._id]: {
-          ...(current[item._id] || emptyEvidenceIdentityReviewDraft()),
-          ...patch
-        }
-      }));
-    const ready =
-      Boolean(reason) &&
-      Boolean(draft.identityMethod.trim()) &&
-      Boolean(draft.identityReference.trim()) &&
-      Boolean(draft.authorityMethod.trim()) &&
-      Boolean(draft.authorityReference.trim());
-    return (
-      <View
-        accessibilityLabel={`Requester verification review ${item._id}`}
-        style={styles.evidencePreview}
-      >
-        <Text style={styles.caseTitle}>
-          Requester identity and authority verification
-        </Text>
-        <Text style={styles.meta}>
-          Record how identity and legal authority were independently checked. References
-          must identify the reviewed record without including a password, access token, or
-          other secret.
-        </Text>
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Requester identity verification method ${item._id}`}
-          placeholder="Identity verification method"
-          value={draft.identityMethod}
-          onChangeText={(identityMethod) => setDraft({ identityMethod })}
-          style={styles.input}
-        />
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Requester identity verification reference ${item._id}`}
-          placeholder="Non-secret identity reference"
-          value={draft.identityReference}
-          onChangeText={(identityReference) => setDraft({ identityReference })}
-          style={styles.input}
-        />
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Requester authority verification method ${item._id}`}
-          placeholder="Authority verification method"
-          value={draft.authorityMethod}
-          onChangeText={(authorityMethod) => setDraft({ authorityMethod })}
-          style={styles.input}
-        />
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Requester authority verification reference ${item._id}`}
-          placeholder="Non-secret authority or document reference"
-          value={draft.authorityReference}
-          onChangeText={(authorityReference) => setDraft({ authorityReference })}
-          style={styles.input}
-        />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Record identity and authority verification ${item._id}`}
-          accessibilityState={{ disabled: busyId === item._id || !ready }}
-          disabled={busyId === item._id || !ready}
-          style={styles.primaryButton}
-          onPress={() => void recordEvidenceIdentityReview(item)}
-        >
-          <Text style={styles.primaryText}>Record verified identity and authority</Text>
-        </Pressable>
-      </View>
-    );
-  }
-
-  function renderEvidenceLegalReview(
-    item: EvidenceRequest,
-    draft: EvidenceLegalReviewDraft,
-    ready: boolean
-  ) {
-    const setDraft = (patch: Partial<EvidenceLegalReviewDraft>) =>
-      setEvidenceLegalReviewDrafts((current) => ({
-        ...current,
-        [item._id]: {
-          ...(current[item._id] || evidenceLegalReviewDraft(item)),
-          ...patch
-        }
-      }));
-    return (
-      <View
-        accessibilityLabel={`Legal approval review ${item._id}`}
-        style={styles.evidencePreview}
-      >
-        <Text style={styles.caseTitle}>Independent legal approval</Text>
-        <Text style={styles.meta}>
-          The signed-in Admin must be in the configured legal approver list and must be
-          different from both the request creator and the later case-access Admin. The
-          server enforces those two-person controls.
-        </Text>
-        <Text style={styles.meta}>
-          Preservation hold: {item.preservationHold ? "active" : "required"}
-        </Text>
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Reviewed jurisdiction ${item._id}`}
-          placeholder="Named jurisdiction"
-          value={draft.jurisdiction}
-          onChangeText={(jurisdiction) => setDraft({ jurisdiction })}
-          style={styles.input}
-        />
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Jurisdiction determination ${item._id}`}
-          multiline
-          placeholder="Why this jurisdiction and authority apply"
-          value={draft.jurisdictionDetermination}
-          onChangeText={(jurisdictionDetermination) =>
-            setDraft({ jurisdictionDetermination })
-          }
-          style={[styles.input, styles.messageInput]}
-        />
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Jurisdiction review reference ${item._id}`}
-          placeholder="Non-secret jurisdiction reference"
-          value={draft.jurisdictionReference}
-          onChangeText={(jurisdictionReference) => setDraft({ jurisdictionReference })}
-          style={styles.input}
-        />
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Minimum necessary description ${item._id}`}
-          multiline
-          placeholder="Exact minimum-necessary records and purpose"
-          value={draft.minimumNecessaryScope}
-          onChangeText={(minimumNecessaryScope) => setDraft({ minimumNecessaryScope })}
-          style={[styles.input, styles.messageInput]}
-        />
-        <Text style={styles.meta}>
-          Approve only the removed-account archive scopes that are necessary.
-        </Text>
-        <View
-          accessibilityLabel={`Approved archive scopes ${item._id}`}
-          style={styles.actions}
-        >
-          {REMOVED_ACCOUNT_CASE_SCOPES.map((scope) => {
-            const selected = draft.approvedArchiveScopes.includes(scope);
-            return (
-              <Pressable
-                key={scope}
-                accessibilityRole="checkbox"
-                accessibilityLabel={`Approve archive scope ${REMOVED_ACCOUNT_CASE_SCOPE_LABELS[scope]} for ${item._id}`}
-                accessibilityState={{ checked: selected }}
-                style={styles.secondaryButton}
-                onPress={() =>
-                  setDraft({
-                    approvedArchiveScopes: selected
-                      ? draft.approvedArchiveScopes.filter((value) => value !== scope)
-                      : [...draft.approvedArchiveScopes, scope]
-                  })
-                }
-              >
-                <Text style={styles.secondaryText}>
-                  {selected ? "☑" : "☐"} {REMOVED_ACCOUNT_CASE_SCOPE_LABELS[scope]}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        <Text style={styles.meta}>User-notice decision</Text>
-        <View style={styles.actions}>
-          {(["permitted", "delayed", "prohibited", "sent"] as const).map((notice) => (
-            <Pressable
-              key={notice}
-              accessibilityRole="radio"
-              accessibilityLabel={`User notice ${notice} for ${item._id}`}
-              accessibilityState={{ checked: draft.userNoticeStatus === notice }}
-              style={styles.secondaryButton}
-              onPress={() => setDraft({ userNoticeStatus: notice })}
-            >
-              <Text style={styles.secondaryText}>{notice}</Text>
-            </Pressable>
-          ))}
-        </View>
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Authenticated approver name ${item._id}`}
-          placeholder="Authenticated configured approver name"
-          value={draft.approverName}
-          onChangeText={(approverName) => setDraft({ approverName })}
-          style={styles.input}
-        />
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Authenticated approver email ${item._id}`}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          placeholder="Authenticated configured approver email"
-          value={draft.approverEmail}
-          onChangeText={(approverEmail) => setDraft({ approverEmail })}
-          style={styles.input}
-        />
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Authenticated approver role ${item._id}`}
-          placeholder="Approver role"
-          value={draft.approverRole}
-          onChangeText={(approverRole) => setDraft({ approverRole })}
-          style={styles.input}
-        />
-        <TextInput
-          {...inputThemeProps}
-          accessibilityLabel={`Authenticated approver reference ${item._id}`}
-          placeholder="Non-secret approval reference"
-          value={draft.approverReference}
-          onChangeText={(approverReference) => setDraft({ approverReference })}
-          style={styles.input}
-        />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Approve evidence request ${item._id}`}
-          accessibilityState={{ disabled: busyId === item._id || !ready }}
-          disabled={busyId === item._id || !ready}
-          style={styles.dangerButton}
-          onPress={() => void approveEvidenceRequest(item)}
-        >
-          <Text style={styles.dangerText}>Approve minimum-necessary case access</Text>
-        </Pressable>
-      </View>
-    );
-  }
-
   async function createEvidenceRequest() {
-    const restrictedSourceCaseId = sourceModerationCaseId;
     const requestType = String(evidenceDraft.requestType || "").trim();
     const requesterName = evidenceDraft.requesterName.trim();
     const requesterEmail = evidenceDraft.requesterEmail.trim().toLowerCase();
@@ -2864,8 +1493,8 @@ export default function PlatformAdminRoute() {
     setError("");
     try {
       await apiRequest(
-        restrictedSourceCaseId
-          ? `/api/admin/moderation-cases/${encodeURIComponent(restrictedSourceCaseId)}/escalate-legal`
+        sourceModerationCaseId
+          ? `/api/admin/moderation-cases/${sourceModerationCaseId}/escalate-legal`
           : "/api/admin/evidence-requests",
         {
           method: "POST",
@@ -2876,16 +1505,13 @@ export default function PlatformAdminRoute() {
             requesterEmail,
             authorityDescription,
             jurisdiction: evidenceDraft.jurisdiction.trim(),
-            ...(restrictedSourceCaseId ? {} : { targetUserId: targetUserId || null }),
+            targetUserId: targetUserId || null,
             scope,
             dateFrom: evidenceDraft.dateFrom || null,
             dateTo: evidenceDraft.dateTo || null
           }
         }
       );
-      if (restrictedSourceCaseId) {
-        closeRestrictedCaseReview(restrictedSourceCaseId);
-      }
       setEvidenceDraft({
         requestType: "preservation",
         requesterName: "",
@@ -2902,19 +1528,7 @@ export default function PlatformAdminRoute() {
       setSourceModerationCaseId("");
       await load();
     } catch (err: any) {
-      if (
-        restrictedSourceCaseId &&
-        err instanceof ApiError &&
-        ([403, 404, 409].includes(Number(err.status)) ||
-          ["SEVERE_HARM_REVIEWER_REQUIRED", "SEVERE_HARM_CASE_NOT_ACTIVE"].includes(
-            err.code
-          ))
-      ) {
-        closeRestrictedCaseReview(restrictedSourceCaseId);
-        setError(restrictedReviewErrorMessage(err, "action"));
-      } else {
-        setError(err?.message || "Unable to open the scoped evidence request.");
-      }
+      setError(err?.message || "Unable to open the scoped evidence request.");
     } finally {
       setBusyId("");
     }
@@ -3097,7 +1711,6 @@ export default function PlatformAdminRoute() {
         </AppCard>
       ) : null}
       {loading && !overview ? <ActivityIndicator color={palette.accent} /> : null}
-      <ComplimentaryGrantsAdminCard />
       {overview ? (
         <View style={styles.metrics}>
           <Metric
@@ -3983,23 +2596,12 @@ export default function PlatformAdminRoute() {
               {item.accountStatus || "active"} · {item.subscriptionStatus || "inactive"} ·
               AI {item.aiTokens ?? 0}/{item.maxTokens ?? 0}
             </Text>
-            <AdminBillingTruth target={item} styles={styles} />
             <Text style={styles.meta}>
               Last active:{" "}
               {item.lastActiveAt
                 ? new Date(item.lastActiveAt).toLocaleString()
                 : "Never recorded"}
             </Text>
-            {item.platformIdentityProtected === true ? (
-              <Text style={styles.protectedIdentityLabel}>
-                Protected platform identity
-              </Text>
-            ) : null}
-            {item.knownTestAccount === true ? (
-              <Text style={styles.knownTestAccountLabel}>Known test account</Text>
-            ) : item.ownerControlledTestAccount === true ? (
-              <Text style={styles.knownTestAccountLabel}>Owner-marked test account</Text>
-            ) : null}
             <View style={styles.actions}>
               <Pressable
                 accessibilityRole="button"
@@ -4052,132 +2654,36 @@ export default function PlatformAdminRoute() {
               >
                 <Text style={styles.dangerText}>Ban</Text>
               </Pressable>
-              {item.platformIdentityProtected !== true ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`Protect platform identity for ${item.email}`}
-                  accessibilityState={{ disabled: busyId === item._id }}
-                  disabled={busyId === item._id}
-                  style={styles.secondaryButton}
-                  onPress={() => {
-                    setCleanupPreview(null);
-                    setCleanupConfirmation("");
-                    setRemovalCategory("");
-                    setRemovalReason("");
-                    setPermanentActionAcknowledged(false);
-                    setPlatformProtectionTargetId(item._id);
-                    setPlatformProtectionReason("");
-                    setPlatformProtectionConfirmation("");
-                  }}
-                >
-                  <Text style={styles.secondaryText}>Protect platform identity</Text>
-                </Pressable>
-              ) : null}
-              {item.accountRemovalReviewAllowed === true &&
-              item.platformIdentityProtected !== true ? (
+              {item.syntheticCleanupApproved === true ? (
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={
                     cleanupReviewId === item._id
-                      ? `Reviewing account removal safety for ${item.email}`
-                      : `Review account removal for ${item.email}`
+                      ? `Reviewing test account safety for ${item.email}`
+                      : `Review and remove test account ${item.email}`
                   }
                   accessibilityState={{
                     disabled: Boolean(cleanupReviewId) || busyId === item._id
                   }}
                   disabled={Boolean(cleanupReviewId) || busyId === item._id}
                   style={styles.secondaryButton}
-                  onPress={() => void reviewAccountRemoval(item)}
+                  onPress={() => void reviewSyntheticCleanup(item)}
                 >
                   <Text accessibilityLiveRegion="polite" style={styles.secondaryText}>
                     {cleanupReviewId === item._id
                       ? "Reviewing safety checks…"
-                      : "Review account removal"}
+                      : "Review & remove test account"}
                   </Text>
                 </Pressable>
               ) : null}
             </View>
-            {platformProtectionTargetId === item._id &&
-            item.platformIdentityProtected !== true ? (
-              <View
-                accessibilityLabel={`Platform identity protection for ${item.email}`}
-                style={styles.cleanupReview}
-              >
-                <Text style={styles.cleanupReviewTitle}>
-                  Protect {item.email} as a platform identity
-                </Text>
-                <Text style={styles.meta}>
-                  This one-way protection permanently excludes the account from Admin
-                  account-removal controls. This screen never offers an unprotect action.
-                </Text>
-                <TextInput
-                  {...inputThemeProps}
-                  accessibilityLabel="Platform identity protection reason"
-                  autoCapitalize="sentences"
-                  multiline
-                  placeholder="Specific reason (at least 8 characters)"
-                  value={platformProtectionReason}
-                  onChangeText={setPlatformProtectionReason}
-                  style={[styles.input, styles.messageInput]}
-                />
-                <Text style={styles.meta}>
-                  Type this exact confirmation:{" "}
-                  {platformIdentityProtectionConfirmation(item)}
-                </Text>
-                <TextInput
-                  {...inputThemeProps}
-                  accessibilityLabel="Exact platform identity protection confirmation"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  placeholder="Paste the exact confirmation"
-                  value={platformProtectionConfirmation}
-                  onChangeText={setPlatformProtectionConfirmation}
-                  style={styles.input}
-                />
-                <View style={styles.actions}>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Confirm platform identity protection for ${item.email}`}
-                    accessibilityState={{
-                      disabled:
-                        busyId === item._id ||
-                        platformProtectionReason.trim().length < 8 ||
-                        platformProtectionConfirmation !==
-                          platformIdentityProtectionConfirmation(item)
-                    }}
-                    disabled={
-                      busyId === item._id ||
-                      platformProtectionReason.trim().length < 8 ||
-                      platformProtectionConfirmation !==
-                        platformIdentityProtectionConfirmation(item)
-                    }
-                    style={styles.dangerButton}
-                    onPress={() => void protectPlatformIdentity(item)}
-                  >
-                    <Text style={styles.dangerText}>Protect platform identity</Text>
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Cancel platform identity protection for ${item.email}`}
-                    style={styles.secondaryButton}
-                    onPress={() => {
-                      setPlatformProtectionTargetId("");
-                      setPlatformProtectionReason("");
-                      setPlatformProtectionConfirmation("");
-                    }}
-                  >
-                    <Text style={styles.secondaryText}>Cancel</Text>
-                  </Pressable>
-                </View>
-              </View>
-            ) : null}
             {cleanupPreview?.target.id === item._id ? (
               <View
-                accessibilityLabel={`Account removal review for ${item.email}`}
+                accessibilityLabel={`Test account cleanup review for ${item.email}`}
                 style={styles.cleanupReview}
               >
                 <Text style={styles.cleanupReviewTitle}>
-                  Remove {cleanupPreview.target.email}
+                  Anonymize {cleanupPreview.target.email}
                 </Text>
                 <Text style={styles.meta}>
                   This is permanent. GrowPath will reuse the complete privacy deletion
@@ -4185,7 +2691,7 @@ export default function PlatformAdminRoute() {
                   billing, disputes, or audit.
                 </Text>
                 <Text style={styles.meta}>
-                  Removal review: allowed · Safety blockers:{" "}
+                  Synthetic-account policy: approved · Safety blockers:{" "}
                   {cleanupPreview.blockers.length || "none"} · Dry run:{" "}
                   {cleanupPreview.ok && cleanupPreview.blockers.length === 0
                     ? "passed"
@@ -4193,73 +2699,17 @@ export default function PlatformAdminRoute() {
                 </Text>
                 {cleanupPreview.blockers.map((blocker) => (
                   <Text key={blocker} style={styles.meta}>
-                    {accountRemovalBlockerLabel(blocker)}
+                    {syntheticCleanupBlockerLabel(blocker)}
                   </Text>
                 ))}
                 {cleanupPreview.ok && cleanupPreview.blockers.length === 0 ? (
                   <>
                     <Text style={styles.meta}>
-                      {hasUsableAccountRemovalReview(cleanupPreview)
-                        ? `One-use review authorization expires ${new Date(
-                            cleanupPreview.reviewExpiresAt as string
-                          ).toLocaleString()}.`
-                        : "Review authorization is missing or expired. Run the account removal review again before execution."}
-                    </Text>
-                    <Text style={styles.meta}>Choose the audited removal category.</Text>
-                    <View
-                      accessibilityLabel="Account removal category"
-                      style={styles.actions}
-                    >
-                      {cleanupPreview.allowedRemovalCategories.map((category) => (
-                        <Pressable
-                          key={category}
-                          accessibilityRole="radio"
-                          accessibilityLabel={`Removal category ${REMOVAL_CATEGORY_LABELS[category]}`}
-                          accessibilityState={{ checked: removalCategory === category }}
-                          style={styles.secondaryButton}
-                          onPress={() => setRemovalCategory(category)}
-                        >
-                          <Text style={styles.secondaryText}>
-                            {REMOVAL_CATEGORY_LABELS[category]}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-                    <TextInput
-                      {...inputThemeProps}
-                      accessibilityLabel="Detailed account removal reason"
-                      autoCapitalize="sentences"
-                      multiline
-                      placeholder="Detailed reason (at least 8 characters)"
-                      value={removalReason}
-                      onChangeText={setRemovalReason}
-                      style={[styles.input, styles.messageInput]}
-                    />
-                    <Pressable
-                      accessibilityRole="checkbox"
-                      accessibilityLabel={`Acknowledge permanent account removal for ${item.email}`}
-                      accessibilityState={{
-                        checked: permanentActionAcknowledged,
-                        disabled: busyId === cleanupPreview.target.id
-                      }}
-                      disabled={busyId === cleanupPreview.target.id}
-                      style={styles.secondaryButton}
-                      onPress={() =>
-                        setPermanentActionAcknowledged((current) => !current)
-                      }
-                    >
-                      <Text style={styles.secondaryText}>
-                        {permanentActionAcknowledged ? "☑" : "☐"} I understand this
-                        permanently removes account access and anonymizes personal data;
-                        it is not an ordinary suspension or reversible UI action.
-                      </Text>
-                    </Pressable>
-                    <Text style={styles.meta}>
                       Type this exact confirmation: {cleanupPreview.nextConfirmation}
                     </Text>
                     <TextInput
                       {...inputThemeProps}
-                      accessibilityLabel="Exact account anonymization confirmation"
+                      accessibilityLabel="Exact synthetic account anonymization confirmation"
                       autoCapitalize="none"
                       autoCorrect={false}
                       placeholder="Paste the exact confirmation"
@@ -4277,46 +2727,24 @@ export default function PlatformAdminRoute() {
                   {cleanupPreview.ok && cleanupPreview.blockers.length === 0 ? (
                     <Pressable
                       accessibilityRole="button"
-                      accessibilityLabel={`Permanently remove account ${item.email}`}
-                      accessibilityState={{
-                        disabled:
-                          busyId === cleanupPreview.target.id ||
-                          !hasUsableAccountRemovalReview(cleanupPreview) ||
-                          !removalCategory ||
-                          !cleanupPreview.allowedRemovalCategories.includes(
-                            removalCategory
-                          ) ||
-                          removalReason.trim().length < 8 ||
-                          !permanentActionAcknowledged ||
-                          cleanupConfirmation !== cleanupPreview.nextConfirmation
-                      }}
+                      accessibilityLabel={`Remove approved test account ${item.email}`}
                       disabled={
                         busyId === cleanupPreview.target.id ||
-                        !hasUsableAccountRemovalReview(cleanupPreview) ||
-                        !removalCategory ||
-                        !cleanupPreview.allowedRemovalCategories.includes(
-                          removalCategory
-                        ) ||
-                        removalReason.trim().length < 8 ||
-                        !permanentActionAcknowledged ||
                         cleanupConfirmation !== cleanupPreview.nextConfirmation
                       }
                       style={styles.dangerButton}
-                      onPress={() => void executeAccountRemoval()}
+                      onPress={() => void executeSyntheticCleanup()}
                     >
-                      <Text style={styles.dangerText}>Permanently remove account</Text>
+                      <Text style={styles.dangerText}>Remove approved test account</Text>
                     </Pressable>
                   ) : null}
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel={`Cancel account removal review ${item.email}`}
+                    accessibilityLabel={`Cancel test account cleanup review ${item.email}`}
                     style={styles.secondaryButton}
                     onPress={() => {
                       setCleanupPreview(null);
                       setCleanupConfirmation("");
-                      setRemovalCategory("");
-                      setRemovalReason("");
-                      setPermanentActionAcknowledged(false);
                     }}
                   >
                     <Text style={styles.secondaryText}>Cancel</Text>
@@ -4327,302 +2755,6 @@ export default function PlatformAdminRoute() {
           </AppCard>
         ))}
       </View>
-
-      <AppCard
-        title="Removed accounts"
-        titleLevel={2}
-        subtitle="PII-stripped removal records and private archive-retention status."
-      >
-        <Text style={styles.meta}>
-          Original email addresses, names, and other original personal data are never
-          shown in this view. The private 90-day evidence vault is not public, is excluded
-          from normal exports, and is never sold or used for advertising, recommendations,
-          or AI training. Archives are scheduled for permanent purge after 90 days; only a
-          valid legal hold can require continued retention, and case access requires the
-          restricted, logged legal-and-safety workflow.
-        </Text>
-        {removedUsers.length ? (
-          <View style={styles.userList}>
-            {removedUsers.map((item) => {
-              const draft =
-                removedCaseAccessDrafts[item.archiveId] ||
-                emptyRemovedAccountCaseAccessDraft();
-              const result = removedCaseAccessResults[item.archiveId];
-              const panelOpen = selectedRemovedArchiveId === item.archiveId;
-              const accessAvailable =
-                item.status === "ready" && item.legalHold === true && !item.purgedAt;
-              const expectedConfirmation = removedAccountCaseConfirmation(
-                item.archiveId,
-                draft.evidenceRequestId
-              );
-              const reviewReady =
-                accessAvailable &&
-                /^[a-f\d]{24}$/i.test(item.archiveId) &&
-                /^[a-f\d]{24}$/i.test(draft.evidenceRequestId.trim()) &&
-                draft.purpose.trim().length >= 8 &&
-                draft.scopes.length > 0 &&
-                draft.confirmation === expectedConfirmation;
-              return (
-                <AppCard
-                  key={item.archiveId}
-                  accessibilityLabel={`Removed account archive ${item.archiveId}`}
-                  title={
-                    item.anonymizedUserId || `Removed account archive ${item.archiveId}`
-                  }
-                  subtitle={`${item.status || "unknown"}${
-                    item.legalHold ? " · Legal hold" : ""
-                  }`}
-                >
-                  <Text style={styles.meta}>Archive ID: {item.archiveId}</Text>
-                  <Text style={styles.meta}>
-                    Archived:{" "}
-                    {item.archivedAt
-                      ? new Date(item.archivedAt).toLocaleString()
-                      : "Timestamp unavailable"}{" "}
-                    · Status: {item.status || "unknown"}
-                  </Text>
-                  <Text style={styles.meta}>
-                    Archive purge:{" "}
-                    {item.legalHold
-                      ? "Paused by legal hold"
-                      : item.purgeAfter
-                        ? new Date(item.purgeAfter).toLocaleString()
-                        : "Not scheduled"}
-                    {item.purgedAt
-                      ? ` · Purged: ${new Date(item.purgedAt).toLocaleString()}`
-                      : ""}
-                  </Text>
-                  {item.failureCode ? (
-                    <Text style={styles.meta}>Archive failure: {item.failureCode}</Text>
-                  ) : null}
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Open restricted case access for ${item.archiveId}`}
-                    accessibilityState={{
-                      disabled: !accessAvailable,
-                      expanded: panelOpen
-                    }}
-                    disabled={!accessAvailable}
-                    style={styles.secondaryButton}
-                    onPress={() => {
-                      if (panelOpen) {
-                        closeRemovedCaseAccess(item.archiveId);
-                        return;
-                      }
-                      setSelectedRemovedArchiveId(item.archiveId);
-                      setRemovedCaseAccessDrafts((current) => ({
-                        ...current,
-                        [item.archiveId]:
-                          current[item.archiveId] || emptyRemovedAccountCaseAccessDraft()
-                      }));
-                    }}
-                  >
-                    <Text style={styles.secondaryText}>
-                      {accessAvailable
-                        ? panelOpen
-                          ? "Close restricted case access"
-                          : "Open restricted case access"
-                        : "Active legal hold required for case access"}
-                    </Text>
-                  </Pressable>
-                  {panelOpen ? (
-                    <View
-                      accessibilityLabel={`Restricted case access panel ${item.archiveId}`}
-                      style={styles.cleanupReview}
-                    >
-                      <Text style={styles.cleanupReviewTitle}>
-                        Restricted, logged case access
-                      </Text>
-                      <Text style={styles.meta}>
-                        This in-app view is limited to an approved LegalEvidenceRequest,
-                        its active hold, its approved granular scopes, and the approved
-                        date window. It does not publish, share, or add retained data to
-                        an ordinary account export.
-                      </Text>
-                      <TextInput
-                        {...inputThemeProps}
-                        accessibilityLabel={`Approved evidence request ID for ${item.archiveId}`}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        placeholder="Approved 24-character LegalEvidenceRequest ID"
-                        value={draft.evidenceRequestId}
-                        onChangeText={(evidenceRequestId) =>
-                          updateRemovedCaseAccessDraft(item.archiveId, {
-                            evidenceRequestId
-                          })
-                        }
-                        style={styles.input}
-                      />
-                      <TextInput
-                        {...inputThemeProps}
-                        accessibilityLabel={`Restricted case access purpose for ${item.archiveId}`}
-                        multiline
-                        placeholder="Exact case purpose (at least 8 characters)"
-                        value={draft.purpose}
-                        onChangeText={(purpose) =>
-                          updateRemovedCaseAccessDraft(item.archiveId, { purpose })
-                        }
-                        style={[styles.input, styles.messageInput]}
-                      />
-                      <Text style={styles.meta}>
-                        Select only the minimum necessary approved archive scopes.
-                      </Text>
-                      <View
-                        accessibilityLabel={`Restricted case access scopes for ${item.archiveId}`}
-                        style={styles.actions}
-                      >
-                        {REMOVED_ACCOUNT_CASE_SCOPES.map((scope) => {
-                          const selected = draft.scopes.includes(scope);
-                          return (
-                            <Pressable
-                              key={scope}
-                              accessibilityRole="checkbox"
-                              accessibilityLabel={`Case access scope ${REMOVED_ACCOUNT_CASE_SCOPE_LABELS[scope]}`}
-                              accessibilityState={{ checked: selected }}
-                              style={styles.secondaryButton}
-                              onPress={() =>
-                                updateRemovedCaseAccessDraft(item.archiveId, {
-                                  scopes: selected
-                                    ? draft.scopes.filter((value) => value !== scope)
-                                    : [...draft.scopes, scope]
-                                })
-                              }
-                            >
-                              <Text style={styles.secondaryText}>
-                                {selected ? "☑" : "☐"}{" "}
-                                {REMOVED_ACCOUNT_CASE_SCOPE_LABELS[scope]}
-                              </Text>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
-                      <Text style={styles.meta}>
-                        Type this exact confirmation: {expectedConfirmation}
-                      </Text>
-                      <TextInput
-                        {...inputThemeProps}
-                        accessibilityLabel={`Exact restricted case access confirmation for ${item.archiveId}`}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        placeholder="Type the exact confirmation"
-                        value={draft.confirmation}
-                        onChangeText={(confirmation) =>
-                          updateRemovedCaseAccessDraft(item.archiveId, { confirmation })
-                        }
-                        style={styles.input}
-                      />
-                      <View style={styles.actions}>
-                        <Pressable
-                          accessibilityRole="button"
-                          accessibilityLabel={`Review restricted case access for ${item.archiveId}`}
-                          accessibilityState={{
-                            disabled:
-                              !reviewReady ||
-                              busyId === `case-access-review-${item.archiveId}` ||
-                              busyId === `case-access-execute-${item.archiveId}`
-                          }}
-                          disabled={
-                            !reviewReady ||
-                            busyId === `case-access-review-${item.archiveId}` ||
-                            busyId === `case-access-execute-${item.archiveId}`
-                          }
-                          style={styles.primaryButton}
-                          onPress={() => void reviewRemovedAccountCaseAccess(item)}
-                        >
-                          <Text style={styles.primaryText}>
-                            {busyId === `case-access-review-${item.archiveId}`
-                              ? "Reviewing restricted access…"
-                              : "Run restricted access review"}
-                          </Text>
-                        </Pressable>
-                        {hasUsableRemovedAccountCaseReview(draft) ? (
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityLabel={`View approved case data for ${item.archiveId}`}
-                            accessibilityState={{
-                              disabled: busyId === `case-access-execute-${item.archiveId}`
-                            }}
-                            disabled={busyId === `case-access-execute-${item.archiveId}`}
-                            style={styles.dangerButton}
-                            onPress={() => void executeRemovedAccountCaseAccess(item)}
-                          >
-                            <Text style={styles.dangerText}>
-                              {busyId === `case-access-execute-${item.archiveId}`
-                                ? "Opening approved case data…"
-                                : "View approved case data once"}
-                            </Text>
-                          </Pressable>
-                        ) : draft.reviewExpiresAt ? (
-                          <Text style={styles.meta}>
-                            The restricted review expired. Run a new review.
-                          </Text>
-                        ) : null}
-                      </View>
-                      {hasUsableRemovedAccountCaseReview(draft) ? (
-                        <Text style={styles.meta}>
-                          One-use review authorization expires{" "}
-                          {new Date(draft.reviewExpiresAt).toLocaleString()}. Any scope,
-                          purpose, request-ID, or confirmation change invalidates it.
-                        </Text>
-                      ) : null}
-                      {result ? (
-                        <View
-                          accessibilityLabel={`Restricted case access result ${item.archiveId}`}
-                          style={styles.evidencePreview}
-                        >
-                          <Text style={styles.caseTitle}>
-                            Approved minimum-necessary case data
-                          </Text>
-                          <Text style={styles.meta}>
-                            Evidence request: {result.evidenceRequestId} · External
-                            transmission: none
-                          </Text>
-                          <Text style={styles.meta}>
-                            Item counts: {JSON.stringify(result.itemCounts || {})}
-                          </Text>
-                          <Text selectable style={styles.meta}>
-                            {JSON.stringify(result.data || {}, null, 2)}
-                          </Text>
-                        </View>
-                      ) : null}
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={`Close restricted case access for ${item.archiveId}`}
-                        style={styles.secondaryButton}
-                        onPress={() => closeRemovedCaseAccess(item.archiveId)}
-                      >
-                        <Text style={styles.secondaryText}>
-                          Close and clear case view
-                        </Text>
-                      </Pressable>
-                    </View>
-                  ) : null}
-                </AppCard>
-              );
-            })}
-            {removedUsersNextCursor ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Load more removed accounts"
-                accessibilityState={{ disabled: busyId === "removed-users-page" }}
-                disabled={busyId === "removed-users-page"}
-                style={styles.secondaryButton}
-                onPress={() => void loadMoreRemovedUsers()}
-              >
-                <Text style={styles.secondaryText}>
-                  {busyId === "removed-users-page"
-                    ? "Loading removed accounts…"
-                    : "Load more removed accounts"}
-                </Text>
-              </Pressable>
-            ) : null}
-          </View>
-        ) : (
-          <Text style={styles.meta}>
-            No removed account archive records are available.
-          </Text>
-        )}
-      </AppCard>
 
       <AppCard
         title="Admin work queue"
@@ -4856,21 +2988,15 @@ export default function PlatformAdminRoute() {
                   </Text>
                 ) : null}
                 <Text style={styles.caseTitle}>
-                  {item.restricted
-                    ? `Restricted severe-harm case · ${item.severity} · ${item.status}`
-                    : `${item.targetType} · ${item.severity} · ${item.status}`}
+                  {item.targetType} · {item.severity} · {item.status}
                 </Text>
-                <Text style={styles.meta}>
-                  {item.restricted
-                    ? `${item.reportCount || 0} report${item.reportCount === 1 ? "" : "s"}. Reporter, subject, target, and evidence details are hidden from the general Admin queue.`
-                    : item.reason}
-                </Text>
-                {!item.restricted && moderationPreview(item) ? (
+                <Text style={styles.meta}>{item.reason}</Text>
+                {moderationPreview(item) ? (
                   <Text style={styles.evidencePreview} numberOfLines={4}>
                     “{moderationPreview(item)}”
                   </Text>
                 ) : null}
-                {!item.restricted && item.evidenceSnapshot?.classification ? (
+                {item.evidenceSnapshot?.classification ? (
                   <Text style={styles.meta}>
                     Automated triage · {item.evidenceSnapshot.classification.category} ·{" "}
                     {Math.round(
@@ -4882,506 +3008,122 @@ export default function PlatformAdminRoute() {
                       : ""}
                   </Text>
                 ) : null}
-                {!item.restricted && item.actionHistory?.length ? (
+                {item.actionHistory?.length ? (
                   <Text style={styles.meta}>
                     Audit: {item.actionHistory.map((entry) => entry.action).join(" -> ")}
                   </Text>
                 ) : null}
-                {item.restricted && restrictedCaseReviews[item._id] ? (
-                  <View
-                    accessibilityLabel={`Audited restricted safety review ${item._id}`}
-                    style={styles.evidencePreview}
-                  >
-                    <Text style={styles.caseTitle}>Audited restricted safety review</Text>
-                    <Text style={styles.meta}>
-                      Categories:{" "}
-                      {restrictedCaseReviews[item._id]?.evidence.categories.join(", ") ||
-                        "not recorded"}
-                      {" · "}Highest severity:{" "}
-                      {restrictedCaseReviews[item._id]?.evidence.highestSeverity ||
-                        item.severity}
-                      {" · "}Targets:{" "}
-                      {restrictedCaseReviews[item._id]?.evidence.distinctTargetCount || 0}
-                    </Text>
-                    <Text style={styles.meta}>
-                      Minimum-necessary metadata only. No raw media, storage location,
-                      credential, automatic authority contact, download, or share control
-                      is included here.
-                    </Text>
-                    {restrictedCaseReviews[item._id]?.evidence.reports.map((report) => (
-                      <View key={report.reportId} style={styles.caseRow}>
-                        <Text style={styles.caseTitle}>
-                          {report.category || "restricted report"} ·{" "}
-                          {report.status || "unknown"}
-                        </Text>
-                        <Text style={styles.meta}>
-                          Report {report.reportId}
-                          {report.createdAt
-                            ? ` · ${new Date(report.createdAt).toLocaleString()}`
-                            : ""}
-                        </Text>
-                        {report.reason ? (
-                          <Text style={styles.meta}>{report.reason}</Text>
-                        ) : null}
-                      </View>
-                    ))}
-                    {restrictedCaseReviews[item._id]?.evidence.reportWindow?.truncated ? (
-                      <Text
-                        accessibilityRole="alert"
-                        accessibilityLabel="Restricted report list is truncated"
-                        style={styles.meta}
-                      >
-                        This view contains only the latest{" "}
-                        {restrictedCaseReviews[item._id]?.evidence.reportWindow
-                          ?.returned || 0}{" "}
-                        reports, up to the server limit of{" "}
-                        {restrictedCaseReviews[item._id]?.evidence.reportWindow?.limit ||
-                          100}
-                        . Additional report pagination is not available in this Admin
-                        panel yet.
-                      </Text>
-                    ) : null}
-                  </View>
-                ) : null}
               </View>
               <View style={styles.actions}>
-                {item.restricted ? (
+                <Pressable
+                  accessibilityLabel={`Open reported ${item.targetType}`}
+                  accessibilityRole="button"
+                  style={styles.secondaryButton}
+                  onPress={() => router.push(moderationTargetHref(item) as never)}
+                >
+                  <Text style={styles.secondaryText}>Open reported content</Text>
+                </Pressable>
+                {supportsModerationActions(item.targetType) ? (
                   <>
                     <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={`Open restricted safety review ${item._id}`}
-                      accessibilityState={{
-                        disabled:
-                          busyId === `restricted-review-${item._id}` ||
-                          !["open", "reviewing", "appealed"].includes(item.status)
-                      }}
-                      disabled={
-                        busyId === `restricted-review-${item._id}` ||
-                        !["open", "reviewing", "appealed"].includes(item.status)
-                      }
+                      disabled={busyId === item._id}
                       style={styles.warningButton}
-                      onPress={() => void openRestrictedCaseReview(item)}
+                      onPress={() => void moderateContent(item, "hide")}
                     >
-                      <Text style={styles.warningText}>
-                        {busyId === `restricted-review-${item._id}`
-                          ? "Opening audited review…"
-                          : restrictedCaseReviews[item._id]
-                            ? "Refresh audited safety review"
-                            : "Open audited safety review"}
-                      </Text>
+                      <Text style={styles.warningText}>Hide content</Text>
                     </Pressable>
-                    <Text style={styles.meta}>
-                      Available only to a configured safety reviewer. Every open and
-                      action is recorded in the platform audit trail.
-                    </Text>
-                    {restrictedCaseReviews[item._id] ? (
-                      <>
-                        {(restrictedCaseReviews[item._id] as RestrictedSevereReview)
-                          .evidence.dispositionProgress ? (
-                          <Text
-                            accessibilityLiveRegion="polite"
-                            accessibilityLabel="Restricted target disposition progress"
-                            style={styles.meta}
-                          >
-                            Target review progress:{" "}
-                            {(restrictedCaseReviews[item._id] as RestrictedSevereReview)
-                              .evidence.dispositionProgress?.completedTargetCount || 0}
-                            {" of "}
-                            {(restrictedCaseReviews[item._id] as RestrictedSevereReview)
-                              .evidence.dispositionProgress?.actionableTargetCount || 0}
-                            {" actionable targets complete; "}
-                            {(restrictedCaseReviews[item._id] as RestrictedSevereReview)
-                              .evidence.dispositionProgress?.remainingTargetCount || 0}
-                            {" remain."}
-                          </Text>
-                        ) : Math.max(
-                            Number(
-                              (restrictedCaseReviews[item._id] as RestrictedSevereReview)
-                                .evidence.distinctTargetCount
-                            ) || 0,
-                            uniqueRestrictedReviewTargets(
-                              restrictedCaseReviews[item._id] as RestrictedSevereReview
-                            ).length
-                          ) > 1 ? (
-                          <Text accessibilityRole="alert" style={styles.meta}>
-                            This server did not return per-target disposition state. The
-                            multi-target controls remain unavailable until the reviewed
-                            backend is active.
-                          </Text>
-                        ) : null}
-                        {uniqueRestrictedReviewTargets(
-                          restrictedCaseReviews[item._id] as RestrictedSevereReview
-                        ).map((target) => {
-                          const review = restrictedCaseReviews[
-                            item._id
-                          ] as RestrictedSevereReview;
-                          const progress = review.evidence.dispositionProgress;
-                          const multiTargetWithoutSupport =
-                            !progress &&
-                            Math.max(
-                              Number(review.evidence.distinctTargetCount) || 0,
-                              uniqueRestrictedReviewTargets(review).length
-                            ) > 1;
-                          const disposition = target.disposition;
-                          const canAct =
-                            !multiTargetWithoutSupport &&
-                            disposition?.state !== "completed" &&
-                            target.targetType !== "user" &&
-                            supportsModerationActions(target.targetType);
-                          const canTakeAction = (candidateAction: string) =>
-                            canAct &&
-                            (!disposition ||
-                              (disposition.state === "started" &&
-                                disposition.action === candidateAction));
-                          return (
-                            <View
-                              key={`${target.targetType}:${target.targetId}`}
-                              accessibilityLabel={`Restricted target ${target.targetId}`}
-                              style={styles.evidencePreview}
-                            >
-                              <Text style={styles.caseTitle}>
-                                {target.targetType} · {target.status || "status unknown"}
-                              </Text>
-                              <Text style={styles.meta}>
-                                Target {target.targetId}
-                                {target.hasMediaReferences
-                                  ? ` · ${target.mediaReferenceCount || 0} media reference${target.mediaReferenceCount === 1 ? "" : "s"}`
-                                  : " · no media reference recorded"}
-                              </Text>
-                              {disposition ? (
-                                <Text
-                                  accessibilityLabel={
-                                    "Restricted target disposition " + target.targetId
-                                  }
-                                  style={styles.meta}
-                                >
-                                  {disposition.state === "completed"
-                                    ? "Reviewed disposition completed: " +
-                                      disposition.action.replaceAll("_", " ") +
-                                      "."
-                                    : "Reviewed " +
-                                      disposition.action.replaceAll("_", " ") +
-                                      " action started. Only that exact action can be retried."}
-                                </Text>
-                              ) : null}
-                              {canAct ? (
-                                <View style={styles.actions}>
-                                  {canTakeAction("hide") ? (
-                                    <Pressable
-                                      accessibilityRole="button"
-                                      accessibilityLabel={`Hide restricted target ${target.targetId}`}
-                                      accessibilityState={{
-                                        disabled: busyId === item._id
-                                      }}
-                                      disabled={busyId === item._id}
-                                      style={styles.warningButton}
-                                      onPress={() =>
-                                        void moderateContent(item, "hide", target)
-                                      }
-                                    >
-                                      <Text style={styles.warningText}>Hide target</Text>
-                                    </Pressable>
-                                  ) : null}
-                                  {target.targetType === "forumPost" &&
-                                  canTakeAction("remove") ? (
-                                    <Pressable
-                                      accessibilityRole="button"
-                                      accessibilityLabel={`Soft-remove restricted target ${target.targetId}`}
-                                      accessibilityState={{
-                                        disabled: busyId === item._id
-                                      }}
-                                      disabled={busyId === item._id}
-                                      style={styles.warningButton}
-                                      onPress={() =>
-                                        void moderateContent(item, "remove", target)
-                                      }
-                                    >
-                                      <Text style={styles.warningText}>
-                                        Soft-remove target
-                                      </Text>
-                                    </Pressable>
-                                  ) : null}
-                                  {canTakeAction("leave") ? (
-                                    <Pressable
-                                      accessibilityRole="button"
-                                      accessibilityLabel={`Leave restricted target unchanged and dismiss its reports ${target.targetId}`}
-                                      accessibilityState={{
-                                        disabled: busyId === item._id
-                                      }}
-                                      disabled={busyId === item._id}
-                                      style={styles.secondaryButton}
-                                      onPress={() =>
-                                        void moderateContent(item, "leave", target)
-                                      }
-                                    >
-                                      <Text style={styles.secondaryText}>
-                                        Leave target unchanged / dismiss its reports
-                                      </Text>
-                                    </Pressable>
-                                  ) : null}
-                                </View>
-                              ) : (
-                                <Text style={styles.meta}>
-                                  {disposition?.state === "completed"
-                                    ? "This target is complete; unrelated targets remain open until separately reviewed."
-                                    : multiTargetWithoutSupport
-                                      ? "Per-target action is unavailable until the reviewed backend returns disposition state."
-                                      : "This metadata-only target requires a reviewed case-level decision."}
-                                </Text>
-                              )}
-                            </View>
-                          );
-                        })}
-                        {(restrictedCaseReviews[item._id] as RestrictedSevereReview)
-                          .evidence.dispositionProgress &&
-                        !(restrictedCaseReviews[item._id] as RestrictedSevereReview)
-                          .evidence.dispositionProgress?.allTargetsDispositioned ? (
-                          <View
-                            accessibilityLabel={
-                              "Reviewed case-level decision " + item._id
-                            }
-                            style={styles.evidencePreview}
-                          >
-                            <Text style={styles.caseTitle}>
-                              Reviewed case-level no-action decision
-                            </Text>
-                            <Text style={styles.meta}>
-                              Use only after reviewing the remaining metadata. This
-                              dismisses all still-open reports and closes the aggregate
-                              case. It does not contact an outside party or authority.
-                            </Text>
-                            <Text style={styles.meta}>
-                              Exact confirmation: CLOSE RESTRICTED CASE {item._id}
-                            </Text>
-                            <TextInput
-                              {...inputThemeProps}
-                              accessibilityLabel={
-                                "Restricted case-level decision reason " + item._id
-                              }
-                              value={restrictedCaseDecisionDrafts[item._id]?.reason || ""}
-                              onChangeText={(reason) =>
-                                setRestrictedCaseDecisionDrafts((current) => ({
-                                  ...current,
-                                  [item._id]: {
-                                    reason,
-                                    confirmation: current[item._id]?.confirmation || ""
-                                  }
-                                }))
-                              }
-                              placeholder="Reviewed reason (at least 20 characters)"
-                              multiline
-                              style={[styles.input, styles.messageInput]}
-                            />
-                            <TextInput
-                              {...inputThemeProps}
-                              accessibilityLabel={
-                                "Exact restricted case-level confirmation " + item._id
-                              }
-                              value={
-                                restrictedCaseDecisionDrafts[item._id]?.confirmation || ""
-                              }
-                              onChangeText={(confirmation) =>
-                                setRestrictedCaseDecisionDrafts((current) => ({
-                                  ...current,
-                                  [item._id]: {
-                                    reason: current[item._id]?.reason || "",
-                                    confirmation
-                                  }
-                                }))
-                              }
-                              placeholder={"CLOSE RESTRICTED CASE " + item._id}
-                              autoCapitalize="characters"
-                              style={styles.input}
-                            />
-                            <Pressable
-                              accessibilityRole="button"
-                              accessibilityLabel={
-                                "Close remaining restricted targets with reviewed decision " +
-                                item._id
-                              }
-                              accessibilityState={{
-                                disabled:
-                                  busyId === "restricted-decision-" + item._id ||
-                                  (
-                                    restrictedCaseDecisionDrafts[item._id]?.reason || ""
-                                  ).trim().length < 20 ||
-                                  (
-                                    restrictedCaseDecisionDrafts[item._id]
-                                      ?.confirmation || ""
-                                  ).trim() !==
-                                    "CLOSE RESTRICTED CASE " + item._id
-                              }}
-                              disabled={
-                                busyId === "restricted-decision-" + item._id ||
-                                (
-                                  restrictedCaseDecisionDrafts[item._id]?.reason || ""
-                                ).trim().length < 20 ||
-                                (
-                                  restrictedCaseDecisionDrafts[item._id]?.confirmation ||
-                                  ""
-                                ).trim() !==
-                                  "CLOSE RESTRICTED CASE " + item._id
-                              }
-                              style={styles.warningButton}
-                              onPress={() => void closeRestrictedCaseWithDecision(item)}
-                            >
-                              <Text style={styles.warningText}>
-                                Close remaining with reviewed no-action decision
-                              </Text>
-                            </Pressable>
-                          </View>
-                        ) : null}
-                        <Pressable
-                          accessibilityRole="button"
-                          accessibilityLabel={`Open preservation and legal escalation for restricted case ${item._id}`}
-                          accessibilityState={{ disabled: busyId === item._id }}
-                          disabled={busyId === item._id}
-                          style={styles.secondaryButton}
-                          onPress={() => {
-                            setSourceModerationCaseId(item._id);
-                            setEvidenceDraft((current) => ({
-                              ...current,
-                              requestType: "preservation",
-                              targetUserId: "",
-                              scope: `Restricted moderation case ${item._id}`
-                            }));
-                            setShowEvidenceRequestForm(true);
-                          }}
-                        >
-                          <Text style={styles.secondaryText}>
-                            Preserve / legal escalation
-                          </Text>
-                        </Pressable>
-                        <Pressable
-                          accessibilityRole="button"
-                          accessibilityLabel={`Close restricted safety review ${item._id}`}
-                          style={styles.secondaryButton}
-                          onPress={() => closeRestrictedCaseReview(item._id)}
-                        >
-                          <Text style={styles.secondaryText}>
-                            Close restricted review
-                          </Text>
-                        </Pressable>
-                      </>
-                    ) : null}
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "restore")}
+                    >
+                      <Text style={styles.secondaryText}>Approve / restore</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.warningButton}
+                      onPress={() => void moderateContent(item, "remove")}
+                    >
+                      <Text style={styles.warningText}>Soft-remove content</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "mark_cannabis")}
+                    >
+                      <Text style={styles.secondaryText}>Mark cannabis-restricted</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "clear_cannabis")}
+                    >
+                      <Text style={styles.secondaryText}>Remove cannabis label</Text>
+                    </Pressable>
                   </>
-                ) : (
+                ) : null}
+                <Pressable
+                  disabled={busyId === item._id}
+                  style={styles.secondaryButton}
+                  onPress={() => void moderateContent(item, "leave")}
+                >
+                  <Text style={styles.secondaryText}>Leave content / close case</Text>
+                </Pressable>
+                <Pressable
+                  disabled={busyId === item._id}
+                  style={styles.secondaryButton}
+                  onPress={() => {
+                    setSourceModerationCaseId(item._id);
+                    setEvidenceDraft((current) => ({
+                      ...current,
+                      requestType: "preservation",
+                      targetUserId: item.subjectUserId || "",
+                      scope: `Moderation case ${item._id} · ${item.targetType}:${item.targetId}`
+                    }));
+                    setShowEvidenceRequestForm(true);
+                  }}
+                >
+                  <Text style={styles.secondaryText}>Preserve / legal escalation</Text>
+                </Pressable>
+                {item.targetType === "forumPost" ? (
                   <>
                     <Pressable
-                      accessibilityLabel={`Open reported ${item.targetType}`}
-                      accessibilityRole="button"
-                      style={styles.secondaryButton}
-                      onPress={() => router.push(moderationTargetHref(item) as never)}
-                    >
-                      <Text style={styles.secondaryText}>Open reported content</Text>
-                    </Pressable>
-                    {supportsModerationActions(item.targetType) ? (
-                      <>
-                        <Pressable
-                          disabled={busyId === item._id}
-                          style={styles.warningButton}
-                          onPress={() => void moderateContent(item, "hide")}
-                        >
-                          <Text style={styles.warningText}>Hide content</Text>
-                        </Pressable>
-                        <Pressable
-                          disabled={busyId === item._id}
-                          style={styles.secondaryButton}
-                          onPress={() => void moderateContent(item, "restore")}
-                        >
-                          <Text style={styles.secondaryText}>Approve / restore</Text>
-                        </Pressable>
-                        <Pressable
-                          disabled={busyId === item._id}
-                          style={styles.warningButton}
-                          onPress={() => void moderateContent(item, "remove")}
-                        >
-                          <Text style={styles.warningText}>Soft-remove content</Text>
-                        </Pressable>
-                        <Pressable
-                          disabled={busyId === item._id}
-                          style={styles.secondaryButton}
-                          onPress={() => void moderateContent(item, "mark_cannabis")}
-                        >
-                          <Text style={styles.secondaryText}>
-                            Mark cannabis-restricted
-                          </Text>
-                        </Pressable>
-                        <Pressable
-                          disabled={busyId === item._id}
-                          style={styles.secondaryButton}
-                          onPress={() => void moderateContent(item, "clear_cannabis")}
-                        >
-                          <Text style={styles.secondaryText}>Remove cannabis label</Text>
-                        </Pressable>
-                      </>
-                    ) : null}
-                    <Pressable
                       disabled={busyId === item._id}
                       style={styles.secondaryButton}
-                      onPress={() => void moderateContent(item, "leave")}
+                      onPress={() => void moderateContent(item, "lock")}
                     >
-                      <Text style={styles.secondaryText}>Leave content / close case</Text>
+                      <Text style={styles.secondaryText}>Lock</Text>
                     </Pressable>
                     <Pressable
                       disabled={busyId === item._id}
                       style={styles.secondaryButton}
-                      onPress={() => {
-                        setSourceModerationCaseId(item._id);
-                        setEvidenceDraft((current) => ({
-                          ...current,
-                          requestType: "preservation",
-                          targetUserId: item.subjectUserId || "",
-                          scope: `Moderation case ${item._id} · ${item.targetType}:${item.targetId}`
-                        }));
-                        setShowEvidenceRequestForm(true);
-                      }}
+                      onPress={() => void moderateContent(item, "unlock")}
                     >
-                      <Text style={styles.secondaryText}>
-                        Preserve / legal escalation
-                      </Text>
+                      <Text style={styles.secondaryText}>Unlock</Text>
                     </Pressable>
-                    {item.targetType === "forumPost" ? (
-                      <>
-                        <Pressable
-                          disabled={busyId === item._id}
-                          style={styles.secondaryButton}
-                          onPress={() => void moderateContent(item, "lock")}
-                        >
-                          <Text style={styles.secondaryText}>Lock</Text>
-                        </Pressable>
-                        <Pressable
-                          disabled={busyId === item._id}
-                          style={styles.secondaryButton}
-                          onPress={() => void moderateContent(item, "unlock")}
-                        >
-                          <Text style={styles.secondaryText}>Unlock</Text>
-                        </Pressable>
-                        <Pressable
-                          disabled={busyId === item._id}
-                          style={styles.secondaryButton}
-                          onPress={() => void moderateContent(item, "pin")}
-                        >
-                          <Text style={styles.secondaryText}>Pin</Text>
-                        </Pressable>
-                        <Pressable
-                          disabled={busyId === item._id}
-                          style={styles.secondaryButton}
-                          onPress={() => void moderateContent(item, "unpin")}
-                        >
-                          <Text style={styles.secondaryText}>Unpin</Text>
-                        </Pressable>
-                        <Pressable
-                          disabled={busyId === item._id || !moveCategory.trim()}
-                          style={styles.secondaryButton}
-                          onPress={() => void moderateContent(item, "move")}
-                        >
-                          <Text style={styles.secondaryText}>Move category</Text>
-                        </Pressable>
-                      </>
-                    ) : null}
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "pin")}
+                    >
+                      <Text style={styles.secondaryText}>Pin</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "unpin")}
+                    >
+                      <Text style={styles.secondaryText}>Unpin</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id || !moveCategory.trim()}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "move")}
+                    >
+                      <Text style={styles.secondaryText}>Move category</Text>
+                    </Pressable>
                   </>
-                )}
+                ) : null}
               </View>
             </View>
           ))
@@ -5400,23 +3142,16 @@ export default function PlatformAdminRoute() {
       >
         <Text style={styles.evidencePreview}>
           The backend enforces legal approval, minimum-scope manifests, recipient/method
-          recording, immutable custody, and audited transitions. A configured independent
-          approver can approve the minimum-necessary case scopes here after identity,
-          authority, jurisdiction, notice, and hold checks. This screen has no external
-          disclosure control.
+          recording, immutable custody, and audited transitions. Approval and disclosure
+          controls remain unavailable here until the reviewed operating procedure and
+          production fail-closed acceptance are complete. This screen cannot release
+          account data.
         </Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={
-            showEvidenceRequestForm ? "Cancel evidence request" : "Open scoped request"
-          }
           accessibilityState={{ expanded: showEvidenceRequestForm }}
           style={styles.secondaryButton}
-          onPress={() =>
-            showEvidenceRequestForm
-              ? cancelEvidenceRequestForm()
-              : setShowEvidenceRequestForm(true)
-          }
+          onPress={() => setShowEvidenceRequestForm((current) => !current)}
         >
           <Text style={styles.secondaryText}>
             {showEvidenceRequestForm ? "Cancel new request" : "Open scoped request"}
@@ -5424,15 +3159,10 @@ export default function PlatformAdminRoute() {
         </Pressable>
         {showEvidenceRequestForm ? (
           <View style={styles.evidencePreview}>
-            <Text style={styles.caseTitle}>
-              {sourceModerationCaseId
-                ? "New restricted preservation request"
-                : "New Admin-only evidence request"}
-            </Text>
+            <Text style={styles.caseTitle}>New Admin-only evidence request</Text>
             <Text style={styles.meta}>
-              {sourceModerationCaseId
-                ? "This records an internal preservation-first legal review for the selected restricted case. It does not disclose evidence, notify an outside party, or contact an authority."
-                : "Record only the received request and its exact scope. Creating this record does not preserve, approve, disclose, or notify anyone."}
+              Record only the received request and its exact scope. Creating this record
+              does not preserve, approve, disclose, or notify anyone.
             </Text>
             <View style={styles.pickerWrap}>
               <Text style={styles.metricLabel}>Request type</Text>
@@ -5515,24 +3245,17 @@ export default function PlatformAdminRoute() {
               placeholder="Jurisdiction (optional)"
               style={styles.input}
             />
-            {sourceModerationCaseId ? (
-              <Text style={styles.meta}>
-                The target account is bound to the restricted moderation case. Its
-                identifier is not copied into this editable request draft.
-              </Text>
-            ) : (
-              <TextInput
-                {...inputThemeProps}
-                accessibilityLabel="Evidence target user ID"
-                autoCapitalize="none"
-                value={evidenceDraft.targetUserId}
-                onChangeText={(targetUserId) =>
-                  setEvidenceDraft((current) => ({ ...current, targetUserId }))
-                }
-                placeholder="Exact target user ID (optional)"
-                style={styles.input}
-              />
-            )}
+            <TextInput
+              {...inputThemeProps}
+              accessibilityLabel="Evidence target user ID"
+              autoCapitalize="none"
+              value={evidenceDraft.targetUserId}
+              onChangeText={(targetUserId) =>
+                setEvidenceDraft((current) => ({ ...current, targetUserId }))
+              }
+              placeholder="Exact target user ID (optional)"
+              style={styles.input}
+            />
             <TextInput
               {...inputThemeProps}
               accessibilityLabel="Evidence request scope"
@@ -5564,12 +3287,6 @@ export default function PlatformAdminRoute() {
             />
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={
-                sourceModerationCaseId
-                  ? `Create restricted preservation request for case ${sourceModerationCaseId}`
-                  : "Create received evidence request record"
-              }
-              accessibilityState={{ disabled: busyId === "evidence-new" }}
               disabled={busyId === "evidence-new"}
               style={styles.primaryButton}
               onPress={() => void createEvidenceRequest()}
@@ -5592,64 +3309,8 @@ export default function PlatformAdminRoute() {
             const isFocused =
               focusedTargetKind === "legalevidencerequest" &&
               item._id === focusedTargetId;
-            if (item.restricted === true) {
-              return (
-                <View
-                  key={item._id}
-                  accessibilityLabel={`Restricted evidence request ${item._id}`}
-                  style={[styles.caseRow, isFocused ? styles.focusedCaseRow : null]}
-                >
-                  <View style={styles.caseCopy}>
-                    {isFocused ? (
-                      <Text style={styles.focusedCaseLabel}>
-                        Opened from a restricted legal/evidence investigation link
-                      </Text>
-                    ) : null}
-                    <Text style={styles.caseTitle}>
-                      Restricted evidence request · {item.status || "unknown"}
-                    </Text>
-                    <Text style={styles.meta}>
-                      Preservation hold: {item.preservationHold ? "active" : "not active"}
-                      {" · "}Evidence items: {item.evidenceItemCount || 0}
-                    </Text>
-                    <Text style={styles.meta}>
-                      Requester identity, authority details, target identity, scope, and
-                      evidence contents are hidden from general Admin access.
-                    </Text>
-                    <Text style={styles.meta}>
-                      Created {displayAdminDate(item.createdAt)} · Updated{" "}
-                      {displayAdminDate(item.updatedAt)}
-                    </Text>
-                  </View>
-                </View>
-              );
-            }
-            const requestType = item.requestType || "evidence";
-            const identityDraft =
-              evidenceIdentityReviewDrafts[item._id] ||
-              emptyEvidenceIdentityReviewDraft();
-            const legalDraft =
-              evidenceLegalReviewDrafts[item._id] || evidenceLegalReviewDraft(item);
-            const evidenceReason = String(evidenceReasons[item._id] || "").trim();
-            const legalApprovalReady =
-              item.status === "legal_review" &&
-              item.preservationHold === true &&
-              evidenceReason.length > 0 &&
-              legalDraft.jurisdiction.trim().length > 0 &&
-              legalDraft.jurisdictionDetermination.trim().length > 0 &&
-              legalDraft.jurisdictionReference.trim().length > 0 &&
-              legalDraft.minimumNecessaryScope.trim().length > 0 &&
-              legalDraft.approvedArchiveScopes.length > 0 &&
-              Boolean(legalDraft.userNoticeStatus) &&
-              legalDraft.approverName.trim().length > 0 &&
-              /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(legalDraft.approverEmail.trim()) &&
-              legalDraft.approverRole.trim().length > 0 &&
-              legalDraft.approverReference.trim().length > 0;
             const canBeginIdentity = item.status === "received";
-            const canSendLegal =
-              ["identity_review", "preserved"].includes(item.status) &&
-              item.requesterIdentityVerification?.verified === true &&
-              item.requesterAuthorityVerification?.verified === true;
+            const canSendLegal = ["identity_review", "preserved"].includes(item.status);
             const canRejectOrClose = [
               "received",
               "identity_review",
@@ -5675,10 +3336,10 @@ export default function PlatformAdminRoute() {
                     </Text>
                   ) : null}
                   <Text style={styles.caseTitle}>
-                    {requestType} · {item.status}
+                    {item.requestType} · {item.status}
                   </Text>
                   <Text style={styles.meta}>
-                    {item.requesterName || "Requester identity not recorded"}
+                    {item.requesterName}
                     {item.requesterOrganization ? ` · ${item.requesterOrganization}` : ""}
                   </Text>
                   <Text style={styles.meta}>
@@ -5692,7 +3353,7 @@ export default function PlatformAdminRoute() {
                     Authority supplied: {item.authorityDescription || "not recorded"}
                   </Text>
                   <Text style={styles.evidencePreview}>
-                    Requested scope: {item.scope || "not recorded"}
+                    Requested scope: {item.scope}
                   </Text>
                   <Text style={styles.meta}>
                     Date scope: {displayAdminDate(item.dateFrom)}
@@ -5720,28 +3381,6 @@ export default function PlatformAdminRoute() {
                       Closed {new Date(item.closedAt).toLocaleString()}
                     </Text>
                   ) : null}
-                  <Text style={styles.meta}>
-                    Requester identity verification:{" "}
-                    {item.requesterIdentityVerification?.verified
-                      ? `verified by ${adminReferenceLabel(
-                          item.requesterIdentityVerification.verifiedBy
-                        )}`
-                      : "not verified"}
-                    {" · "}Authority verification:{" "}
-                    {item.requesterAuthorityVerification?.verified
-                      ? `verified by ${adminReferenceLabel(
-                          item.requesterAuthorityVerification.verifiedBy
-                        )}`
-                      : "not verified"}
-                  </Text>
-                  {item.approvedArchiveScopes?.length ? (
-                    <Text style={styles.meta}>
-                      Approved archive scopes:{" "}
-                      {item.approvedArchiveScopes
-                        .map((scope) => REMOVED_ACCOUNT_CASE_SCOPE_LABELS[scope] || scope)
-                        .join(", ")}
-                    </Text>
-                  ) : null}
                   {item.evidenceItems?.length ? (
                     <View style={styles.evidencePreview}>
                       <Text style={styles.caseTitle}>Retained evidence manifest</Text>
@@ -5765,7 +3404,7 @@ export default function PlatformAdminRoute() {
                   ) : null}
                   <TextInput
                     {...inputThemeProps}
-                    accessibilityLabel={`Review reason for ${requestType} request`}
+                    accessibilityLabel={`Review reason for ${item.requestType} request`}
                     value={evidenceReasons[item._id] || ""}
                     onChangeText={(reason) =>
                       setEvidenceReasons((current) => ({
@@ -5777,12 +3416,6 @@ export default function PlatformAdminRoute() {
                     multiline
                     style={styles.input}
                   />
-                  {item.status === "identity_review"
-                    ? renderEvidenceIdentityReview(item, identityDraft, evidenceReason)
-                    : null}
-                  {item.status === "legal_review"
-                    ? renderEvidenceLegalReview(item, legalDraft, legalApprovalReady)
-                    : null}
                   <View style={styles.actions}>
                     {canPlaceHold ? (
                       <Pressable
@@ -5955,15 +3588,6 @@ export const createPlatformAdminStyles = (palette: ThemePalette) =>
     },
     actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
     body: { color: palette.textMuted, lineHeight: 21, marginTop: 6 },
-    billingTruth: {
-      backgroundColor: palette.surfaceMuted,
-      borderColor: palette.borderSoft,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      marginTop: 10,
-      padding: 10
-    },
-    billingTruthTitle: { color: palette.text, fontWeight: "900" },
     caseCopy: { flex: 1, minWidth: 220 },
     caseRow: {
       borderBottomColor: palette.borderSoft,
@@ -6054,30 +3678,6 @@ export const createPlatformAdminStyles = (palette: ThemePalette) =>
       flex: 1,
       minWidth: 220,
       padding: 12
-    },
-    knownTestAccountLabel: {
-      alignSelf: "flex-start",
-      backgroundColor: palette.accentSoft,
-      borderRadius: radius.card,
-      color: palette.link,
-      fontSize: 11,
-      fontWeight: "900",
-      marginTop: 8,
-      paddingHorizontal: 8,
-      paddingVertical: 4
-    },
-    protectedIdentityLabel: {
-      alignSelf: "flex-start",
-      backgroundColor: palette.surfaceMuted,
-      borderColor: palette.danger,
-      borderWidth: 1,
-      borderRadius: radius.card,
-      color: palette.danger,
-      fontSize: 11,
-      fontWeight: "900",
-      marginTop: 8,
-      paddingHorizontal: 8,
-      paddingVertical: 4
     },
     messageInput: { minHeight: 120, marginTop: 10, textAlignVertical: "top" },
     meta: { color: palette.textMuted, lineHeight: 20, marginTop: 4 },

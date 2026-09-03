@@ -20,7 +20,6 @@ import LegalLinks from "@/components/LegalLinks";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { claimLoginPath, parseClaimReturnPath } from "@/utils/claimReturnPath";
-import { parseSafeLoginReturnPath } from "@/utils/authReturnPath";
 
 type AccountChoice = {
   key: "free" | "pro" | "commercial" | "facility";
@@ -89,9 +88,6 @@ export default function RegisterScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 860;
   const claimNext = parseClaimReturnPath(params.next);
-  const safeNext = parseSafeLoginReturnPath(params.next);
-  const entitlementClaimNext =
-    claimNext || safeNext === "/claim-complimentary-access" ? safeNext : "";
   const giftSignupChoice = ACCOUNT_CHOICES[0];
 
   const [choice, setChoice] = useState<AccountChoice>(ACCOUNT_CHOICES[0]);
@@ -126,7 +122,7 @@ export default function RegisterScreen() {
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      const signupChoice = entitlementClaimNext ? giftSignupChoice : choice;
+      const signupChoice = claimNext ? giftSignupChoice : choice;
       const payload: SignupBody = {
         name: name.trim(),
         displayName: name.trim(),
@@ -147,8 +143,8 @@ export default function RegisterScreen() {
         );
         return;
       }
-      if (entitlementClaimNext) {
-        router.replace(entitlementClaimNext as any);
+      if (claimNext) {
+        router.replace(claimNext as any);
         return;
       }
       router.replace({

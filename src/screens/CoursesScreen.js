@@ -19,7 +19,6 @@ import { countPaidCourses, getLearningAccess } from "@/features/learning/learnin
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "../theme/theme";
 import { resolveImageUri } from "../utils/photoUploads";
-import { readPendingBuyerCheckout } from "../utils/buyerCheckoutRecovery";
 import {
   canonicalGrowInterestTag,
   flattenGrowInterests,
@@ -34,10 +33,6 @@ function normalizeList(payload) {
   if (Array.isArray(payload.items)) return payload.items;
   if (Array.isArray(payload.courses)) return payload.courses;
   return [];
-}
-
-function firstRouteParam(value) {
-  return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
 }
 
 function mergeCourses(...lists) {
@@ -164,12 +159,15 @@ export default function CoursesScreen({
 } = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const directRequestedCourseId =
-    firstRouteParam(params?.courseId) || firstRouteParam(params?.course);
+  const requestedCourseId = Array.isArray(params?.courseId)
+    ? params.courseId[0]
+    : params?.courseId;
   const moderationCaseId = Array.isArray(params?.moderationCaseId)
     ? params.moderationCaseId[0]
     : params?.moderationCaseId;
-  const checkoutResult = firstRouteParam(params?.checkout).toLowerCase();
+  const checkoutResult = Array.isArray(params?.checkout)
+    ? params.checkout[0]
+    : params?.checkout;
   const ent = useEntitlements();
   const auth = useAuth();
   const { palette } = useAppTheme();
@@ -182,7 +180,6 @@ export default function CoursesScreen({
 
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [recoveredCheckoutCourseId, setRecoveredCheckoutCourseId] = useState("");
   const [dismissedRequestedCourseId, setDismissedRequestedCourseId] = useState("");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -194,26 +191,6 @@ export default function CoursesScreen({
   const [catalogWarning, setCatalogWarning] = useState("");
   const [requestedCourseError, setRequestedCourseError] = useState("");
   const [catalogReloadKey, setCatalogReloadKey] = useState(0);
-  const requestedCourseId = directRequestedCourseId || recoveredCheckoutCourseId;
-
-  useEffect(() => {
-    let active = true;
-    if (directRequestedCourseId) {
-      setRecoveredCheckoutCourseId("");
-      return () => {
-        active = false;
-      };
-    }
-    if (!checkoutResult) return undefined;
-    void readPendingBuyerCheckout("course")
-      .then((record) => {
-        if (active && record?.itemId) setRecoveredCheckoutCourseId(record.itemId);
-      })
-      .catch(() => null);
-    return () => {
-      active = false;
-    };
-  }, [checkoutResult, directRequestedCourseId]);
 
   useEffect(() => {
     onDetailVisibilityChange?.(Boolean(selectedCourse));

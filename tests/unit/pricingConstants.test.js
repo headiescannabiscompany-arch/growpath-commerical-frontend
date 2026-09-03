@@ -3,52 +3,32 @@ import {
   FACILITY_PLAN_PRICE_DISPLAY,
   formatPlanBillingNote,
   formatPlanPrice,
-  formatVerifiedPlanBillingNote,
-  formatVerifiedPlanPrice,
   PLAN_PRICING,
-  PRO_PLAN_PRICE_DISPLAY,
-  verifiedPlanQuote
+  PRO_PLAN_PRICE_DISPLAY
 } from "../../src/constants/pricing";
 import fs from "fs";
 import path from "path";
 
 describe("pricing constants", () => {
-  it("keeps plan metadata free of client-authored payment amounts", () => {
-    for (const plan of Object.values(PLAN_PRICING)) {
-      expect(plan).not.toHaveProperty("monthly");
-      expect(plan).not.toHaveProperty("yearly");
-    }
+  it("keeps published monthly and yearly plan prices exact", () => {
+    expect(PLAN_PRICING.pro.monthly).toBe(10);
+    expect(PLAN_PRICING.pro.yearly).toBe(100);
+    expect(PLAN_PRICING.commercial.monthly).toBe(50);
+    expect(PLAN_PRICING.commercial.yearly).toBe(500);
+    expect(PLAN_PRICING.facility.monthly).toBe(100);
+    expect(PLAN_PRICING.facility.yearly).toBe(1000);
 
-    expect(PRO_PLAN_PRICE_DISPLAY).toBe("Current verified Stripe price");
-    expect(COMMERCIAL_PLAN_PRICE_DISPLAY).toBe("Current verified Stripe price");
-    expect(FACILITY_PLAN_PRICE_DISPLAY).toBe("Current verified Stripe price");
+    expect(PRO_PLAN_PRICE_DISPLAY).toBe("$10/month or $100/year");
+    expect(COMMERCIAL_PLAN_PRICE_DISPLAY).toBe("$50/month or $500/year");
+    expect(FACILITY_PLAN_PRICE_DISPLAY).toBe("$100/month or $1,000/year");
     expect(PLAN_PRICING.commercial.eyebrow).toBe("Brand");
   });
 
-  it("requires a verified provider quote before displaying a price", () => {
-    expect(formatPlanPrice("commercial", "yearly")).toBe("See verified Stripe price");
+  it("shows annual billing as billed yearly with clear monthly equivalent", () => {
+    expect(formatPlanPrice("commercial", "yearly")).toBe("$500");
     expect(formatPlanBillingNote("commercial", "yearly")).toBe(
-      "The verified annual total is shown before Stripe opens."
+      "Billed once yearly. Equivalent to $41.67/month."
     );
-
-    const quotes = {
-      commercial: {
-        yearly: {
-          available: true,
-          interval: "yearly",
-          unitAmount: 50000,
-          currency: "usd",
-          formattedAmount: "$500"
-        }
-      }
-    };
-    const quote = verifiedPlanQuote(quotes, "commercial", "yearly");
-    expect(formatVerifiedPlanPrice(quote)).toBe("$500");
-    expect(formatVerifiedPlanBillingNote(quote)).toBe(
-      "Billed once yearly by Stripe. Equivalent to $41.67/month."
-    );
-    expect(verifiedPlanQuote({}, "commercial", "yearly")).toBeNull();
-    expect(formatVerifiedPlanPrice(null)).toBe("Unavailable");
   });
 
   it("keeps the public plan feature matrix tied to shared pricing", () => {

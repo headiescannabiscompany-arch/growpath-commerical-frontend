@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
@@ -18,8 +17,6 @@ const mockApiRequest = jest.fn();
 const mockGetCourse = jest.fn();
 const mockGetEnrollmentStatus = jest.fn();
 const mockGetCoursePaymentStatus = jest.fn();
-const mockGetCourseAccessStatus = jest.fn();
-const mockPollCourseAccessStatus = jest.fn();
 const mockOpenCourseDispute = jest.fn();
 const mockRequestCourseRefund = jest.fn();
 const mockStartCourseCheckout = jest.fn();
@@ -62,17 +59,8 @@ jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 jest.mock("@/api/coursePayments", () => ({
-  coursePaymentReconciliationState: (snapshot: any) => {
-    if (snapshot?.enrolled || snapshot?.isEnrolled) return "confirmed";
-    if (["failed", "expired", "refunded"].includes(snapshot?.paymentStatus)) {
-      return "terminal";
-    }
-    return snapshot?.checkoutStatus === "pending" ? "pending" : "unknown";
-  },
-  getCourseAccessStatus: (...args: any[]) => mockGetCourseAccessStatus(...args),
   getCoursePaymentStatus: (...args: any[]) => mockGetCoursePaymentStatus(...args),
   openCourseDispute: (...args: any[]) => mockOpenCourseDispute(...args),
-  pollCourseAccessStatus: (...args: any[]) => mockPollCourseAccessStatus(...args),
   requestCourseRefund: (...args: any[]) => mockRequestCourseRefund(...args),
   startCourseCheckout: (...args: any[]) => mockStartCourseCheckout(...args)
 }));
@@ -133,9 +121,8 @@ const freeCourse: any = {
 };
 
 describe("CourseDetailScreen learner player", () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks();
-    await AsyncStorage.clear();
     Object.assign(mockLearningAccess, {
       canViewCourses: true,
       canCreateCourses: false,
@@ -160,16 +147,6 @@ describe("CourseDetailScreen learner player", () => {
       paymentStatus: "not_started",
       refundStatus: "none",
       disputeStatus: "none"
-    });
-    mockGetCourseAccessStatus.mockImplementation(async () => ({
-      ...(await mockGetCoursePaymentStatus()),
-      ...(await mockGetEnrollmentStatus())
-    }));
-    mockPollCourseAccessStatus.mockImplementation(async (_id, options = {}) => {
-      const snapshot = await mockGetCourseAccessStatus();
-      options.onSnapshot?.(snapshot);
-      const state = snapshot?.enrolled || snapshot?.isEnrolled ? "confirmed" : "pending";
-      return { attempts: 1, snapshot, state };
     });
     mockOpenCourseDispute.mockResolvedValue({ accepted: true });
     mockRequestCourseRefund.mockResolvedValue({ accepted: true });
@@ -213,12 +190,6 @@ describe("CourseDetailScreen learner player", () => {
         color: dayPalette.text
       })
     );
-  });
-
-  it("accepts the legacy course id return key directly", async () => {
-    render(<CourseDetailScreen route={{ params: { course: "course-1" } }} />);
-
-    await waitFor(() => expect(mockGetCourse).toHaveBeenCalledWith("course-1"));
   });
 
   it("prefers a detail banner and leaves an image-free course intentionally text-only", () => {
@@ -323,44 +294,6 @@ describe("CourseDetailScreen learner player", () => {
     ).toBeTruthy();
     expect(screen.queryByText("Refunds and payment support")).toBeNull();
     expect(screen.queryByText("Open Dispute")).toBeNull();
-  });
-
-  it("polls a successful return but keeps Buy disabled until enrollment is authoritative", async () => {
-    mockGetCourse.mockResolvedValue({
-      id: "course-paid",
-      title: "Webhook Pending Course",
-      priceCents: 100,
-      creator: { id: "creator-1" },
-      lessons: [{ id: "lesson-paid", title: "Protected lesson" }]
-    });
-    mockGetEnrollmentStatus.mockResolvedValue({ enrolled: false });
-    mockGetCoursePaymentStatus.mockResolvedValue({
-      paymentStatus: "processing",
-      checkoutStatus: "pending"
-    });
-    mockPollCourseAccessStatus.mockResolvedValue({
-      attempts: 5,
-      snapshot: {
-        enrolled: false,
-        paymentStatus: "processing",
-        checkoutStatus: "pending"
-      },
-      state: "pending"
-    });
-
-    const screen = render(
-      <CourseDetailScreen
-        route={{ params: { id: "course-paid", checkout: "success" } }}
-      />
-    );
-
-    await waitFor(() => expect(mockPollCourseAccessStatus).toHaveBeenCalledTimes(1));
-    expect(screen.getByText("Confirming Payment...")).toBeTruthy();
-    expect(screen.getByLabelText("Start course checkout")).toBeDisabled();
-    expect(
-      screen.getByText(/enrollment is still awaiting server confirmation/i)
-    ).toBeTruthy();
-    expect(mockStartCourseCheckout).not.toHaveBeenCalled();
   });
 
   it("shows buyer support controls only after payment and labels issues truthfully", async () => {

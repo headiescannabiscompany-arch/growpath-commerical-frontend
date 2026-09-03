@@ -12,31 +12,6 @@ export async function getSubscriptionSetupStatus() {
   return res?.data ?? res;
 }
 
-export type RecurringPriceQuote = {
-  plan: "pro" | "commercial" | "facility";
-  interval: "monthly" | "yearly";
-  available: boolean;
-  unitAmount: number | null;
-  currency: string | null;
-  formattedAmount: string | null;
-  verifiedAt: string | null;
-  unavailableReason?: string;
-  trialTerms?: {
-    enabled: boolean;
-    days: number;
-    eligibility: "account_and_plan_history";
-    paymentMethodRequired: true;
-    renewsUnlessCanceled: true;
-  };
-};
-
-export type RecurringPriceQuotes = Partial<
-  Record<
-    RecurringPriceQuote["plan"],
-    Partial<Record<RecurringPriceQuote["interval"], RecurringPriceQuote>>
-  >
->;
-
 export async function getSubscription() {
   const res = await apiRequest("/api/subscription/me", { method: "GET" });
   return res?.data ?? res;
@@ -636,6 +611,8 @@ export async function createCheckoutSession(
   const body = {
     plan: data.plan || "pro",
     interval: data.interval || data.billingInterval || "monthly",
+    paymentMethodTypes: ["card"],
+    disallowBankDebits: true,
     ...(successUrl ? { successUrl } : {}),
     ...(cancelUrl ? { cancelUrl } : {}),
     ...(data.giftMode ? { giftMode: true } : {}),

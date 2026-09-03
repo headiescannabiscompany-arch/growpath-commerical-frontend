@@ -4,17 +4,11 @@ import { Alert, Linking, ScrollView, Text, TouchableOpacity, View } from "react-
 import { createCheckoutSession, getSubscription } from "../api/subscription";
 import { resolveSubscriptionSafety } from "../features/billing/subscriptionSafety";
 import ScreenContainer from "../components/ScreenContainer";
-import {
-  formatVerifiedPlanBillingNote,
-  formatVerifiedPlanPrice,
-  verifiedPlanQuote
-} from "../constants/pricing";
-import { useRecurringPriceQuotes } from "../hooks/useRecurringPriceQuotes";
+import { PRO_PLAN_PRICE_DISPLAY, formatPlanBillingNote } from "../constants/pricing";
 import { radius, spacing } from "../theme/theme";
 import { openExternalUrl } from "../utils/openExternalUrl";
 
 export default function SubscriptionScreen({ navigation }) {
-  const { quotes } = useRecurringPriceQuotes();
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [status, setStatus] = useState(null);
@@ -22,8 +16,6 @@ export default function SubscriptionScreen({ navigation }) {
     () => resolveSubscriptionSafety(status, { loaded: !checking && status !== null }),
     [checking, status]
   );
-  const monthlyQuote = verifiedPlanQuote(quotes, "pro", "monthly");
-  const yearlyQuote = verifiedPlanQuote(quotes, "pro", "yearly");
 
   useEffect(() => {
     navigation.setOptions({
@@ -108,13 +100,8 @@ export default function SubscriptionScreen({ navigation }) {
         </View>
 
         <View style={styles.pricingCard}>
-          <Text style={styles.priceDisplay}>
-            {formatVerifiedPlanPrice(monthlyQuote)}/month or{" "}
-            {formatVerifiedPlanPrice(yearlyQuote)}/year
-          </Text>
-          <Text style={styles.billingNote}>
-            {formatVerifiedPlanBillingNote(monthlyQuote)}
-          </Text>
+          <Text style={styles.priceDisplay}>{PRO_PLAN_PRICE_DISPLAY}</Text>
+          <Text style={styles.billingNote}>{formatPlanBillingNote("pro", "yearly")}</Text>
           <Text style={styles.billingNote}>Cancel anytime. No commitment.</Text>
         </View>
 
@@ -159,19 +146,12 @@ export default function SubscriptionScreen({ navigation }) {
         {!checking ? <Text style={styles.accessNote}>{access.message}</Text> : null}
         {access.canOpenCheckout ? (
           <TouchableOpacity
-            style={[
-              styles.subscribeBtn,
-              (loading || !monthlyQuote) && styles.subscribeBtnDisabled
-            ]}
+            style={[styles.subscribeBtn, loading && styles.subscribeBtnDisabled]}
             onPress={handleSubscribe}
-            disabled={loading || !monthlyQuote}
+            disabled={loading}
           >
             <Text style={styles.subscribeBtnText}>
-              {loading
-                ? "Processing..."
-                : monthlyQuote
-                  ? `Subscribe ${formatVerifiedPlanPrice(monthlyQuote)}/month`
-                  : "Stripe pricing unavailable"}
+              {loading ? "Processing..." : "Subscribe Now"}
             </Text>
           </TouchableOpacity>
         ) : null}
