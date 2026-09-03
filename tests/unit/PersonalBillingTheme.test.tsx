@@ -12,7 +12,8 @@ import { getThemePalette } from "../../src/theme/appTheme";
 const nightPalette = getThemePalette("night", "dark");
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({})
+  useLocalSearchParams: () => ({}),
+  useRouter: () => ({ push: jest.fn() })
 }));
 
 jest.mock("../../src/auth/AuthContext", () => ({

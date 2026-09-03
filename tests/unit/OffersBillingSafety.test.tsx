@@ -142,7 +142,8 @@ describe("Offers billing safety", () => {
     });
     (getSubscription as jest.Mock).mockResolvedValue({
       plan: "free",
-      subscriptionStatus: "inactive"
+      subscriptionStatus: "inactive",
+      canStartCheckout: true
     });
     (createCheckoutSession as jest.Mock).mockResolvedValue({});
     (createGiftCheckoutQuote as jest.Mock).mockResolvedValue(giftQuote());
@@ -411,9 +412,13 @@ describe("Offers billing safety", () => {
     );
     fireEvent.press(screen.getByLabelText("Gift subscription mode"));
 
-    expect(screen.getByLabelText("Pro Grower gift price pending server quote")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Pro Grower gift price pending server quote")
+    ).toBeTruthy();
     expect(screen.queryByText("$10")).toBeNull();
-    expect(screen.getByLabelText("Review Pro Grower authoritative gift price")).toBeDisabled();
+    expect(
+      screen.getByLabelText("Review Pro Grower authoritative gift price")
+    ).toBeDisabled();
     fireEvent.changeText(
       screen.getByLabelText("Gift recipient email"),
       " Friend@Example.com "
@@ -482,7 +487,9 @@ describe("Offers billing safety", () => {
 
     fireEvent.changeText(screen.getByLabelText("Gift message"), "Changed after review");
     await waitFor(() => expect(screen.queryByText("$12.34")).toBeNull());
-    expect(screen.getByLabelText("Review Pro Grower authoritative gift price")).toBeEnabled();
+    expect(
+      screen.getByLabelText("Review Pro Grower authoritative gift price")
+    ).toBeEnabled();
     fireEvent.press(screen.getByLabelText("Review Pro Grower authoritative gift price"));
 
     await waitFor(() => expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(2));
@@ -540,7 +547,9 @@ describe("Offers billing safety", () => {
 
     fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Edited");
     await waitFor(() => expect(screen.queryByText("$12.34")).toBeNull());
-    expect(screen.queryByLabelText("Review Pro Grower authoritative gift price")).toBeNull();
+    expect(
+      screen.queryByLabelText("Review Pro Grower authoritative gift price")
+    ).toBeNull();
     expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
     expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);

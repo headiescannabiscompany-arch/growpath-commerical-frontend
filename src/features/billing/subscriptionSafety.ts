@@ -9,7 +9,7 @@ const IAP_SOURCES = new Set([
   "ios",
   "play_store"
 ]);
-const ADMIN_SOURCES = new Set(["admin", "complimentary", "manual"]);
+const ADMIN_SOURCES = new Set(["admin", "manual"]);
 
 type SubscriptionRecord = Record<string, any> | null | undefined;
 
@@ -29,7 +29,16 @@ export type SubscriptionSafetyState = {
   message: string;
   paidThrough: string | null;
   plan: string;
-  source: "admin" | "gift" | "iap" | "stripe" | "trial" | "unknown";
+  source:
+    | "admin"
+    | "complimentary"
+    | "gift"
+    | "iap"
+    | "platform"
+    | "stripe"
+    | "test"
+    | "trial"
+    | "unknown";
   status: string;
 };
 
@@ -76,6 +85,11 @@ function sourceKind(record: Record<string, any>, trialing: boolean) {
   const billingOwner = normalized(record.billingOwner);
   if (source === "gift" || billingOwner === "purchaser") return "gift" as const;
   if (IAP_SOURCES.has(source)) return "iap" as const;
+  if (source === "complimentary" || record.complimentary === true) {
+    return "complimentary" as const;
+  }
+  if (source === "platform") return "platform" as const;
+  if (source === "test") return "test" as const;
   if (ADMIN_SOURCES.has(source)) return "admin" as const;
   if (source === "stripe") return "stripe" as const;
   if (trialing) return "trial" as const;
@@ -85,10 +99,15 @@ function sourceKind(record: Record<string, any>, trialing: boolean) {
 function accessMessage(
   source: SubscriptionSafetyState["source"],
   active: boolean,
+  canOpenCheckout: boolean,
   cancelScheduled: boolean,
   paidThrough: string | null
 ) {
-  if (!active) return "No active paid access is confirmed. Checkout remains available.";
+  if (!active) {
+    return canOpenCheckout
+      ? "No active paid access is confirmed. Checkout remains available."
+      : "No active paid access is confirmed. Checkout is unavailable until billing status authorizes a new session.";
+  }
   if (cancelScheduled) {
     return paidThrough
       ? `Renewal is canceled. Paid access remains available through ${paidThrough}.`
@@ -100,7 +119,13 @@ function accessMessage(
     case "iap":
       return "This access is managed by the app-store provider. Use its management link when one is available; GrowPath cannot cancel it here.";
     case "admin":
-      return "This access was granted administratively and has no customer subscription to cancel.";
+      return "This access was granted administratively without a customer payment. It does not renew and has no customer subscription to cancel.";
+    case "complimentary":
+      return "This complimentary access was granted by GrowPathAI. No payment was made, it does not renew, and there is no customer subscription to cancel.";
+    case "platform":
+      return "This platform-provided access is nonpaid. It does not renew and has no customer subscription to cancel.";
+    case "test":
+      return "This test access is nonpaid and reserved for QA. It does not renew and has no customer subscription to cancel.";
     case "trial":
       return "Trial access is active. Review its provider terms or paid-through date; GrowPath does not expose cancellation without a confirmed cancellable Stripe subscription.";
     case "stripe":
@@ -128,7 +153,13 @@ export function resolveSubscriptionSafety(
   const active = cancelScheduled || explicitAccess || capabilityAccess;
   const source = sourceKind(record, trialing);
   const paidThroughValue =
-    record.currentPeriodEnd || record.expiry || record.giftEntitlementEndsAt || null;
+    record.currentPeriodEnd ||
+    record.expiry ||
+    record.endsAt ||
+    record.giftEntitlementEndsAt ||
+    record.complimentaryEntitlementEndsAt ||
+    record.complimentaryExpiresAt ||
+    null;
   const paidThrough =
     typeof paidThroughValue === "string" && paidThroughValue.trim()
       ? paidThroughValue.trim()
@@ -136,24 +167,26 @@ export function resolveSubscriptionSafety(
   const managementUrl = validManagementUrl(
     record.managementUrl || record.billingPortalUrl || record.portalUrl
   );
+  const loaded = context.loaded !== false;
   const canCancel = Boolean(
+    loaded &&
     active &&
     !cancelScheduled &&
     source === "stripe" &&
     record.canManageBilling === true &&
     record.canCancelSubscription === true
   );
-  const loaded = context.loaded !== false;
+  const canOpenCheckout = loaded && !active && record.canStartCheckout === true;
 
   return {
     active,
     canCancel,
-    canOpenCheckout: loaded && !active,
+    canOpenCheckout,
     cancelScheduled,
     loaded,
     managementUrl,
     message: loaded
-      ? accessMessage(source, active, cancelScheduled, paidThrough)
+      ? accessMessage(source, active, canOpenCheckout, cancelScheduled, paidThrough)
       : "Current subscription access could not be confirmed. Refresh status before starting another checkout.",
     paidThrough,
     plan,

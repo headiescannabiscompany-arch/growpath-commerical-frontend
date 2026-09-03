@@ -1,9 +1,11 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityBillingHome from "@/features/billing/screens/FacilityBillingHome";
 
 const mockUseFacilityBilling = jest.fn();
+const mockCancelPlan = jest.fn();
+const mockRefetch = jest.fn();
 const mockEntitlements: Record<string, any> = {
   facilityId: "facility-1",
   facilityRole: "STAFF"
@@ -26,8 +28,10 @@ jest.mock("@/hooks/useFacilityBilling", () => ({
 
 describe("FacilityBillingHome", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     mockEntitlements.facilityRole = "STAFF";
-    mockUseFacilityBilling.mockReset();
+    mockCancelPlan.mockResolvedValue({ ok: true });
+    mockRefetch.mockResolvedValue({ data: null });
     mockUseFacilityBilling.mockReturnValue({
       billing: {
         status: "active",
@@ -39,9 +43,9 @@ describe("FacilityBillingHome", () => {
       },
       isLoading: false,
       error: null,
-      refetch: jest.fn(),
+      refetch: mockRefetch,
       startCheckout: jest.fn(),
-      cancelPlan: jest.fn(),
+      cancelPlan: mockCancelPlan,
       isStartingCheckout: false,
       isCanceling: false
     });
@@ -65,5 +69,90 @@ describe("FacilityBillingHome", () => {
 
     expect(screen.getByLabelText("Cancel Facility renewal")).toBeTruthy();
     expect(screen.queryByText(/read-only here/)).toBeNull();
+  });
+
+  it("cancels only after the inline confirmation in the web-safe interaction flow", async () => {
+    mockEntitlements.facilityRole = "OWNER";
+    const screen = render(<FacilityBillingHome />);
+
+    fireEvent.press(screen.getByLabelText("Cancel Facility renewal"));
+    expect(mockCancelPlan).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Confirm Facility cancellation")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Confirm cancel Facility renewal"));
+
+    await waitFor(() => {
+      expect(mockCancelPlan).toHaveBeenCalledTimes(1);
+      expect(mockRefetch).toHaveBeenCalledTimes(1);
+      expect(
+        screen.getByText(
+          "Facility renewal was canceled. Access remains active through the current billing period."
+        )
+      ).toBeTruthy();
+    });
+  });
+
+  it("shows an inline error when Facility cancellation fails", async () => {
+    mockEntitlements.facilityRole = "OWNER";
+    mockCancelPlan.mockRejectedValueOnce(
+      new Error("Facility cancellation could not be confirmed.")
+    );
+    const screen = render(<FacilityBillingHome />);
+
+    fireEvent.press(screen.getByLabelText("Cancel Facility renewal"));
+    fireEvent.press(screen.getByLabelText("Confirm cancel Facility renewal"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Facility cancellation could not be confirmed.")
+      ).toBeTruthy()
+    );
+    expect(mockRefetch).not.toHaveBeenCalled();
+  });
+
+  it("requires explicit backend permission before exposing Facility checkout", () => {
+    mockEntitlements.facilityRole = "OWNER";
+    mockUseFacilityBilling.mockReturnValue({
+      billing: {
+        plan: "free",
+        status: "inactive",
+        billingSource: "free",
+        canManageBilling: true,
+        canCancelSubscription: false,
+        canStartCheckout: false
+      },
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+      startCheckout: jest.fn(),
+      cancelPlan: jest.fn(),
+      isStartingCheckout: false,
+      isCanceling: false
+    });
+
+    const blocked = render(<FacilityBillingHome />);
+    expect(blocked.queryByLabelText("Start Facility plan checkout")).toBeNull();
+    blocked.unmount();
+
+    mockUseFacilityBilling.mockReturnValue({
+      billing: {
+        plan: "free",
+        status: "inactive",
+        billingSource: "free",
+        canManageBilling: true,
+        canCancelSubscription: false,
+        canStartCheckout: true
+      },
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+      startCheckout: jest.fn(),
+      cancelPlan: jest.fn(),
+      isStartingCheckout: false,
+      isCanceling: false
+    });
+
+    const allowed = render(<FacilityBillingHome />);
+    expect(allowed.getByLabelText("Start Facility plan checkout")).toBeTruthy();
   });
 });

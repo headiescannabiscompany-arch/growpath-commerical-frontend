@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
 import { useFacilityBilling } from "@/hooks/useFacilityBilling";
@@ -28,6 +28,12 @@ export default function FacilityBillingHome() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly");
+  const [cancelConfirmationOpen, setCancelConfirmationOpen] = useState(false);
+  const [cancelRequestPending, setCancelRequestPending] = useState(false);
+  const [billingFeedback, setBillingFeedback] = useState<{
+    kind: "success" | "error";
+    text: string;
+  } | null>(null);
   const {
     billing,
     isLoading,
@@ -45,51 +51,65 @@ export default function FacilityBillingHome() {
   const status = String(billing?.status || "none").toLowerCase();
   const periodEnd = displayDate(billing?.currentPeriodEnd);
   const graceUntil = displayDate(billing?.graceUntil);
-  const busy = isStartingCheckout || isCanceling;
+  const busy = isStartingCheckout || isCanceling || cancelRequestPending;
 
   async function handleCheckout() {
-    if (!canManageBilling || !facilityId || busy) return;
+    if (!canManageBilling || !facilityId || busy || !access.canOpenCheckout) return;
+    setBillingFeedback(null);
     try {
       const result = await startCheckout(interval);
       const url = result?.checkoutUrl || result?.url;
       if (!url) throw new Error("The billing provider did not return a checkout link.");
       await openExternalUrl(url);
+      setBillingFeedback({
+        kind: "success",
+        text: "Secure Facility plan checkout opened. No plan changes until Stripe confirms payment."
+      });
     } catch (checkoutError: any) {
-      Alert.alert(
-        "Facility checkout unavailable",
-        checkoutError?.message || "No billing action was completed."
-      );
+      setBillingFeedback({
+        kind: "error",
+        text:
+          checkoutError?.message ||
+          "Facility checkout is unavailable. No billing action was completed."
+      });
     }
   }
 
   function handleCancel() {
-    if (!canManageBilling || !facilityId || busy) return;
-    Alert.alert(
-      "Cancel Facility renewal?",
-      "Cancellation is scheduled for the end of the current billing period. Facility access remains active through the paid-through date.",
-      [
-        { text: "Keep renewal", style: "cancel" },
-        {
-          text: "Cancel renewal",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await cancelPlan();
-              await refetch();
-              Alert.alert(
-                "Renewal canceled",
-                "Facility access remains active through the current billing period."
-              );
-            } catch (cancelError: any) {
-              Alert.alert(
-                "Cancellation failed",
-                cancelError?.message || "No billing change was completed."
-              );
-            }
-          }
-        }
-      ]
-    );
+    if (!canManageBilling || !facilityId || busy || !access.canCancel) return;
+    setBillingFeedback(null);
+    setCancelConfirmationOpen(true);
+  }
+
+  async function performCancel() {
+    if (!canManageBilling || !facilityId || busy || !access.canCancel) return;
+    setCancelRequestPending(true);
+    setBillingFeedback(null);
+    try {
+      await cancelPlan();
+      setCancelConfirmationOpen(false);
+      setBillingFeedback({
+        kind: "success",
+        text: "Facility renewal was canceled. Access remains active through the current billing period."
+      });
+      try {
+        await refetch();
+      } catch {
+        setBillingFeedback({
+          kind: "success",
+          text: "Facility renewal was canceled. Refresh status to confirm the updated period details."
+        });
+      }
+    } catch (cancelError: any) {
+      setBillingFeedback({
+        kind: "error",
+        text:
+          cancelError?.message ||
+          "Facility renewal could not be canceled. No confirmed billing change was made."
+      });
+    } finally {
+      setCancelRequestPending(false);
+    }
   }
 
   return (
@@ -136,7 +156,9 @@ export default function FacilityBillingHome() {
             {periodEnd ? (
               <View style={styles.row}>
                 <Text style={styles.label}>
-                  {billing?.cancelAtPeriodEnd ? "Access through" : "Current period ends"}
+                  {billing?.cancelAtPeriodEnd
+                    ? "Access ends"
+                    : "Current billing period through"}
                 </Text>
                 <Text style={styles.value}>{periodEnd}</Text>
               </View>
@@ -209,23 +231,82 @@ export default function FacilityBillingHome() {
               </Pressable>
             </>
           ) : access.canCancel ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Cancel Facility renewal"
-              accessibilityState={{ disabled: busy }}
-              disabled={busy}
-              style={[styles.dangerButton, busy && styles.disabled]}
-              onPress={handleCancel}
-            >
-              <Text style={styles.dangerButtonText}>
-                {isCanceling ? "Canceling renewal…" : "Cancel renewal at period end"}
-              </Text>
-            </Pressable>
+            <>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Cancel Facility renewal"
+                accessibilityState={{ disabled: busy }}
+                disabled={busy}
+                style={[styles.dangerButton, busy && styles.disabled]}
+                onPress={handleCancel}
+              >
+                <Text style={styles.dangerButtonText}>
+                  {isCanceling || cancelRequestPending
+                    ? "Canceling renewal…"
+                    : "Cancel renewal at period end"}
+                </Text>
+              </Pressable>
+              {cancelConfirmationOpen ? (
+                <View
+                  accessibilityLabel="Confirm Facility cancellation"
+                  style={styles.confirmationPanel}
+                >
+                  <Text style={styles.confirmationTitle}>Cancel Facility renewal?</Text>
+                  <Text style={styles.note}>
+                    Cancellation is scheduled for the end of the current billing period.
+                    Facility access remains active through the paid-through date.
+                  </Text>
+                  <View style={styles.confirmationActions}>
+                    <Pressable
+                      accessibilityLabel="Keep Facility renewal"
+                      accessibilityRole="button"
+                      disabled={busy}
+                      onPress={() => setCancelConfirmationOpen(false)}
+                      style={styles.secondaryButton}
+                    >
+                      <Text style={styles.secondaryButtonText}>Keep renewal</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityLabel="Confirm cancel Facility renewal"
+                      accessibilityRole="button"
+                      accessibilityState={{ disabled: busy }}
+                      disabled={busy}
+                      onPress={() => void performCancel()}
+                      style={[styles.dangerButton, busy && styles.disabled]}
+                    >
+                      <Text style={styles.dangerButtonText}>
+                        {isCanceling || cancelRequestPending
+                          ? "Canceling renewal…"
+                          : "Cancel renewal"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
+            </>
           ) : (
             <Text style={styles.note}>
               No checkout or cancellation action is available for this Facility status.
             </Text>
           )}
+          {billingFeedback ? (
+            <View
+              accessibilityRole={billingFeedback.kind === "error" ? "alert" : undefined}
+              accessibilityLiveRegion="polite"
+              style={[
+                styles.feedbackPanel,
+                billingFeedback.kind === "error"
+                  ? styles.feedbackError
+                  : styles.feedbackSuccess
+              ]}
+            >
+              <Text
+                style={billingFeedback.kind === "error" ? styles.error : styles.success}
+              >
+                {billingFeedback.text}
+              </Text>
+            </View>
+          ) : null}
         </View>
       ) : null}
     </ScrollView>
@@ -252,6 +333,7 @@ function createStyles(palette: ThemePalette) {
     value: { color: palette.text, fontSize: 16, fontWeight: "700" },
     note: { color: palette.textMuted, fontSize: 14, lineHeight: 20 },
     error: { color: palette.danger, fontSize: 14, lineHeight: 20 },
+    success: { color: palette.success, fontSize: 14, lineHeight: 20 },
     intervalRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     intervalButton: {
       backgroundColor: palette.surface,
@@ -288,6 +370,24 @@ function createStyles(palette: ThemePalette) {
       padding: 13
     },
     dangerButtonText: { color: palette.danger, fontSize: 15, fontWeight: "700" },
+    confirmationPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 12
+    },
+    confirmationTitle: { color: palette.text, fontSize: 15, fontWeight: "800" },
+    confirmationActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    feedbackPanel: {
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    feedbackError: { borderColor: palette.danger },
+    feedbackSuccess: { borderColor: palette.success },
     disabled: { opacity: 0.55 }
   });
 }

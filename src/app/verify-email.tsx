@@ -6,7 +6,11 @@ import { ApiError } from "@/api/apiRequest";
 import { confirmEmailVerification } from "@/api/auth";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { claimLoginPath, parseClaimReturnPath } from "@/utils/claimReturnPath";
+import { parseSafeLoginReturnPath, safeLoginPath } from "@/utils/authReturnPath";
+import {
+  COMPLIMENTARY_CLAIM_PATH,
+  hasPendingComplimentaryClaimContinuation
+} from "@/utils/complimentaryClaimTokenStore";
 
 type VerifyState = "checking" | "success" | "error";
 
@@ -18,7 +22,7 @@ export default function VerifyEmailScreen() {
     token?: string | string[];
     next?: string | string[];
   }>();
-  const claimNext = parseClaimReturnPath(params.next);
+  const safeNext = parseSafeLoginReturnPath(params.next);
   const token = useMemo(() => {
     const raw = params.token;
     return Array.isArray(raw) ? raw[0] || "" : raw || "";
@@ -27,6 +31,11 @@ export default function VerifyEmailScreen() {
   const [state, setState] = useState<VerifyState>("checking");
   const [message, setMessage] = useState("Verifying your email address...");
   const [accountEmail, setAccountEmail] = useState("");
+  const [complimentaryContinuation, setComplimentaryContinuation] = useState(false);
+
+  useEffect(() => {
+    setComplimentaryContinuation(hasPendingComplimentaryClaimContinuation());
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -70,10 +79,22 @@ export default function VerifyEmailScreen() {
         </Text>
         {state === "checking" ? <ActivityIndicator color={palette.info} /> : null}
         <Text style={styles.message}>{message}</Text>
+        {state === "success" && complimentaryContinuation ? (
+          <Text style={styles.continuationMessage}>
+            Your pending complimentary-access claim will resume after sign-in.
+          </Text>
+        ) : null}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Go to sign in"
-          onPress={() => router.replace(claimLoginPath(accountEmail, claimNext) as any)}
+          onPress={() => {
+            const next =
+              safeNext ||
+              (hasPendingComplimentaryClaimContinuation()
+                ? COMPLIMENTARY_CLAIM_PATH
+                : "");
+            router.replace(safeLoginPath(accountEmail, next) as any);
+          }}
           style={styles.button}
         >
           <Text style={styles.buttonText}>Go to sign in</Text>
@@ -111,6 +132,12 @@ export const createVerifyEmailStyles = (palette: ThemePalette) =>
       color: palette.textSoft,
       fontSize: 15,
       lineHeight: 22
+    },
+    continuationMessage: {
+      color: palette.textSoft,
+      fontSize: 14,
+      fontWeight: "700",
+      lineHeight: 20
     },
     button: {
       alignItems: "center",

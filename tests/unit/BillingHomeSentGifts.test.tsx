@@ -11,6 +11,10 @@ import BillingHome, {
   formatSentGiftAmount
 } from "@/features/billing/screens/BillingHome";
 
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: jest.fn() })
+}));
+
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({ token: "sent-gifts-test-token" })
 }));
@@ -115,7 +119,7 @@ describe("BillingHome gifts sent by the purchaser", () => {
     expect(getSubscription).not.toHaveBeenCalled();
     expect(screen.queryByText("Billing")).toBeNull();
     expect(screen.queryByLabelText("Cancel subscription")).toBeNull();
-    expect(screen.queryByLabelText("Upgrade to Pro")).toBeNull();
+    expect(screen.queryByLabelText("Compare subscription plans")).toBeNull();
   });
 
   it("shows truthful recipient, term, amount, state, and support guidance", async () => {

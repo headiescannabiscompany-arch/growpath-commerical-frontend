@@ -12,10 +12,12 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError, apiRequest } from "@/api/apiRequest";
+import type { AccountBillingReadModel, AccountBillingSource } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import ComplimentaryGrantsAdminCard from "@/features/admin/ComplimentaryGrantsAdminCard";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -118,7 +120,73 @@ type AdminUser = {
   maxTokens?: number;
   lastActiveAt?: string;
   syntheticCleanupApproved?: boolean;
+  billingTruth?: AccountBillingReadModel | null;
 };
+
+const ADMIN_BILLING_SOURCE_LABELS: Record<AccountBillingSource, string> = {
+  stripe: "Stripe",
+  gift: "Prepaid gift",
+  app_store: "App Store",
+  complimentary: "Complimentary",
+  platform: "Platform",
+  test: "Test",
+  local_trial: "Local trial",
+  unknown: "Unresolved",
+  free: "Free"
+};
+
+function displayBillingDate(value: string | null | undefined) {
+  if (!value) return "Not recorded";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "Invalid date" : date.toLocaleString();
+}
+
+function AdminBillingTruthView({
+  target,
+  styles
+}: {
+  target: AdminUser;
+  styles: ReturnType<typeof createPlatformAdminStyles>;
+}) {
+  const truth = target.billingTruth;
+  if (!truth) {
+    return (
+      <Text accessibilityRole="alert" style={styles.billingTruthWarning}>
+        Billing authority not reported — do not infer payment from plan or status.
+      </Text>
+    );
+  }
+
+  const renewing = truth.renews === true && truth.cancelAtPeriodEnd !== true;
+  const accessDate =
+    truth.endsAt ||
+    truth.complimentaryExpiresAt ||
+    truth.trialExpiry ||
+    truth.paidThrough ||
+    null;
+  const needsReview = truth.consistency !== "consistent" || truth.source === "unknown";
+
+  return (
+    <View
+      accessibilityLabel={`Billing truth for ${target.email}`}
+      style={styles.billingTruth}
+    >
+      <Text style={styles.meta}>
+        Billing: {ADMIN_BILLING_SOURCE_LABELS[truth.source] || "Unresolved"} ·{" "}
+        {truth.paymentState === "paid" ? "paid" : "nonpaid"} · {truth.status}
+      </Text>
+      <Text style={styles.meta}>
+        {renewing ? "Current billing period through" : "Access ends"}:{" "}
+        {displayBillingDate(accessDate)} · {renewing ? "renews" : "does not renew"}
+      </Text>
+      {needsReview ? (
+        <Text accessibilityRole="alert" style={styles.billingTruthWarning}>
+          Billing authority needs review — do not treat this account as paid.
+        </Text>
+      ) : null}
+    </View>
+  );
+}
 
 type SyntheticCleanupPreview = {
   ok: boolean;
@@ -708,6 +776,7 @@ export default function PlatformAdminRoute() {
     changeNote: "Initial governance review"
   });
   const [query, setQuery] = useState("");
+  const [showComplimentaryAccess, setShowComplimentaryAccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState("");
@@ -2569,7 +2638,26 @@ export default function PlatformAdminRoute() {
             <Text style={styles.primaryText}>Search</Text>
           </Pressable>
         </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            showComplimentaryAccess
+              ? "Hide complimentary access administration"
+              : "Manage complimentary access"
+          }
+          accessibilityState={{ expanded: showComplimentaryAccess }}
+          style={styles.secondaryButton}
+          onPress={() => setShowComplimentaryAccess((current) => !current)}
+        >
+          <Text style={styles.secondaryText}>
+            {showComplimentaryAccess
+              ? "Hide complimentary access"
+              : "Manage complimentary access"}
+          </Text>
+        </Pressable>
       </AppCard>
+
+      {showComplimentaryAccess ? <ComplimentaryGrantsAdminCard /> : null}
 
       <View style={styles.userList}>
         {focusedTargetKind === "user" &&
@@ -2602,6 +2690,7 @@ export default function PlatformAdminRoute() {
                 ? new Date(item.lastActiveAt).toLocaleString()
                 : "Never recorded"}
             </Text>
+            <AdminBillingTruthView target={item} styles={styles} />
             <View style={styles.actions}>
               <Pressable
                 accessibilityRole="button"
@@ -3588,6 +3677,22 @@ export const createPlatformAdminStyles = (palette: ThemePalette) =>
     },
     actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
     body: { color: palette.textMuted, lineHeight: 21, marginTop: 6 },
+    billingTruth: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 2,
+      marginTop: 10,
+      padding: 9
+    },
+    billingTruthWarning: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "800",
+      lineHeight: 17,
+      marginTop: 6
+    },
     caseCopy: { flex: 1, minWidth: 220 },
     caseRow: {
       borderBottomColor: palette.borderSoft,

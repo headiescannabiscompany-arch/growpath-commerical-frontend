@@ -14,6 +14,7 @@ const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockLogout = jest.fn();
+const mockComplimentaryAdminMount = jest.fn();
 let mockRouteParams: Record<string, string> = {};
 let mockRole = "admin";
 let mockThemeMode: "day" | "night" = "night";
@@ -30,6 +31,14 @@ jest.mock("@/api/apiRequest", () => {
   return {
     ...actual,
     apiRequest: (...args: any[]) => mockApiRequest(...args)
+  };
+});
+jest.mock("@/features/admin/ComplimentaryGrantsAdminCard", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return function MockComplimentaryGrantsAdminCard() {
+    mockComplimentaryAdminMount();
+    return React.createElement(Text, null, "Complimentary access controls");
   };
 });
 jest.mock("@/theme/appTheme", () => {
@@ -93,7 +102,31 @@ const member = {
   subscriptionStatus: "active",
   accountStatus: "active",
   aiTokens: 2,
-  maxTokens: 100
+  maxTokens: 100,
+  billingTruth: {
+    plan: "pro",
+    status: "active",
+    source: "stripe",
+    active: true,
+    paymentState: "paid",
+    paymentKind: "provider",
+    billingOwner: "account",
+    renews: true,
+    cancelAtPeriodEnd: false,
+    endsAt: "2099-09-30T12:00:00.000Z",
+    paidThrough: "2099-09-30T12:00:00.000Z",
+    trialExpiry: null,
+    complimentaryExpiresAt: null,
+    stripeLinked: true,
+    consistency: "consistent",
+    actions: {
+      canManageBilling: true,
+      canCancelSubscription: true,
+      canStartCheckout: false,
+      canClaimPaidGift: false,
+      canClaimComplimentary: false
+    }
+  }
 };
 const usage = {
   activeUsers: { last7Days: 5, last30Days: 12 },
@@ -484,6 +517,8 @@ describe("PlatformAdminRoute", () => {
     await waitFor(() => expect(screen.getByText("Online now")).toBeTruthy());
     expect(screen.getByText("42")).toBeTruthy();
     expect(screen.getByText("member@example.com · personal · pro")).toBeTruthy();
+    expect(screen.getByText(/Billing: Stripe · paid · active/)).toBeTruthy();
+    expect(screen.getByText(/Current billing period through:/)).toBeTruthy();
     expect(screen.getByText("Active users · 7 days")).toBeTruthy();
     expect(screen.getByText(/Bug report - personal - tasks/)).toBeTruthy();
     expect(screen.getByText("Harvest trichome calibration queue")).toBeTruthy();
@@ -523,6 +558,19 @@ describe("PlatformAdminRoute", () => {
         body: { reason: "Platform owner token refresh" }
       })
     );
+  });
+
+  it("keeps complimentary administration collapsed and unloaded until requested", async () => {
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Online now");
+
+    expect(mockComplimentaryAdminMount).not.toHaveBeenCalled();
+    expect(screen.queryByText("Complimentary access controls")).toBeNull();
+
+    fireEvent.press(screen.getByRole("button", { name: "Manage complimentary access" }));
+
+    expect(mockComplimentaryAdminMount).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Complimentary access controls")).toBeTruthy();
   });
 
   it("records an explicit audited Harvest refund", async () => {

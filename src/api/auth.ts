@@ -15,6 +15,42 @@ export type NotificationPreferences = {
   facilityAlerts?: boolean;
 };
 
+export type AccountBillingSource =
+  | "stripe"
+  | "gift"
+  | "app_store"
+  | "complimentary"
+  | "platform"
+  | "test"
+  | "local_trial"
+  | "unknown"
+  | "free";
+
+export type AccountBillingReadModel = {
+  plan: string;
+  status: string;
+  source: AccountBillingSource;
+  active: boolean;
+  paymentState: "paid" | "nonpaid";
+  paymentKind: "provider" | "nonpaid" | "unknown";
+  billingOwner: "account" | "purchaser" | "app_store_account" | "platform" | null;
+  renews: boolean;
+  cancelAtPeriodEnd: boolean;
+  endsAt: string | null;
+  paidThrough: string | null;
+  trialExpiry: string | null;
+  complimentaryExpiresAt: string | null;
+  stripeLinked: boolean;
+  consistency: "consistent" | "review_needed";
+  actions: {
+    canManageBilling: boolean;
+    canCancelSubscription: boolean;
+    canStartCheckout: boolean;
+    canClaimPaidGift: boolean;
+    canClaimComplimentary: boolean;
+  };
+};
+
 export type AuthUser = {
   id: string;
   _id?: string;
@@ -24,6 +60,7 @@ export type AuthUser = {
   role: "user" | "creator" | "admin";
   plan: string | null;
   subscriptionStatus: string | null;
+  billing?: AccountBillingReadModel | null;
   trialUsed?: boolean;
   trialPlansUsed?: Array<"pro" | "commercial" | "facility">;
   emailVerified?: boolean;

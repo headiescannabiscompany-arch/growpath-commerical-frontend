@@ -21,6 +21,7 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { parseSafeLoginReturnPath } from "@/utils/authReturnPath";
 import { parseClaimReturnPath } from "@/utils/claimReturnPath";
+import { COMPLIMENTARY_CLAIM_PATH } from "@/utils/complimentaryClaimTokenStore";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -34,6 +35,8 @@ export default function LoginScreen() {
   const styles = createLoginStyles(palette);
   const claimNext = parseClaimReturnPath(params.next);
   const safeNext = parseSafeLoginReturnPath(params.next);
+  const entitlementClaimNext =
+    claimNext || (safeNext === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "");
   const initialEmail = String(
     Array.isArray(params.email) ? params.email[0] || "" : params.email || ""
   );
@@ -214,7 +217,7 @@ export default function LoginScreen() {
             onPress={() =>
               router.push({
                 pathname: "/register",
-                params: claimNext ? { next: claimNext } : undefined
+                params: entitlementClaimNext ? { next: entitlementClaimNext } : undefined
               } as any)
             }
             accessibilityRole="button"

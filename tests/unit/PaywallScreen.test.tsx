@@ -26,7 +26,8 @@ describe("PaywallScreen", () => {
     jest.clearAllMocks();
     (getSubscription as jest.Mock).mockResolvedValue({
       status: "inactive",
-      plan: "free"
+      plan: "free",
+      canStartCheckout: true
     });
   });
 

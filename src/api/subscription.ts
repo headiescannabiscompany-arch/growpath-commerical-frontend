@@ -2,6 +2,22 @@ import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 import apiRoutes from "./routes.js";
 
+const SUBSCRIPTION_PAYMENT_STATES = new Set(["paid", "nonpaid"]);
+
+function checkedSubscriptionResponse(value: unknown) {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value) ||
+    !SUBSCRIPTION_PAYMENT_STATES.has(
+      (value as Record<string, unknown>).paymentState as string
+    )
+  ) {
+    throw new Error("The subscription billing response was invalid.");
+  }
+  return value as Record<string, any>;
+}
+
 export async function getSubscriptionStatus() {
   const res = await apiRequest(endpoints.subscriptionStatus, { method: "GET" });
   return res?.data ?? res;
@@ -14,7 +30,7 @@ export async function getSubscriptionSetupStatus() {
 
 export async function getSubscription() {
   const res = await apiRequest("/api/subscription/me", { method: "GET" });
-  return res?.data ?? res;
+  return checkedSubscriptionResponse(res?.data ?? res);
 }
 
 export type GiftClaimSummary = {
@@ -611,8 +627,6 @@ export async function createCheckoutSession(
   const body = {
     plan: data.plan || "pro",
     interval: data.interval || data.billingInterval || "monthly",
-    paymentMethodTypes: ["card"],
-    disallowBankDebits: true,
     ...(successUrl ? { successUrl } : {}),
     ...(cancelUrl ? { cancelUrl } : {}),
     ...(data.giftMode ? { giftMode: true } : {}),

@@ -61,7 +61,11 @@ describe("subscription purchase safety", () => {
   });
 
   it("keeps a confirmed free account eligible to purchase", () => {
-    const state = resolveSubscriptionSafety({ plan: "free", status: "inactive" });
+    const state = resolveSubscriptionSafety({
+      plan: "free",
+      status: "inactive",
+      canStartCheckout: true
+    });
     expect(state.canOpenCheckout).toBe(true);
     expect(state.canCancel).toBe(false);
   });

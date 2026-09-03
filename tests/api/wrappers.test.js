@@ -127,8 +127,6 @@ describe("API Wrappers Unit Tests", () => {
       expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
         plan: "commercial",
         interval: "yearly",
-        paymentMethodTypes: ["card"],
-        disallowBankDebits: true,
         successUrl: "https://app.example/offers?subscription=success",
         cancelUrl: "https://app.example/offers?subscription=canceled"
       });
@@ -158,8 +156,6 @@ describe("API Wrappers Unit Tests", () => {
       expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
         plan: "pro",
         interval: "monthly",
-        paymentMethodTypes: ["card"],
-        disallowBankDebits: true,
         giftMode: true,
         giftRecipientEmail: "friend@example.com",
         giftRecipientName: "Friend Name",
@@ -206,8 +202,6 @@ describe("API Wrappers Unit Tests", () => {
       expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
         plan: "pro",
         interval: "monthly",
-        paymentMethodTypes: ["card"],
-        disallowBankDebits: true,
         successUrl: "https://app.example/offers?subscription=success",
         cancelUrl: "https://app.example/offers?subscription=canceled"
       });

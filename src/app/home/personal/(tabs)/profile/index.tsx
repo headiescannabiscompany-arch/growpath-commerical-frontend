@@ -31,6 +31,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import BackButton from "@/components/nav/BackButton";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import AccountBillingSummary from "@/features/billing/AccountBillingSummary";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -619,6 +620,9 @@ export default function ProfileScreen() {
           for more grows, storage, advanced tools, exports, integrations, and higher AI
           limits.
         </Text>
+        {auth.user?.billing ? (
+          <AccountBillingSummary billing={auth.user.billing} />
+        ) : null}
         <View style={styles.actionGrid}>
           {planActions.map(([label, href, primary]) => (
             <Pressable

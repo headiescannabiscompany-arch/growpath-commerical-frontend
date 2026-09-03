@@ -19,6 +19,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import LegalLinks from "@/components/LegalLinks";
 import { useEntitlements } from "@/entitlements";
+import AccountBillingSummary from "@/features/billing/AccountBillingSummary";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -308,6 +309,9 @@ export default function Profile() {
             </View>
           </View>
           <Text style={styles.cardText}>{planNote}</Text>
+          {auth.user?.billing ? (
+            <AccountBillingSummary billing={auth.user.billing} />
+          ) : null}
           <Pressable
             onPress={() => router.push("/account/billing")}
             accessibilityRole="button"

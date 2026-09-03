@@ -113,7 +113,8 @@ describe("UpgradePlan pricing", () => {
     });
     (getSubscription as jest.Mock).mockResolvedValue({
       plan: "free",
-      subscriptionStatus: "inactive"
+      subscriptionStatus: "inactive",
+      canStartCheckout: true
     });
     (openExternalUrl as jest.Mock).mockResolvedValue(undefined);
   });
@@ -280,7 +281,9 @@ describe("UpgradePlan pricing", () => {
     );
     expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Gift message"), "Edited note");
-    expect(screen.queryByLabelText("Review Pro Grower authoritative gift price")).toBeNull();
+    expect(
+      screen.queryByLabelText("Review Pro Grower authoritative gift price")
+    ).toBeNull();
     expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);
     expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);

@@ -22,7 +22,11 @@ describe("SubscriptionScreen pricing", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    getSubscription.mockResolvedValue({ status: "inactive", plan: "free" });
+    getSubscription.mockResolvedValue({
+      status: "inactive",
+      plan: "free",
+      canStartCheckout: true
+    });
   });
 
   it("uses shared Pro pricing and interval-neutral renewal copy", async () => {

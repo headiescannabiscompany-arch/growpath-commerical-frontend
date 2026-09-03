@@ -14,7 +14,7 @@ const mockPush = jest.fn();
 const mockUpdateContentControls = jest.fn();
 const mockGetVideoQuota = jest.fn();
 let mockEntitlementsPlan = "free";
-const mockUser = {
+const mockUser: any = {
   id: "user-1",
   email: "grower@example.com",
   displayName: "Grower",
@@ -120,6 +120,7 @@ describe("Profile privacy controls", () => {
     mockUpdateContentControls.mockReset();
     mockGetVideoQuota.mockReset();
     mockEntitlementsPlan = "free";
+    delete mockUser.billing;
     mockDeleteAccount.mockResolvedValue({ ok: true, deleted: true });
     mockLogout.mockResolvedValue(undefined);
     mockUpdateContentControls.mockResolvedValue({
@@ -271,6 +272,40 @@ describe("Profile privacy controls", () => {
 
     expect(screen.getByText("Upgrade Plans")).toBeTruthy();
     expect(screen.getByText("Manage Billing")).toBeTruthy();
+  });
+
+  it("mounts backend billing truth inside the existing Personal plan card", () => {
+    mockUser.billing = {
+      plan: "pro",
+      status: "active",
+      source: "complimentary",
+      active: true,
+      paymentState: "nonpaid",
+      paymentKind: "nonpaid",
+      billingOwner: "platform",
+      renews: false,
+      cancelAtPeriodEnd: false,
+      endsAt: "2099-10-31T12:00:00.000Z",
+      paidThrough: null,
+      trialExpiry: null,
+      complimentaryExpiresAt: "2099-10-31T12:00:00.000Z",
+      stripeLinked: false,
+      consistency: "consistent",
+      actions: {
+        canManageBilling: false,
+        canCancelSubscription: false,
+        canStartCheckout: false,
+        canClaimPaidGift: false,
+        canClaimComplimentary: false
+      }
+    };
+    const screen = render(<Profile />);
+
+    expect(screen.getByLabelText("Account billing summary")).toBeTruthy();
+    expect(screen.getByText("Source: Complimentary access")).toBeTruthy();
+    expect(screen.getByText("Payment: Nonpaid")).toBeTruthy();
+    expect(screen.getByText("Renewal: Does not renew")).toBeTruthy();
+    expect(screen.getByText(/Access ends:/)).toBeTruthy();
   });
 
   it("describes push delivery as device-based rather than phone-based", () => {

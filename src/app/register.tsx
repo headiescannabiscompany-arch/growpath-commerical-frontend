@@ -19,7 +19,9 @@ import CalendarDateField from "@/components/forms/CalendarDateField";
 import LegalLinks from "@/components/LegalLinks";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { claimLoginPath, parseClaimReturnPath } from "@/utils/claimReturnPath";
+import { parseSafeLoginReturnPath, safeLoginPath } from "@/utils/authReturnPath";
+import { parseClaimReturnPath } from "@/utils/claimReturnPath";
+import { COMPLIMENTARY_CLAIM_PATH } from "@/utils/complimentaryClaimTokenStore";
 
 type AccountChoice = {
   key: "free" | "pro" | "commercial" | "facility";
@@ -88,6 +90,10 @@ export default function RegisterScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 860;
   const claimNext = parseClaimReturnPath(params.next);
+  const safeNext = parseSafeLoginReturnPath(params.next);
+  const entitlementClaimNext =
+    claimNext || (safeNext === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "");
+  const isComplimentaryClaim = entitlementClaimNext === COMPLIMENTARY_CLAIM_PATH;
   const giftSignupChoice = ACCOUNT_CHOICES[0];
 
   const [choice, setChoice] = useState<AccountChoice>(ACCOUNT_CHOICES[0]);
@@ -122,7 +128,7 @@ export default function RegisterScreen() {
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      const signupChoice = claimNext ? giftSignupChoice : choice;
+      const signupChoice = entitlementClaimNext ? giftSignupChoice : choice;
       const payload: SignupBody = {
         name: name.trim(),
         displayName: name.trim(),
@@ -143,8 +149,8 @@ export default function RegisterScreen() {
         );
         return;
       }
-      if (claimNext) {
-        router.replace(claimNext as any);
+      if (entitlementClaimNext) {
+        router.replace(entitlementClaimNext as any);
         return;
       }
       router.replace({
@@ -178,7 +184,11 @@ export default function RegisterScreen() {
       <View style={[styles.shell, isWide ? styles.shellWide : null]}>
         <View style={styles.planPanel}>
           <Text style={styles.kicker}>
-            {claimNext ? "Gift recipient" : "Choose account"}
+            {claimNext
+              ? "Gift recipient"
+              : isComplimentaryClaim
+                ? "Complimentary access recipient"
+                : "Choose account"}
           </Text>
           <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             Create account
@@ -186,10 +196,12 @@ export default function RegisterScreen() {
           <Text style={styles.subtitle}>
             {claimNext
               ? "Create a free personal account first. The paid gift activates only after you verify and claim it with the recipient email."
-              : "Pick the workflow you need now. You can still change plans as the account grows."}
+              : isComplimentaryClaim
+                ? "Create a free personal account first. Complimentary access activates only after you verify and claim it with the recipient email."
+                : "Pick the workflow you need now. You can still change plans as the account grows."}
           </Text>
 
-          {!claimNext ? (
+          {!entitlementClaimNext ? (
             <View style={styles.choiceGrid}>
               {ACCOUNT_CHOICES.map((item) => {
                 const active = choice.key === item.key;
@@ -221,10 +233,10 @@ export default function RegisterScreen() {
 
         <View style={[styles.formCard, isWide ? styles.formCardWide : null]}>
           <Text style={styles.formTitle}>
-            {claimNext ? giftSignupChoice.title : choice.title}
+            {entitlementClaimNext ? giftSignupChoice.title : choice.title}
           </Text>
           <Text style={styles.formSub}>
-            {claimNext ? giftSignupChoice.description : choice.description}
+            {entitlementClaimNext ? giftSignupChoice.description : choice.description}
           </Text>
 
           <TextInput
@@ -317,20 +329,23 @@ export default function RegisterScreen() {
             onPress={onSubmit}
             disabled={!canSubmit}
             accessibilityRole="button"
-            accessibilityLabel={`Create ${claimNext ? giftSignupChoice.label : choice.label} account`}
+            accessibilityLabel={`Create ${entitlementClaimNext ? giftSignupChoice.label : choice.label} account`}
             style={[styles.button, !canSubmit && styles.buttonDisabled]}
           >
             {submitting ? (
               <ActivityIndicator color={palette.accentText} />
             ) : (
               <Text style={styles.buttonText}>
-                Create {claimNext ? giftSignupChoice.label : choice.label} account
+                Create {entitlementClaimNext ? giftSignupChoice.label : choice.label}{" "}
+                account
               </Text>
             )}
           </Pressable>
 
           <Pressable
-            onPress={() => router.replace(claimLoginPath(email, claimNext) as any)}
+            onPress={() =>
+              router.replace(safeLoginPath(email, entitlementClaimNext) as any)
+            }
             accessibilityRole="button"
             accessibilityLabel="Back to login"
             style={styles.linkBtn}

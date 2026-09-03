@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { cancelSubscription } from "../../../api/subscribe";
 import {
-  createCheckoutSession,
   getSubscription,
   isSentGift,
   listSentGifts,
@@ -200,13 +200,19 @@ type BillingHomeProps = {
 export default function BillingHome({
   purchaserHistoryOnly = false
 }: BillingHomeProps = {}) {
+  const router = useRouter();
   const { token } = useAuth();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createBillingHomeStyles(palette), [palette]);
   const [plan, setPlan] = useState<any>(null);
   const [planLoaded, setPlanLoaded] = useState(false);
   const [loading, setLoading] = useState(!purchaserHistoryOnly);
-  const [busy, setBusy] = useState<"upgrade" | "cancel" | null>(null);
+  const [busy, setBusy] = useState<"cancel" | null>(null);
+  const [cancelConfirmationOpen, setCancelConfirmationOpen] = useState(false);
+  const [billingFeedback, setBillingFeedback] = useState<{
+    kind: "success" | "error";
+    text: string;
+  } | null>(null);
   const [sentGifts, setSentGifts] = useState<SentGift[]>([]);
   const [sentGiftsLoading, setSentGiftsLoading] = useState(true);
   const [sentGiftsLoaded, setSentGiftsLoaded] = useState(false);
@@ -294,41 +300,46 @@ export default function BillingHome({
     void loadSentGifts();
   }, [loadSentGifts]);
 
-  async function startUpgrade() {
-    setBusy("upgrade");
+  function openPlanChoices() {
+    if (!access.canOpenCheckout || busy) return;
+    router.push("/offers" as any);
+  }
+
+  async function performCancel() {
+    if (!access.canCancel || busy) return;
+    if (!token) {
+      setBillingFeedback({
+        kind: "error",
+        text: "Please sign in again before canceling renewal. No billing change was made."
+      });
+      return;
+    }
+    setBusy("cancel");
+    setBillingFeedback(null);
     try {
-      const checkout = await createCheckoutSession({ plan: "pro", interval: "monthly" });
-      const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
-      if (!url) {
-        Alert.alert("Checkout unavailable", "The backend did not return a checkout URL.");
-        return;
-      }
-      await openExternalUrl(url);
+      await cancelSubscription(token);
+      setCancelConfirmationOpen(false);
+      setBillingFeedback({
+        kind: "success",
+        text: "Renewal was canceled. Your paid access remains active through the end of the current billing period."
+      });
+      await loadPlan();
     } catch (error: any) {
-      Alert.alert("Checkout failed", error?.message || "Unable to start checkout.");
+      setBillingFeedback({
+        kind: "error",
+        text:
+          error?.message ||
+          "Renewal could not be canceled. No confirmed billing change was made."
+      });
     } finally {
       setBusy(null);
     }
   }
 
-  async function handleCancel() {
-    if (!token) {
-      Alert.alert("Sign in required", "Please sign in again before canceling.");
-      return;
-    }
-    setBusy("cancel");
-    try {
-      await cancelSubscription(token);
-      Alert.alert(
-        "Renewal canceled",
-        "Your paid access remains active through the end of the current billing period."
-      );
-      await loadPlan();
-    } catch (error: any) {
-      Alert.alert("Cancel failed", error?.message || "Unable to cancel subscription.");
-    } finally {
-      setBusy(null);
-    }
+  function handleCancel() {
+    if (!access.canCancel || busy) return;
+    setBillingFeedback(null);
+    setCancelConfirmationOpen(true);
   }
 
   async function performGiftResend(gift: SentGift, acknowledgePossibleDuplicate = false) {
@@ -380,10 +391,14 @@ export default function BillingHome({
   const access = resolveSubscriptionSafety(plan, { loaded: !loading && planLoaded });
   const paid = access.active;
   const giftEntitlement = access.source === "gift";
+  const complimentaryEntitlement = access.source === "complimentary";
   const canCancel = access.canCancel;
   const currentPlan = planLabel(plan);
   const currentStatus = subscriptionStatus(plan) || "unknown";
   const giftEndsAt = formatGiftEntitlementEnd(plan?.giftEntitlementEndsAt);
+  const complimentaryEndsAt = formatGiftEntitlementEnd(
+    plan?.complimentaryEntitlementEndsAt || plan?.complimentaryExpiresAt
+  );
   const cancellationScheduled = access.cancelScheduled;
   const paidThrough = formatGiftEntitlementEnd(access.paidThrough);
 
@@ -408,17 +423,28 @@ export default function BillingHome({
               <Text style={styles.meta}>Access ends: {giftEndsAt}</Text>
             </>
           ) : null}
-          {!giftEntitlement && cancellationScheduled ? (
+          {complimentaryEntitlement ? (
+            <>
+              <Text style={styles.meta}>Access type: Complimentary</Text>
+              <Text style={styles.meta}>Access ends: {complimentaryEndsAt}</Text>
+              <Text style={styles.meta}>Payment: None · Renewal: None</Text>
+            </>
+          ) : null}
+          {!giftEntitlement && !complimentaryEntitlement && cancellationScheduled ? (
             <Text style={styles.meta}>Access through: {paidThrough}</Text>
           ) : null}
           <Text style={styles.note}>
-            {giftEntitlement
+            {complimentaryEntitlement
               ? paid
-                ? "Your prepaid access does not renew. Billing belongs to the gift purchaser, so there is no subscription to cancel from this account."
-                : "This prepaid gift has ended. You can choose a personal subscription if you want to continue Pro access."
-              : cancellationScheduled
-                ? `Renewal is canceled. Your paid access remains available through ${paidThrough}.`
-                : access.message}
+                ? "GrowPathAI granted this access without payment. It will not renew. Stripe Checkout becomes available after the grant expires or is revoked."
+                : "This complimentary access has ended. You can deliberately choose a Stripe subscription to continue."
+              : giftEntitlement
+                ? paid
+                  ? "Your prepaid access does not renew. Billing belongs to the gift purchaser, so there is no subscription to cancel from this account."
+                  : "This prepaid gift has ended. You can choose a personal subscription if you want to continue Pro access."
+                : cancellationScheduled
+                  ? `Renewal is canceled. Your paid access remains available through ${paidThrough}.`
+                  : access.message}
           </Text>
           <Pressable
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -430,31 +456,88 @@ export default function BillingHome({
             </Text>
           </Pressable>
           {!loading && canCancel ? (
-            <Pressable
-              accessibilityLabel="Cancel subscription"
-              accessibilityRole="button"
-              accessibilityState={{ disabled: busy === "cancel" }}
-              style={[styles.cancelButton, busy === "cancel" && styles.buttonDisabled]}
-              onPress={() => void handleCancel()}
-              disabled={busy === "cancel"}
-            >
-              <Text style={styles.cancelButtonText}>
-                {busy === "cancel" ? "Canceling..." : "Cancel Subscription"}
-              </Text>
-            </Pressable>
+            <>
+              <Pressable
+                accessibilityLabel="Cancel subscription"
+                accessibilityRole="button"
+                accessibilityState={{ disabled: busy === "cancel" }}
+                style={[styles.cancelButton, busy === "cancel" && styles.buttonDisabled]}
+                onPress={handleCancel}
+                disabled={busy === "cancel"}
+              >
+                <Text style={styles.cancelButtonText}>
+                  {busy === "cancel" ? "Canceling..." : "Cancel Subscription"}
+                </Text>
+              </Pressable>
+              {cancelConfirmationOpen ? (
+                <View
+                  accessibilityLabel="Confirm subscription cancellation"
+                  style={styles.cancelConfirmationPanel}
+                >
+                  <Text style={styles.confirmationTitle}>
+                    Cancel subscription renewal?
+                  </Text>
+                  <Text style={styles.note}>
+                    Cancellation is scheduled for the end of the current billing period.
+                    Your paid access remains active through that date.
+                  </Text>
+                  <View style={styles.confirmationActions}>
+                    <Pressable
+                      accessibilityLabel="Keep subscription renewal"
+                      accessibilityRole="button"
+                      disabled={busy === "cancel"}
+                      onPress={() => setCancelConfirmationOpen(false)}
+                      style={styles.secondaryButton}
+                    >
+                      <Text style={styles.secondaryButtonText}>Keep renewal</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityLabel="Confirm cancel subscription renewal"
+                      accessibilityRole="button"
+                      accessibilityState={{ disabled: busy === "cancel" }}
+                      disabled={busy === "cancel"}
+                      onPress={() => void performCancel()}
+                      style={[
+                        styles.cancelButton,
+                        busy === "cancel" && styles.buttonDisabled
+                      ]}
+                    >
+                      <Text style={styles.cancelButtonText}>
+                        {busy === "cancel" ? "Canceling..." : "Cancel renewal"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
+            </>
           ) : !loading && access.canOpenCheckout ? (
             <Pressable
-              accessibilityLabel="Upgrade to Pro"
+              accessibilityLabel="Compare subscription plans"
               accessibilityRole="button"
-              accessibilityState={{ disabled: busy === "upgrade" }}
-              style={[styles.button, busy === "upgrade" && styles.buttonDisabled]}
-              onPress={() => void startUpgrade()}
-              disabled={busy === "upgrade"}
+              accessibilityState={{ disabled: Boolean(busy) }}
+              style={[styles.button, busy && styles.buttonDisabled]}
+              onPress={openPlanChoices}
+              disabled={Boolean(busy)}
             >
-              <Text style={styles.buttonText}>
-                {busy === "upgrade" ? "Opening..." : "Upgrade to Pro"}
-              </Text>
+              <Text style={styles.buttonText}>Compare Plans</Text>
             </Pressable>
+          ) : null}
+          {billingFeedback ? (
+            <View
+              accessibilityRole={billingFeedback.kind === "error" ? "alert" : undefined}
+              accessibilityLiveRegion="polite"
+              style={
+                billingFeedback.kind === "error" ? styles.errorPanel : styles.successPanel
+              }
+            >
+              <Text
+                style={
+                  billingFeedback.kind === "error" ? styles.errorText : styles.successText
+                }
+              >
+                {billingFeedback.text}
+              </Text>
+            </View>
           ) : null}
           {!loading && access.managementUrl ? (
             <Pressable
@@ -800,6 +883,14 @@ export const createBillingHomeStyles = (palette: ThemePalette) =>
       gap: 10,
       padding: 12
     },
+    successPanel: {
+      alignItems: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.success,
+      borderRadius: 10,
+      borderWidth: 1,
+      padding: 12
+    },
     errorText: { color: palette.danger, lineHeight: 20 },
     successText: { color: palette.success, fontWeight: "700", lineHeight: 20 },
     giftCard: {
@@ -845,6 +936,19 @@ export const createBillingHomeStyles = (palette: ThemePalette) =>
       borderWidth: 1,
       gap: 10,
       padding: 12
+    },
+    cancelConfirmationPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: 8,
+      borderWidth: 1,
+      gap: 10,
+      padding: 12
+    },
+    confirmationTitle: {
+      color: palette.text,
+      fontSize: 15,
+      fontWeight: "800"
     },
     resendConfirmationTitle: {
       color: palette.text,
