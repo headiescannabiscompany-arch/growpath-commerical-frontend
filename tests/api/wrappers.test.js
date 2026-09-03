@@ -79,6 +79,27 @@ describe("API Wrappers Unit Tests", () => {
     expect(JSON.parse(fetchCalls[0].options.body).bio).toBe("New bio");
   });
 
+  it("Creator payout APIs use provider-backed status and Dashboard endpoints", async () => {
+    await creatorApi.getConnectPayoutStatus();
+    expect(fetchCalls[0].options.method).toBe("GET");
+    expect(fetchCalls[0].url.endsWith(ROUTES.CREATOR.CONNECT_PAYOUT_STATUS)).toBe(true);
+
+    await creatorApi.createConnectPayoutDashboardLink();
+    expect(fetchCalls[1].options.method).toBe("POST");
+    expect(fetchCalls[1].url.endsWith(ROUTES.CREATOR.CONNECT_PAYOUT_DASHBOARD)).toBe(
+      true
+    );
+  });
+
+  it("Earnings payout APIs never call the retired local request route", async () => {
+    await earningsApi.getConnectPayoutStatus();
+    await earningsApi.createConnectPayoutDashboardLink();
+
+    expect(fetchCalls[0].url.endsWith("/api/earnings/connect-status")).toBe(true);
+    expect(fetchCalls[1].url.endsWith("/api/earnings/connect-dashboard-link")).toBe(true);
+    expect(fetchCalls.some(({ url }) => url.endsWith("/request-payout"))).toBe(false);
+  });
+
   it("Reports API: sends authenticated exact-content context to the moderation endpoint", async () => {
     await reportsApi.submitReport({
       contentType: "video",
@@ -127,8 +148,6 @@ describe("API Wrappers Unit Tests", () => {
       expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
         plan: "commercial",
         interval: "yearly",
-        paymentMethodTypes: ["card"],
-        disallowBankDebits: true,
         successUrl: "https://app.example/offers?subscription=success",
         cancelUrl: "https://app.example/offers?subscription=canceled"
       });
@@ -158,8 +177,6 @@ describe("API Wrappers Unit Tests", () => {
       expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
         plan: "pro",
         interval: "monthly",
-        paymentMethodTypes: ["card"],
-        disallowBankDebits: true,
         giftMode: true,
         giftRecipientEmail: "friend@example.com",
         giftRecipientName: "Friend Name",
@@ -206,8 +223,6 @@ describe("API Wrappers Unit Tests", () => {
       expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
         plan: "pro",
         interval: "monthly",
-        paymentMethodTypes: ["card"],
-        disallowBankDebits: true,
         successUrl: "https://app.example/offers?subscription=success",
         cancelUrl: "https://app.example/offers?subscription=canceled"
       });
@@ -236,11 +251,39 @@ describe("API Wrappers Unit Tests", () => {
 
     const body = JSON.parse(fetchCalls[0].options.body);
     expect(body.successUrl).toBe(
-      "https://app.example/store/living-soil/courses/course%201?checkout=success&course=course%201"
+      "https://app.example/store/living-soil/courses/course%201?checkout=success&courseId=course%201&course=course%201"
     );
     expect(body.cancelUrl).toBe(
-      "https://app.example/store/living-soil/courses/course%201?checkout=canceled&course=course%201"
+      "https://app.example/store/living-soil/courses/course%201?checkout=canceled&courseId=course%201&course=course%201"
     );
+  });
+
+  it("Course payments API: requires authoritative enrollment before confirmation", () => {
+    expect(
+      coursePaymentsApi.coursePaymentReconciliationState({
+        enrolled: false,
+        paymentStatus: "paid",
+        checkoutStatus: "recorded"
+      })
+    ).toBe("pending");
+    expect(
+      coursePaymentsApi.coursePaymentReconciliationState({
+        paymentStatus: "paid",
+        checkoutStatus: "recorded"
+      })
+    ).toBe("pending");
+    expect(
+      coursePaymentsApi.coursePaymentReconciliationState({
+        enrolled: true,
+        paymentStatus: "paid"
+      })
+    ).toBe("confirmed");
+    expect(
+      coursePaymentsApi.coursePaymentReconciliationState({
+        enrolled: true,
+        refundStatus: "refunded"
+      })
+    ).toBe("terminal");
   });
 
   it("Marketplace API: purchaseContent starts marketplace checkout", async () => {
@@ -257,6 +300,25 @@ describe("API Wrappers Unit Tests", () => {
     expect(
       fetchCalls[0].url.endsWith("/api/commercial/products/product%201/checkout")
     ).toBe(true);
+  });
+
+  it("Marketplace API: purchaseContent supplies recoverable buyer return URLs", async () => {
+    const previousWindow = global.window;
+    global.window = { location: { origin: "https://app.example" } };
+
+    try {
+      await marketplaceApi.purchaseContent("content 1", {
+        returnPath: "/marketplace"
+      });
+    } finally {
+      global.window = previousWindow;
+    }
+
+    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({
+      successUrl:
+        "https://app.example/marketplace?checkout=success&contentId=content%201",
+      cancelUrl: "https://app.example/marketplace?checkout=canceled&contentId=content%201"
+    });
   });
 
   it("Commercial API: checkoutProduct can return to a public product page", async () => {

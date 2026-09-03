@@ -1,7 +1,9 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CoursesRoute from "@/app/courses";
+import { rememberPendingBuyerCheckout } from "@/utils/buyerCheckoutRecovery";
 
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
@@ -40,33 +42,50 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return () => React.createElement(View, { testID: "personal-feed-placement" });
+  return function MockPersonalFeedPlacement() {
+    return React.createElement(View, { testID: "personal-feed-placement" });
+  };
 });
 
 jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
   return {
-    ScreenBoundary: ({ children, showBack }: any) =>
-      React.createElement(
+    ScreenBoundary: function MockScreenBoundary({ children, showBack }: any) {
+      return React.createElement(
         View,
         null,
         showBack ? React.createElement(Text, null, "Shared catalog Back") : null,
         children
-      )
+      );
+    }
   };
 });
 
 jest.mock("@/screens/CourseDetailScreen", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return ({ route }: any) =>
-    React.createElement(Text, null, `Course detail ${route?.params?.id || ""}`);
+  return function MockCourseDetailScreen({ route }: any) {
+    return React.createElement(Text, null, `Course detail ${route?.params?.id || ""}`);
+  };
 });
 
 describe("CoursesScreen route params", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    const storage = new Map<string, string>();
+    jest.mocked(AsyncStorage.getItem).mockImplementation(async (key) => {
+      return storage.get(key) ?? null;
+    });
+    jest.mocked(AsyncStorage.setItem).mockImplementation(async (key, value) => {
+      storage.set(key, value);
+    });
+    jest.mocked(AsyncStorage.removeItem).mockImplementation(async (key) => {
+      storage.delete(key);
+    });
+    jest.mocked(AsyncStorage.clear).mockImplementation(async () => {
+      storage.clear();
+    });
     mockSearchParams = { courseId: "course-2" };
     mockReplace.mockImplementation(() => {
       mockSearchParams = {};
@@ -117,6 +136,24 @@ describe("CoursesScreen route params", () => {
     expect(screen.queryByText("Course detail course-2")).toBeNull();
     expect(screen.getByText("Shared catalog Back")).toBeTruthy();
     expect(mockReplace).toHaveBeenCalledWith("/courses");
+  });
+
+  it("accepts the legacy course return key and restores a stored selection when omitted", async () => {
+    mockSearchParams = { checkout: "success", course: "course-1" };
+    const legacy = render(<CoursesRoute />);
+
+    await waitFor(() =>
+      expect(legacy.getByLabelText("Selected course course-1")).toBeTruthy()
+    );
+    legacy.unmount();
+
+    mockSearchParams = { checkout: "success" };
+    await rememberPendingBuyerCheckout("course", "course-1", "/courses");
+    const recovered = render(<CoursesRoute />);
+
+    await waitFor(() =>
+      expect(recovered.getByLabelText("Selected course course-1")).toBeTruthy()
+    );
   });
 
   it("loads an authorized reported course directly when catalogs omit it", async () => {

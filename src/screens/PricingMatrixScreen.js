@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import {
-  COMMERCIAL_PLAN_PRICE_DISPLAY,
-  FACILITY_PLAN_PRICE_DISPLAY,
-  PRO_PLAN_PRICE_DISPLAY
+  formatVerifiedPlanPrice,
+  verifiedPlanQuote
 } from "../constants/pricing.js";
+import { useRecurringPriceQuotes } from "../hooks/useRecurringPriceQuotes";
 import { radius } from "../theme/theme.js";
 
 const plans = [
@@ -22,7 +22,7 @@ const plans = [
   },
   {
     name: "Pro Grower",
-    price: PRO_PLAN_PRICE_DISPLAY,
+    key: "pro",
     features: [
       "Unlimited grows & plants",
       "Advanced tools (DLI, nutrient calculators, LAWNS)",
@@ -33,7 +33,7 @@ const plans = [
   },
   {
     name: "Commercial",
-    price: COMMERCIAL_PLAN_PRICE_DISPLAY,
+    key: "commercial",
     features: [
       "Brand storefront workspace",
       "Product, batch, and trial evidence tracking",
@@ -44,7 +44,7 @@ const plans = [
   },
   {
     name: "Facility",
-    price: FACILITY_PLAN_PRICE_DISPLAY,
+    key: "facility",
     features: [
       "Multiple rooms/zones",
       "Room-level climate & lighting profiles",
@@ -61,6 +61,7 @@ const plans = [
 ];
 
 export default function PricingMatrixScreen() {
+  const { quotes } = useRecurringPriceQuotes();
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>GrowPath Plans & Features</Text>
@@ -68,7 +69,15 @@ export default function PricingMatrixScreen() {
         {plans.map((plan) => (
           <View key={plan.name} style={styles.planBox}>
             <Text style={styles.planName}>{plan.name}</Text>
-            <Text style={styles.planPrice}>{plan.price}</Text>
+            <Text style={styles.planPrice}>
+              {plan.key
+                ? `${formatVerifiedPlanPrice(
+                    verifiedPlanQuote(quotes, plan.key, "monthly")
+                  )}/month or ${formatVerifiedPlanPrice(
+                    verifiedPlanQuote(quotes, plan.key, "yearly")
+                  )}/year`
+                : plan.price}
+            </Text>
             {plan.features.map((feature, i) => (
               <Text key={i} style={styles.feature}>
                 {`\u2022 ${feature}`}

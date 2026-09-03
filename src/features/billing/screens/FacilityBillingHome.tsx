@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
@@ -6,7 +6,15 @@ import { useFacilityBilling } from "@/hooks/useFacilityBilling";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { formatPlanBillingNote, formatPlanPrice } from "@/constants/pricing";
+import {
+  formatVerifiedPlanBillingNote,
+  formatVerifiedPlanPrice,
+  verifiedPlanQuote
+} from "@/constants/pricing";
+import {
+  getSubscriptionSetupStatus,
+  type RecurringPriceQuotes
+} from "@/api/subscription";
 import { openExternalUrl } from "@/utils/openExternalUrl";
 import { resolveSubscriptionSafety } from "../subscriptionSafety";
 
@@ -28,6 +36,7 @@ export default function FacilityBillingHome() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly");
+  const [catalogQuotes, setCatalogQuotes] = useState<RecurringPriceQuotes>({});
   const {
     billing,
     isLoading,
@@ -45,10 +54,26 @@ export default function FacilityBillingHome() {
   const status = String(billing?.status || "none").toLowerCase();
   const periodEnd = displayDate(billing?.currentPeriodEnd);
   const graceUntil = displayDate(billing?.graceUntil);
+  const coveredByAccount = billing?.billingSource === "account";
   const busy = isStartingCheckout || isCanceling;
+  const priceQuote = verifiedPlanQuote(catalogQuotes, "facility", interval);
+
+  useEffect(() => {
+    let mounted = true;
+    getSubscriptionSetupStatus()
+      .then((status) => {
+        if (mounted) setCatalogQuotes(status?.quotes || {});
+      })
+      .catch(() => {
+        if (mounted) setCatalogQuotes({});
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   async function handleCheckout() {
-    if (!canManageBilling || !facilityId || busy) return;
+    if (!canManageBilling || !facilityId || busy || !priceQuote) return;
     try {
       const result = await startCheckout(interval);
       const url = result?.checkoutUrl || result?.url;
@@ -98,8 +123,8 @@ export default function FacilityBillingHome() {
         Facility billing
       </Text>
       <Text style={styles.subtitle}>
-        This page manages only {facilityName}. Personal Pro and gift access stay in
-        Account billing.
+        This page manages only {facilityName}. An account-level Facility plan covers
+        the owner's primary workspace and is managed from Account billing.
       </Text>
 
       <View style={styles.card}>
@@ -147,7 +172,9 @@ export default function FacilityBillingHome() {
                 <Text style={styles.value}>{graceUntil}</Text>
               </View>
             ) : null}
-            <Text style={styles.note}>{access.message}</Text>
+            <Text style={styles.note}>
+              {billing?.managementMessage || access.message}
+            </Text>
             <Pressable
               accessibilityRole="button"
               style={styles.secondaryButton}
@@ -162,7 +189,12 @@ export default function FacilityBillingHome() {
       {facilityId && !isLoading && !error ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Facility billing actions</Text>
-          {!canManageBilling ? (
+          {coveredByAccount ? (
+            <Text style={styles.note}>
+              This primary workspace is already included with the owner's account-level
+              Facility plan. No separate workspace checkout or cancellation is needed.
+            </Text>
+          ) : !canManageBilling ? (
             <Text style={styles.note}>
               Only the Facility owner or authorized Facility billing administrator can
               start checkout or cancel renewal. Your {normalizedRole || "member"} access
@@ -171,7 +203,7 @@ export default function FacilityBillingHome() {
           ) : access.canOpenCheckout ? (
             <>
               <Text style={styles.note}>
-                {formatPlanBillingNote("facility", interval)}
+                {formatVerifiedPlanBillingNote(priceQuote)}
               </Text>
               <View style={styles.intervalRow}>
                 {(["monthly", "yearly"] as const).map((option) => (
@@ -188,7 +220,9 @@ export default function FacilityBillingHome() {
                   >
                     <Text style={styles.intervalButtonText}>
                       {option === "monthly" ? "Monthly" : "Yearly"}:{" "}
-                      {formatPlanPrice("facility", option)}
+                      {formatVerifiedPlanPrice(
+                        verifiedPlanQuote(catalogQuotes, "facility", option)
+                      )}
                     </Text>
                   </Pressable>
                 ))}
@@ -196,9 +230,12 @@ export default function FacilityBillingHome() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Start Facility plan checkout"
-                accessibilityState={{ disabled: busy }}
-                disabled={busy}
-                style={[styles.primaryButton, busy && styles.disabled]}
+                accessibilityState={{ disabled: busy || !priceQuote }}
+                disabled={busy || !priceQuote}
+                style={[
+                  styles.primaryButton,
+                  (busy || !priceQuote) && styles.disabled
+                ]}
                 onPress={() => void handleCheckout()}
               >
                 <Text style={styles.primaryButtonText}>

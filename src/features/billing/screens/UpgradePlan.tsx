@@ -14,13 +14,15 @@ import AppCard from "../../../components/layout/AppCard";
 import {
   createCheckoutSession,
   getSubscription,
-  getSubscriptionSetupStatus
+  getSubscriptionSetupStatus,
+  type RecurringPriceQuotes
 } from "../../../api/subscription";
 import { useAuth } from "../../../auth/AuthContext";
 import {
-  formatPlanBillingNote,
-  formatPlanPrice,
-  PLAN_PRICING
+  formatVerifiedPlanBillingNote,
+  formatVerifiedPlanPrice,
+  PLAN_PRICING,
+  verifiedPlanQuote
 } from "../../../constants/pricing";
 import { BILLING_PLANS, type BillingPlanKey } from "../planCopy";
 import GiftCheckoutReviewAction from "../GiftCheckoutReviewAction";
@@ -80,6 +82,7 @@ export default function UpgradePlan() {
   const [feedbackTone, setFeedbackTone] = useState<FeedbackTone>("info");
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
   const [giftCheckoutConfigured, setGiftCheckoutConfigured] = useState(false);
+  const [catalogQuotes, setCatalogQuotes] = useState<RecurringPriceQuotes>({});
   const [giftMode, setGiftMode] = useState(false);
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
   const [giftRecipientName, setGiftRecipientName] = useState("");
@@ -117,6 +120,7 @@ export default function UpgradePlan() {
         }
         if (mounted) {
           setGiftCheckoutConfigured(status?.giftCheckoutConfigured === true);
+          setCatalogQuotes(status?.quotes || {});
           setSubscription(
             subscriptionResult.status === "fulfilled"
               ? subscriptionResult.value || {}
@@ -218,7 +222,11 @@ export default function UpgradePlan() {
 
       {subscriptionLoaded && access.active && !giftMode ? (
         <View style={styles.accessBanner} accessibilityLiveRegion="polite">
-          <Text style={styles.accessBannerTitle}>Paid access already active</Text>
+          <Text style={styles.accessBannerTitle}>
+            {access.source === "admin"
+              ? "Complimentary access already active"
+              : "Paid access already active"}
+          </Text>
           <Text style={styles.accessBannerText}>{access.message}</Text>
         </View>
       ) : null}
@@ -384,6 +392,7 @@ export default function UpgradePlan() {
         {purchasablePlans.map((plan) => {
           const loading = loadingPlan === plan.key;
           const featured = requestedPlan === plan.key;
+          const priceQuote = verifiedPlanQuote(catalogQuotes, plan.key, interval);
           return (
             <AppCard
               key={plan.key}
@@ -408,7 +417,7 @@ export default function UpgradePlan() {
               </View>
               {!giftMode ? (
                 <Text style={styles.price}>
-                  {formatPlanPrice(plan.key, interval)}
+                  {formatVerifiedPlanPrice(priceQuote)}
                   <Text style={styles.priceMeta}>
                     {` / ${interval === "monthly" ? "month" : "year"}`}
                   </Text>
@@ -417,7 +426,7 @@ export default function UpgradePlan() {
               <Text style={styles.billingNote}>
                 {giftMode
                   ? `One prepaid ${interval === "monthly" ? "month" : "year"} of ${plan.title}. Starts when claimed and does not renew.`
-                  : formatPlanBillingNote(plan.key, interval)}
+                  : formatVerifiedPlanBillingNote(priceQuote)}
               </Text>
               <Text style={styles.sectionLabel}>Billing next</Text>
               <Text style={styles.sectionText}>
@@ -452,18 +461,23 @@ export default function UpgradePlan() {
               ) : access.canOpenCheckout ? (
                 <Pressable
                   onPress={() => void startCheckout(plan.key)}
-                  disabled={loading}
+                  disabled={loading || !priceQuote}
                   accessibilityRole="button"
-                  accessibilityState={{ disabled: loading }}
+                  accessibilityState={{ disabled: loading || !priceQuote }}
                   accessibilityLabel={`Choose ${plan.title} ${interval} checkout`}
-                  style={[loading && styles.buttonDisabled, styles.button]}
+                  style={[
+                    (loading || !priceQuote) && styles.buttonDisabled,
+                    styles.button
+                  ]}
                 >
                   <Text style={styles.buttonText}>
                     {loading
                       ? "Starting..."
-                      : `Checkout ${formatPlanPrice(plan.key, interval)}${
-                          interval === "monthly" ? "/month" : "/year"
-                        }`}
+                      : priceQuote
+                        ? `Checkout ${formatVerifiedPlanPrice(priceQuote)}${
+                            interval === "monthly" ? "/month" : "/year"
+                          }`
+                        : "Stripe pricing unavailable"}
                   </Text>
                 </Pressable>
               ) : (

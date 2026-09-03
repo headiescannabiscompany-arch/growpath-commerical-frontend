@@ -6,16 +6,16 @@ function data(response) {
   return response?.data ?? response;
 }
 
-export function markPayoutPaid(payoutId) {
-  return apiRequest(apiRoutes.CREATOR.PAYOUT_MARK_PAID(payoutId), {
-    method: "POST"
-  });
+export function getConnectPayoutStatus() {
+  return apiRequest(apiRoutes.CREATOR.CONNECT_PAYOUT_STATUS, { method: "GET" }).then(
+    data
+  );
 }
-export function requestPayout(payoutMethod = "stripe") {
-  return apiRequest(apiRoutes.CREATOR.REQUEST_PAYOUT, {
-    method: "POST",
-    body: { payoutMethod }
-  });
+
+export function createConnectPayoutDashboardLink() {
+  return apiRequest(apiRoutes.CREATOR.CONNECT_PAYOUT_DASHBOARD, {
+    method: "POST"
+  }).then(data);
 }
 
 export function getEarnings() {

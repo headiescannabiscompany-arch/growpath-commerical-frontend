@@ -41,6 +41,36 @@ function quote(overrides: Record<string, any> = {}) {
   };
 }
 
+function recurringQuotes() {
+  const makeQuote = (
+    plan: "pro" | "commercial" | "facility",
+    interval: "monthly" | "yearly",
+    unitAmount: number,
+    formattedAmount: string
+  ) => ({
+    available: true,
+    plan,
+    interval,
+    unitAmount,
+    currency: "usd",
+    formattedAmount
+  });
+  return {
+    pro: {
+      monthly: makeQuote("pro", "monthly", 1000, "$10"),
+      yearly: makeQuote("pro", "yearly", 10000, "$100")
+    },
+    commercial: {
+      monthly: makeQuote("commercial", "monthly", 5000, "$50"),
+      yearly: makeQuote("commercial", "yearly", 50000, "$500")
+    },
+    facility: {
+      monthly: makeQuote("facility", "monthly", 10000, "$100"),
+      yearly: makeQuote("facility", "yearly", 100000, "$1,000")
+    }
+  };
+}
+
 function installAttemptSessionStorage() {
   attemptStorageValues = new Map<string, string>();
   const windowObject = originalWindow || {};
@@ -109,7 +139,9 @@ describe("UpgradePlan pricing", () => {
     });
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
       mode: "test",
-      giftCheckoutConfigured: false
+      giftCheckoutConfigured: false,
+      catalogReady: true,
+      quotes: recurringQuotes()
     });
     (getSubscription as jest.Mock).mockResolvedValue({
       plan: "free",
@@ -280,7 +312,9 @@ describe("UpgradePlan pricing", () => {
     );
     expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Gift message"), "Edited note");
-    expect(screen.queryByLabelText("Review Pro Grower authoritative gift price")).toBeNull();
+    expect(
+      screen.queryByLabelText("Review Pro Grower authoritative gift price")
+    ).toBeNull();
     expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);
     expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);

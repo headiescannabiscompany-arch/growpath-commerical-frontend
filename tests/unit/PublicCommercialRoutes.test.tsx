@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Linking } from "react-native";
@@ -23,6 +24,7 @@ const mockFetchPublicStorefront = jest.fn();
 const mockCheckPublicProductAccess = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
 const mockStartCourseCheckout = jest.fn();
+const mockPollCourseAccessStatus = jest.fn();
 const mockSubmitProductPurchaseIntent = jest.fn();
 const mockLinkHrefs: string[] = [];
 let mockRouteParams: Record<string, string> = {
@@ -87,6 +89,7 @@ jest.mock("@/api/products", () => ({
 }));
 
 jest.mock("@/api/coursePayments", () => ({
+  pollCourseAccessStatus: (...args: any[]) => mockPollCourseAccessStatus(...args),
   startCourseCheckout: (...args: any[]) => mockStartCourseCheckout(...args)
 }));
 
@@ -250,11 +253,13 @@ const publicPayload = {
 };
 
 describe("public commercial routes", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
     mockFetchPublicStorefront.mockReset();
     mockCheckPublicProductAccess.mockReset();
     mockRecordCommercialAnalyticsEvent.mockReset();
     mockStartCourseCheckout.mockReset();
+    mockPollCourseAccessStatus.mockReset();
     mockSubmitProductPurchaseIntent.mockReset();
     mockLinkHrefs.length = 0;
     mockRouteParams = {
@@ -264,6 +269,11 @@ describe("public commercial routes", () => {
     };
     mockRecordCommercialAnalyticsEvent.mockResolvedValue({ success: true });
     mockStartCourseCheckout.mockResolvedValue({});
+    mockPollCourseAccessStatus.mockResolvedValue({
+      attempts: 5,
+      snapshot: { enrolled: false, checkoutStatus: "pending" },
+      state: "pending"
+    });
     mockSubmitProductPurchaseIntent.mockResolvedValue({
       response: "yes",
       summary: { yes: 5, maybe: 2, no: 1, total: 8 }
@@ -924,7 +934,7 @@ describe("public commercial routes", () => {
     expect(screen.queryByText("Back to Store")).toBeNull();
   });
 
-  it("turns a successful Stripe return into a clear course-unlock handoff", async () => {
+  it("reconciles a successful Stripe return without claiming course access", async () => {
     mockRouteParams = {
       slug: "living-soil-labs",
       courseId: "course-1",
@@ -933,12 +943,37 @@ describe("public commercial routes", () => {
     };
     const screen = render(<PublicStorefrontCourseRoute />);
 
-    await waitFor(() => expect(screen.getByText("Payment submitted")).toBeTruthy());
-    expect(screen.getByLabelText("Open purchased course")).toBeTruthy();
-    expect(screen.getByText("Open Purchased Course")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Confirming enrollment")).toBeTruthy());
+    expect(mockPollCourseAccessStatus).toHaveBeenCalledWith(
+      "course-1",
+      expect.objectContaining({ shouldContinue: expect.any(Function) })
+    );
+    expect(screen.getByLabelText("Open course enrollment status")).toBeTruthy();
+    expect(screen.getByText("Open Course Status")).toBeTruthy();
+    expect(screen.getByLabelText("Buy storefront course")).toBeDisabled();
     expect(mockLinkHrefs).toContain(
       "/home/personal/courses?courseId=course-1&checkout=success"
     );
+  });
+
+  it("shows course access only after authoritative enrollment confirmation", async () => {
+    mockRouteParams = {
+      slug: "living-soil-labs",
+      courseId: "course-1",
+      checkout: "success",
+      course: "course-1"
+    };
+    mockPollCourseAccessStatus.mockResolvedValue({
+      attempts: 2,
+      snapshot: { enrolled: true, paymentStatus: "paid" },
+      state: "confirmed"
+    });
+
+    const screen = render(<PublicStorefrontCourseRoute />);
+
+    await waitFor(() => expect(screen.getByText("Enrollment confirmed")).toBeTruthy());
+    expect(screen.getByLabelText("Open enrolled storefront course")).toBeEnabled();
+    expect(screen.getAllByText("Open Course").length).toBeGreaterThan(0);
   });
 
   it("loads the /storefront/:slug/courses/:courseId alias through the same course route", async () => {

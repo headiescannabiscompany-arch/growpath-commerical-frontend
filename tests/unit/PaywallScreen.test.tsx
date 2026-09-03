@@ -2,7 +2,7 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import PaywallScreen from "@/screens/PaywallScreen";
-import { getSubscription } from "@/api/subscription";
+import { getSubscription, getSubscriptionSetupStatus } from "@/api/subscription";
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({ token: "token-1" })
@@ -14,7 +14,8 @@ jest.mock("@/api/subscribe", () => ({
 
 jest.mock("@/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
-  getSubscription: jest.fn()
+  getSubscription: jest.fn(),
+  getSubscriptionSetupStatus: jest.fn()
 }));
 
 jest.mock("@/utils/openExternalUrl", () => ({
@@ -27,6 +28,20 @@ describe("PaywallScreen", () => {
     (getSubscription as jest.Mock).mockResolvedValue({
       status: "inactive",
       plan: "free"
+    });
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
+      catalogReady: true,
+      quotes: {
+        pro: {
+          monthly: {
+            available: true,
+            interval: "monthly",
+            unitAmount: 1000,
+            currency: "usd",
+            formattedAmount: "$10"
+          }
+        }
+      }
     });
   });
 

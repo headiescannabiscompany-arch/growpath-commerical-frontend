@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +16,7 @@ import {
   recordCommercialAnalyticsEvent,
   type CommercialAnalyticsEvent
 } from "@/api/commercialAnalytics";
-import { startCourseCheckout } from "@/api/coursePayments";
+import { pollCourseAccessStatus, startCourseCheckout } from "@/api/coursePayments";
 import { fetchPublicStorefront } from "@/api/storefront";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -31,11 +31,24 @@ import { sharePublicLink } from "@/utils/publicLinks";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import {
+  clearPendingBuyerCheckout,
+  readPendingBuyerCheckout,
+  rememberPendingBuyerCheckout
+} from "@/utils/buyerCheckoutRecovery";
 
 function normalize(value: string) {
   return String(value || "")
     .trim()
     .toLowerCase();
+}
+
+function normalizeCheckoutResult(value: unknown) {
+  const normalized = String(Array.isArray(value) ? value[0] || "" : value || "")
+    .trim()
+    .toLowerCase();
+  if (["cancel", "canceled", "cancelled"].includes(normalized)) return "canceled";
+  return normalized === "success" ? "success" : "";
 }
 
 function courseKey(course: any) {
@@ -132,19 +145,20 @@ export default function PublicStorefrontCourseRoute() {
   }>();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
   const requestedCourseId = useMemo(
-    () => String(params.courseId || "").trim(),
-    [params.courseId]
+    () => String(params.courseId || params.course || "").trim(),
+    [params.course, params.courseId]
   );
   const checkoutResult = useMemo(
-    () =>
-      String(params.checkout || "")
-        .trim()
-        .toLowerCase(),
+    () => normalizeCheckoutResult(params.checkout),
     [params.checkout]
   );
 
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [checkoutPending, setCheckoutPending] = useState(checkoutResult === "success");
+  const [checkoutState, setCheckoutState] = useState<
+    "confirmed" | "pending" | "terminal" | "unknown"
+  >(checkoutResult === "success" ? "pending" : "unknown");
   const [storefront, setStorefront] = useState<any>(null);
   const [courses, setCourses] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -153,6 +167,8 @@ export default function PublicStorefrontCourseRoute() {
   const [forumThreads, setForumThreads] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const checkoutHandledRef = useRef("");
+  const checkoutStartRef = useRef(false);
 
   const load = useCallback(async () => {
     if (!slug) return;
@@ -247,8 +263,88 @@ export default function PublicStorefrontCourseRoute() {
     });
   }, [course, id, slug]);
 
+  const reconcileCourseCheckout = useCallback(
+    async (options: { shouldContinue?: () => boolean } = {}) => {
+      if (!id) return null;
+      setBusy(true);
+      setCheckoutPending(true);
+      setCheckoutState("pending");
+      setFeedback("Checking server-confirmed payment and enrollment status...");
+      try {
+        const result = await pollCourseAccessStatus(id, {
+          shouldContinue: options.shouldContinue
+        });
+        if (options.shouldContinue && !options.shouldContinue()) return result;
+        setCheckoutState(result.state);
+        if (result.state === "confirmed") {
+          await clearPendingBuyerCheckout("course", id).catch(() => false);
+          setCheckoutPending(false);
+          setFeedback("Payment and enrollment are confirmed by the server.");
+        } else if (result.state === "terminal") {
+          await clearPendingBuyerCheckout("course", id).catch(() => false);
+          setCheckoutPending(false);
+          setFeedback(
+            "The server reports that this checkout did not create active access."
+          );
+        } else {
+          setFeedback(
+            "Checkout returned, but enrollment is still awaiting server confirmation. Another checkout is disabled while status is pending."
+          );
+        }
+        return result;
+      } finally {
+        if (!options.shouldContinue || options.shouldContinue()) setBusy(false);
+      }
+    },
+    [id]
+  );
+
+  useEffect(() => {
+    if (!id) return undefined;
+    let active = true;
+    void (async () => {
+      const stored = await readPendingBuyerCheckout("course").catch(() => null);
+      if (!active) return;
+      const recoveryKey = `${checkoutResult || "pending"}:${id}`;
+      if (checkoutHandledRef.current === recoveryKey) return;
+      if (checkoutResult === "canceled") {
+        checkoutHandledRef.current = recoveryKey;
+        await clearPendingBuyerCheckout("course", id).catch(() => false);
+        if (!active) return;
+        setCheckoutPending(false);
+        setCheckoutState("terminal");
+        setFeedback(
+          "Checkout was canceled. Course access was not inferred from the return link."
+        );
+        return;
+      }
+      if (checkoutResult !== "success" && stored?.itemId !== id) return;
+      checkoutHandledRef.current = recoveryKey;
+      setCheckoutPending(true);
+      setCheckoutState("pending");
+      if (checkoutResult === "success" && stored?.itemId !== id) {
+        await rememberPendingBuyerCheckout("course", id).catch(() => null);
+      }
+      if (active) {
+        await reconcileCourseCheckout({ shouldContinue: () => active });
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [checkoutResult, id, reconcileCourseCheckout]);
+
   async function startCheckout() {
-    if (!id) return;
+    if (!id || checkoutStartRef.current) return;
+    if (paid && checkoutState === "confirmed") {
+      await openUrl(`/courses?courseId=${encodeURIComponent(id)}`);
+      return;
+    }
+    if (paid && checkoutPending) {
+      await reconcileCourseCheckout();
+      return;
+    }
+    checkoutStartRef.current = true;
     setBusy(true);
     setFeedback("");
     trackCommercialClick({
@@ -270,18 +366,34 @@ export default function PublicStorefrontCourseRoute() {
           requestedCourseId || id
         )}`
       });
-      const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
+      const url =
+        checkout?.url ||
+        checkout?.checkoutUrl ||
+        checkout?.data?.url ||
+        checkout?.data?.checkoutUrl;
       if (!url) {
         setFeedback("Checkout unavailable. The backend did not return a checkout URL.");
         Alert.alert("Checkout unavailable", "The backend did not return a checkout URL.");
         return;
       }
+      setCheckoutPending(true);
+      setCheckoutState("pending");
+      await rememberPendingBuyerCheckout(
+        "course",
+        id,
+        `/store/${encodeURIComponent(slug)}/courses/${encodeURIComponent(
+          requestedCourseId || id
+        )}`
+      ).catch(() => null);
       await openUrl(url);
-      setFeedback("Checkout started.");
+      setFeedback(
+        "Checkout opened. Course access remains locked until the server confirms enrollment."
+      );
     } catch (err: any) {
       setFeedback(err?.message || "Unable to start course checkout.");
       Alert.alert("Checkout failed", err?.message || "Unable to start course checkout.");
     } finally {
+      checkoutStartRef.current = false;
       setBusy(false);
     }
   }
@@ -341,10 +453,15 @@ export default function PublicStorefrontCourseRoute() {
         <>
           {checkoutResult === "success" ? (
             <AppCard>
-              <Text style={styles.successTitle}>Payment submitted</Text>
+              <Text style={styles.successTitle}>
+                {checkoutState === "confirmed"
+                  ? "Enrollment confirmed"
+                  : "Confirming enrollment"}
+              </Text>
               <Text style={styles.bodyText}>
-                Stripe returned successfully. Open the course to confirm enrollment and
-                unlock lessons after the payment webhook finishes.
+                {checkoutState === "confirmed"
+                  ? "The server confirmed active enrollment. You can open the course."
+                  : "Stripe returned to GrowPath, but the return link does not grant access. GrowPath is checking the payment webhook and enrollment record."}
               </Text>
               <Link
                 href={
@@ -357,9 +474,11 @@ export default function PublicStorefrontCourseRoute() {
                 <Pressable
                   style={styles.primaryButton}
                   accessibilityRole="link"
-                  accessibilityLabel="Open purchased course"
+                  accessibilityLabel="Open course enrollment status"
                 >
-                  <Text style={styles.primaryButtonText}>Open Purchased Course</Text>
+                  <Text style={styles.primaryButtonText}>
+                    {checkoutState === "confirmed" ? "Open Course" : "Open Course Status"}
+                  </Text>
                 </Pressable>
               </Link>
             </AppCard>
@@ -367,7 +486,16 @@ export default function PublicStorefrontCourseRoute() {
             <AppCard>
               <Text style={styles.canceledTitle}>Checkout canceled</Text>
               <Text style={styles.bodyText}>
-                No course access was changed. You can review the course and try again.
+                Course access was not inferred from this return link. You can review the
+                course and try again.
+              </Text>
+            </AppCard>
+          ) : checkoutPending ? (
+            <AppCard>
+              <Text style={styles.successTitle}>Checkout status pending</Text>
+              <Text style={styles.bodyText}>
+                GrowPath recovered an earlier checkout for this course and is waiting for
+                server-confirmed enrollment before allowing another purchase.
               </Text>
             </AppCard>
           ) : null}
@@ -408,14 +536,28 @@ export default function PublicStorefrontCourseRoute() {
             <View style={styles.actionRow}>
               <Pressable
                 accessibilityLabel={
-                  paid ? "Buy storefront course" : "Open storefront course"
+                  paid && checkoutState === "confirmed"
+                    ? "Open enrolled storefront course"
+                    : paid
+                      ? "Buy storefront course"
+                      : "Open storefront course"
                 }
-                style={[styles.primaryButton, busy && styles.disabled]}
-                disabled={busy}
+                accessibilityState={{ disabled: busy || checkoutPending }}
+                style={[
+                  styles.primaryButton,
+                  (busy || checkoutPending) && styles.disabled
+                ]}
+                disabled={busy || checkoutPending}
                 onPress={startCheckout}
               >
                 <Text style={styles.primaryButtonText}>
-                  {busy ? "Opening..." : paid ? "Buy Course" : "Open Course"}
+                  {checkoutPending
+                    ? "Confirming Payment..."
+                    : busy
+                      ? "Opening..."
+                      : paid && checkoutState !== "confirmed"
+                        ? "Buy Course"
+                        : "Open Course"}
                 </Text>
               </Pressable>
               <Pressable style={styles.secondaryButton} onPress={shareCourse}>

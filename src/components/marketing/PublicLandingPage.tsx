@@ -3,6 +3,8 @@ import { Link } from "expo-router";
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import { useRecurringPriceQuotes } from "@/hooks/useRecurringPriceQuotes";
+import { formatVerifiedPlanPrice, verifiedPlanQuote } from "@/constants/pricing";
 
 export type PublicPageKey =
   | "home"
@@ -77,16 +79,16 @@ export const PUBLIC_PAGE_COPY: Record<PublicPageKey, PageCopy> = {
         body: "Use core grow workflows, limited AI assistance, and community features. All plans can create and publish courses within their plan limits."
       },
       {
-        title: "Pro Grower — $10/month or $100/year",
-        body: "Advanced personal grow tools, higher AI limits, exports, and creator features. Annual billing is charged as one $100 payment."
+        title: "Pro Grower",
+        body: "Advanced personal grow tools, higher AI limits, exports, and creator features."
       },
       {
-        title: "Commercial — $50/month or $500/year",
-        body: "Brand, product, course, storefront, campaign, inventory, and trial workflows. Annual billing is charged as one $500 payment."
+        title: "Commercial",
+        body: "Brand, product, course, storefront, campaign, inventory, and trial workflows."
       },
       {
-        title: "Facility — $100/month or $1,000/year",
-        body: "Rooms, teams, SOPs, inventory, environmental context, audit history, and operational reporting. Annual billing is charged as one $1,000 payment."
+        title: "Facility",
+        body: "Rooms, teams, SOPs, inventory, environmental context, audit history, and operational reporting."
       }
     ]
   },
@@ -276,6 +278,43 @@ export function usesCompactPublicLayout(width: number) {
   return width < 600;
 }
 
+function PublicPricingGrid({
+  styles
+}: {
+  styles: ReturnType<typeof createPublicLandingStyles>;
+}) {
+  const { loading, quotes } = useRecurringPriceQuotes();
+  const cards = PUBLIC_PAGE_COPY.pricing.sections.map((section, index) => {
+    if (index === 0) return section;
+    const plan = ["pro", "commercial", "facility"][index - 1];
+    const monthly = verifiedPlanQuote(quotes, plan, "monthly");
+    const yearly = verifiedPlanQuote(quotes, plan, "yearly");
+    const available = Boolean(monthly && yearly);
+    return {
+      title: available
+        ? `${section.title} — ${formatVerifiedPlanPrice(monthly)}/month or ${formatVerifiedPlanPrice(yearly)}/year`
+        : `${section.title} — ${loading ? "checking Stripe pricing" : "pricing unavailable"}`,
+      body: `${section.body} ${
+        available
+          ? `Annual billing is charged as one verified ${formatVerifiedPlanPrice(yearly)} payment.`
+          : "Checkout remains disabled until Stripe pricing can be verified."
+      }`
+    };
+  });
+  return (
+    <View style={styles.grid}>
+      {cards.map((section) => (
+        <View key={section.title} style={styles.card}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            {section.title}
+          </Text>
+          <Text style={styles.cardBody}>{section.body}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
   const copy = PUBLIC_PAGE_COPY[page];
   const { width } = useWindowDimensions();
@@ -351,16 +390,20 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
           </Link>
         </View>
       </View>
-      <View style={styles.grid}>
-        {copy.sections.map((section) => (
-          <View key={section.title} style={styles.card}>
-            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-              {section.title}
-            </Text>
-            <Text style={styles.cardBody}>{section.body}</Text>
-          </View>
-        ))}
-      </View>
+      {page === "pricing" ? (
+        <PublicPricingGrid styles={styles} />
+      ) : (
+        <View style={styles.grid}>
+          {copy.sections.map((section) => (
+            <View key={section.title} style={styles.card}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                {section.title}
+              </Text>
+              <Text style={styles.cardBody}>{section.body}</Text>
+            </View>
+          ))}
+        </View>
+      )}
       <View style={styles.footer}>
         <Link href="/about" style={styles.link}>
           About

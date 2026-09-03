@@ -243,6 +243,8 @@ export const ROUTES = {
     MINE: `${PREFIX}/earnings/mine`,
     BY_COURSE: `${PREFIX}/earnings/by-course`,
     REQUEST_PAYOUT: `${PREFIX}/earnings/request-payout`,
+    CONNECT_PAYOUT_STATUS: `${PREFIX}/earnings/connect-status`,
+    CONNECT_PAYOUT_DASHBOARD: `${PREFIX}/earnings/connect-dashboard-link`,
     PLATFORM_STATS: `${PREFIX}/earnings/platform`,
     PERFORMANCE: `${PREFIX}/creator/courses`,
     TIMELINE: `${PREFIX}/creator/enrollment-timeline`,

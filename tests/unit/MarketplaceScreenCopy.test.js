@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import MarketplaceScreen, {
   createStyles,
@@ -9,6 +9,7 @@ import MarketplaceScreen, {
 const realMarketplaceApi = jest.requireActual("@/api/marketplace");
 
 const mockBrowseMarketplace = jest.fn();
+const mockGetMarketplacePurchases = jest.fn();
 
 jest.mock("@/api/marketplace", () => ({
   browseMarketplace: (...args) => mockBrowseMarketplace(...args),
@@ -17,10 +18,46 @@ jest.mock("@/api/marketplace", () => ({
   searchContent: jest.fn()
 }));
 
+jest.mock("@/api/marketplaceBuyer", () => ({
+  ...jest.requireActual("@/api/marketplaceBuyer"),
+  getMarketplacePurchases: (...args) => mockGetMarketplacePurchases(...args)
+}));
+
 describe("Marketplace compatibility screen copy", () => {
   beforeEach(() => {
     mockBrowseMarketplace.mockReset();
     mockBrowseMarketplace.mockResolvedValue({ data: [] });
+    mockGetMarketplacePurchases.mockReset();
+    mockGetMarketplacePurchases.mockResolvedValue({
+      pagination: { page: 1, totalPages: 1 },
+      purchases: []
+    });
+  });
+
+  it("loads server-confirmed purchases into the Purchased view", async () => {
+    mockGetMarketplacePurchases.mockResolvedValue({
+      pagination: { page: 1, totalPages: 1 },
+      purchases: [
+        {
+          purchaseId: "purchase-1",
+          purchasedAt: "2026-09-02T10:00:00.000Z",
+          upload: { id: "offer-1", title: "Protected worksheet", price: 12 }
+        }
+      ]
+    });
+    const screen = render(<MarketplaceScreen />);
+    await screen.findByText("Storefront Offers");
+
+    fireEvent.press(screen.getByLabelText("View purchased storefront offers"));
+
+    expect(await screen.findByText("Protected worksheet")).toBeTruthy();
+    expect(mockGetMarketplacePurchases).toHaveBeenCalledWith(1, 20);
+    expect(
+      screen.getByText(
+        "Your server-confirmed purchases. Downloads are authorized when opened."
+      )
+    ).toBeTruthy();
+    screen.unmount();
   });
 
   it("presents the compatibility route as Storefront Offers", async () => {
@@ -29,6 +66,7 @@ describe("Marketplace compatibility screen copy", () => {
     await waitFor(() => expect(screen.getByText("Storefront Offers")).toBeTruthy());
 
     expect(screen.getByPlaceholderText("Search storefront offers...")).toBeTruthy();
+    expect(screen.getByLabelText("View purchased storefront offers")).toBeTruthy();
     expect(screen.getByRole("header", { name: "Storefront Offers" })).toHaveProp(
       "aria-level",
       1
@@ -85,6 +123,30 @@ describe("Marketplace compatibility screen copy", () => {
 
     expect(paid.getByLabelText("Start storefront offer checkout")).toBeTruthy();
     expect(paid.queryByLabelText("Start marketplace checkout")).toBeNull();
+  });
+
+  it("exposes the server-authorized download without enabling an unconfirmed paid item", () => {
+    const paid = render(
+      <MarketplaceDetailContent
+        item={{ id: "offer-1", title: "NPK Workshop", price: 12 }}
+        onDownload={jest.fn()}
+        onPurchase={jest.fn()}
+        purchasing={false}
+      />
+    );
+    expect(paid.getByLabelText("Download storefront offer")).toBeDisabled();
+    expect(paid.getByText("Download Locked")).toBeTruthy();
+
+    const free = render(
+      <MarketplaceDetailContent
+        item={{ id: "offer-2", title: "Free worksheet", price: 0 }}
+        onDownload={jest.fn()}
+        onPurchase={jest.fn()}
+        purchasing={false}
+      />
+    );
+    expect(free.getByLabelText("Download storefront offer")).toBeEnabled();
+    expect(free.getByText("Download Item")).toBeTruthy();
   });
 
   it("keeps compatibility sales summary fallback copy storefront-oriented", () => {

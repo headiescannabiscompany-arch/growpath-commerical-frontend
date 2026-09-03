@@ -5,11 +5,16 @@ import { createCheckoutSession, getSubscription } from "../api/subscription";
 import { resolveSubscriptionSafety } from "../features/billing/subscriptionSafety";
 import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
-import { PRO_PLAN_PRICE_DISPLAY } from "../constants/pricing";
+import {
+  formatVerifiedPlanPrice,
+  verifiedPlanQuote
+} from "../constants/pricing";
+import { useRecurringPriceQuotes } from "../hooks/useRecurringPriceQuotes";
 import { radius } from "../theme/theme";
 import { openExternalUrl } from "../utils/openExternalUrl";
 
 export default function PaywallScreen({ navigation }) {
+  const { quotes } = useRecurringPriceQuotes();
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [status, setStatus] = useState(null);
@@ -17,6 +22,7 @@ export default function PaywallScreen({ navigation }) {
     () => resolveSubscriptionSafety(status, { loaded: !checking && status !== null }),
     [checking, status]
   );
+  const monthlyQuote = verifiedPlanQuote(quotes, "pro", "monthly");
 
   useEffect(() => {
     let mounted = true;
@@ -127,18 +133,30 @@ export default function PaywallScreen({ navigation }) {
         ) : (
           <>
             <TouchableOpacity
-              style={[styles.button, styles.trialButton]}
+              style={[
+                styles.button,
+                styles.trialButton,
+                !monthlyQuote && styles.disabled
+              ]}
               onPress={handleStartTrial}
+              disabled={!monthlyQuote}
             >
               <Text style={styles.buttonText}>Start Free Trial in Stripe</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.button, styles.subscribeButton]}
+              style={[
+                styles.button,
+                styles.subscribeButton,
+                !monthlyQuote && styles.disabled
+              ]}
               onPress={handleSubscribe}
+              disabled={!monthlyQuote}
             >
               <Text style={styles.buttonText}>
-                Subscribe Now - {PRO_PLAN_PRICE_DISPLAY}
+                {monthlyQuote
+                  ? `Subscribe Now — ${formatVerifiedPlanPrice(monthlyQuote)}/month`
+                  : "Stripe pricing unavailable"}
               </Text>
             </TouchableOpacity>
 
@@ -212,6 +230,7 @@ const styles = {
     marginBottom: 15,
     alignItems: "center"
   },
+  disabled: { opacity: 0.5 },
   trialButton: {
     backgroundColor: "#28A745"
   },

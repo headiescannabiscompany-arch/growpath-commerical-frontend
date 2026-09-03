@@ -138,7 +138,20 @@ describe("Offers billing safety", () => {
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
       mode: "live",
       giftCheckoutConfigured: false,
-      trial: { enabled: true, days: 30 }
+      trial: { enabled: true, days: 30 },
+      catalogReady: true,
+      quotes: {
+        commercial: {
+          monthly: {
+            available: true,
+            plan: "commercial",
+            interval: "monthly",
+            unitAmount: 5000,
+            currency: "usd",
+            formattedAmount: "$50"
+          }
+        }
+      }
     });
     (getSubscription as jest.Mock).mockResolvedValue({
       plan: "free",

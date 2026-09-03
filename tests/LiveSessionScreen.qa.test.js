@@ -272,6 +272,34 @@ describe("LiveSessionScreen QA", () => {
     expect(queryByText("No video destination is attached to this live yet.")).toBeNull();
   });
 
+  it("offers signed-in viewers gift checkout inside live chat", async () => {
+    mockUseAuth.mockReturnValue({
+      user: { _id: "viewer-1" },
+      isAuthed: true
+    });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockResolvedValueOnce({
+      _id: "gift-live-1",
+      owner: { id: "host-1", displayName: "GrowPath Host" },
+      title: "Live grow questions",
+      status: "live",
+      visibility: "public",
+      isPublished: true,
+      chatEnabled: true
+    });
+
+    const { getByLabelText, getByTestId } = renderWithNav({
+      sessionId: "gift-live-1"
+    });
+
+    await waitFor(() =>
+      expect(
+        getByLabelText("Gift a subscription during this live chat")
+      ).toBeTruthy()
+    );
+    expect(getByTestId("live-link-/offers?gift=1")).toBeTruthy();
+  });
+
   it("creates a personal task at the configured live-stream date", async () => {
     mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
     mockUseEntitlements.mockReturnValue({ can: () => false });

@@ -254,6 +254,27 @@ describe("shared critical Night theme", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("offers explicit severe-harm reports and warns against copying suspected child-exploitation material", () => {
+    const screen = render(
+      <ReportModal
+        visible
+        onClose={jest.fn()}
+        contentType="video"
+        contentId="video-2"
+        contentTitle="Reported video"
+        targetUrl="/videos/video-2"
+        onSuccess={jest.fn()}
+      />
+    );
+
+    expect(screen.getByText("Human trafficking")).toBeTruthy();
+    expect(screen.getByText("Repeated hard-drug sales")).toBeTruthy();
+    expect(screen.getByText("Imminent threat")).toBeTruthy();
+    fireEvent.press(screen.getByText("Child exploitation"));
+    expect(screen.getByText(/do not download, copy, or redistribute/i)).toBeTruthy();
+    expect(screen.getByText(/not an emergency dispatch service/i)).toBeTruthy();
+  });
+
   it("uses Night link and separator colors for privacy-critical legal routes", () => {
     const palette = getThemePalette("night", "dark");
     const styles = createLegalLinksStyles(palette);

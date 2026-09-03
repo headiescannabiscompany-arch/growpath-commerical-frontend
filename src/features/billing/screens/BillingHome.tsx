@@ -380,10 +380,14 @@ export default function BillingHome({
   const access = resolveSubscriptionSafety(plan, { loaded: !loading && planLoaded });
   const paid = access.active;
   const giftEntitlement = access.source === "gift";
+  const complimentaryEntitlement = access.source === "admin";
   const canCancel = access.canCancel;
   const currentPlan = planLabel(plan);
   const currentStatus = subscriptionStatus(plan) || "unknown";
   const giftEndsAt = formatGiftEntitlementEnd(plan?.giftEntitlementEndsAt);
+  const complimentaryEndsAt = formatGiftEntitlementEnd(
+    plan?.complimentaryEntitlementEndsAt
+  );
   const cancellationScheduled = access.cancelScheduled;
   const paidThrough = formatGiftEntitlementEnd(access.paidThrough);
 
@@ -408,11 +412,22 @@ export default function BillingHome({
               <Text style={styles.meta}>Access ends: {giftEndsAt}</Text>
             </>
           ) : null}
-          {!giftEntitlement && cancellationScheduled ? (
+          {complimentaryEntitlement ? (
+            <>
+              <Text style={styles.meta}>Access type: Complimentary</Text>
+              <Text style={styles.meta}>Access ends: {complimentaryEndsAt}</Text>
+              <Text style={styles.meta}>Payment: None · Renewal: None</Text>
+            </>
+          ) : null}
+          {!giftEntitlement && !complimentaryEntitlement && cancellationScheduled ? (
             <Text style={styles.meta}>Access through: {paidThrough}</Text>
           ) : null}
           <Text style={styles.note}>
-            {giftEntitlement
+            {complimentaryEntitlement
+              ? paid
+                ? "GrowPathAI granted this access without payment. It will not renew. Stripe Checkout becomes available after the grant expires or is revoked."
+                : "This complimentary access has ended. You can deliberately choose a Stripe subscription to continue."
+              : giftEntitlement
               ? paid
                 ? "Your prepaid access does not renew. Billing belongs to the gift purchaser, so there is no subscription to cancel from this account."
                 : "This prepaid gift has ended. You can choose a personal subscription if you want to continue Pro access."
