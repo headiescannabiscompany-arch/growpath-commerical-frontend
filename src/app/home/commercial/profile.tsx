@@ -9,10 +9,11 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
-import { useEntitlements } from "@/entitlements";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import CannabisContentControls from "@/components/account/CannabisContentControls";
+import StripeConnectPayoutCard from "@/components/account/StripeConnectPayoutCard";
 
 type ProfileForm = {
   businessName: string;
@@ -129,6 +130,9 @@ export default function CommercialProfileRoute() {
   const styles = useMemo(() => createCommercialProfileStyles(palette), [palette]);
   const { user } = useAuth();
   const entitlements = useEntitlements();
+  const canManageCreatorPayouts =
+    entitlements.can?.(CAPABILITY_KEYS.CREATOR_EARNINGS_VIEW) === true &&
+    entitlements.can?.(CAPABILITY_KEYS.CREATOR_PAYOUT_REQUEST) === true;
   const starterForm = useMemo(
     () => authenticatedBusinessStarter(user as BusinessIdentityUser | null),
     [user]
@@ -406,6 +410,10 @@ export default function CommercialProfileRoute() {
           <ActionLink href="/profile" label="Open Account Profile" />
         </View>
       </AppCard>
+
+      {canManageCreatorPayouts ? (
+        <StripeConnectPayoutCard title="Stripe seller payouts" titleLevel={2} />
+      ) : null}
 
       <CannabisContentControls />
     </AppPage>

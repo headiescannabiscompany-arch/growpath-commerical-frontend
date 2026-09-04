@@ -936,6 +936,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("course-media-workflow")?.warnings).toContain(
       "Never include held or refunded course earnings in creator payout eligibility."
     );
+    expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
+      "provider-verified Stripe Connect readiness with a GrowPath-recorded seller-net ledger separated from Stripe balances and bank payouts"
+    );
+    expect(getMethod("course-media-workflow")?.warnings).toContain(
+      "Never label a GrowPath seller-net ledger, local request, or legacy paid marker as a verified Stripe balance or bank payout."
+    );
     expect(getMethod("live-streaming-workflow")?.requiredOutputs).toContain(
       "two explicit broadcast modes: outside provider URL with embed-or-handoff behavior, and first-party GrowPath encoder ingest with adaptive in-app playback"
     );

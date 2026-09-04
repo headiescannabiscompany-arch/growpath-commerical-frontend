@@ -1,45 +1,52 @@
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { getPayoutHistory, getPayoutSummary, requestPayout } from "../api/creator.js";
+import { getEarnings } from "../api/creator.js";
+import StripeConnectPayoutCard from "../components/account/StripeConnectPayoutCard";
 import ScreenContainer from "../components/ScreenContainer.js";
 import { radius } from "../theme/theme.js";
 
-function rows(payload) {
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.items)) return payload.items;
-  if (Array.isArray(payload?.payouts)) return payload.payouts;
-  if (Array.isArray(payload?.history)) return payload.history;
-  return [];
+function normalize(payload) {
+  const data = payload?.data ?? payload ?? {};
+  return {
+    earnings: Array.isArray(data.earnings) ? data.earnings : [],
+    stats: data.stats || {},
+    payoutManagement: data.payoutManagement || null
+  };
 }
 
 function money(value) {
-  const n = Number(value || 0);
-  return `$${n.toFixed(2)}`;
+  if (value === null || value === undefined || value === "") return "Unavailable";
+  const amount = Number(value);
+  return Number.isFinite(amount) ? `$${amount.toFixed(2)}` : "Unavailable";
+}
+
+function earningStatus(item) {
+  if (item.legacyLocalPaidMarker) return "Legacy local paid marker — unverified";
+  switch (item.earningStatus) {
+    case "available":
+      return "Recorded seller earning";
+    case "held":
+      return "Held during payment review";
+    case "adjustment_pending":
+      return "Adjustment pending";
+    case "refunded":
+      return "Refunded";
+    default:
+      return item.earningStatus || "Recorded seller earning";
+  }
 }
 
 export default function CreatorPayoutScreen() {
   const entitlements = useEntitlements();
   const canView = entitlements.can(CAPABILITY_KEYS.CREATOR_EARNINGS_VIEW);
   const canRequest = entitlements.can(CAPABILITY_KEYS.CREATOR_PAYOUT_REQUEST);
-  const [summary, setSummary] = useState(null);
-  const [history, setHistory] = useState([]);
+  const [ledger, setLedger] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [requesting, setRequesting] = useState(false);
   const [feedback, setFeedback] = useState("");
 
-  const available = Number(summary?.availableForPayout ?? summary?.available ?? 0);
-
-  async function load() {
+  const load = useCallback(async () => {
     if (!canView) {
       setLoading(false);
       return;
@@ -47,49 +54,26 @@ export default function CreatorPayoutScreen() {
     setLoading(true);
     setFeedback("");
     try {
-      const [nextSummary, nextHistory] = await Promise.all([
-        getPayoutSummary(),
-        getPayoutHistory()
-      ]);
-      setSummary(nextSummary || {});
-      setHistory(rows(nextHistory));
+      setLedger(normalize(await getEarnings()));
     } catch (error) {
-      setFeedback(error?.message || "Unable to load payout data.");
+      setFeedback(error?.message || "Unable to load the seller earnings ledger.");
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    load();
   }, [canView]);
 
-  async function submitRequest() {
-    if (!canRequest || available <= 0) return;
-    setRequesting(true);
-    setFeedback("");
-    try {
-      await requestPayout("stripe");
-      setFeedback("Payout request submitted. Status updates after admin/payment processing.");
-      await load();
-    } catch (error) {
-      setFeedback(error?.message || "Failed to request payout.");
-    } finally {
-      setRequesting(false);
-    }
-  }
-
-  const pending = useMemo(
-    () => history.filter((item) => !item.paidOut && item.status !== "paid"),
-    [history]
-  );
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   if (!canView) {
     return (
       <ScreenContainer>
         <View style={styles.card}>
           <Text style={styles.header}>Payouts unavailable</Text>
-          <Text style={styles.meta}>This account does not have `CREATOR_EARNINGS_VIEW`.</Text>
+          <Text style={styles.meta}>
+            This account does not have `CREATOR_EARNINGS_VIEW`.
+          </Text>
         </View>
       </ScreenContainer>
     );
@@ -100,7 +84,7 @@ export default function CreatorPayoutScreen() {
       <ScreenContainer>
         <View style={styles.loading}>
           <ActivityIndicator />
-          <Text style={styles.meta}>Loading payouts...</Text>
+          <Text style={styles.meta}>Loading seller earnings...</Text>
         </View>
       </ScreenContainer>
     );
@@ -114,64 +98,48 @@ export default function CreatorPayoutScreen() {
       <View style={styles.card}>
         <View style={styles.summaryRow}>
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Total Earned</Text>
-            <Text style={styles.value}>{money(summary?.totalEarned ?? summary?.total)}</Text>
+            <Text style={styles.label}>Estimated Seller Net</Text>
+            <Text style={styles.value}>{money(ledger?.stats?.estimatedSellerNet)}</Text>
           </View>
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Paid Out</Text>
-            <Text style={styles.value}>{money(summary?.totalPaid ?? summary?.paidOut)}</Text>
+            <Text style={styles.label}>Bank Payout Status</Text>
+            <Text style={styles.value}>View in Stripe</Text>
           </View>
         </View>
-        <Text style={styles.label}>Available for Payout</Text>
-        <Text style={styles.available}>{money(available)}</Text>
-        <TouchableOpacity
-          style={[styles.requestBtn, (!canRequest || available <= 0) && styles.disabled]}
-          onPress={submitRequest}
-          disabled={!canRequest || available <= 0 || requesting}
-        >
-          {requesting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.requestBtnText}>Request Payout</Text>
-          )}
-        </TouchableOpacity>
-        {!canRequest ? (
-          <Text style={styles.meta}>Payout requests require `CREATOR_PAYOUT_REQUEST`.</Text>
-        ) : null}
+        <Text style={styles.label}>Held or Under Adjustment</Text>
+        <Text style={styles.available}>
+          {money(ledger?.stats?.heldOrAdjustmentPending)}
+        </Text>
+        <Text style={styles.meta}>
+          GrowPathAI records eligible seller earnings. Stripe is the source of truth for
+          connected balances and bank-payout timing.
+        </Text>
       </View>
 
-      <Text style={styles.subheader}>Pending Requests</Text>
-      {pending.length ? (
-        pending.map((item) => (
-          <View key={String(item._id || item.id || item.createdAt)} style={styles.row}>
-            <Text style={styles.amount}>{money(item.amount)}</Text>
-            <Text style={styles.meta}>Status: {item.status || "pending"}</Text>
-            <Text style={styles.meta}>
-              Requested {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
-            </Text>
-          </View>
-        ))
+      {canRequest ? (
+        <StripeConnectPayoutCard title="Stripe payout readiness" titleLevel={2} />
       ) : (
-        <Text style={styles.emptyText}>No pending payout requests.</Text>
+        <Text style={styles.meta}>
+          This account does not have permission to manage seller payouts.
+        </Text>
       )}
 
-      <Text style={styles.subheader}>Payout History</Text>
+      <Text style={styles.subheader}>Seller Earnings Ledger</Text>
       <FlatList
         scrollEnabled={false}
-        data={history}
+        data={ledger?.earnings || []}
         keyExtractor={(item) => String(item._id || item.id || item.createdAt)}
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Text style={styles.amount}>{money(item.amount)}</Text>
-            <Text style={item.paidOut || item.status === "paid" ? styles.paid : styles.unpaid}>
-              {item.status || (item.paidOut ? "paid" : "pending")}
-            </Text>
+            <Text style={styles.unpaid}>{earningStatus(item)}</Text>
+            <Text style={styles.meta}>Bank payout: verify in Stripe</Text>
             {item.platformFee ? (
               <Text style={styles.meta}>Platform fee: {money(item.platformFee)}</Text>
             ) : null}
           </View>
         )}
-        ListEmptyComponent={<Text style={styles.emptyText}>No payout history yet.</Text>}
+        ListEmptyComponent={<Text style={styles.emptyText}>No seller earnings yet.</Text>}
       />
     </ScreenContainer>
   );
@@ -204,17 +172,7 @@ const styles = StyleSheet.create({
   },
   amount: { fontWeight: "800", fontSize: 16, color: "#2c3e50" },
   meta: { color: "#64748B", fontSize: 13, marginTop: 4 },
-  paid: { color: "#27ae60", fontWeight: "800", marginTop: 4 },
   unpaid: { color: "#e67e22", fontWeight: "800", marginTop: 4 },
-  requestBtn: {
-    backgroundColor: "#e67e22",
-    paddingVertical: 12,
-    borderRadius: radius.card,
-    alignItems: "center",
-    marginTop: 16
-  },
-  requestBtnText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  disabled: { opacity: 0.55 },
   feedback: {
     color: "#334155",
     backgroundColor: "#F1F5F9",

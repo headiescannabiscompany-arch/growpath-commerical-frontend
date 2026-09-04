@@ -1,5 +1,6 @@
 import { apiRequest } from "./apiRequest";
 import routes from "./routes.js";
+import { startConnectPayoutOnboarding } from "./stripeConnect";
 
 function buildAuthHeaders(token) {
   if (!token) return undefined;
@@ -98,11 +99,8 @@ export function getCertificates() {
   return apiRequest(routes.USER.CERTIFICATES, { method: "GET" });
 }
 
-export function onboardCreator(refreshUrl, returnUrl) {
-  return apiRequest(routes.USER.ONBOARD_CREATOR, {
-    method: "POST",
-    body: { refreshUrl, returnUrl }
-  });
+export function onboardCreator() {
+  return startConnectPayoutOnboarding();
 }
 
 export function getUserPosts(userId, page = 1) {

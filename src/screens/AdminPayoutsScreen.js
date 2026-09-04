@@ -1,16 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { getPayoutHistory, markPayoutPaid } from "../api/creator.js";
+import { getPayoutHistory } from "../api/creator.js";
 import ScreenContainer from "../components/ScreenContainer.js";
 import { radius } from "../theme/theme.js";
 
@@ -23,7 +15,25 @@ function rows(payload) {
 }
 
 function money(value) {
-  return `$${Number(value || 0).toFixed(2)}`;
+  if (value === null || value === undefined || value === "") return "Unavailable";
+  const amount = Number(value);
+  return Number.isFinite(amount) ? `$${amount.toFixed(2)}` : "Unavailable";
+}
+
+function isLegacyPaidMarker(item) {
+  const status = String(item?.earningStatus || item?.status || "").toLowerCase();
+  return Boolean(
+    item?.legacyLocalPaidMarker ||
+    item?.paidOut === true ||
+    status === "paid" ||
+    status === "paid_out" ||
+    status === "legacy_paid_marker"
+  );
+}
+
+function statusLabel(item) {
+  if (isLegacyPaidMarker(item)) return "Legacy local paid marker — unverified";
+  return item?.earningStatus || item?.status || "Recorded seller earning";
 }
 
 export default function AdminPayoutsScreen() {
@@ -31,15 +41,9 @@ export default function AdminPayoutsScreen() {
   const canAdmin = entitlements.can(CAPABILITY_KEYS.CREATOR_PAYOUT_ADMIN);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [marking, setMarking] = useState(null);
   const [feedback, setFeedback] = useState("");
 
-  const pending = useMemo(
-    () => history.filter((item) => !item.paidOut && item.status !== "paid"),
-    [history]
-  );
-
-  async function load() {
+  const load = useCallback(async () => {
     if (!canAdmin) {
       setLoading(false);
       return;
@@ -54,32 +58,20 @@ export default function AdminPayoutsScreen() {
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    load();
   }, [canAdmin]);
 
-  async function handleMarkPaid(payoutId) {
-    setMarking(payoutId);
-    setFeedback("");
-    try {
-      await markPayoutPaid(payoutId);
-      setFeedback("Payout marked paid. Backend payout history refreshed.");
-      await load();
-    } catch (error) {
-      Alert.alert("Error", error?.message || "Failed to mark as paid");
-    } finally {
-      setMarking(null);
-    }
-  }
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   if (!canAdmin) {
     return (
       <ScreenContainer>
         <View style={styles.locked}>
           <Text style={styles.header}>Admin payouts unavailable</Text>
-          <Text style={styles.meta}>This account does not have `CREATOR_PAYOUT_ADMIN`.</Text>
+          <Text style={styles.meta}>
+            This account does not have `CREATOR_PAYOUT_ADMIN`.
+          </Text>
         </View>
       </ScreenContainer>
     );
@@ -87,44 +79,40 @@ export default function AdminPayoutsScreen() {
 
   return (
     <ScreenContainer scroll>
-      <Text style={styles.header}>Admin: Payout Requests</Text>
+      <Text style={styles.header}>Admin: Payout Ledger Review</Text>
+      <Text style={styles.meta}>
+        Read-only view. GrowPathAI cannot mark a Stripe bank payout paid. Verify balances,
+        transfers, and bank-payout status in Stripe.
+      </Text>
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
       {loading ? (
         <ActivityIndicator size="large" />
       ) : (
         <FlatList
           scrollEnabled={false}
-          data={pending}
+          data={history}
           keyExtractor={(item) => String(item._id || item.id || item.createdAt)}
-          renderItem={({ item }) => {
-            const id = String(item._id || item.id || "");
-            return (
-              <View style={styles.row}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.amount}>{money(item.amount)}</Text>
-                  <Text style={styles.date}>
-                    {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
-                  </Text>
-                  <Text style={styles.creator}>
-                    Creator: {item.creatorName || item.creatorId || item.creator?.name || "Unknown"}
-                  </Text>
-                  <Text style={styles.meta}>Status: {item.status || "pending"}</Text>
-                </View>
-                <TouchableOpacity
-                  style={[styles.markBtn, marking === id && styles.disabled]}
-                  onPress={() => handleMarkPaid(id)}
-                  disabled={!id || marking === id}
-                >
-                  {marking === id ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <Text style={styles.markBtnText}>Mark as Paid</Text>
-                  )}
-                </TouchableOpacity>
+          renderItem={({ item }) => (
+            <View style={styles.row}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.amount}>{money(item.amount)}</Text>
+                <Text style={styles.date}>
+                  {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
+                </Text>
+                <Text style={styles.creator}>
+                  Creator:{" "}
+                  {item.creatorName || item.creatorId || item.creator?.name || "Unknown"}
+                </Text>
+                <Text style={isLegacyPaidMarker(item) ? styles.warning : styles.meta}>
+                  Status: {statusLabel(item)}
+                </Text>
+                <Text style={styles.meta}>Bank payout: verify in Stripe</Text>
               </View>
-            );
-          }}
-          ListEmptyComponent={<Text style={styles.empty}>No pending payout requests.</Text>}
+            </View>
+          )}
+          ListEmptyComponent={
+            <Text style={styles.empty}>No seller earnings returned.</Text>
+          }
         />
       )}
     </ScreenContainer>
@@ -154,14 +142,7 @@ const styles = StyleSheet.create({
   date: { color: "#999", fontSize: 12, marginTop: 4 },
   creator: { color: "#34495e", fontSize: 13, marginTop: 2 },
   meta: { color: "#64748B", fontSize: 13, marginTop: 4 },
-  markBtn: {
-    backgroundColor: "#27ae60",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: radius.card,
-    marginLeft: 12
-  },
-  markBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  warning: { color: "#b45309", fontSize: 13, fontWeight: "800", marginTop: 4 },
   empty: { textAlign: "center", color: "#888", marginTop: 40 },
   feedback: {
     color: "#334155",
@@ -169,6 +150,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     padding: 8,
     marginBottom: 10
-  },
-  disabled: { opacity: 0.6 }
+  }
 });

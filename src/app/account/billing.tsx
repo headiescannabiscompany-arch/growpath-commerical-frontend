@@ -2,13 +2,19 @@ import React from "react";
 
 import RequireAuthGate from "@/auth/RequireAuthGate";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import BillingHome from "@/features/billing/screens/BillingHome";
 
 export default function AccountBillingRoute() {
+  const entitlements = useEntitlements();
+  const showCreatorPayouts =
+    entitlements.can?.(CAPABILITY_KEYS.CREATOR_EARNINGS_VIEW) === true &&
+    entitlements.can?.(CAPABILITY_KEYS.CREATOR_PAYOUT_REQUEST) === true;
+
   return (
     <RequireAuthGate>
       <ScreenBoundary title="Billing" showBack backFallbackHref="/account/workspace">
-        <BillingHome />
+        <BillingHome showCreatorPayouts={showCreatorPayouts} />
       </ScreenBoundary>
     </RequireAuthGate>
   );

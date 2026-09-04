@@ -18,7 +18,8 @@ import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import LegalLinks from "@/components/LegalLinks";
-import { useEntitlements } from "@/entitlements";
+import StripeConnectPayoutCard from "@/components/account/StripeConnectPayoutCard";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import AccountBillingSummary from "@/features/billing/AccountBillingSummary";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -65,6 +66,9 @@ export default function Profile() {
   const emailChanged = emailDraft.trim().toLowerCase() !== email.toLowerCase();
   const canSaveEmail = emailDraft.trim().length > 3 && emailChanged && !savingEmail;
   const emailVerified = Boolean(auth.user?.emailVerified);
+  const canManageCreatorPayouts =
+    ent.can?.(CAPABILITY_KEYS.CREATOR_EARNINGS_VIEW) === true &&
+    ent.can?.(CAPABILITY_KEYS.CREATOR_PAYOUT_REQUEST) === true;
 
   const planNote = useMemo(() => {
     if (
@@ -321,6 +325,10 @@ export default function Profile() {
             <Text style={styles.primaryButtonText}>Manage plan</Text>
           </Pressable>
         </AppCard>
+
+        {canManageCreatorPayouts ? (
+          <StripeConnectPayoutCard title="Stripe seller payouts" titleLevel={2} />
+        ) : null}
 
         {isCommercial ? (
           <AppCard style={styles.card}>

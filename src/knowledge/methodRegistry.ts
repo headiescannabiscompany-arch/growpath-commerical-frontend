@@ -1026,6 +1026,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "buyer-visible payment, refund, and GrowPath support status",
       "refund-adjusted and dispute-held creator earning",
       "creator payout eligibility limited to available unpaid earnings",
+      "provider-verified Stripe Connect readiness with a GrowPath-recorded seller-net ledger separated from Stripe balances and bank payouts",
       "stored course moderation case with exact-content and administrator-email links"
     ],
     [
@@ -1050,6 +1051,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never increment paid enrollment, revenue, or creator earnings more than once when Stripe retries a webhook.",
       "Never show refund or payment-issue forms without a recorded paid purchase, or label GrowPath support intake as a bank, card-network, or Stripe dispute.",
       "Never include held or refunded course earnings in creator payout eligibility.",
+      "Never label a GrowPath seller-net ledger, local request, or legacy paid marker as a verified Stripe balance or bank payout.",
       "Never send a course-report email before storing the report and moderation case, accept an off-site reported-content link, or erase the report when email delivery fails.",
       "Provider playback never completes a GrowPath lesson automatically."
     ],

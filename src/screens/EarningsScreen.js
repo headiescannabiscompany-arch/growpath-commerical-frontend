@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   ScrollView,
   StyleSheet,
@@ -11,7 +10,8 @@ import {
 } from "react-native";
 
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { getEarningsByCourse, getMyEarnings, requestPayout } from "../api/earnings";
+import StripeConnectPayoutCard from "../components/account/StripeConnectPayoutCard";
+import { getEarningsByCourse, getMyEarnings } from "../api/earnings";
 import ScreenContainer from "../components/ScreenContainer";
 import { radius, spacing } from "../theme/theme";
 
@@ -24,12 +24,31 @@ function normalize(payload) {
         ? data.items
         : [],
     stats: data.stats || data.summary || data,
-    courses: Array.isArray(data.courses) ? data.courses : []
+    courses: Array.isArray(data.courses) ? data.courses : [],
+    payoutManagement: data.payoutManagement || null
   };
 }
 
 function money(value) {
-  return `$${Number(value || 0).toFixed(2)}`;
+  if (value === null || value === undefined || value === "") return "Unavailable";
+  const amount = Number(value);
+  return Number.isFinite(amount) ? `$${amount.toFixed(2)}` : "Unavailable";
+}
+
+function earningStatus(item) {
+  if (item.legacyLocalPaidMarker) return "Legacy local paid marker — unverified";
+  switch (item.earningStatus) {
+    case "available":
+      return "Recorded seller earning";
+    case "held":
+      return "Held during payment review";
+    case "adjustment_pending":
+      return "Adjustment pending";
+    case "refunded":
+      return "Refunded";
+    default:
+      return item.earningStatus || "Recorded seller earning";
+  }
 }
 
 export default function EarningsScreen({ navigation }) {
@@ -39,16 +58,12 @@ export default function EarningsScreen({ navigation }) {
   const [data, setData] = useState(null);
   const [byCourse, setByCourse] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [requesting, setRequesting] = useState(false);
   const [feedback, setFeedback] = useState("");
 
-  const stats = data?.stats || {};
+  const stats = useMemo(() => data?.stats || {}, [data]);
   const earnings = data?.earnings || [];
-  const pendingAmount = Number(
-    stats.pendingPayout ?? stats.availableForPayout ?? stats.pending ?? 0
-  );
 
-  async function loadEarnings() {
+  const loadEarnings = useCallback(async () => {
     if (!canView) {
       setLoading(false);
       return;
@@ -62,41 +77,27 @@ export default function EarningsScreen({ navigation }) {
       ]);
       setData(normalize(earningsResult));
       const coursePayload = courseResult?.data ?? courseResult;
-      setByCourse(Array.isArray(coursePayload) ? coursePayload : coursePayload?.courses || []);
+      setByCourse(
+        Array.isArray(coursePayload) ? coursePayload : coursePayload?.courses || []
+      );
     } catch (error) {
       setFeedback(error?.message || "Failed to load earnings.");
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    loadEarnings();
   }, [canView]);
 
-  async function handleRequestPayout() {
-    if (!canRequest || pendingAmount <= 0) return;
-    setRequesting(true);
-    setFeedback("");
-    try {
-      await requestPayout("stripe");
-      setFeedback("Payout request submitted. Status updates after backend processing.");
-      await loadEarnings();
-    } catch (error) {
-      Alert.alert("Error", error?.message || "Failed to request payout");
-    } finally {
-      setRequesting(false);
-    }
-  }
+  useEffect(() => {
+    void loadEarnings();
+  }, [loadEarnings]);
 
   const totals = useMemo(
     () => ({
-      totalEarned: stats.totalEarned ?? stats.total ?? 0,
+      estimatedSellerNet: stats.estimatedSellerNet,
       totalSales: stats.totalSales ?? stats.sales ?? earnings.length,
-      totalPaidOut: stats.totalPaidOut ?? stats.paidOut ?? 0,
-      pendingPayout: pendingAmount
+      heldOrAdjustmentPending: stats.heldOrAdjustmentPending
     }),
-    [earnings.length, pendingAmount, stats]
+    [earnings.length, stats]
   );
 
   if (!canView) {
@@ -127,13 +128,16 @@ export default function EarningsScreen({ navigation }) {
     <ScreenContainer>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.title}>Creator Earnings</Text>
-        <Text style={styles.subtitle}>Track course sales, earnings, and payouts.</Text>
+        <Text style={styles.subtitle}>
+          Track recorded course and marketplace seller earnings. Verify balances and bank
+          payouts in Stripe.
+        </Text>
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
         <View style={styles.statsRow}>
           <View style={[styles.statCard, styles.statCardPrimary]}>
-            <Text style={styles.statValue}>{money(totals.totalEarned)}</Text>
-            <Text style={styles.statLabel}>Total Earned</Text>
+            <Text style={styles.statValue}>{money(totals.estimatedSellerNet)}</Text>
+            <Text style={styles.statLabel}>Estimated Seller Net</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{totals.totalSales}</Text>
@@ -143,41 +147,36 @@ export default function EarningsScreen({ navigation }) {
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{money(totals.totalPaidOut)}</Text>
-            <Text style={styles.statLabel}>Paid Out</Text>
+            <Text style={styles.statValue}>Stripe</Text>
+            <Text style={styles.statLabel}>Bank Payout Status</Text>
           </View>
           <View style={[styles.statCard, styles.statCardPending]}>
-            <Text style={styles.statValue}>{money(totals.pendingPayout)}</Text>
-            <Text style={styles.statLabel}>Pending</Text>
+            <Text style={styles.statValue}>{money(totals.heldOrAdjustmentPending)}</Text>
+            <Text style={styles.statLabel}>Held / Adjustment</Text>
           </View>
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.payoutBtn,
-            (!canRequest || totals.pendingPayout <= 0 || requesting) &&
-              styles.payoutBtnDisabled
-          ]}
-          onPress={handleRequestPayout}
-          disabled={!canRequest || totals.pendingPayout <= 0 || requesting}
-        >
-          <Text style={styles.payoutBtnText}>
-            {requesting ? "Requesting..." : `Request Payout (${money(totals.pendingPayout)})`}
-          </Text>
-        </TouchableOpacity>
-        {!canRequest ? (
+        {canRequest ? (
+          <StripeConnectPayoutCard title="Stripe payout readiness" titleLevel={2} />
+        ) : (
           <Text style={styles.subtitle}>
-            Payout requests require `CREATOR_PAYOUT_REQUEST`.
+            This account does not have permission to manage seller payouts.
           </Text>
-        ) : null}
+        )}
 
-        <Text style={styles.sectionTitle}>Sales by Course</Text>
+        <Text style={styles.sectionTitle}>Recorded seller net by course</Text>
         {byCourse.length ? (
           byCourse.map((course) => (
-            <View key={String(course._id || course.id || course.courseId)} style={styles.saleCard}>
-              <Text style={styles.saleTitle}>{course.title || course.courseTitle || "Course"}</Text>
+            <View
+              key={String(course._id || course.id || course.courseId)}
+              style={styles.saleCard}
+            >
+              <Text style={styles.saleTitle}>
+                {course.title || course.courseTitle || "Course"}
+              </Text>
               <Text style={styles.saleFooter}>
-                {course.sales || course.totalSales || 0} sales | {money(course.earnings || course.totalEarned)}
+                {course.sales || course.totalSales || 0} sales |{" "}
+                {money(course.earnings || course.totalEarned)}
               </Text>
             </View>
           ))
@@ -220,9 +219,8 @@ export default function EarningsScreen({ navigation }) {
                     {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
                   </Text>
                 </View>
-                <Text style={item.paidOut ? styles.paid : styles.pending}>
-                  {item.paidOut ? "Paid out" : item.status || "Pending payout"}
-                </Text>
+                <Text style={styles.pending}>{earningStatus(item)}</Text>
+                <Text style={styles.saleFooter}>Bank payout: verify in Stripe</Text>
               </View>
             )}
           />
@@ -236,7 +234,12 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: spacing(4), paddingBottom: 100 },
   locked: { padding: spacing(4) },
-  loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40 },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 40
+  },
   loadingText: { fontSize: 16, color: "#6B7280", marginTop: 8 },
   title: { fontSize: 28, fontWeight: "800", color: "#111827", marginBottom: 4 },
   subtitle: { fontSize: 14, color: "#6B7280", marginBottom: 16 },
@@ -254,15 +257,6 @@ const styles = StyleSheet.create({
   statCardPending: { backgroundColor: "#FEF3C7", borderColor: "#F59E0B" },
   statValue: { fontSize: 24, fontWeight: "800", color: "#111827", marginBottom: 4 },
   statLabel: { fontSize: 12, color: "#6B7280", fontWeight: "600" },
-  payoutBtn: {
-    backgroundColor: "#10B981",
-    borderRadius: radius.card,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginVertical: 16
-  },
-  payoutBtnDisabled: { backgroundColor: "#9CA3AF" },
-  payoutBtnText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
   sectionTitle: { fontSize: 18, fontWeight: "700", color: "#111827", marginBottom: 12 },
   saleCard: {
     backgroundColor: "#FFFFFF",
@@ -282,7 +276,6 @@ const styles = StyleSheet.create({
     marginTop: 8
   },
   saleFooter: { fontSize: 13, color: "#6B7280" },
-  paid: { marginTop: 8, color: "#10B981", fontWeight: "700" },
   pending: { marginTop: 8, color: "#B45309", fontWeight: "700" },
   emptyState: { alignItems: "center", paddingVertical: 32 },
   emptyTitle: { fontSize: 18, fontWeight: "700", color: "#111827", marginBottom: 8 },

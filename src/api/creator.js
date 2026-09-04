@@ -2,20 +2,14 @@ import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 import { persistImageUri } from "@/utils/photoUploads";
 
+export {
+  createConnectPayoutDashboardLink,
+  getConnectPayoutStatus,
+  startConnectPayoutOnboarding
+} from "./stripeConnect";
+
 function data(response) {
   return response?.data ?? response;
-}
-
-export function markPayoutPaid(payoutId) {
-  return apiRequest(apiRoutes.CREATOR.PAYOUT_MARK_PAID(payoutId), {
-    method: "POST"
-  });
-}
-export function requestPayout(payoutMethod = "stripe") {
-  return apiRequest(apiRoutes.CREATOR.REQUEST_PAYOUT, {
-    method: "POST",
-    body: { payoutMethod }
-  });
 }
 
 export function getEarnings() {

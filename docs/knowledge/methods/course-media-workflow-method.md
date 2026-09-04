@@ -69,6 +69,8 @@ Stripe refund and dispute webhooks remain the source of truth for external payme
 
 Buyer-facing payment status shows enrollment, payment, refund, and GrowPath support state. It must not expose creator settlement internals. Creator payout queries include only available, unpaid earnings; held and refunded earnings are not payout eligible.
 
+Creator earnings pages may show a GrowPath-recorded seller-net ledger and separately identify held or adjustment-pending amounts, but they must not call either value a Stripe balance or a completed bank payout. Stripe Connect onboarding and readiness are provider-verified whenever the payout surface loads. The connected Stripe dashboard remains the source of truth for balances and bank-payout timing. GrowPath does not expose a local request-payout or mark-paid action; an older local paid marker is read-only, explicitly unverified, and never treated as provider payout proof.
+
 ## Playback and fallback
 
 Use first-party playback for GrowPath uploads. Protected library videos retain only their stable asset path and video ID in the lesson; the learner obtains a short-lived playback URL only after the API verifies course and workspace access. Never save an object-store credential or expiring signed playback URL in the course. Use a normalized YouTube or Vimeo player only when the author recorded the source as available and explicitly allowed embedding. Preserve Vimeo unlisted privacy hashes in both canonical and player URLs. Keep Rumble and unknown providers link-only until a stable reviewed provider contract exists.

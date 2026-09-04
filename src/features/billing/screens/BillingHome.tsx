@@ -14,6 +14,7 @@ import {
 } from "../../../api/subscription";
 import { openExternalUrl } from "../../../utils/openExternalUrl";
 import { resolveSubscriptionSafety } from "../subscriptionSafety";
+import StripeConnectPayoutCard from "../../../components/account/StripeConnectPayoutCard";
 
 function subscriptionStatus(plan: any) {
   return String(plan?.subscriptionStatus || plan?.status || "").toLowerCase();
@@ -195,10 +196,12 @@ export function formatGiftEntitlementEnd(value: unknown) {
 
 type BillingHomeProps = {
   purchaserHistoryOnly?: boolean;
+  showCreatorPayouts?: boolean;
 };
 
 export default function BillingHome({
-  purchaserHistoryOnly = false
+  purchaserHistoryOnly = false,
+  showCreatorPayouts = false
 }: BillingHomeProps = {}) {
   const router = useRouter();
   const { token } = useAuth();
@@ -550,6 +553,9 @@ export default function BillingHome({
             </Pressable>
           ) : null}
         </>
+      ) : null}
+      {!purchaserHistoryOnly && showCreatorPayouts ? (
+        <StripeConnectPayoutCard title="Stripe seller payouts" titleLevel={2} />
       ) : null}
       {showSentGiftsSection ? (
         <View style={styles.giftSection}>
