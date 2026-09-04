@@ -149,3 +149,23 @@ export async function checkoutProduct(
       : {}
   });
 }
+
+export type StorefrontPurchaseStatus = {
+  productId: string;
+  paymentStatus: string;
+  checkoutStatus: string;
+  fulfillmentStatus: string | null;
+  refundStatus: string;
+  refundedAmountCents: number;
+  disputeStatus: string;
+  inventoryStatus: string | null;
+  accountingStatus: string | null;
+};
+
+export async function getProductPurchaseStatus(
+  productId: string
+): Promise<StorefrontPurchaseStatus> {
+  return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}/purchase-status`, {
+    method: "GET"
+  });
+}

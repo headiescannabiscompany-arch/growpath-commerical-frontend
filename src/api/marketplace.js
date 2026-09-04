@@ -17,7 +17,8 @@ export const MARKETPLACE_ROUTES = {
   GET_ANALYTICS: (contentId) => `/api/marketplace/${enc(contentId)}/analytics`,
   UPDATE_PRICING: (contentId) => `/api/marketplace/${enc(contentId)}/pricing`,
   DELETE_CONTENT: (contentId) => `/api/marketplace/${enc(contentId)}`,
-  PURCHASE: (contentId) => `/api/marketplace/${enc(contentId)}/purchase`
+  PURCHASE: (contentId) => `/api/marketplace/${enc(contentId)}/purchase`,
+  PURCHASE_STATUS: (contentId) => `/api/marketplace/${enc(contentId)}/purchase-status`
 };
 
 function rows(payload) {
@@ -223,5 +224,15 @@ export const purchaseContent = async (contentId) => {
     return purchaseRes;
   } catch (error) {
     throw new Error(`Failed to purchase content: ${error.message}`);
+  }
+};
+
+export const getPurchaseStatus = async (contentId) => {
+  try {
+    return await apiRequest(MARKETPLACE_ROUTES.PURCHASE_STATUS(contentId), {
+      method: "GET"
+    });
+  } catch (error) {
+    throw new Error(`Failed to verify storefront offer purchase: ${error.message}`);
   }
 };

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 
-import { checkoutProduct } from "@/api/products";
+import { checkoutProduct, getProductPurchaseStatus } from "@/api/products";
 import { fetchPublicStorefront } from "@/api/storefront";
 import {
   recordCommercialAnalyticsEvent,
@@ -79,7 +79,12 @@ function campaignHref(campaign: any) {
 export default function PublicStorefrontRoute() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
-  const params = useLocalSearchParams<{ slug?: string; line?: string }>();
+  const params = useLocalSearchParams<{
+    slug?: string;
+    line?: string;
+    checkout?: string;
+    product?: string;
+  }>();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
   const selectedLineId = useMemo(() => String(params.line || "").trim(), [params.line]);
   const returnFeedHref = "/feed";
@@ -96,6 +101,11 @@ export default function PublicStorefrontRoute() {
   const [forumThreads, setForumThreads] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const handledCheckoutReturn = useRef("");
+  const checkoutResult = String(params.checkout || "")
+    .trim()
+    .toLowerCase();
+  const checkoutProductId = String(params.product || "").trim();
 
   const load = useCallback(async () => {
     if (!slug) return;
@@ -123,6 +133,50 @@ export default function PublicStorefrontRoute() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    const returnKey = `${checkoutResult}:${checkoutProductId}`;
+    if (
+      !checkoutResult ||
+      !checkoutProductId ||
+      handledCheckoutReturn.current === returnKey
+    ) {
+      return;
+    }
+    handledCheckoutReturn.current = returnKey;
+    if (checkoutResult === "canceled") {
+      setFeedback("Checkout canceled. No new payment was confirmed.");
+      return;
+    }
+    if (checkoutResult !== "success") return;
+    setFeedback(
+      "Stripe returned. GrowPath is verifying the order; no new Checkout was created."
+    );
+    void getProductPurchaseStatus(checkoutProductId)
+      .then((status) => {
+        if (status.paymentStatus === "paid") {
+          setFeedback(
+            status.fulfillmentStatus === "fulfilled"
+              ? "Payment and fulfillment are confirmed."
+              : "Payment confirmed. The order is recorded and awaiting fulfillment."
+          );
+        } else if (["refunded", "disputed"].includes(status.paymentStatus)) {
+          setFeedback(
+            `Order payment is ${status.paymentStatus}. Open support if this is unexpected.`
+          );
+        } else {
+          setFeedback(
+            "Payment is still being verified. Refresh shortly; do not start another Checkout."
+          );
+        }
+      })
+      .catch((err) => {
+        setFeedback(
+          err?.message ||
+            "Order verification is temporarily unavailable. No new Checkout was created."
+        );
+      });
+  }, [checkoutProductId, checkoutResult]);
 
   useEffect(() => {
     if (!slug || !storefront) return;

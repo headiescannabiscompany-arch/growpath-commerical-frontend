@@ -24,6 +24,7 @@ const mockCheckPublicProductAccess = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
 const mockStartCourseCheckout = jest.fn();
 const mockSubmitProductPurchaseIntent = jest.fn();
+const mockGetProductPurchaseStatus = jest.fn();
 const mockLinkHrefs: string[] = [];
 let mockRouteParams: Record<string, string> = {
   slug: "living-soil-labs",
@@ -82,6 +83,7 @@ jest.mock("@/api/storefront", () => ({
 
 jest.mock("@/api/products", () => ({
   checkoutProduct: jest.fn(),
+  getProductPurchaseStatus: (...args: any[]) => mockGetProductPurchaseStatus(...args),
   submitProductPurchaseIntent: (...args: any[]) =>
     mockSubmitProductPurchaseIntent(...args)
 }));
@@ -256,6 +258,7 @@ describe("public commercial routes", () => {
     mockRecordCommercialAnalyticsEvent.mockReset();
     mockStartCourseCheckout.mockReset();
     mockSubmitProductPurchaseIntent.mockReset();
+    mockGetProductPurchaseStatus.mockReset();
     mockLinkHrefs.length = 0;
     mockRouteParams = {
       slug: "living-soil-labs",
@@ -267,6 +270,17 @@ describe("public commercial routes", () => {
     mockSubmitProductPurchaseIntent.mockResolvedValue({
       response: "yes",
       summary: { yes: 5, maybe: 2, no: 1, total: 8 }
+    });
+    mockGetProductPurchaseStatus.mockResolvedValue({
+      productId: "product-1",
+      paymentStatus: "paid",
+      checkoutStatus: "completed",
+      fulfillmentStatus: "unfulfilled",
+      refundStatus: "none",
+      refundedAmountCents: 0,
+      disputeStatus: "none",
+      inventoryStatus: "applied",
+      accountingStatus: "applied"
     });
     mockFetchPublicStorefront.mockResolvedValue(publicPayload);
     mockCheckPublicProductAccess.mockResolvedValue({
@@ -448,6 +462,27 @@ describe("public commercial routes", () => {
         })
       )
     );
+  });
+
+  it("verifies a storefront Checkout return without starting another Checkout", async () => {
+    mockRouteParams = {
+      slug: "living-soil-labs",
+      productId: "product-1",
+      courseId: "course-1",
+      checkout: "success",
+      product: "product-1"
+    };
+
+    const screen = render(<PublicProductRoute />);
+
+    await waitFor(() =>
+      expect(mockGetProductPurchaseStatus).toHaveBeenCalledWith("product-1")
+    );
+    expect(
+      await screen.findByText(
+        "Payment confirmed. The order is recorded and awaiting fulfillment."
+      )
+    ).toBeTruthy();
   });
 
   it("shows reusable purchase-interest answers on every enabled storefront product", async () => {

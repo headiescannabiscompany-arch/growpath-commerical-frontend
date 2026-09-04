@@ -245,11 +245,27 @@ describe("API Wrappers Unit Tests", () => {
     );
   });
 
+  it("Marketplace API: getPurchaseStatus verifies without starting checkout", async () => {
+    await marketplaceApi.getPurchaseStatus("content 1");
+    expect(fetchCalls[0].options.method).toBe("GET");
+    expect(
+      fetchCalls[0].url.endsWith("/api/marketplace/content%201/purchase-status")
+    ).toBe(true);
+  });
+
   it("Commercial API: checkoutProduct starts storefront product checkout", async () => {
     await productsApi.checkoutProduct("product 1");
     expect(fetchCalls[0].options.method).toBe("POST");
     expect(
       fetchCalls[0].url.endsWith("/api/commercial/products/product%201/checkout")
+    ).toBe(true);
+  });
+
+  it("Commercial API: getProductPurchaseStatus verifies without starting checkout", async () => {
+    await productsApi.getProductPurchaseStatus("product 1");
+    expect(fetchCalls[0].options.method).toBe("GET");
+    expect(
+      fetchCalls[0].url.endsWith("/api/commercial/products/product%201/purchase-status")
     ).toBe(true);
   });
 

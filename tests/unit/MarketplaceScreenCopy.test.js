@@ -9,10 +9,12 @@ import MarketplaceScreen, {
 const realMarketplaceApi = jest.requireActual("@/api/marketplace");
 
 const mockBrowseMarketplace = jest.fn();
+const mockGetPurchaseStatus = jest.fn();
 
 jest.mock("@/api/marketplace", () => ({
   browseMarketplace: (...args) => mockBrowseMarketplace(...args),
   getMarketplaceContent: jest.fn(),
+  getPurchaseStatus: (...args) => mockGetPurchaseStatus(...args),
   purchaseContent: jest.fn(),
   searchContent: jest.fn()
 }));
@@ -20,7 +22,12 @@ jest.mock("@/api/marketplace", () => ({
 describe("Marketplace compatibility screen copy", () => {
   beforeEach(() => {
     mockBrowseMarketplace.mockReset();
+    mockGetPurchaseStatus.mockReset();
     mockBrowseMarketplace.mockResolvedValue({ data: [] });
+    mockGetPurchaseStatus.mockResolvedValue({
+      isPurchased: true,
+      paymentStatus: "paid"
+    });
   });
 
   it("presents the compatibility route as Storefront Offers", async () => {
@@ -42,6 +49,21 @@ describe("Marketplace compatibility screen copy", () => {
     expect(screen.queryByText("Marketplace")).toBeNull();
     expect(screen.queryByText(/creator content/i)).toBeNull();
     expect(screen.queryByPlaceholderText("Search marketplace...")).toBeNull();
+  });
+
+  it("verifies a Checkout return without creating another purchase", async () => {
+    const screen = render(
+      <MarketplaceScreen
+        route={{ params: { checkout: "success", content: "offer-1" } }}
+      />
+    );
+
+    await waitFor(() => expect(mockGetPurchaseStatus).toHaveBeenCalledWith("offer-1"));
+    expect(
+      await screen.findByText(
+        "Payment confirmed. This storefront offer is available in your library."
+      )
+    ).toBeTruthy();
   });
 
   it("uses the active palette for the directory and loaded offer states", () => {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -14,6 +14,7 @@ import {
 import {
   browseMarketplace,
   getMarketplaceContent,
+  getPurchaseStatus,
   purchaseContent,
   searchContent
 } from "../api/marketplace";
@@ -50,7 +51,7 @@ function priceLabel(item) {
   return price > 0 ? `$${price.toFixed(2)}` : "Free";
 }
 
-export default function MarketplaceScreen({ navigation }) {
+export default function MarketplaceScreen({ navigation, route }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [query, setQuery] = useState("");
@@ -63,6 +64,11 @@ export default function MarketplaceScreen({ navigation }) {
   const [feedback, setFeedback] = useState("");
   const [selected, setSelected] = useState(null);
   const [purchasingId, setPurchasingId] = useState("");
+  const handledCheckoutReturn = useRef("");
+  const checkoutResult = String(route?.params?.checkout || "")
+    .trim()
+    .toLowerCase();
+  const checkoutContentId = String(route?.params?.content || "").trim();
 
   const load = useCallback(
     async (nextPage = 1, opts = {}) => {
@@ -91,6 +97,48 @@ export default function MarketplaceScreen({ navigation }) {
   useEffect(() => {
     load(1);
   }, [load]);
+
+  useEffect(() => {
+    const returnKey = `${checkoutResult}:${checkoutContentId}`;
+    if (
+      !checkoutResult ||
+      !checkoutContentId ||
+      handledCheckoutReturn.current === returnKey
+    ) {
+      return;
+    }
+    handledCheckoutReturn.current = returnKey;
+    if (checkoutResult === "canceled") {
+      setFeedback("Checkout canceled. No new payment was confirmed.");
+      return;
+    }
+    if (checkoutResult !== "success") return;
+    setFeedback(
+      "Stripe returned. GrowPath is verifying the purchase; no new Checkout was created."
+    );
+    void getPurchaseStatus(checkoutContentId)
+      .then((status) => {
+        if (status?.isPurchased || status?.paymentStatus === "paid") {
+          setFeedback(
+            "Payment confirmed. This storefront offer is available in your library."
+          );
+        } else if (["refunded", "disputed"].includes(status?.paymentStatus)) {
+          setFeedback(
+            `Purchase access is ${status.paymentStatus}. Open support if this is unexpected.`
+          );
+        } else {
+          setFeedback(
+            "Payment is still being verified. Refresh this page shortly; do not start another Checkout."
+          );
+        }
+      })
+      .catch((error) => {
+        setFeedback(
+          error?.message ||
+            "Purchase verification is temporarily unavailable. No new Checkout was created."
+        );
+      });
+  }, [checkoutContentId, checkoutResult]);
 
   async function openItem(item) {
     const id = rowId(item);
