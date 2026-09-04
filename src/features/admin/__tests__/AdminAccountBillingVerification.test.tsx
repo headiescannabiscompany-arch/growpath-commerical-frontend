@@ -84,11 +84,7 @@ describe("AdminAccountBillingVerification", () => {
     );
 
     expect(mockVerify).not.toHaveBeenCalled();
-    expect(
-      screen.getByText(
-        "Read-only check. It does not charge, cancel, downgrade, or repair anything."
-      )
-    ).toBeTruthy();
+    expect(screen.queryByText(/Read-only check/)).toBeNull();
 
     fireEvent.press(
       screen.getByLabelText("Verify member@example.com billing with Stripe")
@@ -98,6 +94,11 @@ describe("AdminAccountBillingVerification", () => {
       expect(mockVerify).toHaveBeenCalledWith("000000000000000000000123")
     );
     expect(await screen.findByText("Stripe confirms active paid access")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Read-only check. It does not charge, cancel, downgrade, or repair anything."
+      )
+    ).toBeTruthy();
     expect(screen.getByText(/Local: requested pro/)).toBeTruthy();
     expect(screen.getByText(/cus_…123456 \/ sub_…654321/)).toBeTruthy();
   });

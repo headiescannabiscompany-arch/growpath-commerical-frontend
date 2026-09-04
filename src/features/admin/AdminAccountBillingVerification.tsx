@@ -83,9 +83,11 @@ export default function AdminAccountBillingVerification({
               : "Verify with Stripe"}
         </Text>
       </Pressable>
-      <Text style={styles.note}>
-        Read-only check. It does not charge, cancel, downgrade, or repair anything.
-      </Text>
+      {loading || error || verification ? (
+        <Text style={styles.note}>
+          Read-only check. It does not charge, cancel, downgrade, or repair anything.
+        </Text>
+      ) : null}
       {loading ? <ActivityIndicator color={palette.accent} /> : null}
       {error ? (
         <Text accessibilityRole="alert" style={styles.warning}>
@@ -126,6 +128,14 @@ export default function AdminAccountBillingVerification({
             Checked {dateLabel(verification.inspectedAt)} ·{" "}
             {verification.reason.replaceAll("_", " ")}
           </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Hide ${email} Stripe billing result`}
+            onPress={() => setVerification(null)}
+            style={styles.hideButton}
+          >
+            <Text style={styles.buttonText}>Hide check</Text>
+          </Pressable>
         </View>
       ) : null}
     </View>
@@ -153,6 +163,7 @@ function createStyles(palette: ThemePalette) {
     buttonText: { color: palette.link, fontSize: 14, fontWeight: "700" },
     disabled: { opacity: 0.55 },
     note: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
+    hideButton: { alignSelf: "flex-start", paddingVertical: 3 },
     result: {
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.borderSoft,
