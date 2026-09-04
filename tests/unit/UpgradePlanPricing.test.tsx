@@ -41,6 +41,42 @@ function quote(overrides: Record<string, any> = {}) {
   };
 }
 
+function recurringQuotes() {
+  const makeQuote = (
+    plan: "pro" | "commercial" | "facility",
+    interval: "monthly" | "yearly",
+    unitAmount: number
+  ) => ({
+    available: true,
+    plan,
+    interval,
+    unitAmount,
+    currency: "usd",
+    formattedAmount: `$${(unitAmount / 100).toFixed(2)}`,
+    verifiedAt: "2026-09-04T12:00:00.000Z",
+    trialTerms: {
+      days: 30,
+      eligibility: "account_and_plan_history",
+      paymentMethodRequired: true,
+      renewsUnlessCanceled: true
+    }
+  });
+  return {
+    pro: {
+      monthly: makeQuote("pro", "monthly", 1000),
+      yearly: makeQuote("pro", "yearly", 10000)
+    },
+    commercial: {
+      monthly: makeQuote("commercial", "monthly", 5000),
+      yearly: makeQuote("commercial", "yearly", 50000)
+    },
+    facility: {
+      monthly: makeQuote("facility", "monthly", 10000),
+      yearly: makeQuote("facility", "yearly", 100000)
+    }
+  };
+}
+
 function installAttemptSessionStorage() {
   attemptStorageValues = new Map<string, string>();
   const windowObject = originalWindow || {};
@@ -60,15 +96,19 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush })
 }));
 
-jest.mock("../../src/api/subscription", () => ({
-  createCheckoutSession: jest.fn(),
-  createGiftCheckoutQuote: jest.fn(),
-  getGiftCheckoutRecovery: jest.fn(),
-  getSubscription: jest.fn(),
-  getSubscriptionSetupStatus: jest.fn(),
-  isSafeStripeCheckoutUrl: (value: unknown) =>
-    typeof value === "string" && value.startsWith("https://checkout.stripe.com/c/pay/")
-}));
+jest.mock("../../src/api/subscription", () => {
+  const actual = jest.requireActual("../../src/api/subscription");
+  return {
+    ...actual,
+    createCheckoutSession: jest.fn(),
+    createGiftCheckoutQuote: jest.fn(),
+    getGiftCheckoutRecovery: jest.fn(),
+    getSubscription: jest.fn(),
+    getSubscriptionSetupStatus: jest.fn(),
+    isSafeStripeCheckoutUrl: (value: unknown) =>
+      typeof value === "string" && value.startsWith("https://checkout.stripe.com/c/pay/")
+  };
+});
 
 jest.mock("../../src/auth/AuthContext", () => ({
   useAuth: () => ({
@@ -109,7 +149,9 @@ describe("UpgradePlan pricing", () => {
     });
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
       mode: "test",
-      giftCheckoutConfigured: false
+      giftCheckoutConfigured: false,
+      catalogReady: true,
+      quotes: recurringQuotes()
     });
     (getSubscription as jest.Mock).mockResolvedValue({
       plan: "free",
@@ -152,6 +194,27 @@ describe("UpgradePlan pricing", () => {
       "https://checkout.stripe.com/c/pay/cs_test_session"
     );
     expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+  });
+
+  it("disables only a plan whose exact recurring quote is invalid", async () => {
+    const quotes = recurringQuotes();
+    quotes.commercial.monthly = {
+      ...quotes.commercial.monthly,
+      currency: "USD"
+    };
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "live",
+      giftCheckoutConfigured: false,
+      catalogReady: true,
+      quotes
+    });
+    const screen = render(<UpgradePlan />);
+
+    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
+    expect(screen.getByLabelText("Choose Commercial monthly checkout")).toBeDisabled();
+    expect(screen.getByLabelText("Choose Pro Grower monthly checkout")).toBeEnabled();
+    fireEvent.press(screen.getByLabelText("Choose Commercial monthly checkout"));
+    expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 
   it("keeps active and cancel-scheduled access out of self checkout", async () => {

@@ -14,16 +14,22 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   createCheckoutSession,
   getSubscription,
-  getSubscriptionSetupStatus
+  getSubscriptionSetupStatus,
+  parseRecurringPriceQuotes,
+  type RecurringPriceQuotes
 } from "@/api/subscription";
 import { useAuth } from "@/auth/AuthContext";
 import PaymentHelpDialog from "@/components/PaymentHelpDialog";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
-import { formatPlanBillingNote, formatPlanPrice } from "@/constants/pricing";
 import { BILLING_PLANS, type BillingPlanKey } from "@/features/billing/planCopy";
 import GiftCheckoutReviewAction from "@/features/billing/GiftCheckoutReviewAction";
 import GiftCheckoutRecoveryAction from "@/features/billing/GiftCheckoutRecoveryAction";
+import {
+  formatVerifiedRecurringBillingNote,
+  formatVerifiedRecurringPrice,
+  verifiedRecurringPriceQuote
+} from "@/features/billing/recurringPriceQuotes";
 import { resolveSubscriptionSafety } from "@/features/billing/subscriptionSafety";
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -96,6 +102,7 @@ export default function Offers() {
   const [trialDays, setTrialDays] = useState(30);
   const [giftCheckoutConfigured, setGiftCheckoutConfigured] = useState(false);
   const [giftSetupLoaded, setGiftSetupLoaded] = useState(false);
+  const [catalogQuotes, setCatalogQuotes] = useState<RecurringPriceQuotes>({});
   const [pendingImmediatePlan, setPendingImmediatePlan] = useState<BillingPlanKey | null>(
     null
   );
@@ -182,6 +189,7 @@ export default function Offers() {
         }
         if (mounted) {
           setGiftCheckoutConfigured(status?.giftCheckoutConfigured === true);
+          setCatalogQuotes(parseRecurringPriceQuotes(status?.quotes));
           setGiftSetupLoaded(true);
         }
       })
@@ -189,6 +197,7 @@ export default function Offers() {
         if (mounted) {
           setCheckoutMode("unknown");
           setGiftCheckoutConfigured(false);
+          setCatalogQuotes({});
           setGiftSetupLoaded(true);
         }
       });
@@ -260,6 +269,14 @@ export default function Offers() {
 
   async function startCheckout(plan: BillingPlanKey, confirmedImmediateBilling = false) {
     if (giftMode || !access.canOpenCheckout) {
+      return;
+    }
+
+    if (!verifiedRecurringPriceQuote(catalogQuotes, plan, interval)) {
+      setFeedbackTone("error");
+      setFeedback(
+        "Stripe could not verify this exact plan price. Checkout remains disabled."
+      );
       return;
     }
 
@@ -579,14 +596,20 @@ export default function Offers() {
           const confirmingImmediateBilling = pendingImmediatePlan === plan.key;
           const planTrialEligible =
             trialEligibleForPlan(plan.key) && !(subscriptionActive && current);
-          const buttonDisabled = loading || current || !access.canOpenCheckout;
+          const priceQuote = verifiedRecurringPriceQuote(
+            catalogQuotes,
+            plan.key,
+            interval
+          );
+          const buttonDisabled =
+            loading || current || !access.canOpenCheckout || !priceQuote;
           return (
             <AppCard key={plan.key} style={[styles.planCard, current && styles.current]}>
               <Text style={styles.eyebrow}>{plan.eyebrow}</Text>
               <Text style={styles.cardTitle}>{plan.title}</Text>
               {!giftMode ? (
                 <Text style={styles.price}>
-                  {formatPlanPrice(plan.key, interval)}
+                  {formatVerifiedRecurringPrice(priceQuote)}
                   <Text style={styles.priceMeta}>
                     {` / ${interval === "monthly" ? "month" : "year"}`}
                   </Text>
@@ -595,7 +618,7 @@ export default function Offers() {
               <Text style={styles.billingNote}>
                 {giftMode
                   ? `One prepaid ${interval === "monthly" ? "month" : "year"} of ${plan.title}. Starts when claimed and does not renew.`
-                  : formatPlanBillingNote(plan.key, interval)}
+                  : formatVerifiedRecurringBillingNote(priceQuote)}
               </Text>
               <Text style={styles.cardDesc}>{plan.description}</Text>
 
@@ -652,7 +675,7 @@ export default function Offers() {
                       : current
                         ? "Current plan"
                         : confirmingImmediateBilling
-                          ? `Continue — billed ${formatPlanPrice(plan.key, interval)}`
+                          ? `Continue — billed ${formatVerifiedRecurringPrice(priceQuote)}`
                           : planTrialEligible
                             ? `Start ${trialDays}-day trial`
                             : "Review paid checkout"}

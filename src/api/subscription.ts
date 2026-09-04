@@ -23,9 +23,187 @@ export async function getSubscriptionStatus() {
   return res?.data ?? res;
 }
 
-export async function getSubscriptionSetupStatus() {
-  const res = await apiRequest("/api/subscription/status", { method: "GET" });
-  return res?.data ?? res;
+export type RecurringPricePlan = "pro" | "commercial" | "facility";
+export type RecurringPriceInterval = "monthly" | "yearly";
+
+export type RecurringPriceTrialTerms = {
+  days: number;
+  eligibility: "account_and_plan_history";
+  paymentMethodRequired: true;
+  renewsUnlessCanceled: true;
+};
+
+type RecurringPriceQuoteBase = {
+  plan: RecurringPricePlan;
+  interval: RecurringPriceInterval;
+  trialTerms: RecurringPriceTrialTerms;
+};
+
+export type AvailableRecurringPriceQuote = RecurringPriceQuoteBase & {
+  available: true;
+  unitAmount: number;
+  currency: string;
+  formattedAmount: string;
+  verifiedAt: string;
+  unavailableReason?: never;
+};
+
+export type UnavailableRecurringPriceQuote = RecurringPriceQuoteBase & {
+  available: false;
+  unitAmount: null;
+  currency: null;
+  formattedAmount: null;
+  verifiedAt: null;
+  unavailableReason: string;
+};
+
+export type RecurringPriceQuote =
+  | AvailableRecurringPriceQuote
+  | UnavailableRecurringPriceQuote;
+
+export type RecurringPriceQuotes = Partial<
+  Record<RecurringPricePlan, Partial<Record<RecurringPriceInterval, RecurringPriceQuote>>>
+>;
+
+export type SubscriptionSetupStatus = Record<string, unknown> & {
+  mode?: "live" | "test" | "unknown";
+  giftCheckoutConfigured?: boolean;
+  catalogReady: boolean;
+  quotes: RecurringPriceQuotes;
+  trial?: {
+    enabled?: boolean;
+    days?: number;
+  };
+};
+
+export const RECURRING_PRICE_PLANS = ["pro", "commercial", "facility"] as const;
+export const RECURRING_PRICE_INTERVALS = ["monthly", "yearly"] as const;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function isCanonicalIsoDate(value: unknown): value is string {
+  if (typeof value !== "string" || !value) return false;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
+}
+
+function hasControlCharacters(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const code = character.charCodeAt(0);
+    return code < 32 || code === 127;
+  });
+}
+
+function isRecurringPriceTrialTerms(value: unknown): value is RecurringPriceTrialTerms {
+  if (!isRecord(value)) return false;
+  return Boolean(
+    Number.isSafeInteger(value.days) &&
+    Number(value.days) >= 1 &&
+    Number(value.days) <= 365 &&
+    value.eligibility === "account_and_plan_history" &&
+    value.paymentMethodRequired === true &&
+    value.renewsUnlessCanceled === true
+  );
+}
+
+export function isRecurringPriceQuote(
+  value: unknown,
+  expectedPlan?: RecurringPricePlan,
+  expectedInterval?: RecurringPriceInterval
+): value is RecurringPriceQuote {
+  if (!isRecord(value)) return false;
+  const plan = value.plan;
+  const interval = value.interval;
+  if (!RECURRING_PRICE_PLANS.includes(plan as RecurringPricePlan)) return false;
+  if (!RECURRING_PRICE_INTERVALS.includes(interval as RecurringPriceInterval)) {
+    return false;
+  }
+  if (expectedPlan && plan !== expectedPlan) return false;
+  if (expectedInterval && interval !== expectedInterval) return false;
+  if (!isRecurringPriceTrialTerms(value.trialTerms)) return false;
+
+  if (value.available === true) {
+    return Boolean(
+      Number.isSafeInteger(value.unitAmount) &&
+      Number(value.unitAmount) > 0 &&
+      typeof value.currency === "string" &&
+      /^[a-z]{3}$/.test(value.currency) &&
+      typeof value.formattedAmount === "string" &&
+      value.formattedAmount.length > 0 &&
+      value.formattedAmount.length <= 64 &&
+      value.formattedAmount.trim() === value.formattedAmount &&
+      !hasControlCharacters(value.formattedAmount) &&
+      isCanonicalIsoDate(value.verifiedAt) &&
+      value.unavailableReason === undefined
+    );
+  }
+
+  return Boolean(
+    value.available === false &&
+    value.unitAmount === null &&
+    value.currency === null &&
+    value.formattedAmount === null &&
+    value.verifiedAt === null &&
+    typeof value.unavailableReason === "string" &&
+    /^[A-Z][A-Z0-9_]{2,127}$/.test(value.unavailableReason)
+  );
+}
+
+export function parseRecurringPriceQuotes(value: unknown): RecurringPriceQuotes {
+  if (!isRecord(value)) return {};
+  const quotes: RecurringPriceQuotes = {};
+
+  for (const plan of RECURRING_PRICE_PLANS) {
+    const planQuotes = value[plan];
+    if (!isRecord(planQuotes)) continue;
+    for (const interval of RECURRING_PRICE_INTERVALS) {
+      const quote = planQuotes[interval];
+      if (!isRecurringPriceQuote(quote, plan, interval)) continue;
+      quotes[plan] ||= {};
+      quotes[plan]![interval] = quote;
+    }
+  }
+
+  return quotes;
+}
+
+export function getVerifiedRecurringPriceQuote(
+  quotes: unknown,
+  plan: RecurringPricePlan,
+  interval: RecurringPriceInterval
+): AvailableRecurringPriceQuote | null {
+  if (!isRecord(quotes) || !isRecord(quotes[plan])) return null;
+  const quote = (quotes[plan] as Record<string, unknown>)[interval];
+  return isRecurringPriceQuote(quote, plan, interval) && quote.available ? quote : null;
+}
+
+export function hasCompleteRecurringPriceCatalog(quotes: RecurringPriceQuotes): boolean {
+  return RECURRING_PRICE_PLANS.every((plan) =>
+    RECURRING_PRICE_INTERVALS.every(
+      (interval) => getVerifiedRecurringPriceQuote(quotes, plan, interval) !== null
+    )
+  );
+}
+
+function invalidSubscriptionSetupStatus(): never {
+  throw new Error("The subscription setup response was invalid.");
+}
+
+export async function getSubscriptionSetupStatus(): Promise<SubscriptionSetupStatus> {
+  const res = await apiRequest("/api/subscription/status", {
+    method: "GET",
+    cache: "no-store"
+  });
+  const value = res?.data ?? res;
+  if (!isRecord(value)) return invalidSubscriptionSetupStatus();
+  const quotes = parseRecurringPriceQuotes(value.quotes);
+  return {
+    ...value,
+    catalogReady: value.catalogReady === true && hasCompleteRecurringPriceCatalog(quotes),
+    quotes
+  } as SubscriptionSetupStatus;
 }
 
 export async function getSubscription() {

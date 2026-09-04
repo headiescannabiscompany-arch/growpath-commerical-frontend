@@ -3,11 +3,16 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
 import { useFacilityBilling } from "@/hooks/useFacilityBilling";
+import { useRecurringPriceQuotes } from "@/hooks/useRecurringPriceQuotes";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { formatPlanBillingNote, formatPlanPrice } from "@/constants/pricing";
 import { openExternalUrl } from "@/utils/openExternalUrl";
+import {
+  formatVerifiedRecurringBillingNote,
+  formatVerifiedRecurringPrice,
+  verifiedRecurringPriceQuote
+} from "../recurringPriceQuotes";
 import { resolveSubscriptionSafety } from "../subscriptionSafety";
 
 const FACILITY_BILLING_ROLES = new Set(["OWNER", "FACILITY_ADMIN", "SUPER_ADMIN"]);
@@ -34,6 +39,7 @@ export default function FacilityBillingHome() {
     kind: "success" | "error";
     text: string;
   } | null>(null);
+  const { quotes: catalogQuotes } = useRecurringPriceQuotes();
   const {
     billing,
     isLoading,
@@ -52,9 +58,18 @@ export default function FacilityBillingHome() {
   const periodEnd = displayDate(billing?.currentPeriodEnd);
   const graceUntil = displayDate(billing?.graceUntil);
   const busy = isStartingCheckout || isCanceling || cancelRequestPending;
+  const priceQuote = verifiedRecurringPriceQuote(catalogQuotes, "facility", interval);
 
   async function handleCheckout() {
-    if (!canManageBilling || !facilityId || busy || !access.canOpenCheckout) return;
+    if (
+      !canManageBilling ||
+      !facilityId ||
+      busy ||
+      !access.canOpenCheckout ||
+      !priceQuote
+    ) {
+      return;
+    }
     setBillingFeedback(null);
     try {
       const result = await startCheckout(interval);
@@ -193,7 +208,7 @@ export default function FacilityBillingHome() {
           ) : access.canOpenCheckout ? (
             <>
               <Text style={styles.note}>
-                {formatPlanBillingNote("facility", interval)}
+                {formatVerifiedRecurringBillingNote(priceQuote)}
               </Text>
               <View style={styles.intervalRow}>
                 {(["monthly", "yearly"] as const).map((option) => (
@@ -210,7 +225,9 @@ export default function FacilityBillingHome() {
                   >
                     <Text style={styles.intervalButtonText}>
                       {option === "monthly" ? "Monthly" : "Yearly"}:{" "}
-                      {formatPlanPrice("facility", option)}
+                      {formatVerifiedRecurringPrice(
+                        verifiedRecurringPriceQuote(catalogQuotes, "facility", option)
+                      )}
                     </Text>
                   </Pressable>
                 ))}
@@ -218,9 +235,9 @@ export default function FacilityBillingHome() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Start Facility plan checkout"
-                accessibilityState={{ disabled: busy }}
-                disabled={busy}
-                style={[styles.primaryButton, busy && styles.disabled]}
+                accessibilityState={{ disabled: busy || !priceQuote }}
+                disabled={busy || !priceQuote}
+                style={[styles.primaryButton, (busy || !priceQuote) && styles.disabled]}
                 onPress={() => void handleCheckout()}
               >
                 <Text style={styles.primaryButtonText}>

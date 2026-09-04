@@ -14,20 +14,23 @@ import AppCard from "../../../components/layout/AppCard";
 import {
   createCheckoutSession,
   getSubscription,
-  getSubscriptionSetupStatus
+  getSubscriptionSetupStatus,
+  parseRecurringPriceQuotes,
+  type RecurringPriceQuotes
 } from "../../../api/subscription";
 import { useAuth } from "../../../auth/AuthContext";
-import {
-  formatPlanBillingNote,
-  formatPlanPrice,
-  PLAN_PRICING
-} from "../../../constants/pricing";
+import { PLAN_PRICING } from "../../../constants/pricing";
 import { BILLING_PLANS, type BillingPlanKey } from "../planCopy";
 import GiftCheckoutReviewAction from "../GiftCheckoutReviewAction";
 import GiftCheckoutRecoveryAction from "../GiftCheckoutRecoveryAction";
 import { openExternalUrl } from "../../../utils/openExternalUrl";
 import { useAppTheme, type ThemePalette } from "../../../theme/appTheme";
 import { resolveSubscriptionSafety } from "../subscriptionSafety";
+import {
+  formatVerifiedRecurringBillingNote,
+  formatVerifiedRecurringPrice,
+  verifiedRecurringPriceQuote
+} from "../recurringPriceQuotes";
 
 type BillingInterval = "monthly" | "yearly";
 type CheckoutMode = "live" | "test" | "unknown";
@@ -80,6 +83,7 @@ export default function UpgradePlan() {
   const [feedbackTone, setFeedbackTone] = useState<FeedbackTone>("info");
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
   const [giftCheckoutConfigured, setGiftCheckoutConfigured] = useState(false);
+  const [catalogQuotes, setCatalogQuotes] = useState<RecurringPriceQuotes>({});
   const [giftMode, setGiftMode] = useState(false);
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
   const [giftRecipientName, setGiftRecipientName] = useState("");
@@ -117,6 +121,7 @@ export default function UpgradePlan() {
         }
         if (mounted) {
           setGiftCheckoutConfigured(status?.giftCheckoutConfigured === true);
+          setCatalogQuotes(parseRecurringPriceQuotes(status?.quotes));
           setSubscription(
             subscriptionResult.status === "fulfilled"
               ? subscriptionResult.value || {}
@@ -135,6 +140,14 @@ export default function UpgradePlan() {
   async function startCheckout(plan: BillingPlanKey) {
     const selected = BILLING_PLANS.find((item) => item.key === plan);
     if (giftMode || !access.canOpenCheckout) {
+      return;
+    }
+
+    if (!verifiedRecurringPriceQuote(catalogQuotes, plan, interval)) {
+      setFeedbackTone("error");
+      setFeedback(
+        "Stripe could not verify this exact plan price. Checkout remains disabled."
+      );
       return;
     }
 
@@ -384,6 +397,12 @@ export default function UpgradePlan() {
         {purchasablePlans.map((plan) => {
           const loading = loadingPlan === plan.key;
           const featured = requestedPlan === plan.key;
+          const priceQuote = verifiedRecurringPriceQuote(
+            catalogQuotes,
+            plan.key,
+            interval
+          );
+          const checkoutDisabled = loading || !priceQuote;
           return (
             <AppCard
               key={plan.key}
@@ -408,7 +427,7 @@ export default function UpgradePlan() {
               </View>
               {!giftMode ? (
                 <Text style={styles.price}>
-                  {formatPlanPrice(plan.key, interval)}
+                  {formatVerifiedRecurringPrice(priceQuote)}
                   <Text style={styles.priceMeta}>
                     {` / ${interval === "monthly" ? "month" : "year"}`}
                   </Text>
@@ -417,7 +436,7 @@ export default function UpgradePlan() {
               <Text style={styles.billingNote}>
                 {giftMode
                   ? `One prepaid ${interval === "monthly" ? "month" : "year"} of ${plan.title}. Starts when claimed and does not renew.`
-                  : formatPlanBillingNote(plan.key, interval)}
+                  : formatVerifiedRecurringBillingNote(priceQuote)}
               </Text>
               <Text style={styles.sectionLabel}>Billing next</Text>
               <Text style={styles.sectionText}>
@@ -452,16 +471,16 @@ export default function UpgradePlan() {
               ) : access.canOpenCheckout ? (
                 <Pressable
                   onPress={() => void startCheckout(plan.key)}
-                  disabled={loading}
+                  disabled={checkoutDisabled}
                   accessibilityRole="button"
-                  accessibilityState={{ disabled: loading }}
+                  accessibilityState={{ disabled: checkoutDisabled }}
                   accessibilityLabel={`Choose ${plan.title} ${interval} checkout`}
-                  style={[loading && styles.buttonDisabled, styles.button]}
+                  style={[checkoutDisabled && styles.buttonDisabled, styles.button]}
                 >
                   <Text style={styles.buttonText}>
                     {loading
                       ? "Starting..."
-                      : `Checkout ${formatPlanPrice(plan.key, interval)}${
+                      : `Checkout ${formatVerifiedRecurringPrice(priceQuote)}${
                           interval === "monthly" ? "/month" : "/year"
                         }`}
                   </Text>

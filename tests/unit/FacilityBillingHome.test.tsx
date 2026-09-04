@@ -2,10 +2,13 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityBillingHome from "@/features/billing/screens/FacilityBillingHome";
+import { openExternalUrl } from "@/utils/openExternalUrl";
 
 const mockUseFacilityBilling = jest.fn();
+const mockUseRecurringPriceQuotes = jest.fn();
 const mockCancelPlan = jest.fn();
 const mockRefetch = jest.fn();
+const mockStartCheckout = jest.fn();
 const mockEntitlements: Record<string, any> = {
   facilityId: "facility-1",
   facilityRole: "STAFF"
@@ -26,12 +29,53 @@ jest.mock("@/hooks/useFacilityBilling", () => ({
   useFacilityBilling: (...args: any[]) => mockUseFacilityBilling(...args)
 }));
 
+jest.mock("@/hooks/useRecurringPriceQuotes", () => ({
+  useRecurringPriceQuotes: () => mockUseRecurringPriceQuotes()
+}));
+
+jest.mock("@/utils/openExternalUrl", () => ({
+  openExternalUrl: jest.fn()
+}));
+
+function facilityQuote(interval: "monthly" | "yearly") {
+  const unitAmount = interval === "monthly" ? 10000 : 100000;
+  return {
+    plan: "facility",
+    interval,
+    available: true,
+    unitAmount,
+    currency: "usd",
+    formattedAmount: `$${(unitAmount / 100).toFixed(2)}`,
+    verifiedAt: "2026-09-04T12:00:00.000Z",
+    trialTerms: {
+      days: 30,
+      eligibility: "account_and_plan_history",
+      paymentMethodRequired: true,
+      renewsUnlessCanceled: true
+    }
+  };
+}
+
 describe("FacilityBillingHome", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockEntitlements.facilityRole = "STAFF";
     mockCancelPlan.mockResolvedValue({ ok: true });
     mockRefetch.mockResolvedValue({ data: null });
+    mockStartCheckout.mockResolvedValue({
+      checkoutUrl: "https://checkout.stripe.com/c/pay/cs_test_facility"
+    });
+    (openExternalUrl as jest.Mock).mockResolvedValue(undefined);
+    mockUseRecurringPriceQuotes.mockReturnValue({
+      loading: false,
+      ready: true,
+      quotes: {
+        facility: {
+          monthly: facilityQuote("monthly"),
+          yearly: facilityQuote("yearly")
+        }
+      }
+    });
     mockUseFacilityBilling.mockReturnValue({
       billing: {
         status: "active",
@@ -44,7 +88,7 @@ describe("FacilityBillingHome", () => {
       isLoading: false,
       error: null,
       refetch: mockRefetch,
-      startCheckout: jest.fn(),
+      startCheckout: mockStartCheckout,
       cancelPlan: mockCancelPlan,
       isStartingCheckout: false,
       isCanceling: false
@@ -153,6 +197,72 @@ describe("FacilityBillingHome", () => {
     });
 
     const allowed = render(<FacilityBillingHome />);
-    expect(allowed.getByLabelText("Start Facility plan checkout")).toBeTruthy();
+    expect(allowed.getByLabelText("Start Facility plan checkout")).toBeEnabled();
+  });
+
+  it("opens only the interval with a verified Facility quote", async () => {
+    mockEntitlements.facilityRole = "OWNER";
+    mockUseFacilityBilling.mockReturnValue({
+      billing: {
+        plan: "free",
+        status: "inactive",
+        billingSource: "free",
+        canManageBilling: true,
+        canCancelSubscription: false,
+        canStartCheckout: true
+      },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      startCheckout: mockStartCheckout,
+      cancelPlan: mockCancelPlan,
+      isStartingCheckout: false,
+      isCanceling: false
+    });
+    const screen = render(<FacilityBillingHome />);
+
+    expect(screen.getByText("Monthly: $100")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Choose Facility yearly billing"));
+    expect(screen.getByText("Yearly: $1,000")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Start Facility plan checkout"));
+
+    await waitFor(() => expect(mockStartCheckout).toHaveBeenCalledWith("yearly"));
+    expect(openExternalUrl).toHaveBeenCalledWith(
+      "https://checkout.stripe.com/c/pay/cs_test_facility"
+    );
+  });
+
+  it("leaves Facility checkout disabled when its quote is unavailable", () => {
+    mockEntitlements.facilityRole = "OWNER";
+    mockUseRecurringPriceQuotes.mockReturnValue({
+      loading: false,
+      ready: false,
+      quotes: {}
+    });
+    mockUseFacilityBilling.mockReturnValue({
+      billing: {
+        plan: "free",
+        status: "inactive",
+        billingSource: "free",
+        canManageBilling: true,
+        canCancelSubscription: false,
+        canStartCheckout: true
+      },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      startCheckout: mockStartCheckout,
+      cancelPlan: mockCancelPlan,
+      isStartingCheckout: false,
+      isCanceling: false
+    });
+    const screen = render(<FacilityBillingHome />);
+
+    expect(
+      screen.getByText("Stripe pricing is unavailable. Checkout is disabled.")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Start Facility plan checkout")).toBeDisabled();
+    fireEvent.press(screen.getByLabelText("Start Facility plan checkout"));
+    expect(mockStartCheckout).not.toHaveBeenCalled();
   });
 });
