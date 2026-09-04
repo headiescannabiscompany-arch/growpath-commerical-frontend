@@ -10,6 +10,7 @@
   },
   "scripts": {
     "guard:contamination": "node scripts/guard-contamination.cjs",
+    "guard:recovered-interface": "node scripts/verify-recovered-interface-boundary.cjs",
     "guard:client": "node scripts/guard-client-wrapper.cjs",
     "guard:tool-journal-flow": "node scripts/guard-tool-journal-flow.cjs",
     "guard:tool-keys": "node scripts/guard-tool-keys.cjs",
