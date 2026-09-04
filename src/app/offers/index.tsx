@@ -37,6 +37,7 @@ import { radius } from "@/theme/theme";
 import { FREE_POLICY } from "@/config/freePolicy";
 import {
   OFFERS_GIFT_RETURN_PATH,
+  normalizeLiveGiftSessionId,
   resolveAuthReturnPath,
   safeLoginPath
 } from "@/utils/authReturnPath";
@@ -65,9 +66,10 @@ export function isExactOffersGiftContinuation(
   fragment: unknown = "",
   rawBrowserPath?: unknown
 ): boolean {
+  const resolved = resolveAuthReturnPath("/offers", params, fragment, rawBrowserPath);
   return (
-    resolveAuthReturnPath("/offers", params, fragment, rawBrowserPath) ===
-    OFFERS_GIFT_RETURN_PATH
+    resolved === OFFERS_GIFT_RETURN_PATH ||
+    resolved.startsWith(`${OFFERS_GIFT_RETURN_PATH}&liveSessionId=`)
   );
 }
 
@@ -90,6 +92,7 @@ export default function Offers() {
   const searchParams = useLocalSearchParams<{
     subscription?: string | string[];
     gift?: string | string[];
+    liveSessionId?: string | string[];
   }>();
   const isWide = width >= 980;
 
@@ -165,6 +168,9 @@ export default function Offers() {
     searchParams as Record<string, string | string[] | undefined>,
     fragment,
     rawBrowserPath
+  );
+  const liveGiftSessionId = normalizeLiveGiftSessionId(
+    Array.isArray(searchParams.liveSessionId) ? undefined : searchParams.liveSessionId
   );
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
   const giftRecipientValid = isLikelyEmail(giftRecipientValue);
@@ -512,6 +518,12 @@ export default function Offers() {
               The recipient receives a one-time claim link. Their selected plan begins on
               a successful claim and ends after the selected month or year.
             </Text>
+            {liveGiftSessionId ? (
+              <Text style={styles.helper}>
+                This purchase is securely linked to the Live chat where you selected Gift
+                a Sub. The chat announcement never exposes the recipient email.
+              </Text>
+            ) : null}
           </>
         ) : (
           <Text style={styles.helper}>
@@ -647,7 +659,13 @@ export default function Offers() {
                     interval,
                     recipientEmail: giftRecipientValue,
                     recipientName: giftRecipientName,
-                    message: giftMessage
+                    message: giftMessage,
+                    ...(liveGiftSessionId
+                      ? {
+                          originType: "live_chat" as const,
+                          liveSessionId: liveGiftSessionId
+                        }
+                      : {})
                   }}
                   recipientValid={giftRecipientValid}
                   configured={giftCheckoutConfigured}

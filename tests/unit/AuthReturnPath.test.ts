@@ -5,6 +5,7 @@ import {
   GIFT_CHECKOUT_SUCCESS_PATH,
   isCanonicalLegacyCancelReturn,
   OFFERS_GIFT_RETURN_PATH,
+  offersGiftReturnPath,
   parseAuthReturnPath,
   parseSafeLoginReturnPath,
   resolveAuthReturnPath,
@@ -13,6 +14,7 @@ import {
 
 const SESSION_ID = "cs_test_valid_session_123";
 const ATTEMPT_ID = "123e4567-e89b-42d3-a456-426614174000";
+const LIVE_SESSION_ID = "507f191e810c19729de86001";
 
 describe("internal authentication return allowlist", () => {
   it.each([
@@ -26,7 +28,8 @@ describe("internal authentication return allowlist", () => {
     ],
     [GIFT_CHECKOUT_CANCEL_PATH, GIFT_CHECKOUT_CANCEL_PATH],
     [GIFT_CHECKOUT_RECOVERY_PATH, GIFT_CHECKOUT_RECOVERY_PATH],
-    [OFFERS_GIFT_RETURN_PATH, OFFERS_GIFT_RETURN_PATH]
+    [OFFERS_GIFT_RETURN_PATH, OFFERS_GIFT_RETURN_PATH],
+    [offersGiftReturnPath(LIVE_SESSION_ID), offersGiftReturnPath(LIVE_SESSION_ID)]
   ])("accepts exact internal continuation %s", (raw, expected) => {
     expect(parseAuthReturnPath(raw)).toBe(expected);
   });
@@ -50,6 +53,9 @@ describe("internal authentication return allowlist", () => {
     "/offers?gift=0",
     "/offers?gift=%31",
     "/offers?gift=1&extra=1",
+    "/offers?gift=1&liveSessionId=bad",
+    `/offers?liveSessionId=${LIVE_SESSION_ID}&gift=1`,
+    `/offers?gift=1&liveSessionId=${LIVE_SESSION_ID}&extra=1`,
     "/offers?gift=1&gift=1",
     "/offers?gift=1#checkout",
     `/account/gift-checkout/../sent-gifts`,
@@ -77,6 +83,12 @@ describe("internal authentication return allowlist", () => {
       GIFT_CHECKOUT_CANCEL_PATH
     );
     expect(buildAuthReturnPath("/offers", { gift: "1" })).toBe(OFFERS_GIFT_RETURN_PATH);
+    expect(
+      buildAuthReturnPath("/offers", {
+        gift: "1",
+        liveSessionId: LIVE_SESSION_ID
+      })
+    ).toBe(offersGiftReturnPath(LIVE_SESSION_ID));
     expect(buildAuthReturnPath("/offers", { gift: ["1", "1"] })).toBe("");
     expect(buildAuthReturnPath("/offers", { gift: "1", extra: "1" })).toBe("");
   });
@@ -130,6 +142,9 @@ describe("internal authentication return allowlist", () => {
     expect(safeLoginPath("", "https://evil.example/")).toBe("/login");
     expect(safeLoginPath("", OFFERS_GIFT_RETURN_PATH)).toBe(
       "/login?next=%2Foffers%3Fgift%3D1"
+    );
+    expect(safeLoginPath("", offersGiftReturnPath(LIVE_SESSION_ID))).toBe(
+      `/login?next=%2Foffers%3Fgift%3D1%26liveSessionId%3D${LIVE_SESSION_ID}`
     );
   });
 });

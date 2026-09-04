@@ -226,6 +226,20 @@ describe("Offers billing safety", () => {
     expect(
       isExactOffersGiftContinuation({ gift: ["1", "1"] }, "", "/offers?gift=1&gift=1")
     ).toBe(false);
+    expect(
+      isExactOffersGiftContinuation(
+        { gift: "1", liveSessionId: "507f191e810c19729de86001" },
+        "",
+        "/offers?gift=1&liveSessionId=507f191e810c19729de86001"
+      )
+    ).toBe(true);
+    expect(
+      isExactOffersGiftContinuation(
+        { gift: "1", liveSessionId: "bad" },
+        "",
+        "/offers?gift=1&liveSessionId=bad"
+      )
+    ).toBe(false);
   });
 
   it("preserves the second explicit action before immediate self checkout", async () => {

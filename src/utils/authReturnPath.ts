@@ -9,6 +9,7 @@ export const OFFERS_GIFT_RETURN_PATH = "/offers?gift=1";
 const MAX_RETURN_LENGTH = 1024;
 const SESSION_ID_PATTERN = /^cs_[A-Za-z0-9_]{3,252}$/;
 const CHECKOUT_ATTEMPT_ID_PATTERN = /^[A-Za-z0-9_-]{20,128}$/;
+const LIVE_SESSION_ID_PATTERN = /^[a-f0-9]{24}$/;
 
 type ReturnParams = Record<string, string | string[] | undefined>;
 
@@ -37,6 +38,18 @@ export function normalizeGiftCheckoutSessionId(value: unknown): string {
 export function normalizeGiftCheckoutAttemptId(value: unknown): string {
   const candidate = exactString(value);
   return CHECKOUT_ATTEMPT_ID_PATTERN.test(candidate) ? candidate : "";
+}
+
+export function normalizeLiveGiftSessionId(value: unknown): string {
+  const candidate = exactString(value).toLowerCase();
+  return LIVE_SESSION_ID_PATTERN.test(candidate) ? candidate : "";
+}
+
+export function offersGiftReturnPath(liveSessionId?: unknown): string {
+  const normalized = normalizeLiveGiftSessionId(liveSessionId);
+  return normalized
+    ? `${OFFERS_GIFT_RETURN_PATH}&liveSessionId=${encodeURIComponent(normalized)}`
+    : OFFERS_GIFT_RETURN_PATH;
 }
 
 export function parseAuthReturnPath(value: unknown): string {
@@ -102,8 +115,21 @@ export function parseAuthReturnPath(value: unknown): string {
   ) {
     return GIFT_CHECKOUT_RECOVERY_PATH;
   }
-  if (value === OFFERS_GIFT_RETURN_PATH) {
-    return OFFERS_GIFT_RETURN_PATH;
+  if (parsed.pathname === "/offers") {
+    if (entries.length === 1 && entries[0][0] === "gift" && entries[0][1] === "1") {
+      return value === OFFERS_GIFT_RETURN_PATH ? OFFERS_GIFT_RETURN_PATH : "";
+    }
+    if (
+      entries.length === 2 &&
+      entries[0][0] === "gift" &&
+      entries[0][1] === "1" &&
+      entries[1][0] === "liveSessionId"
+    ) {
+      const canonical = offersGiftReturnPath(entries[1][1]);
+      return canonical !== OFFERS_GIFT_RETURN_PATH && value === canonical
+        ? canonical
+        : "";
+    }
   }
   return "";
 }
@@ -121,9 +147,19 @@ export function buildAuthReturnPath(
     return keys.length === 0 ? GIFT_CHECKOUT_RECOVERY_PATH : "";
   }
   if (pathname === "/offers") {
-    return keys.length === 1 && keys[0] === "gift" && params.gift === "1"
-      ? OFFERS_GIFT_RETURN_PATH
-      : "";
+    if (keys.length === 1 && keys[0] === "gift" && params.gift === "1") {
+      return OFFERS_GIFT_RETURN_PATH;
+    }
+    if (
+      keys.length === 2 &&
+      keys[0] === "gift" &&
+      keys[1] === "liveSessionId" &&
+      params.gift === "1"
+    ) {
+      const liveSessionId = normalizeLiveGiftSessionId(params.liveSessionId);
+      return liveSessionId ? offersGiftReturnPath(liveSessionId) : "";
+    }
+    return "";
   }
   if (pathname === GIFT_CHECKOUT_SUCCESS_PATH) {
     if (keys.length !== 1 || keys[0] !== "session_id") return "";

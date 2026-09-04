@@ -977,15 +977,17 @@ export default function LiveSessionScreen({ route }) {
                 Messages can appear in the host&apos;s GrowPath OBS overlay. Outside
                 giveaway pickers remain controlled by the streamer.
               </Text>
-              {auth.isAuthed ? (
-                <Link href="/offers?gift=1" asChild>
+              {auth.isAuthed && sessionStatus === "live" ? (
+                <Link
+                  href={`/offers?gift=1&liveSessionId=${encodeURIComponent(
+                    String(session?.id || sessionId || "")
+                  )}`}
+                  asChild
+                >
                   <Pressable
                     accessibilityRole="link"
                     accessibilityLabel="Gift a subscription during this live chat"
-                    style={StyleSheet.flatten([
-                      styles.secondaryBtn,
-                      styles.completedBtn
-                    ])}
+                    style={StyleSheet.flatten([styles.secondaryBtn, styles.completedBtn])}
                   >
                     <Text style={styles.secondaryBtnText}>Gift a Sub</Text>
                   </Pressable>
@@ -1591,6 +1593,6 @@ export function createStyles(palette) {
       fontFamily: "monospace",
       padding: 10
     },
-    disabled: { opacity: 0.55 },
+    disabled: { opacity: 0.55 }
   });
 }

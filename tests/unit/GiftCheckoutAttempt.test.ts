@@ -61,6 +61,28 @@ describe("gift checkout attempt phases", () => {
     ).toBe(JSON.stringify({ ...baseFingerprint, successUrl: "", cancelUrl: "" }));
   });
 
+  it("keeps direct attempts compatible and binds a Live session as material identity", () => {
+    const direct = canonicalizeGiftCheckoutFingerprint(baseFingerprint);
+    expect(
+      canonicalizeGiftCheckoutFingerprint({ ...baseFingerprint, originType: undefined })
+    ).toBe(direct);
+    expect(
+      canonicalizeGiftCheckoutFingerprint({
+        ...baseFingerprint,
+        originType: "live_chat",
+        liveSessionId: " 507F191E810C19729DE86001 "
+      })
+    ).toBe(
+      JSON.stringify({
+        ...baseFingerprint,
+        successUrl: "",
+        cancelUrl: "",
+        originType: "live_chat",
+        liveSessionId: "507f191e810c19729de86001"
+      })
+    );
+  });
+
   it("reuses a quote-only attempt and rotates safely after a material edit", async () => {
     const first = await prepareGiftCheckoutQuoteAttempt(baseFingerprint);
     const normalizedRetry = await prepareGiftCheckoutQuoteAttempt({

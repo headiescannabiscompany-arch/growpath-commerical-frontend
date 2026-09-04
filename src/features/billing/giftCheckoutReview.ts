@@ -195,7 +195,13 @@ export function useGiftCheckoutReview({
         ...(material.recipientName?.trim()
           ? { giftRecipientName: material.recipientName }
           : {}),
-        ...(material.message?.trim() ? { giftMessage: material.message } : {})
+        ...(material.message?.trim() ? { giftMessage: material.message } : {}),
+        ...(material.originType === "live_chat" && material.liveSessionId?.trim()
+          ? {
+              giftOriginType: "live_chat" as const,
+              giftLiveSessionId: material.liveSessionId
+            }
+          : {})
       });
       if (!activeRef.current) return false;
       if (latestFingerprintRef.current !== requestedFingerprint) {
@@ -296,6 +302,12 @@ export function useGiftCheckoutReview({
             ? { giftRecipientName: material.recipientName.trim() }
             : {}),
           ...(material.message?.trim() ? { giftMessage: material.message.trim() } : {}),
+          ...(material.originType === "live_chat" && material.liveSessionId?.trim()
+            ? {
+                giftOriginType: "live_chat" as const,
+                giftLiveSessionId: material.liveSessionId
+              }
+            : {}),
           checkoutAttemptId: current.checkoutAttemptId,
           giftQuoteToken: current.quote.confirmationToken
         });

@@ -10,6 +10,8 @@ export type GiftCheckoutFingerprintInput = {
   recipientEmail: string;
   recipientName?: string;
   message?: string;
+  originType?: "live_chat";
+  liveSessionId?: string;
   successUrl?: string;
   cancelUrl?: string;
 };
@@ -70,7 +72,7 @@ function normalizeReturnUrl(value: unknown): string {
 export function canonicalizeGiftCheckoutFingerprint(
   input: GiftCheckoutFingerprintInput
 ): string {
-  return JSON.stringify({
+  const material: Record<string, string> = {
     plan: String(input.plan || "pro")
       .trim()
       .toLowerCase(),
@@ -84,7 +86,16 @@ export function canonicalizeGiftCheckoutFingerprint(
     message: String(input.message || "").trim(),
     successUrl: normalizeReturnUrl(input.successUrl),
     cancelUrl: normalizeReturnUrl(input.cancelUrl)
-  });
+  };
+  // Keep direct-gift browser fingerprints compatible with open attempts from
+  // before Live gifting. Live identity is material only when it is present.
+  if (input.originType === "live_chat" || input.liveSessionId) {
+    material.originType = "live_chat";
+    material.liveSessionId = String(input.liveSessionId || "")
+      .trim()
+      .toLowerCase();
+  }
+  return JSON.stringify(material);
 }
 
 function hashCanonicalFingerprint(value: string): string {

@@ -436,6 +436,8 @@ export type GiftCheckoutQuoteRequest = {
   giftRecipientEmail: string;
   giftRecipientName?: string;
   giftMessage?: string;
+  giftOriginType?: "live_chat";
+  giftLiveSessionId?: string;
 };
 
 function isIsoDate(value: unknown): value is string {
@@ -481,7 +483,13 @@ export async function createGiftCheckoutQuote(
     ...(request.giftRecipientName?.trim()
       ? { giftRecipientName: request.giftRecipientName.trim() }
       : {}),
-    ...(request.giftMessage?.trim() ? { giftMessage: request.giftMessage.trim() } : {})
+    ...(request.giftMessage?.trim() ? { giftMessage: request.giftMessage.trim() } : {}),
+    ...(request.giftOriginType === "live_chat" && request.giftLiveSessionId?.trim()
+      ? {
+          giftOriginType: "live_chat",
+          giftLiveSessionId: request.giftLiveSessionId.trim().toLowerCase()
+        }
+      : {})
   };
   const res = await apiRequest("/api/subscription/gifts/checkout/quote", {
     method: "POST",
@@ -791,6 +799,8 @@ export async function createCheckoutSession(
     giftMessage?: string;
     checkoutAttemptId?: string;
     giftQuoteToken?: string;
+    giftOriginType?: "live_chat";
+    giftLiveSessionId?: string;
   } = { plan: "pro", interval: "monthly" }
 ) {
   const origin = currentOrigin();
@@ -816,7 +826,15 @@ export async function createCheckoutSession(
       : {}),
     ...(data.giftMessage ? { giftMessage: data.giftMessage.trim() } : {}),
     ...(data.giftMode && checkoutAttemptId ? { checkoutAttemptId } : {}),
-    ...(data.giftMode && giftQuoteToken ? { giftQuoteToken } : {})
+    ...(data.giftMode && giftQuoteToken ? { giftQuoteToken } : {}),
+    ...(data.giftMode &&
+    data.giftOriginType === "live_chat" &&
+    data.giftLiveSessionId?.trim()
+      ? {
+          giftOriginType: "live_chat",
+          giftLiveSessionId: data.giftLiveSessionId.trim().toLowerCase()
+        }
+      : {})
   };
   const res = await apiRequest("/api/subscription/create-checkout-session", {
     method: "POST",
