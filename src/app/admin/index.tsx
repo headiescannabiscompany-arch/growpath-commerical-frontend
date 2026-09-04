@@ -18,6 +18,7 @@ import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import ComplimentaryGrantsAdminCard from "@/features/admin/ComplimentaryGrantsAdminCard";
+import AdminAccountBillingVerification from "@/features/admin/AdminAccountBillingVerification";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -2691,6 +2692,7 @@ export default function PlatformAdminRoute() {
                 : "Never recorded"}
             </Text>
             <AdminBillingTruthView target={item} styles={styles} />
+            <AdminAccountBillingVerification userId={item._id} email={item.email} />
             <View style={styles.actions}>
               <Pressable
                 accessibilityRole="button"
