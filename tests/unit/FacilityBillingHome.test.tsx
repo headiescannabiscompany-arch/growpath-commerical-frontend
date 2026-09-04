@@ -115,6 +115,71 @@ describe("FacilityBillingHome", () => {
     expect(screen.queryByText(/read-only here/)).toBeNull();
   });
 
+  it("honors the account-covered management instruction without offering workspace billing", () => {
+    mockEntitlements.facilityRole = "OWNER";
+    mockUseFacilityBilling.mockReturnValue({
+      billing: {
+        plan: "facility-plan",
+        status: "active",
+        billingSource: "account",
+        canManageBilling: false,
+        canStartCheckout: false,
+        canCancelSubscription: false,
+        managementMessage:
+          "This Facility is covered by the owner's account plan. Manage it from Account billing."
+      },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      startCheckout: mockStartCheckout,
+      cancelPlan: mockCancelPlan,
+      isStartingCheckout: false,
+      isCanceling: false
+    });
+
+    const screen = render(<FacilityBillingHome />);
+
+    expect(
+      screen.getAllByText(
+        "This Facility is covered by the owner's account plan. Manage it from Account billing."
+      )
+    ).toHaveLength(2);
+    expect(screen.queryByLabelText("Start Facility plan checkout")).toBeNull();
+    expect(screen.queryByLabelText("Cancel Facility renewal")).toBeNull();
+    expect(screen.queryByText(/Your OWNER access is read-only here/)).toBeNull();
+  });
+
+  it("shows the backend reason when additional workspace checkout is disabled", () => {
+    mockEntitlements.facilityRole = "OWNER";
+    mockUseFacilityBilling.mockReturnValue({
+      billing: {
+        status: "none",
+        billingSource: "unknown",
+        canManageBilling: true,
+        canStartCheckout: false,
+        canCancelSubscription: false,
+        managementMessage:
+          "The owner's account-level Facility plan covers only the primary workspace. Additional workspace billing is disabled in this release."
+      },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+      startCheckout: mockStartCheckout,
+      cancelPlan: mockCancelPlan,
+      isStartingCheckout: false,
+      isCanceling: false
+    });
+
+    const screen = render(<FacilityBillingHome />);
+
+    expect(
+      screen.getAllByText(
+        "The owner's account-level Facility plan covers only the primary workspace. Additional workspace billing is disabled in this release."
+      )
+    ).toHaveLength(2);
+    expect(screen.queryByLabelText("Start Facility plan checkout")).toBeNull();
+  });
+
   it("cancels only after the inline confirmation in the web-safe interaction flow", async () => {
     mockEntitlements.facilityRole = "OWNER";
     const screen = render(<FacilityBillingHome />);

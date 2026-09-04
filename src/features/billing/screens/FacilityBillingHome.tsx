@@ -55,6 +55,10 @@ export default function FacilityBillingHome() {
   const canManageBilling = roleCanManageBilling && billing?.canManageBilling === true;
   const access = resolveSubscriptionSafety(billing, { loaded });
   const status = String(billing?.status || "none").toLowerCase();
+  const managementMessage =
+    typeof billing?.managementMessage === "string" && billing.managementMessage.trim()
+      ? billing.managementMessage.trim()
+      : null;
   const periodEnd = displayDate(billing?.currentPeriodEnd);
   const graceUntil = displayDate(billing?.graceUntil);
   const busy = isStartingCheckout || isCanceling || cancelRequestPending;
@@ -184,7 +188,7 @@ export default function FacilityBillingHome() {
                 <Text style={styles.value}>{graceUntil}</Text>
               </View>
             ) : null}
-            <Text style={styles.note}>{access.message}</Text>
+            <Text style={styles.note}>{managementMessage || access.message}</Text>
             <Pressable
               accessibilityRole="button"
               style={styles.secondaryButton}
@@ -201,9 +205,10 @@ export default function FacilityBillingHome() {
           <Text style={styles.cardTitle}>Facility billing actions</Text>
           {!canManageBilling ? (
             <Text style={styles.note}>
-              Only the Facility owner or authorized Facility billing administrator can
-              start checkout or cancel renewal. Your {normalizedRole || "member"} access
-              is read-only here.
+              {managementMessage ||
+                `Only the Facility owner or authorized Facility billing administrator can start checkout or cancel renewal. Your ${
+                  normalizedRole || "member"
+                } access is read-only here.`}
             </Text>
           ) : access.canOpenCheckout ? (
             <>
@@ -303,7 +308,8 @@ export default function FacilityBillingHome() {
             </>
           ) : (
             <Text style={styles.note}>
-              No checkout or cancellation action is available for this Facility status.
+              {managementMessage ||
+                "No checkout or cancellation action is available for this Facility status."}
             </Text>
           )}
           {billingFeedback ? (
