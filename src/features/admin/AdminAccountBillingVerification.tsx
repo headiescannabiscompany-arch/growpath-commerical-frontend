@@ -145,7 +145,7 @@ function createStyles(palette: ThemePalette) {
       alignSelf: "flex-start",
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.border,
-      borderRadius: radius.md,
+      borderRadius: radius.card,
       borderWidth: 1,
       paddingHorizontal: 12,
       paddingVertical: 9
@@ -156,7 +156,7 @@ function createStyles(palette: ThemePalette) {
     result: {
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.borderSoft,
-      borderRadius: radius.md,
+      borderRadius: radius.card,
       borderWidth: 1,
       gap: 5,
       padding: 10
