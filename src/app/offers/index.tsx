@@ -135,13 +135,14 @@ export default function Offers() {
       ),
     [auth.user, ent.plan, subscription, subscriptionLoaded]
   );
-  const reportedTrialPlans = Array.isArray(subscription?.trialPlansUsed)
+  const reportedTrialPlans: unknown[] = Array.isArray(subscription?.trialPlansUsed)
     ? subscription.trialPlansUsed
     : Array.isArray(auth.user?.trialPlansUsed)
       ? auth.user.trialPlansUsed
       : [];
-  const validTrialPlansUsed = reportedTrialPlans.filter((plan): plan is BillingPlanKey =>
-    ["pro", "commercial", "facility"].includes(plan)
+  const validTrialPlansUsed = reportedTrialPlans.filter(
+    (plan): plan is BillingPlanKey =>
+      typeof plan === "string" && ["pro", "commercial", "facility"].includes(plan)
   );
   const accountTrialUsed =
     subscription?.trialUsed === true ||
