@@ -27,23 +27,14 @@ function isConfirmedPro(status) {
   );
 }
 
-const TRIAL_PLAN_LABELS = {
-  pro: "Pro",
-  commercial: "Commercial",
-  facility: "Facility"
-};
-
-function remainingTrialPlanLabels(status) {
-  const explicit = Array.isArray(status?.trialPlansUsed)
-    ? status.trialPlansUsed.filter((plan) =>
-        Object.prototype.hasOwnProperty.call(TRIAL_PLAN_LABELS, plan)
-      )
-    : [];
-  const used = new Set(explicit);
-  if (!used.size && status?.trialUsed) used.add("pro");
-  return Object.entries(TRIAL_PLAN_LABELS)
-    .filter(([plan]) => !used.has(plan))
-    .map(([, label]) => label);
+function accountTrialAvailable(status) {
+  if (typeof status?.trialEligibility?.eligible === "boolean") {
+    return status.trialEligibility.eligible;
+  }
+  return (
+    status?.trialUsed !== true &&
+    (!Array.isArray(status?.trialPlansUsed) || status.trialPlansUsed.length === 0)
+  );
 }
 
 export default function SubscriptionStatusScreen({ navigation }) {
@@ -121,7 +112,7 @@ export default function SubscriptionStatusScreen({ navigation }) {
     formatSubscriptionDate(access.paidThrough) ||
     (status?.expiry ? new Date(status.expiry).toLocaleDateString() : null);
   const cancellationScheduled = access.cancelScheduled;
-  const remainingTrialPlans = remainingTrialPlanLabels(status);
+  const trialAvailable = accountTrialAvailable(status);
 
   return (
     <ScreenContainer style={styles.container}>
@@ -158,11 +149,11 @@ export default function SubscriptionStatusScreen({ navigation }) {
             </View>
           ) : null}
 
-          {remainingTrialPlans.length > 0 && !isPro ? (
+          {trialAvailable && !isPro ? (
             <View style={styles.trialNotice}>
               <Text style={styles.trialText}>
-                You have a separate 30-day trial available for{" "}
-                {remainingTrialPlans.join(", ")}.
+                This account has one 30-day introductory trial. Choose the plan you want
+                to try; using it consumes the account's only trial.
               </Text>
             </View>
           ) : null}

@@ -49,7 +49,7 @@ function facilityQuote(interval: "monthly" | "yearly") {
     verifiedAt: "2026-09-04T12:00:00.000Z",
     trialTerms: {
       days: 30,
-      eligibility: "account_and_plan_history",
+      eligibility: "one_per_account",
       paymentMethodRequired: true,
       renewsUnlessCanceled: true
     }

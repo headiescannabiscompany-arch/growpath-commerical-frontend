@@ -135,17 +135,24 @@ export default function Offers() {
       ),
     [auth.user, ent.plan, subscription, subscriptionLoaded]
   );
-  const reportedTrialPlans = Array.isArray(auth.user?.trialPlansUsed)
-    ? auth.user.trialPlansUsed
-    : [];
-  const usedTrialPlans = new Set<BillingPlanKey>(
-    reportedTrialPlans.filter((plan): plan is BillingPlanKey =>
-      ["pro", "commercial", "facility"].includes(plan)
-    )
+  const reportedTrialPlans = Array.isArray(subscription?.trialPlansUsed)
+    ? subscription.trialPlansUsed
+    : Array.isArray(auth.user?.trialPlansUsed)
+      ? auth.user.trialPlansUsed
+      : [];
+  const validTrialPlansUsed = reportedTrialPlans.filter((plan): plan is BillingPlanKey =>
+    ["pro", "commercial", "facility"].includes(plan)
   );
-  if (!usedTrialPlans.size && auth.user?.trialUsed) usedTrialPlans.add("pro");
-  const trialEligibleForPlan = (plan: BillingPlanKey) =>
-    trialEnabled && !usedTrialPlans.has(plan);
+  const accountTrialUsed =
+    subscription?.trialUsed === true ||
+    auth.user?.trialUsed === true ||
+    validTrialPlansUsed.length > 0;
+  const serverTrialEligible =
+    typeof subscription?.trialEligibility?.eligible === "boolean"
+      ? subscription.trialEligibility.eligible
+      : !accountTrialUsed;
+  const trialEligibleForPlan = (_plan: BillingPlanKey) =>
+    trialEnabled && serverTrialEligible;
   const eligibleTrialPlanTitles = BILLING_PLANS.filter(
     (plan) =>
       trialEligibleForPlan(plan.key) && !(subscriptionActive && activePlan === plan.key)
@@ -329,9 +336,9 @@ export default function Offers() {
           </Text>
           <Text style={styles.headerSubtitle}>
             {eligibleTrialPlanTitles.length > 0
-              ? `This account has a separate ${trialDays}-day trial available for ${eligibleTrialPlanTitles.join(", ")}. Each trial requires a payment method, and paid billing begins after that plan's trial unless canceled.`
+              ? `This account has one ${trialDays}-day introductory trial. Choose which plan to try; using it consumes the account's only trial. Stripe requires a payment method and paid billing begins after the trial unless canceled.`
               : trialEnabled
-                ? `This account has already used its Pro, Commercial, and Facility trials. Starting another paid plan will bill the shown price when Stripe checkout completes.`
+                ? `This account has already used its one introductory trial. Starting a paid plan will bill the shown price when Stripe checkout completes.`
                 : "New trials have ended. Stripe checkout begins paid billing immediately."}
           </Text>
           <View style={styles.segment}>

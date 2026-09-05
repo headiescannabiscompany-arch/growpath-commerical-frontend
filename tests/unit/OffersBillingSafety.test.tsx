@@ -63,7 +63,7 @@ function recurringQuotes() {
     verifiedAt: "2026-09-04T12:00:00.000Z",
     trialTerms: {
       days: 30,
-      eligibility: "account_and_plan_history",
+      eligibility: "one_per_account",
       paymentMethodRequired: true,
       renewsUnlessCanceled: true
     }
@@ -258,6 +258,58 @@ describe("Offers billing safety", () => {
       })
     );
     expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+  });
+
+  it("offers exactly one account-wide trial on the plan the user chooses", async () => {
+    mockTrialUsed = false;
+    mockTrialPlansUsed = [];
+    (getSubscription as jest.Mock).mockResolvedValueOnce({
+      plan: "free",
+      subscriptionStatus: "inactive",
+      canStartCheckout: true,
+      trialUsed: false,
+      trialPlansUsed: [],
+      trialEligibility: {
+        enabled: true,
+        eligible: true,
+        days: 30,
+        policy: "one_per_account"
+      }
+    });
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/one 30-day introductory trial.*account's only trial/i)
+      ).toBeTruthy()
+    );
+    expect(screen.getAllByText("Start 30-day trial")).toHaveLength(3);
+    expect(screen.queryByText(/separate.*trial/i)).toBeNull();
+  });
+
+  it("does not advertise another plan trial after any account trial was used", async () => {
+    mockTrialUsed = true;
+    mockTrialPlansUsed = ["pro"];
+    (getSubscription as jest.Mock).mockResolvedValueOnce({
+      plan: "free",
+      subscriptionStatus: "inactive",
+      canStartCheckout: true,
+      trialUsed: true,
+      trialPlansUsed: ["pro"],
+      trialEligibility: {
+        enabled: true,
+        eligible: false,
+        days: 30,
+        policy: "one_per_account"
+      }
+    });
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/already used its one introductory trial/i)).toBeTruthy()
+    );
+    expect(screen.queryByText("Start 30-day trial")).toBeNull();
+    expect(screen.getAllByText("Review paid checkout")).toHaveLength(3);
   });
 
   it("keeps self checkout closed when the exact recurring quote is malformed", async () => {

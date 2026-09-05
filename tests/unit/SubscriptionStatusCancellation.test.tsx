@@ -91,4 +91,49 @@ describe("SubscriptionStatusScreen cancellation state", () => {
       screen.unmount();
     }
   );
+
+  it("shows one account-wide trial only when the backend says it remains eligible", async () => {
+    (getSubscription as jest.Mock).mockResolvedValue({
+      plan: "free",
+      status: "inactive",
+      isPro: false,
+      trialUsed: false,
+      trialPlansUsed: [],
+      trialEligibility: {
+        enabled: true,
+        eligible: true,
+        days: 30,
+        policy: "one_per_account"
+      }
+    });
+
+    const eligible = render(
+      <SubscriptionStatusScreen navigation={{ navigate: jest.fn() }} />
+    );
+    await waitFor(() =>
+      expect(eligible.getByText(/one 30-day introductory trial/i)).toBeTruthy()
+    );
+    expect(eligible.queryByText(/separate.*trial/i)).toBeNull();
+    eligible.unmount();
+
+    (getSubscription as jest.Mock).mockResolvedValue({
+      plan: "free",
+      status: "inactive",
+      isPro: false,
+      trialUsed: true,
+      trialPlansUsed: ["commercial"],
+      trialEligibility: {
+        enabled: true,
+        eligible: false,
+        days: 30,
+        policy: "one_per_account"
+      }
+    });
+    const used = render(
+      <SubscriptionStatusScreen navigation={{ navigate: jest.fn() }} />
+    );
+    await waitFor(() =>
+      expect(used.queryByText(/one 30-day introductory trial/i)).toBeNull()
+    );
+  });
 });

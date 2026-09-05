@@ -25,7 +25,7 @@ function recurringQuote(
     verifiedAt: "2026-09-04T12:00:00.000Z",
     trialTerms: {
       days: 30,
-      eligibility: "account_and_plan_history",
+      eligibility: "one_per_account",
       paymentMethodRequired: true,
       renewsUnlessCanceled: true
     },
@@ -122,7 +122,7 @@ describe("subscription billing response contract", () => {
       {
         trialTerms: {
           days: 30,
-          eligibility: "account_and_plan_history",
+          eligibility: "one_per_account",
           paymentMethodRequired: false,
           renewsUnlessCanceled: true
         }
@@ -156,7 +156,7 @@ describe("subscription billing response contract", () => {
       unavailableReason: "STRIPE_CATALOG_LOOKUP_FAILED",
       trialTerms: {
         days: 30,
-        eligibility: "account_and_plan_history",
+        eligibility: "one_per_account",
         paymentMethodRequired: true,
         renewsUnlessCanceled: true
       }

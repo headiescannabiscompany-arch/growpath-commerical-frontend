@@ -28,7 +28,7 @@ export type RecurringPriceInterval = "monthly" | "yearly";
 
 export type RecurringPriceTrialTerms = {
   days: number;
-  eligibility: "account_and_plan_history";
+  eligibility: "one_per_account";
   paymentMethodRequired: true;
   renewsUnlessCanceled: true;
 };
@@ -102,7 +102,7 @@ function isRecurringPriceTrialTerms(value: unknown): value is RecurringPriceTria
     Number.isSafeInteger(value.days) &&
     Number(value.days) >= 1 &&
     Number(value.days) <= 365 &&
-    value.eligibility === "account_and_plan_history" &&
+    value.eligibility === "one_per_account" &&
     value.paymentMethodRequired === true &&
     value.renewsUnlessCanceled === true
   );
