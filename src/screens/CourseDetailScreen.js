@@ -222,7 +222,8 @@ export default function CourseDetailScreen({ route, navigation = null }) {
     refundStatus !== "refunded" &&
     enrollment?.refundLifecycleStatus !== "full";
   const canReportPaymentIssue =
-    Boolean(enrollment?.recordId) && disputeReportStatus !== "reported";
+    Boolean(enrollment?.recordId) &&
+    !["reported", "resolved", "declined", "closed"].includes(disputeReportStatus);
 
   useEffect(() => {
     const cents = Number(course?.priceCents || 0);
@@ -1298,6 +1299,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             accessibilityLabel="Course payment issue"
           />
           <Pressable
+            accessibilityLabel="Submit course payment issue report"
             disabled={saving || !canReportPaymentIssue || !disputeReason.trim()}
             onPress={submitDispute}
             style={[
@@ -1310,7 +1312,11 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             <Text style={styles.secondaryText}>
               {disputeReportStatus === "reported"
                 ? "Payment Issue Reported"
-                : "Report Payment Issue"}
+                : disputeReportStatus === "resolved"
+                  ? "Payment Issue Resolved"
+                  : disputeReportStatus === "declined"
+                    ? "Payment Issue Report Declined"
+                    : "Report Payment Issue"}
             </Text>
           </Pressable>
         </View>

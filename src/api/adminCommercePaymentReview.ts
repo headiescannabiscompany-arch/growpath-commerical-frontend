@@ -23,6 +23,11 @@ export type CommercePaymentReviewCase = {
   updatedAt: string | null;
   canExecuteRefund: boolean;
   fullRefundConfirmation: string | null;
+  canResolvePaymentIssue: boolean;
+  paymentIssueResolutionConfirmations: {
+    resolve: string;
+    decline: string;
+  } | null;
 };
 
 export type CommercePaymentReviewPage = {
@@ -75,6 +80,37 @@ export async function executeDestinationRefund(
   const { sourceType, recordId, ...body } = input;
   return apiRequest(
     `/api/payments/admin/destination-refunds/${encodeURIComponent(sourceType)}/${encodeURIComponent(recordId)}`,
+    { method: "POST", body }
+  );
+}
+
+export type ResolveCommercePaymentIssueInput = {
+  sourceType: CommercePaymentReviewSource;
+  recordId: string;
+  operationId: string;
+  decision: "resolve" | "decline";
+  expectedStatus: "reported";
+  confirmation: string;
+  reason: string;
+};
+
+export type ResolveCommercePaymentIssueResult = {
+  accepted: boolean;
+  created: boolean;
+  sourceType: CommercePaymentReviewSource;
+  recordId: string;
+  decision: "resolve" | "decline";
+  disputeReportStatus: "resolved" | "declined";
+  notificationCreated: boolean;
+  message: string;
+};
+
+export async function resolveCommercePaymentIssue(
+  input: ResolveCommercePaymentIssueInput
+): Promise<ResolveCommercePaymentIssueResult> {
+  const { sourceType, recordId, ...body } = input;
+  return apiRequest(
+    `/api/payments/admin/payment-issue-resolutions/${encodeURIComponent(sourceType)}/${encodeURIComponent(recordId)}`,
     { method: "POST", body }
   );
 }

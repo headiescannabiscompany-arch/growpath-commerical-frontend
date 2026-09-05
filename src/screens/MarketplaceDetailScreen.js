@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Linking,
-  Pressable,
-  StyleSheet,
-  Text,
-  View
-} from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   getMarketplaceContent,
@@ -15,9 +8,14 @@ import {
   reportMarketplacePaymentIssue,
   requestMarketplaceRefund
 } from "../api/marketplace";
+import {
+  downloadMarketplaceContent,
+  marketplaceDownloadUrl
+} from "../api/marketplaceBuyer";
 import BuyerPaymentReviewCard from "../components/commerce/BuyerPaymentReviewCard";
 import ScreenContainer from "../components/ScreenContainer";
 import { radius } from "../theme/theme";
+import { openAuthorizedExternalUrl } from "../utils/openAuthorizedExternalUrl";
 import { MarketplaceDetailContent } from "./MarketplaceScreen";
 
 function itemId(item, fallback) {
@@ -37,6 +35,7 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
   const [item, setItem] = useState(initialContent);
   const [loading, setLoading] = useState(!initialContent && !!id);
   const [busy, setBusy] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [purchaseStatus, setPurchaseStatus] = useState(null);
 
@@ -83,7 +82,7 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
     try {
       const purchase = unwrapPurchase(await purchaseContent(id));
       if (purchase?.url) {
-        await Linking.openURL(purchase.url);
+        await openAuthorizedExternalUrl(purchase.url);
         setFeedback("Checkout opened. Complete payment to unlock this item.");
       } else {
         setFeedback(purchase?.message || "Storefront offer added.");
@@ -97,6 +96,33 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
     }
   }
 
+  async function handleDownload() {
+    if (!id || downloading) return;
+    setDownloading(true);
+    setFeedback("Preparing a server-authorized download...");
+    try {
+      const url = marketplaceDownloadUrl(await downloadMarketplaceContent(id));
+      if (!url) throw new Error("The backend did not return a download URL.");
+      await openAuthorizedExternalUrl(url);
+      setFeedback("The authorized download was opened.");
+    } catch (error) {
+      setFeedback(error?.message || "Unable to prepare this download.");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  const canDownload = Boolean(
+    item?.canDownload ||
+    item?.entitled ||
+    item?.hasAccess ||
+    item?.isPurchased ||
+    purchaseStatus?.canDownload ||
+    purchaseStatus?.entitled ||
+    purchaseStatus?.hasAccess ||
+    purchaseStatus?.isPurchased
+  );
+
   return (
     <ScreenContainer scroll>
       <View style={styles.actions}>
@@ -105,13 +131,29 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
             <Text style={styles.link}>Back to offers</Text>
           </Pressable>
         ) : null}
-        <Pressable
-          disabled={busy || loading}
-          style={[styles.button, (busy || loading) && styles.buttonDisabled]}
-          onPress={handlePurchase}
-        >
-          <Text style={styles.buttonText}>{busy ? "Purchasing..." : "Purchase"}</Text>
-        </Pressable>
+        {canDownload ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Download storefront offer"
+            disabled={downloading || loading}
+            style={[styles.button, (downloading || loading) && styles.buttonDisabled]}
+            onPress={handleDownload}
+          >
+            <Text style={styles.buttonText}>
+              {downloading ? "Preparing..." : "Download"}
+            </Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Start storefront offer checkout"
+            disabled={busy || loading}
+            style={[styles.button, (busy || loading) && styles.buttonDisabled]}
+            onPress={handlePurchase}
+          >
+            <Text style={styles.buttonText}>{busy ? "Purchasing..." : "Purchase"}</Text>
+          </Pressable>
+        )}
       </View>
 
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
@@ -123,7 +165,7 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
         </View>
       ) : item ? (
         <>
-          <MarketplaceDetailContent item={item} />
+          <MarketplaceDetailContent item={{ ...item, ...(purchaseStatus || {}) }} />
           <BuyerPaymentReviewCard
             status={purchaseStatus}
             onRequestRefund={(input) => requestMarketplaceRefund(id, input)}

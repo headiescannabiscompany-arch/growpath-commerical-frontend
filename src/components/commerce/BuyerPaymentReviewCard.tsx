@@ -94,7 +94,8 @@ export default function BuyerPaymentReviewCard({
     refundLifecycle !== "full" &&
     !["requested", "refunded"].includes(refundRequest);
   const canReportIssue =
-    !["reported"].includes(disputeReport) && !["open", "lost"].includes(providerDispute);
+    !["reported", "resolved", "declined", "closed"].includes(disputeReport) &&
+    !["open", "lost"].includes(providerDispute);
 
   async function submit(kind: "refund" | "issue") {
     if (busy || !exactStatus.recordId) return;
@@ -172,6 +173,7 @@ export default function BuyerPaymentReviewCard({
           />
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel="Submit refund review request"
             accessibilityState={{
               disabled:
                 Boolean(busy) || !canRequestRefund || refundReason.trim().length < 8
@@ -209,6 +211,7 @@ export default function BuyerPaymentReviewCard({
           />
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel="Submit payment issue report"
             accessibilityState={{
               disabled: Boolean(busy) || !canReportIssue || issueReason.trim().length < 8
             }}
@@ -225,7 +228,11 @@ export default function BuyerPaymentReviewCard({
                 ? "Sending report..."
                 : disputeReport === "reported"
                   ? "Payment issue already reported"
-                  : "Report payment issue"}
+                  : disputeReport === "resolved"
+                    ? "Payment issue resolved"
+                    : disputeReport === "declined"
+                      ? "Payment issue report declined"
+                      : "Report payment issue"}
             </Text>
           </Pressable>
           {busy ? <ActivityIndicator color={palette.accent} /> : null}

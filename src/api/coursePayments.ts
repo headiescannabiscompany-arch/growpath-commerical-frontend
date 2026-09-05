@@ -1,5 +1,10 @@
 import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
+import {
+  pollAuthoritativeCheckoutStatus,
+  type AuthoritativeCheckoutState,
+  type CheckoutReconciliation
+} from "../utils/buyerCheckoutRecovery";
 
 export type CoursePaymentStatus = {
   recordId?: string | null;
@@ -19,6 +24,11 @@ export type CoursePaymentStatus = {
   connectRecoveryStatus?: string;
   earningsStatus?: string;
   enrollmentId?: string;
+};
+
+export type CourseAccessSnapshot = CoursePaymentStatus & {
+  enrollment?: unknown;
+  status?: string;
 };
 
 function idempotencyKey(prefix: string, courseId: string) {
@@ -71,6 +81,88 @@ export async function getCoursePaymentStatus(
     method: "GET"
   });
   return response?.data ?? response ?? {};
+}
+
+const COURSE_PENDING_STATUSES = new Set([
+  "checkout_pending",
+  "created",
+  "open",
+  "pending",
+  "processing",
+  "submitted"
+]);
+const COURSE_TERMINAL_STATUSES = new Set([
+  "canceled",
+  "cancelled",
+  "disputed",
+  "expired",
+  "failed",
+  "refunded",
+  "revoked",
+  "void",
+  "voided"
+]);
+
+export function coursePaymentReconciliationState(
+  snapshot: CourseAccessSnapshot | null | undefined
+): AuthoritativeCheckoutState {
+  const statuses = [
+    snapshot?.paymentStatus,
+    snapshot?.checkoutStatus,
+    snapshot?.refundStatus,
+    snapshot?.status
+  ]
+    .map((value) =>
+      String(value || "")
+        .trim()
+        .toLowerCase()
+    )
+    .filter(Boolean);
+  if (statuses.some((status) => COURSE_TERMINAL_STATUSES.has(status))) {
+    return "terminal";
+  }
+  const providerDispute = String(
+    snapshot?.providerDisputeStatus || snapshot?.disputeStatus || ""
+  ).toLowerCase();
+  if (["open", "lost"].includes(providerDispute)) return "terminal";
+  if (snapshot?.enrolled === true || snapshot?.isEnrolled === true) return "confirmed";
+  if (statuses.some((status) => COURSE_PENDING_STATUSES.has(status))) return "pending";
+  if (statuses.some((status) => ["paid", "recorded", "completed"].includes(status))) {
+    return "pending";
+  }
+  return "unknown";
+}
+
+export async function getCourseAccessStatus(
+  courseId: string
+): Promise<CourseAccessSnapshot> {
+  const [paymentResult, enrollmentResult] = await Promise.allSettled([
+    getCoursePaymentStatus(courseId),
+    apiRequest(apiRoutes.COURSES.STATUS(courseId), { method: "GET" })
+  ]);
+  if (paymentResult.status === "rejected" && enrollmentResult.status === "rejected") {
+    throw paymentResult.reason;
+  }
+  const payment = paymentResult.status === "fulfilled" ? paymentResult.value : {};
+  const enrollmentResponse =
+    enrollmentResult.status === "fulfilled" ? enrollmentResult.value : {};
+  const enrollment = enrollmentResponse?.data ?? enrollmentResponse ?? {};
+  return { ...payment, ...enrollment };
+}
+
+export async function pollCourseAccessStatus(
+  courseId: string,
+  options: {
+    onSnapshot?: (snapshot: CourseAccessSnapshot) => void;
+    shouldContinue?: () => boolean;
+  } = {}
+): Promise<CheckoutReconciliation<CourseAccessSnapshot>> {
+  return pollAuthoritativeCheckoutStatus({
+    classify: coursePaymentReconciliationState,
+    onSnapshot: options.onSnapshot,
+    read: () => getCourseAccessStatus(courseId),
+    shouldContinue: options.shouldContinue
+  });
 }
 
 export type CoursePaymentReviewInput = {

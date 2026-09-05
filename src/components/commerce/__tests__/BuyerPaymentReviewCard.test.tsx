@@ -95,4 +95,28 @@ describe("BuyerPaymentReviewCard", () => {
     ).toBeTruthy();
     expect(refresh).toHaveBeenCalledTimes(2);
   });
+
+  test.each([
+    ["resolved", "Payment issue resolved"],
+    ["declined", "Payment issue report declined"]
+  ])("shows final support status %s and prevents duplicate reporting", (state, label) => {
+    const reportIssue = jest.fn();
+    const screen = render(
+      <BuyerPaymentReviewCard
+        status={{ ...status, disputeReportStatus: state }}
+        onRequestRefund={jest.fn()}
+        onReportPaymentIssue={reportIssue}
+      />
+    );
+    fireEvent.press(screen.getByLabelText("Open payment support"));
+    fireEvent.changeText(
+      screen.getByLabelText("Payment issue reason"),
+      "This duplicate report must remain blocked."
+    );
+    expect(screen.getByText(label)).toBeTruthy();
+    const button = screen.getByLabelText("Submit payment issue report");
+    expect(button).toBeDisabled();
+    fireEvent.press(button);
+    expect(reportIssue).not.toHaveBeenCalled();
+  });
 });

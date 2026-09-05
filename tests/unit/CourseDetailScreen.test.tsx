@@ -354,6 +354,44 @@ describe("CourseDetailScreen learner player", () => {
     ).toBeTruthy();
   });
 
+  it.each([
+    ["resolved", "Payment Issue Resolved"],
+    ["declined", "Payment Issue Report Declined"]
+  ])(
+    "shows final buyer support state %s without reopening intake",
+    async (state, label) => {
+      mockGetCourse.mockResolvedValue({
+        id: "course-paid",
+        title: "Reviewed Course Purchase",
+        priceCents: 100,
+        creator: { id: "creator-1" },
+        _viewerHasAccess: true,
+        lessons: [{ id: "lesson-paid", title: "Purchased lesson" }]
+      });
+      mockGetEnrollmentStatus.mockResolvedValue({ enrolled: true });
+      mockGetCoursePaymentStatus.mockResolvedValue({
+        enrolled: true,
+        recordId: "507f191e810c19729de86001",
+        refundedAmountCents: 0,
+        paymentStatus: "paid",
+        refundStatus: "none",
+        refundRequestStatus: "none",
+        disputeStatus: "none",
+        disputeReportStatus: state
+      });
+      const screen = render(
+        <CourseDetailScreen route={{ params: { id: "course-paid" } }} />
+      );
+
+      await screen.findByText("Reviewed Course Purchase");
+      expect(screen.getByText(label)).toBeTruthy();
+      const report = screen.getByLabelText("Submit course payment issue report");
+      expect(report).toBeDisabled();
+      fireEvent.press(report);
+      expect(mockOpenCourseDispute).not.toHaveBeenCalled();
+    }
+  );
+
   it("lets an owner update the fee, publish, and return the course to a private draft", async () => {
     Object.assign(mockLearningAccess, {
       canCreateCourses: true,

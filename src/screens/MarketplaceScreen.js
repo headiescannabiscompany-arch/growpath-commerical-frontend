@@ -18,6 +18,7 @@ import {
   purchaseContent,
   searchContent
 } from "../api/marketplace";
+import MarketplacePurchasedLibrary from "../components/commerce/MarketplacePurchasedLibrary";
 import ScreenContainer from "../components/ScreenContainer";
 import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
@@ -56,6 +57,7 @@ export default function MarketplaceScreen({ navigation, route }) {
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
+  const [showPurchased, setShowPurchased] = useState(false);
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [more, setMore] = useState(true);
@@ -158,6 +160,10 @@ export default function MarketplaceScreen({ navigation, route }) {
     }
   }
 
+  if (showPurchased) {
+    return <MarketplacePurchasedLibrary onBack={() => setShowPurchased(false)} />;
+  }
+
   if (selected) {
     return (
       <ScreenContainer scroll>
@@ -213,6 +219,14 @@ export default function MarketplaceScreen({ navigation, route }) {
             Browse storefront offers from compatibility offer endpoints.
           </Text>
         </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="View purchased storefront offers"
+          onPress={() => setShowPurchased(true)}
+          style={styles.libraryButton}
+        >
+          <Text style={styles.libraryButtonText}>Purchased</Text>
+        </Pressable>
       </View>
 
       <TextInput
@@ -372,6 +386,17 @@ export function createStyles(palette) {
       color: palette.text
     },
     filters: { marginBottom: 12 },
+    libraryButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      marginTop: 10,
+      paddingHorizontal: 14,
+      paddingVertical: 8
+    },
+    libraryButtonText: { color: palette.link, fontWeight: "800" },
     filterBtn: {
       paddingHorizontal: 14,
       paddingVertical: 8,

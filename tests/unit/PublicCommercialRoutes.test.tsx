@@ -23,6 +23,7 @@ const mockFetchPublicStorefront = jest.fn();
 const mockCheckPublicProductAccess = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
 const mockStartCourseCheckout = jest.fn();
+const mockPollCourseAccessStatus = jest.fn();
 const mockSubmitProductPurchaseIntent = jest.fn();
 const mockGetProductPurchaseStatus = jest.fn();
 const mockRequestProductRefund = jest.fn();
@@ -93,6 +94,7 @@ jest.mock("@/api/products", () => ({
 }));
 
 jest.mock("@/api/coursePayments", () => ({
+  pollCourseAccessStatus: (...args: any[]) => mockPollCourseAccessStatus(...args),
   startCourseCheckout: (...args: any[]) => mockStartCourseCheckout(...args)
 }));
 
@@ -281,6 +283,7 @@ describe("public commercial routes", () => {
     mockCheckPublicProductAccess.mockReset();
     mockRecordCommercialAnalyticsEvent.mockReset();
     mockStartCourseCheckout.mockReset();
+    mockPollCourseAccessStatus.mockReset();
     mockSubmitProductPurchaseIntent.mockReset();
     mockGetProductPurchaseStatus.mockReset();
     mockRequestProductRefund.mockReset();
@@ -293,6 +296,11 @@ describe("public commercial routes", () => {
     };
     mockRecordCommercialAnalyticsEvent.mockResolvedValue({ success: true });
     mockStartCourseCheckout.mockResolvedValue({});
+    mockPollCourseAccessStatus.mockResolvedValue({
+      attempts: 1,
+      snapshot: { enrolled: true, paymentStatus: "paid" },
+      state: "confirmed"
+    });
     mockSubmitProductPurchaseIntent.mockResolvedValue({
       response: "yes",
       summary: { yes: 5, maybe: 2, no: 1, total: 8 }
@@ -644,7 +652,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Related Courses")).toBeTruthy();
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
-    expect(screen.getByText("Open Course")).toBeTruthy();
+    expect(screen.getAllByText("Open Course").length).toBeGreaterThan(0);
     expect(mockLinkHrefs).toContain("/store/living-soil-labs/courses/course-1");
     expect(screen.getByText("Product Lives")).toBeTruthy();
     expect(screen.getByText("Veg Mix Live Demo")).toBeTruthy();
@@ -1013,12 +1021,40 @@ describe("public commercial routes", () => {
     };
     const screen = render(<PublicStorefrontCourseRoute />);
 
-    await waitFor(() => expect(screen.getByText("Payment submitted")).toBeTruthy());
-    expect(screen.getByLabelText("Open purchased course")).toBeTruthy();
-    expect(screen.getByText("Open Purchased Course")).toBeTruthy();
+    await waitFor(() =>
+      expect(mockPollCourseAccessStatus).toHaveBeenCalledWith(
+        "course-1",
+        expect.objectContaining({ shouldContinue: expect.any(Function) })
+      )
+    );
+    expect(await screen.findByText("Enrollment confirmed")).toBeTruthy();
+    expect(screen.getByLabelText("Open course enrollment status")).toBeTruthy();
+    expect(screen.getAllByText("Open Course").length).toBeGreaterThan(0);
     expect(mockLinkHrefs).toContain(
       "/home/personal/courses?courseId=course-1&checkout=success"
     );
+  });
+
+  it("keeps a pending course return on status recovery instead of starting another Checkout", async () => {
+    mockPollCourseAccessStatus.mockResolvedValue({
+      attempts: 5,
+      snapshot: { enrolled: false, paymentStatus: "paid" },
+      state: "pending"
+    });
+    mockRouteParams = {
+      slug: "living-soil-labs",
+      courseId: "course-1",
+      checkout: "success",
+      course: "course-1"
+    };
+    const screen = render(<PublicStorefrontCourseRoute />);
+
+    await waitFor(() => expect(mockPollCourseAccessStatus).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText("Confirming enrollment")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Check storefront course payment status"));
+
+    await waitFor(() => expect(mockPollCourseAccessStatus).toHaveBeenCalledTimes(2));
+    expect(mockStartCourseCheckout).not.toHaveBeenCalled();
   });
 
   it("loads the /storefront/:slug/courses/:courseId alias through the same course route", async () => {

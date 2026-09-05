@@ -11,6 +11,7 @@ import {
 import {
   executeDestinationRefund,
   listCommercePaymentReviewCases,
+  resolveCommercePaymentIssue,
   type CommercePaymentReviewCase,
   type CommercePaymentReviewPage
 } from "@/api/adminCommercePaymentReview";
@@ -38,6 +39,13 @@ function newOperationId(recordId: string) {
   return `commerce-refund-${recordId}-${random}`.slice(0, 120);
 }
 
+function newSupportOperationId(recordId: string) {
+  const random =
+    globalThis.crypto?.randomUUID?.() ||
+    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+  return `commerce-support-${recordId}-${random}`.slice(0, 120);
+}
+
 function exactConfirmation(item: CommercePaymentReviewCase, amountCents: number) {
   return `REFUND ${item.sourceType}:${item.recordId} ${amountCents} ${item.currency} AFTER ${item.refundedAmountCents}`;
 }
@@ -60,6 +68,14 @@ export default function AdminCommercePaymentReviewCard() {
   const [confirmation, setConfirmation] = useState("");
   const [operationId, setOperationId] = useState("");
   const [executing, setExecuting] = useState(false);
+  const [supportSelectedId, setSupportSelectedId] = useState("");
+  const [supportDecision, setSupportDecision] = useState<"resolve" | "decline">(
+    "resolve"
+  );
+  const [supportReason, setSupportReason] = useState("");
+  const [supportConfirmation, setSupportConfirmation] = useState("");
+  const [supportOperationId, setSupportOperationId] = useState("");
+  const [resolvingSupport, setResolvingSupport] = useState(false);
 
   const selected = pageData?.cases.find((item) => item.recordId === selectedId) || null;
   const amountCents = Number(amountText);
@@ -76,6 +92,16 @@ export default function AdminCommercePaymentReviewCard() {
     confirmation === expectedConfirmation &&
     !executing
   );
+  const supportSelected =
+    pageData?.cases.find((item) => item.recordId === supportSelectedId) || null;
+  const expectedSupportConfirmation =
+    supportSelected?.paymentIssueResolutionConfirmations?.[supportDecision] || "";
+  const canResolveSupport = Boolean(
+    supportSelected?.canResolvePaymentIssue &&
+    detailedReason(supportReason) &&
+    supportConfirmation === expectedSupportConfirmation &&
+    !resolvingSupport
+  );
 
   async function load(page = 1) {
     setLoading(true);
@@ -85,6 +111,9 @@ export default function AdminCommercePaymentReviewCard() {
       setPageData(result);
       if (!result.cases.some((item) => item.recordId === selectedId)) {
         setSelectedId("");
+      }
+      if (!result.cases.some((item) => item.recordId === supportSelectedId)) {
+        setSupportSelectedId("");
       }
     } catch (error) {
       setFeedback(
@@ -109,6 +138,18 @@ export default function AdminCommercePaymentReviewCard() {
     setReason(item.reason || "");
     setConfirmation("");
     setOperationId("");
+    setFeedback("");
+  }
+
+  function selectSupportCase(
+    item: CommercePaymentReviewCase,
+    decision: "resolve" | "decline"
+  ) {
+    setSupportSelectedId(item.recordId);
+    setSupportDecision(decision);
+    setSupportReason("");
+    setSupportConfirmation("");
+    setSupportOperationId("");
     setFeedback("");
   }
 
@@ -143,6 +184,37 @@ export default function AdminCommercePaymentReviewCard() {
       );
     } finally {
       setExecuting(false);
+    }
+  }
+
+  async function resolveSupportReport() {
+    if (!supportSelected || !canResolveSupport || resolvingSupport) return;
+    const stableOperationId =
+      supportOperationId || newSupportOperationId(supportSelected.recordId);
+    setSupportOperationId(stableOperationId);
+    setResolvingSupport(true);
+    setFeedback("");
+    try {
+      const result = await resolveCommercePaymentIssue({
+        sourceType: supportSelected.sourceType,
+        recordId: supportSelected.recordId,
+        operationId: stableOperationId,
+        decision: supportDecision,
+        expectedStatus: "reported",
+        confirmation: supportConfirmation,
+        reason: supportReason.trim()
+      });
+      setFeedback(result.message);
+      setSupportSelectedId("");
+      await load(pageData?.pagination.page || 1);
+    } catch (error) {
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "Payment-support outcome is unconfirmed. Retry with the same operation."
+      );
+    } finally {
+      setResolvingSupport(false);
     }
   }
 
@@ -209,6 +281,34 @@ export default function AdminCommercePaymentReviewCard() {
                 {item.refundLifecycleStatus}
               </Text>
               {item.reason ? <Text style={styles.reason}>{item.reason}</Text> : null}
+              {item.canResolvePaymentIssue ? (
+                <View style={styles.actionRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Resolve payment issue for ${item.sourceType} record ${item.recordId}`}
+                    disabled={executing || resolvingSupport}
+                    onPress={() => selectSupportCase(item, "resolve")}
+                    style={[
+                      styles.secondary,
+                      (executing || resolvingSupport) && styles.disabled
+                    ]}
+                  >
+                    <Text style={styles.secondaryText}>Resolve support report</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Decline payment issue for ${item.sourceType} record ${item.recordId}`}
+                    disabled={executing || resolvingSupport}
+                    onPress={() => selectSupportCase(item, "decline")}
+                    style={[
+                      styles.secondary,
+                      (executing || resolvingSupport) && styles.disabled
+                    ]}
+                  >
+                    <Text style={styles.secondaryText}>Decline support report</Text>
+                  </Pressable>
+                </View>
+              ) : null}
               {!item.canExecuteRefund ? (
                 <Text style={styles.warning}>
                   {item.connectRecoveryStatus === "policy_pending"
@@ -292,6 +392,64 @@ export default function AdminCommercePaymentReviewCard() {
             </View>
           ) : null}
 
+          {supportSelected ? (
+            <View style={styles.editor}>
+              <Text style={styles.caseTitle}>
+                {supportDecision === "resolve" ? "Resolve" : "Decline"}{" "}
+                {supportSelected.sourceType} payment-support report
+              </Text>
+              <Text style={styles.meta}>
+                This closes only GrowPath support intake. It does not change the provider
+                dispute or issue a refund.
+              </Text>
+              <TextInput
+                accessibilityLabel="Payment issue resolution reason"
+                multiline
+                onChangeText={(value) => {
+                  setSupportReason(value);
+                  setSupportOperationId("");
+                }}
+                placeholder="Detailed internal decision reason (at least 3 words and 16 characters)"
+                placeholderTextColor={palette.textMuted}
+                style={[styles.input, styles.multiline]}
+                value={supportReason}
+              />
+              <Text style={styles.meta}>Type exactly: {expectedSupportConfirmation}</Text>
+              <TextInput
+                accessibilityLabel="Exact payment issue resolution confirmation"
+                autoCapitalize="none"
+                autoCorrect={false}
+                onChangeText={setSupportConfirmation}
+                placeholder="Type the exact payment-support phrase"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={supportConfirmation}
+              />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${supportDecision === "resolve" ? "Confirm resolution" : "Confirm decline"} for ${supportSelected.sourceType} record ${supportSelected.recordId}`}
+                accessibilityState={{ disabled: !canResolveSupport }}
+                disabled={!canResolveSupport}
+                onPress={() => void resolveSupportReport()}
+                style={[styles.primary, !canResolveSupport && styles.disabled]}
+              >
+                <Text style={styles.primaryText}>
+                  {resolvingSupport
+                    ? "Saving one support decision..."
+                    : supportDecision === "resolve"
+                      ? "Confirm resolved"
+                      : "Confirm declined"}
+                </Text>
+              </Pressable>
+              {supportOperationId ? (
+                <Text style={styles.meta}>
+                  This form will reuse the same operation on retry until the reason
+                  changes.
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+
           {pageData && pageData.pagination.pages > 1 ? (
             <View style={styles.pagination}>
               <Pressable
@@ -358,6 +516,7 @@ export function createStyles(palette: ThemePalette) {
     meta: { color: palette.textMuted, lineHeight: 19 },
     reason: { color: palette.textSoft, lineHeight: 19 },
     warning: { color: palette.warning, fontWeight: "700", lineHeight: 19 },
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     editor: {
       backgroundColor: palette.surfaceMuted,
       borderRadius: radius.card,
@@ -390,6 +549,13 @@ export function createStyles(palette: ThemePalette) {
       padding: 11
     },
     dangerText: { color: palette.dangerText || palette.accentText, fontWeight: "900" },
+    primary: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 11
+    },
+    primaryText: { color: palette.accentText, fontWeight: "900" },
     pagination: {
       alignItems: "center",
       flexDirection: "row",

@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import MarketplaceScreen, {
   createStyles,
@@ -9,7 +9,10 @@ import MarketplaceScreen, {
 const realMarketplaceApi = jest.requireActual("@/api/marketplace");
 
 const mockBrowseMarketplace = jest.fn();
+const mockDownloadMarketplaceContent = jest.fn();
 const mockGetPurchaseStatus = jest.fn();
+const mockGetMarketplacePurchases = jest.fn();
+const mockOpenAuthorizedExternalUrl = jest.fn();
 
 jest.mock("@/api/marketplace", () => ({
   browseMarketplace: (...args) => mockBrowseMarketplace(...args),
@@ -19,15 +22,42 @@ jest.mock("@/api/marketplace", () => ({
   searchContent: jest.fn()
 }));
 
+jest.mock("@/api/marketplaceBuyer", () => ({
+  downloadMarketplaceContent: (...args) => mockDownloadMarketplaceContent(...args),
+  getMarketplacePurchases: (...args) => mockGetMarketplacePurchases(...args),
+  marketplaceDownloadUrl: (response) => response?.downloadUrl || ""
+}));
+
+jest.mock("@/utils/openAuthorizedExternalUrl", () => ({
+  openAuthorizedExternalUrl: (...args) => mockOpenAuthorizedExternalUrl(...args)
+}));
+
 describe("Marketplace compatibility screen copy", () => {
   beforeEach(() => {
     mockBrowseMarketplace.mockReset();
+    mockDownloadMarketplaceContent.mockReset();
     mockGetPurchaseStatus.mockReset();
+    mockGetMarketplacePurchases.mockReset();
+    mockOpenAuthorizedExternalUrl.mockReset();
     mockBrowseMarketplace.mockResolvedValue({ data: [] });
     mockGetPurchaseStatus.mockResolvedValue({
       isPurchased: true,
       paymentStatus: "paid"
     });
+    mockGetMarketplacePurchases.mockResolvedValue({
+      purchases: [
+        {
+          purchaseId: "purchase-1",
+          purchasedAt: "2026-09-04T12:00:00.000Z",
+          upload: { id: "offer-owned", title: "Owned grow worksheet", price: 12 }
+        }
+      ],
+      pagination: { page: 1, pages: 1, total: 1 }
+    });
+    mockDownloadMarketplaceContent.mockResolvedValue({
+      downloadUrl: "https://downloads.example/offer-owned"
+    });
+    mockOpenAuthorizedExternalUrl.mockResolvedValue(undefined);
   });
 
   it("presents the compatibility route as Storefront Offers", async () => {
@@ -107,6 +137,24 @@ describe("Marketplace compatibility screen copy", () => {
 
     expect(paid.getByLabelText("Start storefront offer checkout")).toBeTruthy();
     expect(paid.queryByLabelText("Start marketplace checkout")).toBeNull();
+  });
+
+  it("loads the authenticated purchased library and authorizes its download", async () => {
+    const screen = render(<MarketplaceScreen />);
+    await screen.findByText("Storefront Offers");
+
+    fireEvent.press(screen.getByLabelText("View purchased storefront offers"));
+
+    await waitFor(() => expect(mockGetMarketplacePurchases).toHaveBeenCalledWith(1, 20));
+    expect(screen.getByText("Owned grow worksheet")).toBeTruthy();
+    expect(screen.getByText(/confirmed purchases/i)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Download Owned grow worksheet"));
+    await waitFor(() =>
+      expect(mockDownloadMarketplaceContent).toHaveBeenCalledWith("offer-owned")
+    );
+    expect(mockOpenAuthorizedExternalUrl).toHaveBeenCalledWith(
+      "https://downloads.example/offer-owned"
+    );
   });
 
   it("keeps compatibility sales summary fallback copy storefront-oriented", () => {
