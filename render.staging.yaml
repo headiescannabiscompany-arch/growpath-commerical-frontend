@@ -5,7 +5,6 @@ services:
   - type: web
     name: growpath-web-staging
     runtime: static
-    plan: free
     branch: staging
     autoDeployTrigger: off
     buildCommand: npm run export:web:staging
