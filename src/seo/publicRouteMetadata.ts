@@ -10,6 +10,16 @@ type RegistryRoute = Omit<PublicRouteMetadata, "index"> & { index?: boolean };
 
 const defaultMetadata = registry.default as PublicRouteMetadata;
 const routeMetadata = registry.routes as Record<string, RegistryRoute>;
+function publicSiteUrl() {
+  return String(process.env.EXPO_PUBLIC_SITE_URL || "https://growpathai.com").replace(
+    /\/+$/,
+    ""
+  );
+}
+
+function forceNoIndex() {
+  return process.env.EXPO_PUBLIC_WEB_EXPORT_TARGET === "staging";
+}
 
 export function normalizePublicRoute(pathname: string) {
   return pathname.split(/[?#]/, 1)[0].replace(/^\/+|\/+$/g, "");
@@ -52,14 +62,15 @@ export function applyPublicRouteMetadata(pathname: string) {
 
   const metadata = metadataForPathname(pathname);
   const route = normalizePublicRoute(pathname);
-  const canonical = route ? `https://growpathai.com/${route}` : "https://growpathai.com";
+  const siteUrl = publicSiteUrl();
+  const canonical = route ? `${siteUrl}/${route}` : siteUrl;
 
   document.title = metadata.title;
   upsertMeta('meta[name="description"]', { name: "description" }, metadata.description);
   upsertMeta(
     'meta[name="robots"]',
     { name: "robots" },
-    metadata.index ? "index,follow" : "noindex,nofollow"
+    metadata.index && !forceNoIndex() ? "index,follow" : "noindex,nofollow"
   );
   upsertMeta('meta[property="og:title"]', { property: "og:title" }, metadata.title);
   upsertMeta(

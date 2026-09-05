@@ -746,7 +746,7 @@ export default function PublicProductRoute() {
             priceLabel={money(product, storefront)}
             socialPreviewUrl={
               product?.socialPreviewUrl ||
-              `${API_URL || "https://api.growpathai.com"}/api/commercial/storefront/public/${encodeURIComponent(slug)}/products/${encodeURIComponent(requestedProductId)}/share`
+              `${API_URL}/api/commercial/storefront/public/${encodeURIComponent(slug)}/products/${encodeURIComponent(requestedProductId)}/share`
             }
           />
 

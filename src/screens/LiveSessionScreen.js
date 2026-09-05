@@ -16,7 +16,7 @@ import {
 import { Link, useLocalSearchParams } from "expo-router";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useAuth } from "@/auth/AuthContext";
-import { apiRequest } from "../api/apiRequest";
+import { API_URL, apiRequest } from "../api/apiRequest";
 import { listPersonalGrows } from "../api/grows";
 import { createPersonalTask } from "../api/tasks";
 import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
@@ -1098,13 +1098,17 @@ export default function LiveSessionScreen({ route }) {
               {overlayToken ? (
                 <View style={styles.overlayUrlBox}>
                   <Text selectable style={styles.overlayUrl}>
-                    {`https://growpathai.com/live-overlay?token=${encodeURIComponent(overlayToken)}`}
+                    {currentPublicUrl(
+                      `/live-overlay?token=${encodeURIComponent(overlayToken)}`
+                    )}
                   </Text>
                   <Pressable
                     accessibilityRole="button"
                     onPress={() =>
                       void copyText(
-                        `https://growpathai.com/live-overlay?token=${encodeURIComponent(overlayToken)}`,
+                        currentPublicUrl(
+                          `/live-overlay?token=${encodeURIComponent(overlayToken)}`
+                        ),
                         "OBS overlay link copied."
                       )
                     }
@@ -1128,10 +1132,10 @@ export default function LiveSessionScreen({ route }) {
                         feeds only to a compatible outside picker or stream tool.
                       </Text>
                       <Text selectable style={styles.overlayUrl}>
-                        {`https://growpathai.com/api/lives/giveaway-feed/${encodeURIComponent(overlayToken)}`}
+                        {`${API_URL}/api/lives/giveaway-feed/${encodeURIComponent(overlayToken)}`}
                       </Text>
                       <Text selectable style={styles.overlayUrl}>
-                        {`https://growpathai.com/api/lives/giveaway-feed/${encodeURIComponent(overlayToken)}?format=csv`}
+                        {`${API_URL}/api/lives/giveaway-feed/${encodeURIComponent(overlayToken)}?format=csv`}
                       </Text>
                     </View>
                   ) : null}

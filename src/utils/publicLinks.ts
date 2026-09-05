@@ -1,11 +1,18 @@
 import { Platform, Share } from "react-native";
 
+function configuredPublicSiteUrl() {
+  return String(process.env.EXPO_PUBLIC_SITE_URL || "https://growpathai.com").replace(
+    /\/+$/,
+    ""
+  );
+}
+
 export function currentPublicUrl(path: string) {
   if (/^https?:\/\//i.test(path)) return path;
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   const location = (globalThis as any)?.window?.location;
   if (typeof location?.origin === "string") return `${location.origin}${cleanPath}`;
-  return `https://growpathai.com${cleanPath}`;
+  return `${configuredPublicSiteUrl()}${cleanPath}`;
 }
 
 export type PublicShareDetails = {

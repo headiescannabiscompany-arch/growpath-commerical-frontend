@@ -10,6 +10,7 @@ import {
   View
 } from "react-native";
 
+import { API_URL } from "@/api/apiRequest";
 import {
   addFieldStudyCollaborator,
   FieldObservation,
@@ -350,7 +351,7 @@ function FieldStudyDetailContent() {
             onPress={() =>
               void sharePublicLink(study.title, publicPath, {
                 description: study.description,
-                socialPreviewUrl: `https://api.growpathai.com/api/personal/field-studies/public/studies/${encodeURIComponent(study.slug)}/share`
+                socialPreviewUrl: `${API_URL}/api/personal/field-studies/public/studies/${encodeURIComponent(study.slug)}/share`
               })
             }
             style={styles.secondaryButton}

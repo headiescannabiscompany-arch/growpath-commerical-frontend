@@ -1,0 +1,84 @@
+# Dedicated staging static site. Create it separately from the production
+# render.yaml Blueprint. It stays on the staging branch and requires a manual
+# deploy so acceptance testing cannot change production automatically.
+services:
+  - type: web
+    name: growpath-web-staging
+    runtime: static
+    plan: free
+    branch: staging
+    autoDeployTrigger: off
+    buildCommand: npm run export:web:staging
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.4
+
+      # Supply the exact, public HTTPS staging origins when the Blueprint is
+      # created. The export rejects blank, local, insecure, and known production
+      # origins before Expo runs.
+      - key: EXPO_PUBLIC_API_URL
+        sync: false
+      - key: GROWPATH_SITE_URL
+        sync: false
+
+      # Keep environment-specific destinations explicit. In particular, a
+      # staging account must never be sent to the production deletion flow.
+      - key: EXPO_PUBLIC_PRIVACY_URL
+        sync: false
+      - key: EXPO_PUBLIC_TERMS_URL
+        sync: false
+      - key: EXPO_PUBLIC_SUPPORT_URL
+        sync: false
+      - key: EXPO_PUBLIC_DELETE_ACCOUNT_URL
+        sync: false
+      - key: EXPO_PUBLIC_TWITCH_PARENT_HOST
+        sync: false
+      - key: EXPO_PUBLIC_SENTRY_DSN
+        sync: false
+
+    routes:
+      - type: rewrite
+        source: /home/*
+        destination: /index.html
+      - type: rewrite
+        source: /videos/*
+        destination: /index.html
+      - type: rewrite
+        source: /store/*
+        destination: /index.html
+      - type: rewrite
+        source: /storefront/*
+        destination: /index.html
+      - type: rewrite
+        source: /brands/*
+        destination: /index.html
+      - type: rewrite
+        source: /forum/*
+        destination: /index.html
+      - type: rewrite
+        source: /field-observations/*
+        destination: /index.html
+      - type: rewrite
+        source: /facilities/*
+        destination: /index.html
+      - type: rewrite
+        source: /alerts/*
+        destination: /index.html
+      - type: rewrite
+        source: /tasks/*
+        destination: /index.html
+      - type: rewrite
+        source: /logs/*
+        destination: /index.html
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    headers:
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex, nofollow
+      - path: /_expo/static/js/*
+        name: Cache-Control
+        value: public, max-age=0, s-maxage=0, must-revalidate

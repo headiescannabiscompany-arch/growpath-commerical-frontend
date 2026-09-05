@@ -1,4 +1,8 @@
-import { buildPublicShareTargets, publicShareMessage } from "@/utils/publicLinks";
+import {
+  buildPublicShareTargets,
+  currentPublicUrl,
+  publicShareMessage
+} from "@/utils/publicLinks";
 
 describe("buildPublicShareTargets", () => {
   it("keeps every destination anchored to the canonical GrowPath URL", () => {
@@ -39,5 +43,18 @@ describe("buildPublicShareTargets", () => {
     expect(publicShareMessage("Night Script Cord", path, details)).toBe(
       "Night Script Cord\n$49.00\nNavy corduroy hat with red script embroidery.\nhttps://growpathai.com/store/growpathai/products/abc"
     );
+  });
+
+  it("uses the configured staging origin for non-browser share links", () => {
+    const previousSiteUrl = process.env.EXPO_PUBLIC_SITE_URL;
+    process.env.EXPO_PUBLIC_SITE_URL = "https://growpath-web-staging.onrender.com/";
+    try {
+      expect(currentPublicUrl("/live-session?sessionId=stage-1")).toBe(
+        "https://growpath-web-staging.onrender.com/live-session?sessionId=stage-1"
+      );
+    } finally {
+      if (previousSiteUrl === undefined) delete process.env.EXPO_PUBLIC_SITE_URL;
+      else process.env.EXPO_PUBLIC_SITE_URL = previousSiteUrl;
+    }
   });
 });

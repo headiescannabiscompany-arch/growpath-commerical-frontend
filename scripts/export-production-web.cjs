@@ -11,8 +11,84 @@ const outputDir =
     : "dist";
 const absoluteOutputDir = path.resolve(ROOT, outputDir);
 const defaultProductionApiUrl = "https://api.growpathai.com";
-const requestedProductionApiUrl =
-  process.env.EXPO_PUBLIC_API_URL || defaultProductionApiUrl;
+const defaultProductionSiteUrl = "https://growpathai.com";
+const targetArgIndex = process.argv.findIndex((arg) => arg === "--target");
+const requestedExportTarget =
+  targetArgIndex >= 0 && process.argv[targetArgIndex + 1]
+    ? process.argv[targetArgIndex + 1]
+    : process.env.GROWPATH_WEB_EXPORT_TARGET;
+const exportTarget = String(requestedExportTarget || "production")
+  .trim()
+  .toLowerCase();
+
+if (!new Set(["production", "staging"]).has(exportTarget)) {
+  console.error("GROWPATH_WEB_EXPORT_TARGET must be either production or staging.");
+  process.exit(1);
+}
+
+const isStagingExport = exportTarget === "staging";
+
+function isLocalOrPrivateHostname(hostname) {
+  const normalized = String(hostname || "")
+    .toLowerCase()
+    .replace(/^\[|\]$/g, "");
+  if (
+    normalized === "localhost" ||
+    normalized === "::1" ||
+    normalized.endsWith(".localhost") ||
+    normalized.endsWith(".local") ||
+    normalized.endsWith(".internal")
+  ) {
+    return true;
+  }
+
+  const ipv4 = normalized.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!ipv4) return false;
+  const octets = ipv4.slice(1).map(Number);
+  if (octets.some((octet) => octet < 0 || octet > 255)) return true;
+  return (
+    octets[0] === 10 ||
+    octets[0] === 127 ||
+    (octets[0] === 169 && octets[1] === 254) ||
+    (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+    (octets[0] === 192 && octets[1] === 168) ||
+    octets[0] === 0
+  );
+}
+
+function requireStagingOrigin(rawUrl, label, productionHostnames) {
+  const value = String(rawUrl || "").trim();
+  if (!value) {
+    throw new Error(`${label} is required for a staging web export.`);
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(`${label} must be a valid absolute HTTPS origin.`);
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  if (
+    parsed.protocol !== "https:" ||
+    parsed.username ||
+    parsed.password ||
+    parsed.search ||
+    parsed.hash ||
+    !["", "/"].includes(parsed.pathname) ||
+    isLocalOrPrivateHostname(hostname)
+  ) {
+    throw new Error(
+      `${label} must be a public HTTPS origin without credentials, path, query, or fragment.`
+    );
+  }
+  if (productionHostnames.has(hostname)) {
+    throw new Error(`${label} must not target a GrowPath production hostname.`);
+  }
+
+  return parsed.origin;
+}
 
 function normalizeProductionApiUrl(rawUrl) {
   try {
@@ -30,20 +106,52 @@ function normalizeProductionApiUrl(rawUrl) {
   };
 }
 
-const { productionApiUrl, wasFallback } = normalizeProductionApiUrl(
-  requestedProductionApiUrl
-);
+let apiUrl;
+let siteUrl;
 
-if (wasFallback) {
-  console.warn(
-    `Using fallback EXPO_PUBLIC_API_URL for production export: ${defaultProductionApiUrl} (received ${requestedProductionApiUrl})`
+if (isStagingExport) {
+  try {
+    apiUrl = requireStagingOrigin(
+      process.env.EXPO_PUBLIC_API_URL,
+      "EXPO_PUBLIC_API_URL",
+      new Set(["api.growpathai.com", "growpathai.com", "www.growpathai.com"])
+    );
+    siteUrl = requireStagingOrigin(
+      process.env.GROWPATH_SITE_URL,
+      "GROWPATH_SITE_URL",
+      new Set(["growpathai.com", "www.growpathai.com", "api.growpathai.com"])
+    );
+    if (apiUrl === siteUrl) {
+      throw new Error(
+        "EXPO_PUBLIC_API_URL and GROWPATH_SITE_URL must use separate staging origins."
+      );
+    }
+  } catch (error) {
+    console.error(`Staging web export configuration rejected: ${error.message}`);
+    process.exit(1);
+  }
+} else {
+  const requestedProductionApiUrl =
+    process.env.EXPO_PUBLIC_API_URL || defaultProductionApiUrl;
+  const { productionApiUrl, wasFallback } = normalizeProductionApiUrl(
+    requestedProductionApiUrl
   );
+  apiUrl = productionApiUrl;
+  siteUrl = defaultProductionSiteUrl;
+
+  if (wasFallback) {
+    console.warn(
+      `Using fallback EXPO_PUBLIC_API_URL for production export: ${defaultProductionApiUrl} (received ${requestedProductionApiUrl})`
+    );
+  }
 }
 
 const env = {
   ...process.env,
   NODE_ENV: "production",
-  EXPO_PUBLIC_API_URL: productionApiUrl
+  EXPO_PUBLIC_API_URL: apiUrl,
+  EXPO_PUBLIC_SITE_URL: siteUrl,
+  EXPO_PUBLIC_WEB_EXPORT_TARGET: exportTarget
 };
 
 const expoCli = path.join(ROOT, "node_modules", "expo", "bin", "cli");
@@ -276,7 +384,6 @@ function revisionStaticJavaScript(html) {
 }
 
 const revisionedIndexHtml = revisionStaticJavaScript(rawIndexHtml);
-const siteUrl = "https://growpathai.com";
 const indexNowKey = "growpathai-2026-indexnow-7f4b2a91c6d8e305";
 const publicRouteMetadata = require("../src/seo/publicRouteMetadata.json");
 
@@ -679,7 +786,11 @@ function applySeo(html, route) {
   const canonical = canonicalUrl(route);
   const title = escapeHtml(seo.title);
   const description = escapeHtml(seo.description);
-  const robots = seo.index ? "index,follow" : "noindex,follow";
+  const robots = isStagingExport
+    ? "noindex,nofollow"
+    : seo.index
+      ? "index,follow"
+      : "noindex,follow";
   const routePath = route ? `/${route}` : "/";
   const tags = [
     `<meta name="description" content="${description}" />`,
@@ -727,28 +838,32 @@ for (const route of fallbackRoutes) {
   );
 }
 
-const robotsTxt = [
-  "User-agent: *",
-  "Allow: /",
-  "Disallow: /home/",
-  "Disallow: /admin",
-  "Disallow: /profile",
-  "Disallow: /facilities",
-  "Disallow: /onboarding/",
-  "Disallow: /courses/create",
-  "Disallow: /courses/add-lesson",
-  "Disallow: /accept-facility-invite",
-  "Disallow: /claim-gift",
-  "Disallow: /forgot-password",
-  "Disallow: /reset-password",
-  "Disallow: /verify-email",
-  "Disallow: /account/delete",
-  "Disallow: /account/gift-checkout/",
-  "Disallow: /account/mode",
-  "Disallow: /account/workspace",
-  `Sitemap: ${siteUrl}/sitemap.xml`,
-  ""
-].join("\n");
+const robotsTxt = (
+  isStagingExport
+    ? ["User-agent: *", "Disallow: /", ""]
+    : [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /home/",
+        "Disallow: /admin",
+        "Disallow: /profile",
+        "Disallow: /facilities",
+        "Disallow: /onboarding/",
+        "Disallow: /courses/create",
+        "Disallow: /courses/add-lesson",
+        "Disallow: /accept-facility-invite",
+        "Disallow: /claim-gift",
+        "Disallow: /forgot-password",
+        "Disallow: /reset-password",
+        "Disallow: /verify-email",
+        "Disallow: /account/delete",
+        "Disallow: /account/gift-checkout/",
+        "Disallow: /account/mode",
+        "Disallow: /account/workspace",
+        `Sitemap: ${siteUrl}/sitemap.xml`,
+        ""
+      ]
+).join("\n");
 fs.writeFileSync(path.join(absoluteOutputDir, "robots.txt"), robotsTxt);
 
 const sitemapXml = [
@@ -766,8 +881,10 @@ const sitemapXml = [
   "</urlset>",
   ""
 ].join("\n");
-fs.writeFileSync(path.join(absoluteOutputDir, "sitemap.xml"), sitemapXml);
-fs.writeFileSync(path.join(absoluteOutputDir, `${indexNowKey}.txt`), indexNowKey);
+if (!isStagingExport) {
+  fs.writeFileSync(path.join(absoluteOutputDir, "sitemap.xml"), sitemapXml);
+  fs.writeFileSync(path.join(absoluteOutputDir, `${indexNowKey}.txt`), indexNowKey);
+}
 
 fs.writeFileSync(
   path.join(absoluteOutputDir, "site.webmanifest"),
@@ -820,8 +937,18 @@ const forbidden = [
 ];
 const foundForbidden = forbidden.filter((needle) => haystack.includes(needle));
 
-if (!haystack.includes(productionApiUrl)) {
-  console.error(`Production export missing API URL: ${productionApiUrl}`);
+if (!haystack.includes(apiUrl)) {
+  console.error(`${exportTarget} export missing API URL: ${apiUrl}`);
+  process.exit(1);
+}
+
+if (!haystack.includes(siteUrl)) {
+  console.error(`${exportTarget} export missing site URL: ${siteUrl}`);
+  process.exit(1);
+}
+
+if (isStagingExport && haystack.includes("https://api.growpathai.com/api/")) {
+  console.error("Staging export contains a production API request target.");
   process.exit(1);
 }
 
@@ -832,4 +959,6 @@ if (foundForbidden.length) {
   process.exit(1);
 }
 
-console.log(`Production web export verified: ${outputDir} uses ${productionApiUrl}`);
+console.log(
+  `${isStagingExport ? "Staging" : "Production"} web export verified: ${outputDir} uses ${apiUrl}`
+);
