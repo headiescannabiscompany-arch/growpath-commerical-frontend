@@ -6,7 +6,8 @@ jest.mock("@/api/apiRequest", () => ({
 
 import {
   cancelFacilityPlan as cancelTypedFacilityPlan,
-  FACILITY_CANCELLATION_CONFIRMATION
+  FACILITY_CANCELLATION_CONFIRMATION,
+  openFacilityBillingPortal
 } from "@/api/billing";
 import { cancelFacilityPlan as cancelLegacyFacilityPlan } from "@/api/facility";
 
@@ -60,5 +61,33 @@ describe("Facility billing cancellation API", () => {
       message: "Confirm Facility cancellation before changing Stripe renewal."
     });
     expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
+  it("requests a server-bound Facility portal and accepts only Stripe's exact host", async () => {
+    mockApiRequest.mockResolvedValue({
+      success: true,
+      data: { url: "https://billing.stripe.com/p/session/bps_facility" }
+    });
+
+    await expect(openFacilityBillingPortal("facility-1")).resolves.toEqual({
+      url: "https://billing.stripe.com/p/session/bps_facility"
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/facility-billing/portal", {
+      method: "POST",
+      body: { facilityId: "facility-1" }
+    });
+  });
+
+  it.each([
+    "https://billing.stripe.com.attacker.example/p/session/fake",
+    "http://billing.stripe.com/p/session/fake",
+    "https://attacker.example/p/session/fake",
+    ""
+  ])("rejects an untrusted Facility portal URL: %s", async (url) => {
+    mockApiRequest.mockResolvedValue({ data: { url } });
+
+    await expect(openFacilityBillingPortal("facility-1")).rejects.toThrow(
+      /invalid Facility billing management link|did not return a Facility billing management link/
+    );
   });
 });

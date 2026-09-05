@@ -9,6 +9,7 @@ const mockUseRecurringPriceQuotes = jest.fn();
 const mockCancelPlan = jest.fn();
 const mockRefetch = jest.fn();
 const mockStartCheckout = jest.fn();
+const mockOpenPortal = jest.fn();
 const mockEntitlements: Record<string, any> = {
   facilityId: "facility-1",
   facilityRole: "STAFF"
@@ -65,6 +66,9 @@ describe("FacilityBillingHome", () => {
     mockStartCheckout.mockResolvedValue({
       checkoutUrl: "https://checkout.stripe.com/c/pay/cs_test_facility"
     });
+    mockOpenPortal.mockResolvedValue({
+      url: "https://billing.stripe.com/p/session/bps_facility"
+    });
     (openExternalUrl as jest.Mock).mockResolvedValue(undefined);
     mockUseRecurringPriceQuotes.mockReturnValue({
       loading: false,
@@ -82,6 +86,7 @@ describe("FacilityBillingHome", () => {
         billingSource: "stripe",
         canManageBilling: true,
         canCancelSubscription: true,
+        canOpenBillingPortal: true,
         cancelAtPeriodEnd: false,
         currentPeriodEnd: "2026-09-22T00:00:00.000Z"
       },
@@ -89,8 +94,10 @@ describe("FacilityBillingHome", () => {
       error: null,
       refetch: mockRefetch,
       startCheckout: mockStartCheckout,
+      openPortal: mockOpenPortal,
       cancelPlan: mockCancelPlan,
       isStartingCheckout: false,
+      isOpeningPortal: false,
       isCanceling: false
     });
   });
@@ -103,6 +110,7 @@ describe("FacilityBillingHome", () => {
     expect(screen.getByText(/Your STAFF access is read-only here/)).toBeTruthy();
     expect(screen.queryByLabelText("Cancel Facility renewal")).toBeNull();
     expect(screen.queryByLabelText("Start Facility plan checkout")).toBeNull();
+    expect(screen.queryByLabelText("Manage Facility billing in Stripe")).toBeNull();
     expect(screen.queryByText(/Plan: pro/i)).toBeNull();
   });
 
@@ -113,6 +121,38 @@ describe("FacilityBillingHome", () => {
 
     expect(screen.getByLabelText("Cancel Facility renewal")).toBeTruthy();
     expect(screen.queryByText(/read-only here/)).toBeNull();
+  });
+
+  it("opens the compact Stripe portal action only when both role and backend permit it", async () => {
+    mockEntitlements.facilityRole = "OWNER";
+    const screen = render(<FacilityBillingHome />);
+
+    fireEvent.press(screen.getByLabelText("Manage Facility billing in Stripe"));
+
+    await waitFor(() => expect(mockOpenPortal).toHaveBeenCalledTimes(1));
+    expect(openExternalUrl).toHaveBeenCalledWith(
+      "https://billing.stripe.com/p/session/bps_facility"
+    );
+    expect(
+      screen.getByText("Secure Stripe Facility billing management opened.")
+    ).toBeTruthy();
+  });
+
+  it("shows an inline error when verified Facility portal creation fails", async () => {
+    mockEntitlements.facilityRole = "OWNER";
+    mockOpenPortal.mockRejectedValueOnce(
+      new Error("Facility billing ownership could not be verified.")
+    );
+    const screen = render(<FacilityBillingHome />);
+
+    fireEvent.press(screen.getByLabelText("Manage Facility billing in Stripe"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Facility billing ownership could not be verified.")
+      ).toBeTruthy()
+    );
+    expect(openExternalUrl).not.toHaveBeenCalled();
   });
 
   it("honors the account-covered management instruction without offering workspace billing", () => {

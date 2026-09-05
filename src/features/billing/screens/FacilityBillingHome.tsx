@@ -47,13 +47,16 @@ export default function FacilityBillingHome() {
     error,
     refetch,
     startCheckout,
+    openPortal,
     cancelPlan,
     isStartingCheckout,
+    isOpeningPortal,
     isCanceling
   } = useFacilityBilling(facilityId);
 
   const loaded = Boolean(facilityId) && !isLoading && !error && billing != null;
   const canManageBilling = roleCanManageBilling && billing?.canManageBilling === true;
+  const canOpenBillingPortal = canManageBilling && billing?.canOpenBillingPortal === true;
   const access = resolveSubscriptionSafety(billing, { loaded });
   const status = String(billing?.status || "none").toLowerCase();
   const managementMessage =
@@ -62,7 +65,8 @@ export default function FacilityBillingHome() {
       : null;
   const periodEnd = displayDate(billing?.currentPeriodEnd);
   const graceUntil = displayDate(billing?.graceUntil);
-  const busy = isStartingCheckout || isCanceling || cancelRequestPending;
+  const busy =
+    isStartingCheckout || isOpeningPortal || isCanceling || cancelRequestPending;
   const priceQuote = verifiedRecurringPriceQuote(catalogQuotes, "facility", interval);
 
   async function handleCheckout() {
@@ -91,6 +95,29 @@ export default function FacilityBillingHome() {
         text:
           checkoutError?.message ||
           "Facility checkout is unavailable. No billing action was completed."
+      });
+    }
+  }
+
+  async function handleOpenPortal() {
+    if (!canOpenBillingPortal || !facilityId || busy) return;
+    setBillingFeedback(null);
+    try {
+      const result = await openPortal();
+      if (!result?.url) {
+        throw new Error("Stripe did not return a Facility billing management link.");
+      }
+      await openExternalUrl(result.url);
+      setBillingFeedback({
+        kind: "success",
+        text: "Secure Stripe Facility billing management opened."
+      });
+    } catch (portalError: any) {
+      setBillingFeedback({
+        kind: "error",
+        text:
+          portalError?.message ||
+          "Facility billing management is unavailable. No billing action was completed."
       });
     }
   }
@@ -204,6 +231,20 @@ export default function FacilityBillingHome() {
       {facilityId && !isLoading && !error ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Facility billing actions</Text>
+          {canOpenBillingPortal ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Manage Facility billing in Stripe"
+              accessibilityState={{ disabled: busy }}
+              disabled={busy}
+              style={[styles.secondaryButton, busy && styles.disabled]}
+              onPress={() => void handleOpenPortal()}
+            >
+              <Text style={styles.secondaryButtonText}>
+                {isOpeningPortal ? "Opening Stripe billing…" : "Manage billing in Stripe"}
+              </Text>
+            </Pressable>
+          ) : null}
           {!canManageBilling ? (
             <Text style={styles.note}>
               {managementMessage ||

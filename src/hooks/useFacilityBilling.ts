@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getFacilityBillingStatus,
   startFacilityCheckout,
+  openFacilityBillingPortal,
   cancelFacilityPlan
 } from "../api/billing";
 
@@ -32,6 +33,13 @@ export function useFacilityBilling(facilityId: string | null) {
     }
   });
 
+  const openPortalMutation = useMutation({
+    mutationFn: () => {
+      if (!facilityId) throw new Error("No facility selected");
+      return openFacilityBillingPortal(facilityId);
+    }
+  });
+
   return {
     billing: billingQuery.data,
     isLoading: billingQuery.isLoading,
@@ -40,6 +48,9 @@ export function useFacilityBilling(facilityId: string | null) {
 
     startCheckout: startCheckoutMutation.mutateAsync,
     isStartingCheckout: startCheckoutMutation.isPending,
+
+    openPortal: openPortalMutation.mutateAsync,
+    isOpeningPortal: openPortalMutation.isPending,
 
     cancelPlan: cancelPlanMutation.mutateAsync,
     isCanceling: cancelPlanMutation.isPending

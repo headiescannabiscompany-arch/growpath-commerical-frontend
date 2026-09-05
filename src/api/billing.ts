@@ -36,6 +36,30 @@ export async function startFacilityCheckout(
   return checkoutRes?.data ?? checkoutRes;
 }
 
+function trustedStripeBillingPortalUrl(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error("Stripe did not return a Facility billing management link.");
+  }
+  try {
+    const url = new URL(value);
+    if (url.origin !== "https://billing.stripe.com" || url.username || url.password) {
+      throw new Error("untrusted");
+    }
+  } catch {
+    throw new Error("Stripe returned an invalid Facility billing management link.");
+  }
+  return value;
+}
+
+export async function openFacilityBillingPortal(facilityId: string) {
+  const portalRes = await apiRequest(endpoints.facilityBillingPortal, {
+    method: "POST",
+    body: { facilityId }
+  });
+  const payload = portalRes?.data ?? portalRes;
+  return { url: trustedStripeBillingPortalUrl(payload?.url) };
+}
+
 export async function cancelFacilityPlan(facilityId: string, confirmation: string) {
   if (confirmation !== FACILITY_CANCELLATION_CONFIRMATION) {
     throw new Error("Confirm Facility cancellation before changing Stripe renewal.");

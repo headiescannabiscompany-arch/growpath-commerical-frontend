@@ -134,6 +134,7 @@ export const endpoints = {
   // billing
   facilityBillingStatus: `${BASE}/facility-billing/status`,
   facilityBillingCheckout: `${BASE}/facility-billing/checkout-session`,
+  facilityBillingPortal: `${BASE}/facility-billing/portal`,
   facilityBillingCancel: `${BASE}/facility-billing/cancel`,
 
   // subscription
