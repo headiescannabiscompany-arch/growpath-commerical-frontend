@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
 import {
   ActivityIndicator,
@@ -77,14 +77,17 @@ function errorLabel(error: unknown, fallback: string) {
 }
 
 export default function AdminEvidenceVaultCard({
-  users
+  users,
+  requestedUser = null
 }: {
   users: AdminEvidenceVaultUser[];
+  requestedUser?: AdminEvidenceVaultUser | null;
 }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const capabilityLoadAttempted = useRef(false);
   const [busy, setBusy] = useState("");
   const [feedback, setFeedback] = useState("");
   const [capabilityState, setCapabilityState] =
@@ -131,7 +134,7 @@ export default function AdminEvidenceVaultCard({
     setRemovalConfirmation("");
   }
 
-  async function refreshWorkspace() {
+  const refreshWorkspace = useCallback(async () => {
     setLoading(true);
     setFeedback("");
     try {
@@ -152,12 +155,34 @@ export default function AdminEvidenceVaultCard({
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function toggle() {
-    const next = !expanded;
-    setExpanded(next);
-    if (next && !capabilityState && !loading) await refreshWorkspace();
+  useEffect(() => {
+    if (!requestedUser) return;
+    capabilityLoadAttempted.current = false;
+    setExpanded(true);
+    setTargetUserId(requestedUser.id);
+    setExpectedEmail("");
+    setCategory("test_cleanup");
+    setReason("");
+    setCaseReference("");
+    setRemovalReview(null);
+    setRemovalConfirmation("");
+  }, [requestedUser]);
+
+  useEffect(() => {
+    if (expanded && !capabilityState && !loading && !capabilityLoadAttempted.current) {
+      capabilityLoadAttempted.current = true;
+      void refreshWorkspace();
+    }
+  }, [capabilityState, expanded, loading, refreshWorkspace]);
+
+  function toggle() {
+    setExpanded((current) => {
+      if (current) return false;
+      if (!capabilityState) capabilityLoadAttempted.current = false;
+      return true;
+    });
   }
 
   async function runRemovalReview() {
@@ -331,6 +356,7 @@ export default function AdminEvidenceVaultCard({
     Boolean(removalReview.reviewToken) &&
     removalConfirmation === removalReview.nextConfirmation &&
     !busy;
+  const selectedRemovalUser = users.find((user) => user.id === targetUserId);
 
   return (
     <AppCard
@@ -387,6 +413,12 @@ export default function AdminEvidenceVaultCard({
                 GrowPath does not classify accounts from tokens, trial state, inactivity,
                 or email patterns.
               </Text>
+              {selectedRemovalUser ? (
+                <Text accessibilityLiveRegion="polite" style={styles.meta}>
+                  Selected account: {selectedRemovalUser.email}. Type the exact email and
+                  complete both review steps below.
+                </Text>
+              ) : null}
               <View style={styles.pickerWrap}>
                 <Picker
                   accessibilityLabel="Account selected for removal review"

@@ -1,13 +1,12 @@
 import React from "react";
 import { ActivityIndicator, Linking, StyleSheet, TextInput } from "react-native";
-import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import PlatformAdminRoute, {
   createPlatformAdminStyles,
   moderationTargetHref,
   supportsModerationActions
 } from "@/app/admin";
-import { ApiError } from "@/api/apiRequest";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
@@ -728,116 +727,55 @@ describe("PlatformAdminRoute", () => {
     );
   });
 
-  it("requires a successful dry run and exact confirmation before anonymizing a test account", async () => {
-    const nextConfirmation = "ANONYMIZE user-1 member@example.com";
-    const preview = {
-      ok: true,
-      dryRun: true,
-      target: { id: "user-1", email: "member@example.com" },
-      allowlisted: true,
-      blockers: [],
-      deletionMode: "privacy_anonymization",
-      nextConfirmation
-    };
-    let resolvePreview: (value: typeof preview) => void = () => undefined;
-    const previewRequest = new Promise<typeof preview>((resolve) => {
-      resolvePreview = resolve;
-    });
-    mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/users/user-1/anonymize-synthetic-account") {
-        if (options?.body?.execute) {
-          return Promise.resolve({ ok: true, deletion: { deletionMode: "anonymized" } });
-        }
-        return previewRequest;
-      }
+  it("routes per-row test-account review into the Evidence Vault without calling the retired endpoint", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
       if (path.startsWith("/api/admin/users")) {
         return Promise.resolve({
           users: [{ ...member, syntheticCleanupApproved: true }]
         });
       }
+      if (path === "/api/admin/evidence-vault/capabilities") {
+        return Promise.resolve({
+          ok: true,
+          configured: true,
+          capabilities: {
+            accountRemovalOwner: true,
+            evidenceAccess: false,
+            evidenceApproval: false,
+            severeHarmReview: false
+          }
+        });
+      }
+      if (path === "/api/admin/evidence-vault/removed-accounts") {
+        return Promise.resolve({ ok: true, accounts: [], nextCursor: null });
+      }
       return defaultAdminApi(path);
     });
     const screen = render(<PlatformAdminRoute />);
-    await waitFor(() =>
-      expect(screen.getByText("Review & remove test account")).toBeTruthy()
-    );
+    const reviewButton = await screen.findByRole("button", {
+      name: "Review member@example.com in Evidence Vault"
+    });
 
-    fireEvent.press(screen.getByText("Review & remove test account"));
-    await screen.findByText("Reviewing safety checks…");
+    fireEvent.press(reviewButton);
+
     expect(
-      screen.getByRole("button", {
-        name: "Reviewing test account safety for member@example.com"
-      }).props.accessibilityState
-    ).toEqual(expect.objectContaining({ disabled: true }));
-    resolvePreview(preview);
-    await waitFor(() =>
-      expect(screen.getByText("Anonymize member@example.com")).toBeTruthy()
-    );
-    expect(
-      within(screen.getByLabelText("Admin account member@example.com")).getByText(
-        "Anonymize member@example.com"
+      await screen.findByText(
+        "Selected account: member@example.com. Type the exact email and complete both review steps below."
       )
     ).toBeTruthy();
-    expect(mockApiRequest).toHaveBeenCalledWith(
-      "/api/admin/users/user-1/anonymize-synthetic-account",
-      { method: "POST", body: { expectedEmail: "member@example.com" } }
+    expect(screen.getByLabelText("Type the reviewed account email")).toHaveProp(
+      "value",
+      ""
     );
-
-    const confirmInput = screen.getByLabelText(
-      "Exact synthetic account anonymization confirmation"
-    );
-    fireEvent.changeText(confirmInput, nextConfirmation);
-    fireEvent.press(screen.getByText("Remove approved test account"));
-
-    await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/admin/users/user-1/anonymize-synthetic-account",
-        {
-          method: "POST",
-          body: {
-            expectedEmail: "member@example.com",
-            execute: true,
-            confirmation: nextConfirmation
-          }
-        }
-      )
-    );
-  });
-
-  it("shows dry-run safety blockers without exposing removal controls", async () => {
-    mockApiRequest.mockImplementation((path: string) => {
-      if (path === "/api/admin/users/user-1/anonymize-synthetic-account") {
-        return Promise.reject(
-          new ApiError("HTTP_ERROR", 409, {
-            ok: false,
-            dryRun: true,
-            target: { id: "user-1", email: "member@example.com" },
-            allowlisted: true,
-            blockers: ["course_creator"],
-            deletionMode: "privacy_anonymization",
-            nextConfirmation: "ANONYMIZE user-1 member@example.com"
-          })
-        );
-      }
-      if (path.startsWith("/api/admin/users")) {
-        return Promise.resolve({
-          users: [{ ...member, syntheticCleanupApproved: true }]
-        });
-      }
-      return defaultAdminApi(path);
-    });
-    const screen = render(<PlatformAdminRoute />);
-    await screen.findByText("Review & remove test account");
-
-    fireEvent.press(screen.getByText("Review & remove test account"));
-
-    await screen.findByText("This account owns a course that must be handled first.");
-    expect(screen.getByText(/Safety blockers: 1 · Dry run: blocked/)).toBeTruthy();
     expect(
-      screen.queryByLabelText("Exact synthetic account anonymization confirmation")
-    ).toBeNull();
-    expect(screen.queryByText("Remove approved test account")).toBeNull();
-    expect(screen.queryByText("HTTP_ERROR")).toBeNull();
+      screen.getByRole("button", { name: "Review account removal" }).props
+        .accessibilityState
+    ).toEqual(expect.objectContaining({ disabled: true }));
+    expect(
+      mockApiRequest.mock.calls.some(([path]) =>
+        String(path).includes("anonymize-synthetic-account")
+      )
+    ).toBe(false);
   });
 
   it.each(["day", "night"] as const)(

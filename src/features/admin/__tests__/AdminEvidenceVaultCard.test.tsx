@@ -133,6 +133,33 @@ describe("AdminEvidenceVaultCard", () => {
     expect(mockRemoved).not.toHaveBeenCalled();
   });
 
+  test("opens on a requested account but still requires the exact email and reviewed inputs", async () => {
+    const requestedUser = {
+      id: TARGET_ID,
+      email: "member@example.com",
+      label: "Member"
+    };
+    const screen = render(
+      <AdminEvidenceVaultCard users={[requestedUser]} requestedUser={requestedUser} />
+    );
+
+    expect(
+      await screen.findByText(
+        "Selected account: member@example.com. Type the exact email and complete both review steps below."
+      )
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Type the reviewed account email")).toHaveProp(
+      "value",
+      ""
+    );
+    expect(
+      screen.getByRole("button", { name: "Review account removal" }).props
+        .accessibilityState
+    ).toEqual(expect.objectContaining({ disabled: true }));
+    expect(mockReview).not.toHaveBeenCalled();
+    expect(mockQuarantine).not.toHaveBeenCalled();
+  });
+
   test("requires review token and exact confirmation before quarantine", async () => {
     mockReview.mockResolvedValue(removalReview(true));
     mockQuarantine.mockResolvedValue({

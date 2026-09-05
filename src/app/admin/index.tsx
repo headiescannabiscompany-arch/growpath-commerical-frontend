@@ -20,7 +20,9 @@ import AppPage from "@/components/layout/AppPage";
 import ComplimentaryGrantsAdminCard from "@/features/admin/ComplimentaryGrantsAdminCard";
 import AdminAccountBillingVerification from "@/features/admin/AdminAccountBillingVerification";
 import AdminCommercePaymentReviewCard from "@/features/admin/AdminCommercePaymentReviewCard";
-import AdminEvidenceVaultCard from "@/features/admin/AdminEvidenceVaultCard";
+import AdminEvidenceVaultCard, {
+  type AdminEvidenceVaultUser
+} from "@/features/admin/AdminEvidenceVaultCard";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -793,6 +795,8 @@ export default function PlatformAdminRoute() {
   );
   const [cleanupReviewId, setCleanupReviewId] = useState("");
   const [cleanupConfirmation, setCleanupConfirmation] = useState("");
+  const [vaultRequestedUser, setVaultRequestedUser] =
+    useState<AdminEvidenceVaultUser | null>(null);
   const [logoutConfirmationOpen, setLogoutConfirmationOpen] = useState(false);
   const [supportReopenReasons, setSupportReopenReasons] = useState<
     Record<string, string>
@@ -1338,24 +1342,23 @@ export default function PlatformAdminRoute() {
     setCleanupPreview(null);
     setCleanupConfirmation("");
     try {
-      const preview = await apiRequest<SyntheticCleanupPreview>(
-        `/api/admin/users/${target._id}/anonymize-synthetic-account`,
-        {
-          method: "POST",
-          body: { expectedEmail: target.email }
-        }
-      );
-      setCleanupPreview(preview);
+      setVaultRequestedUser({
+        id: target._id,
+        email: target.email,
+        label: target.displayName || target.name || target.email,
+        role: target.role
+      });
     } catch (err: unknown) {
       const blockedPreview = blockedSyntheticCleanupPreview(err, target);
       if (blockedPreview) {
-        setCleanupPreview(blockedPreview);
+        setCleanupPreview(null);
+        setError("Use the reviewed Evidence Vault workflow for this account.");
         return;
       }
       setError(
         err instanceof Error
           ? err.message
-          : "This account is not approved for synthetic cleanup."
+          : "The Evidence Vault account review could not be opened."
       );
     } finally {
       setBusyId("");
@@ -1368,22 +1371,15 @@ export default function PlatformAdminRoute() {
     setBusyId(cleanupPreview.target.id);
     setError("");
     try {
-      await apiRequest(
-        `/api/admin/users/${cleanupPreview.target.id}/anonymize-synthetic-account`,
-        {
-          method: "POST",
-          body: {
-            expectedEmail: cleanupPreview.target.email,
-            execute: true,
-            confirmation: cleanupConfirmation
-          }
-        }
-      );
+      setVaultRequestedUser({
+        id: cleanupPreview.target.id,
+        email: cleanupPreview.target.email,
+        label: cleanupPreview.target.email
+      });
       setCleanupPreview(null);
       setCleanupConfirmation("");
-      await load();
     } catch (err: any) {
-      setError(err?.message || "Synthetic-account anonymization failed safely.");
+      setError(err?.message || "The Evidence Vault account review could not be opened.");
     } finally {
       setBusyId("");
     }
@@ -2665,6 +2661,7 @@ export default function PlatformAdminRoute() {
       <AdminCommercePaymentReviewCard />
 
       <AdminEvidenceVaultCard
+        requestedUser={vaultRequestedUser}
         users={orderedUsers.map((item) => ({
           id: item._id,
           email: item.email,
@@ -2763,8 +2760,8 @@ export default function PlatformAdminRoute() {
                   accessibilityRole="button"
                   accessibilityLabel={
                     cleanupReviewId === item._id
-                      ? `Reviewing test account safety for ${item.email}`
-                      : `Review and remove test account ${item.email}`
+                      ? `Opening Evidence Vault review for ${item.email}`
+                      : `Review ${item.email} in Evidence Vault`
                   }
                   accessibilityState={{
                     disabled: Boolean(cleanupReviewId) || busyId === item._id
@@ -2775,8 +2772,8 @@ export default function PlatformAdminRoute() {
                 >
                   <Text accessibilityLiveRegion="polite" style={styles.secondaryText}>
                     {cleanupReviewId === item._id
-                      ? "Reviewing safety checks…"
-                      : "Review & remove test account"}
+                      ? "Opening Evidence Vault…"
+                      : "Review in Evidence Vault"}
                   </Text>
                 </Pressable>
               ) : null}
