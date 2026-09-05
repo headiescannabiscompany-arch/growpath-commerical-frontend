@@ -1,6 +1,8 @@
 import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 
+export const SUBSCRIPTION_CANCELLATION_CONFIRMATION = "CANCEL RENEWAL";
+
 export const startSubscription = async (type, token) => {
   return apiRequest(apiRoutes.SUBSCRIBE.START, {
     method: "POST",
@@ -13,7 +15,7 @@ export const cancelSubscription = async (token) => {
   return apiRequest(apiRoutes.SUBSCRIBE.CANCEL, {
     method: "POST",
     auth: token ? true : false,
-    body: {}
+    body: { confirmation: SUBSCRIPTION_CANCELLATION_CONFIRMATION }
   });
 };
 
