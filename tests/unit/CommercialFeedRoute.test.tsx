@@ -5,6 +5,7 @@ import CommercialFeedRoute from "@/app/feed";
 
 const mockApiRequest = jest.fn();
 const mockPersistImageUri = jest.fn();
+const mockSharePublicLink = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 let mockMode = "commercial";
@@ -39,6 +40,10 @@ jest.mock("@/utils/photoUploads", () => ({
   resolveImageUri: (uri: string) => uri
 }));
 
+jest.mock("@/utils/publicLinks", () => ({
+  sharePublicLink: (...args: any[]) => mockSharePublicLink(...args)
+}));
+
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     ready: true,
@@ -67,9 +72,11 @@ describe("CommercialFeedRoute", () => {
     mockRouteParams = { campaignId: "campaign-1" };
     mockApiRequest.mockReset();
     mockPersistImageUri.mockReset();
+    mockSharePublicLink.mockReset();
     mockPush.mockReset();
     mockBack.mockReset();
     mockPersistImageUri.mockImplementation(async (uri) => uri);
+    mockSharePublicLink.mockResolvedValue({ method: "web-share" });
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/feed") {
         return Promise.resolve({
@@ -90,6 +97,9 @@ describe("CommercialFeedRoute", () => {
               startsAt: "2026-07-17T21:00:00Z",
               endsAt: "2026-07-24T21:00:00Z",
               imageUrl: "https://example.com/live.jpg",
+              contentLabels: ["cannabis"],
+              socialPreviewUrl:
+                "https://api.growpathai.com/api/commercial/feed/campaign-1/share?v=abc123",
               author: { displayName: "Living Soil Labs" },
               createdAt: "2026-07-07T12:00:00Z"
             }
@@ -166,6 +176,7 @@ describe("CommercialFeedRoute", () => {
     expect(screen.queryByText("question")).toBeNull();
     expect(screen.queryByText("iso")).toBeNull();
     expect(screen.getByText("12 campaign engagements")).toBeTruthy();
+    expect(screen.getAllByText("Cannabis content").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Selected feed campaign campaign-1")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, dry amendments")).toBeTruthy();
     expect(screen.getByText("Product line: line-1")).toBeTruthy();
@@ -178,6 +189,19 @@ describe("CommercialFeedRoute", () => {
     expect(
       screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
     ).toBe(true);
+
+    fireEvent.press(screen.getByLabelText("Share Live soil demo"));
+    await waitFor(() =>
+      expect(mockSharePublicLink).toHaveBeenCalledWith(
+        "Live soil demo",
+        "/feed?campaignId=campaign-1",
+        {
+          description: "Cannabis content. RSVP for the live mixing demo.",
+          socialPreviewUrl:
+            "https://api.growpathai.com/api/commercial/feed/campaign-1/share?v=abc123"
+        }
+      )
+    );
 
     fireEvent.press(screen.getByLabelText("View Live for Live soil demo"));
 
@@ -284,6 +308,11 @@ describe("CommercialFeedRoute", () => {
     fireEvent.changeText(screen.getByLabelText("Linked live"), "live-demo-1");
     fireEvent.changeText(screen.getByLabelText("Linked product line"), "line-demo-1");
     fireEvent.changeText(screen.getByLabelText("Linked forum thread"), "thread-q-and-a");
+    fireEvent.press(screen.getByLabelText("Mark campaign as cannabis content"));
+    expect(
+      screen.getByLabelText("Mark campaign as cannabis content").props.accessibilityState
+        ?.checked
+    ).toBe(true);
     fireEvent.changeText(
       screen.getByLabelText("Feed campaign image URL"),
       "https://example.com/demo.jpg"
@@ -314,6 +343,8 @@ describe("CommercialFeedRoute", () => {
           body: "RSVP for the live dry amendment recipe build.",
           tags: ["dry amendments"],
           growInterests: ["living soil", "recipe building"],
+          contentLabels: ["cannabis"],
+          cannabisSpecific: true,
           linkedLiveId: "live-demo-1",
           linkedProductLineId: "line-demo-1",
           linkedTrialId: "trial-demo-1",

@@ -22,6 +22,7 @@ describe("commercial feed API", () => {
         body: "Trial update",
         tags: ["soil"],
         growInterests: ["living soil"],
+        contentLabels: ["cannabis"],
         linkedProductId: "product-1",
         linkedCourseId: "course-1",
         linkedTrialId: "trial-1",
@@ -32,7 +33,9 @@ describe("commercial feed API", () => {
         endsAt: "2026-07-24T21:00:00Z",
         reminderPreference: "24 hours before",
         recurrenceRule: "weekly",
-        externalLinks: [{ label: "Buy", url: "https://example.com" }]
+        externalLinks: [{ label: "Buy", url: "https://example.com" }],
+        socialPreviewUrl:
+          "https://api.growpathai.com/api/commercial/feed/post-1/share?v=abc"
       }
     });
   });
@@ -51,6 +54,8 @@ describe("commercial feed API", () => {
       body: "Trial update",
       tags: ["soil"],
       growInterests: ["living soil"],
+      contentLabels: ["cannabis"],
+      cannabisSpecific: true,
       location: "web",
       linkedProductId: "product-1",
       linkedCourseId: "course-1",
@@ -81,6 +86,8 @@ describe("commercial feed API", () => {
         body: "Trial update",
         tags: ["soil"],
         growInterests: ["living soil"],
+        contentLabels: ["cannabis"],
+        cannabisSpecific: true,
         location: "web",
         linkedProductId: "product-1",
         linkedCourseId: "course-1",
@@ -107,7 +114,10 @@ describe("commercial feed API", () => {
       linkedTrialId: "trial-1",
       linkedGrowId: "grow-1",
       storefrontSlug: "living-soil-labs",
-      imageUrl: "/uploads/feed-image.jpg"
+      imageUrl: "/uploads/feed-image.jpg",
+      contentLabels: ["cannabis"],
+      socialPreviewUrl:
+        "https://api.growpathai.com/api/commercial/feed/post-1/share?v=abc"
     });
   });
 

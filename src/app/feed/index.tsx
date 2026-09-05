@@ -36,6 +36,7 @@ import {
   hasFacilitySalesLanguage
 } from "@/utils/commercialFeedPolicy";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { sharePublicLink } from "@/utils/publicLinks";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
@@ -248,6 +249,15 @@ function campaignMeta(post: CommercialFeedCampaign) {
 function campaignImage(post: CommercialFeedCampaign) {
   return resolveImageUri(
     post.imageUrl || post.creativeImageUrl || post.bannerImageUrl || ""
+  );
+}
+
+function isCannabisCampaign(post: CommercialFeedCampaign) {
+  return (post.contentLabels || []).some(
+    (label) =>
+      String(label || "")
+        .trim()
+        .toLowerCase() === "cannabis"
   );
 }
 
@@ -534,6 +544,7 @@ export default function CommercialFeedRoute() {
   const [body, setBody] = useState("");
   const [tags, setTags] = useState("");
   const [growInterests, setGrowInterests] = useState("");
+  const [cannabisSpecific, setCannabisSpecific] = useState(false);
   const [location, setLocation] = useState("");
   const [linkedProductId, setLinkedProductId] = useState("");
   const [linkedProductLineId, setLinkedProductLineId] = useState("");
@@ -768,6 +779,8 @@ export default function CommercialFeedRoute() {
         body: cleanBody,
         tags: cleanTags,
         growInterests: cleanGrowInterests,
+        contentLabels: cannabisSpecific ? ["cannabis"] : [],
+        cannabisSpecific,
         location: cleanLocation,
         linkedProductId: linkedProductId.trim() || undefined,
         linkedProductLineId: linkedProductLineId.trim() || undefined,
@@ -792,6 +805,7 @@ export default function CommercialFeedRoute() {
       setBody("");
       setTags("");
       setGrowInterests("");
+      setCannabisSpecific(false);
       setLocation("");
       setLinkedProductId("");
       setLinkedProductLineId("");
@@ -963,6 +977,23 @@ export default function CommercialFeedRoute() {
     }
   }
 
+  async function shareCampaign(post: CommercialFeedCampaign) {
+    setFeedback("");
+    try {
+      await sharePublicLink(
+        post.title || "GrowPathAI campaign",
+        `/feed?campaignId=${encodeURIComponent(post.id)}`,
+        {
+          description: `${isCannabisCampaign(post) ? "Cannabis content. " : ""}${post.body}`,
+          socialPreviewUrl: post.socialPreviewUrl
+        }
+      );
+      setFeedback("Campaign share link is ready.");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to share this campaign.");
+    }
+  }
+
   if (!ent.ready) return null;
   if (!canAccess) return <Redirect href="/home/personal" />;
 
@@ -1079,6 +1110,18 @@ export default function CommercialFeedRoute() {
             placeholder="Grow interests for targeting, comma separated"
             accessibilityLabel="Feed campaign grow interests"
           />
+          <Pressable
+            accessibilityRole="checkbox"
+            aria-checked={cannabisSpecific}
+            accessibilityState={{ checked: cannabisSpecific }}
+            accessibilityLabel="Mark campaign as cannabis content"
+            onPress={() => setCannabisSpecific((current) => !current)}
+            style={[styles.chip, cannabisSpecific && styles.chipSelected]}
+          >
+            <Text style={[styles.chipText, cannabisSpecific && styles.chipTextSelected]}>
+              Cannabis content
+            </Text>
+          </Pressable>
           <TextInput
             value={location}
             onChangeText={setLocation}
@@ -1428,6 +1471,7 @@ export default function CommercialFeedRoute() {
               {campaignStart.trim() && new Date(campaignStart.trim()) > new Date()
                 ? "Scheduled"
                 : "Active"}
+              {cannabisSpecific ? " · Marked cannabis content" : ""}
             </Text>
             {readinessWarnings.length ? (
               <Text style={styles.warningText}>
@@ -1578,6 +1622,9 @@ export default function CommercialFeedRoute() {
             >
               <View style={styles.postHeader}>
                 <Text style={styles.typePill}>{visibleCampaignType(post)}</Text>
+                {isCannabisCampaign(post) ? (
+                  <Text style={styles.typePill}>Cannabis content</Text>
+                ) : null}
                 <Text style={styles.engagements}>
                   {campaignEngagementCount(post)} campaign engagements
                 </Text>
@@ -1666,6 +1713,14 @@ export default function CommercialFeedRoute() {
                 </Pressable>
               ) : null}
               <View style={styles.imageTools}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Share ${post.title || "campaign"}`}
+                  onPress={() => void shareCampaign(post)}
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>Share</Text>
+                </Pressable>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Hide ${post.title || "campaign"}`}

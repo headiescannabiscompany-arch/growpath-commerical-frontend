@@ -23,6 +23,7 @@ export type CommercialFeedCampaign = {
   body: string;
   tags: string[];
   growInterests: string[];
+  contentLabels?: string[];
   location?: string;
   linkedProductId?: string;
   linkedProductLineId?: string;
@@ -42,6 +43,7 @@ export type CommercialFeedCampaign = {
   endsAt?: string;
   reminderPreference?: string;
   recurrenceRule?: string;
+  socialPreviewUrl?: string;
   externalLinks?: Array<{ label: string; url: string }>;
   placements?: FeedCampaignPlacement[];
   destination?: { type?: string; id?: string; url?: string; label?: string };
@@ -197,6 +199,8 @@ export async function createCommercialFeedCampaign(input: {
   externalLinks?: Array<{ label: string; url: string }>;
   placements?: FeedCampaignPlacement[];
   cta?: { label?: string; kind?: string };
+  contentLabels?: string[];
+  cannabisSpecific?: boolean;
 }) {
   const imageUrl = await persistImageUri(input.imageUrl);
   const res: any = await apiRequest("/api/commercial/feed", {
