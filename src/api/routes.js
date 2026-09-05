@@ -234,6 +234,7 @@ export const ROUTES = {
   SUBSCRIBE: {
     START: `${PREFIX}/subscribe/start`,
     CANCEL: `${PREFIX}/subscribe/cancel`,
+    PORTAL: `${PREFIX}/subscribe/portal`,
     STATUS: `${PREFIX}/subscribe/status`,
     ME: `${PREFIX}/subscription/me`,
     CREATE_CHECKOUT_SESSION: `${PREFIX}/subscription/create-checkout-session`,

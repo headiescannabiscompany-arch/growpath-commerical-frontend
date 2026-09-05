@@ -9,6 +9,7 @@ import {
   getSubscription,
   isSentGift,
   listSentGifts,
+  openSubscriptionPortal,
   resendSentGift,
   type SentGift
 } from "../../../api/subscription";
@@ -210,7 +211,7 @@ export default function BillingHome({
   const [plan, setPlan] = useState<any>(null);
   const [planLoaded, setPlanLoaded] = useState(false);
   const [loading, setLoading] = useState(!purchaserHistoryOnly);
-  const [busy, setBusy] = useState<"cancel" | null>(null);
+  const [busy, setBusy] = useState<"cancel" | "portal" | null>(null);
   const [cancelConfirmationOpen, setCancelConfirmationOpen] = useState(false);
   const [billingFeedback, setBillingFeedback] = useState<{
     kind: "success" | "error";
@@ -343,6 +344,25 @@ export default function BillingHome({
     if (!access.canCancel || busy) return;
     setBillingFeedback(null);
     setCancelConfirmationOpen(true);
+  }
+
+  async function handleOpenPortal() {
+    if (busy || plan?.canManageBilling !== true || access.source !== "stripe") return;
+    setBusy("portal");
+    setBillingFeedback(null);
+    try {
+      const url = await openSubscriptionPortal();
+      await openExternalUrl(url);
+    } catch (error: any) {
+      setBillingFeedback({
+        kind: "error",
+        text:
+          error?.message ||
+          "Stripe subscription management could not be opened. No billing change was made."
+      });
+    } finally {
+      setBusy(null);
+    }
   }
 
   async function performGiftResend(gift: SentGift, acknowledgePossibleDuplicate = false) {
@@ -523,6 +543,20 @@ export default function BillingHome({
               disabled={Boolean(busy)}
             >
               <Text style={styles.buttonText}>Compare Plans</Text>
+            </Pressable>
+          ) : null}
+          {!loading && plan?.canManageBilling === true && access.source === "stripe" ? (
+            <Pressable
+              accessibilityLabel="Manage subscription in Stripe"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: Boolean(busy) }}
+              style={[styles.button, busy && styles.buttonDisabled]}
+              onPress={() => void handleOpenPortal()}
+              disabled={Boolean(busy)}
+            >
+              <Text style={styles.buttonText}>
+                {busy === "portal" ? "Opening Stripe..." : "Manage Billing in Stripe"}
+              </Text>
             </Pressable>
           ) : null}
           {billingFeedback ? (

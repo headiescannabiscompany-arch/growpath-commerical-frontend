@@ -211,6 +211,23 @@ export async function getSubscription() {
   return checkedSubscriptionResponse(res?.data ?? res);
 }
 
+export async function openSubscriptionPortal(): Promise<string> {
+  const res = await apiRequest(apiRoutes.SUBSCRIBE.PORTAL, {
+    method: "POST",
+    body: {}
+  });
+  const urlValue = String((res?.data ?? res)?.url || "").trim();
+  try {
+    const url = new URL(urlValue);
+    if (url.protocol !== "https:" || url.hostname !== "billing.stripe.com") {
+      throw new Error("invalid provider host");
+    }
+    return url.toString();
+  } catch {
+    throw new Error("Stripe subscription management returned an invalid link.");
+  }
+}
+
 export type GiftClaimSummary = {
   recipientEmail: string;
   recipientName: string;

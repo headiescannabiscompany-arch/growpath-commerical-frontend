@@ -1,7 +1,8 @@
 import {
   getSubscription,
   getSubscriptionSetupStatus,
-  getVerifiedRecurringPriceQuote
+  getVerifiedRecurringPriceQuote,
+  openSubscriptionPortal
 } from "@/api/subscription";
 
 const mockApiRequest = jest.fn();
@@ -86,6 +87,34 @@ describe("subscription billing response contract", () => {
 
     await expect(getSubscription()).rejects.toThrow(
       "The subscription billing response was invalid."
+    );
+  });
+
+  it("accepts only an HTTPS Stripe Billing Portal URL", async () => {
+    mockApiRequest.mockResolvedValue({
+      success: true,
+      url: "https://billing.stripe.com/p/session/test_portal"
+    });
+
+    await expect(openSubscriptionPortal()).resolves.toBe(
+      "https://billing.stripe.com/p/session/test_portal"
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/subscribe/portal", {
+      method: "POST",
+      body: {}
+    });
+  });
+
+  it.each([
+    "http://billing.stripe.com/p/session/insecure",
+    "https://billing.stripe.com.attacker.example/p/session/fake",
+    "https://attacker.example/p/session/fake",
+    "not-a-url"
+  ])("rejects an untrusted Billing Portal URL: %s", async (url) => {
+    mockApiRequest.mockResolvedValue({ success: true, url });
+
+    await expect(openSubscriptionPortal()).rejects.toThrow(
+      "Stripe subscription management returned an invalid link."
     );
   });
 

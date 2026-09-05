@@ -1,7 +1,11 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import { createCheckoutSession, getSubscription } from "@/api/subscription";
+import {
+  createCheckoutSession,
+  getSubscription,
+  openSubscriptionPortal
+} from "@/api/subscription";
 import { cancelSubscription } from "@/api/subscribe";
 import BillingHome, {
   formatGiftEntitlementEnd
@@ -20,6 +24,7 @@ jest.mock("@/auth/AuthContext", () => ({
 jest.mock("@/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
   getSubscription: jest.fn(),
+  openSubscriptionPortal: jest.fn(),
   isSentGift: (value: any) => Boolean(value?.id && value?.actions),
   listSentGifts: jest.fn().mockResolvedValue({ gifts: [], nextCursor: null }),
   resendSentGift: jest.fn()
@@ -37,6 +42,9 @@ describe("BillingHome prepaid gift access", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (cancelSubscription as jest.Mock).mockResolvedValue({ ok: true });
+    (openSubscriptionPortal as jest.Mock).mockResolvedValue(
+      "https://billing.stripe.com/p/session/test_portal"
+    );
   });
 
   it("shows authoritative prepaid end semantics without cancellation controls", async () => {
@@ -104,7 +112,34 @@ describe("BillingHome prepaid gift access", () => {
     await waitFor(() =>
       expect(screen.getByLabelText("Cancel subscription")).toBeTruthy()
     );
+    expect(screen.getByLabelText("Manage subscription in Stripe")).toBeTruthy();
     expect(screen.queryByText("Access type: Prepaid gift")).toBeNull();
+  });
+
+  it("opens Stripe billing management only for a confirmed Stripe-owned subscription", async () => {
+    const { openExternalUrl } = require("@/utils/openExternalUrl");
+    (getSubscription as jest.Mock).mockResolvedValue({
+      plan: "pro",
+      subscriptionStatus: "active",
+      source: "stripe",
+      billingOwner: "account",
+      canManageBilling: true,
+      canCancelSubscription: true
+    });
+
+    const screen = render(<BillingHome />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Manage subscription in Stripe")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Manage subscription in Stripe"));
+
+    await waitFor(() => {
+      expect(openSubscriptionPortal).toHaveBeenCalledTimes(1);
+      expect(openExternalUrl).toHaveBeenCalledWith(
+        "https://billing.stripe.com/p/session/test_portal"
+      );
+    });
   });
 
   it("shows paid-through access and removes repeat cancellation after renewal is canceled", async () => {
