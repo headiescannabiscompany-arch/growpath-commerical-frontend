@@ -5,6 +5,16 @@ export type CommercialFeedCampaignType = "listing" | "drop" | "update" | "educat
 
 export type CommercialFeedPostType = CommercialFeedCampaignType | "iso" | "question";
 
+export type CommercialFeedMedia = {
+  kind: "harvest_inspection_view";
+  url: string;
+  label?: string;
+  altText?: string;
+  width?: number | null;
+  height?: number | null;
+  mimeType?: "image/jpeg";
+};
+
 export type CommercialFeedCampaign = {
   id: string;
   campaignId?: string;
@@ -12,6 +22,7 @@ export type CommercialFeedCampaign = {
   linkedFeedCampaignId?: string;
   linkedFeedPostId?: string;
   type: CommercialFeedPostType;
+  sourceType?: "standard" | "harvest_readiness";
   campaignKind?: string;
   authorType?: string;
   workspaceType?: string;
@@ -39,6 +50,7 @@ export type CommercialFeedCampaign = {
   imageUrl?: string;
   creativeImageUrl?: string;
   bannerImageUrl?: string;
+  media?: CommercialFeedMedia[];
   startsAt?: string;
   endsAt?: string;
   reminderPreference?: string;
@@ -106,6 +118,23 @@ export type FeedCampaignAnalytics = {
 };
 
 function normalizeCampaign(row: any): CommercialFeedCampaign {
+  const media = (Array.isArray(row?.media) ? row.media : [])
+    .filter(
+      (item: any) =>
+        String(item?.kind || "") === "harvest_inspection_view" &&
+        String(item?.mimeType || "") === "image/jpeg" &&
+        String(item?.url || "").trim()
+    )
+    .slice(0, 8)
+    .map((item: any) => ({
+      kind: String(item.kind) as CommercialFeedMedia["kind"],
+      url: String(item.url).trim(),
+      label: String(item.label || ""),
+      altText: String(item.altText || ""),
+      width: Number(item.width || 0) || null,
+      height: Number(item.height || 0) || null,
+      mimeType: "image/jpeg" as const
+    }));
   return {
     ...row,
     id: String(
@@ -118,6 +147,8 @@ function normalizeCampaign(row: any): CommercialFeedCampaign {
         ""
     ),
     type: String(row?.type || "update") as CommercialFeedPostType,
+    sourceType:
+      row?.sourceType === "harvest_readiness" ? "harvest_readiness" : "standard",
     body: String(row?.body || row?.description || ""),
     storefrontSlug: String(
       row?.storefrontSlug ||
@@ -130,7 +161,8 @@ function normalizeCampaign(row: any): CommercialFeedCampaign {
     tags: Array.isArray(row?.tags) ? row.tags.map((tag: any) => String(tag)) : [],
     growInterests: Array.isArray(row?.growInterests)
       ? row.growInterests.map((interest: any) => String(interest))
-      : []
+      : [],
+    media
   };
 }
 

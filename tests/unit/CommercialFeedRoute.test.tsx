@@ -123,6 +123,68 @@ describe("CommercialFeedRoute", () => {
     expect(screen.getByLabelText("Back")).toBeTruthy();
   });
 
+  it("renders an owner-reviewed Harvest post with its bounded public photo gallery", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({
+          items: [
+            {
+              id: "64c000000000000000000001",
+              type: "education",
+              sourceType: "harvest_readiness",
+              title: "Harvest Readiness — Deep Review",
+              body: "Owner-reviewed analysis of visible sampled areas.",
+              tags: ["harvest-readiness"],
+              growInterests: [],
+              contentLabels: ["cannabis", "education", "ai-assisted", "owner-reviewed"],
+              media: [
+                {
+                  kind: "harvest_inspection_view",
+                  url: "/api/commercial/feed/64c000000000000000000001/harvest-media/opaque-1.jpg",
+                  label: "Supplemental inspected zoom 1",
+                  altText: "Supplemental inspected view; not an independent sample.",
+                  width: 800,
+                  height: 800,
+                  mimeType: "image/jpeg"
+                },
+                {
+                  kind: "harvest_inspection_view",
+                  url: "/api/commercial/feed/64c000000000000000000001/harvest-media/opaque-2.jpg",
+                  label: "Supplemental inspected zoom 2",
+                  altText: "Supplemental inspected view; not an independent sample.",
+                  width: 640,
+                  height: 640,
+                  mimeType: "image/jpeg"
+                }
+              ],
+              engagementCount: 0,
+              author: { displayName: "Grower" },
+              createdAt: "2026-09-04T12:00:00.000Z"
+            }
+          ]
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Owner-reviewed Harvest Readiness")).toBeTruthy()
+    );
+    expect(screen.getAllByText("Cannabis content").length).toBeGreaterThan(0);
+    expect(
+      screen.getByLabelText("Harvest Readiness — Deep Review image").props.source.uri
+    ).toBe("/api/commercial/feed/64c000000000000000000001/harvest-media/opaque-1.jpg");
+    expect(
+      screen.getByLabelText("Harvest Readiness — Deep Review photo gallery")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Harvest Readiness — Deep Review supplemental photo 2").props
+        .source.uri
+    ).toBe("/api/commercial/feed/64c000000000000000000001/harvest-media/opaque-2.jpg");
+  });
+
   it("keeps a Facility viewer in read-only outreach mode", async () => {
     mockMode = "facility";
     mockFacilityRole = "VIEWER";

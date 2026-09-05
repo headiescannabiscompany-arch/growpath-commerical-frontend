@@ -20,6 +20,11 @@ describe("photo upload persistence helpers", () => {
 
   it("recognizes durable image URLs", () => {
     expect(isPersistedImageUri("/uploads/photo.jpg")).toBe(true);
+    expect(
+      isPersistedImageUri(
+        "/api/commercial/feed/64c000000000000000000001/harvest-media/1-abcdef.jpg"
+      )
+    ).toBe(true);
     expect(isPersistedImageUri("https://example.test/photo.jpg")).toBe(true);
     expect(isPersistedImageUri("file:///tmp/photo.jpg")).toBe(false);
   });
@@ -27,6 +32,13 @@ describe("photo upload persistence helpers", () => {
   it("resolves relative uploaded image URLs against the API host for rendering", () => {
     expect(resolveImageUri("/uploads/photo.jpg")).toBe(`${API_URL}/uploads/photo.jpg`);
     expect(resolveImageUri("uploads/photo.jpg")).toBe(`${API_URL}/uploads/photo.jpg`);
+    expect(
+      resolveImageUri(
+        "/api/commercial/feed/64c000000000000000000001/harvest-media/1-abcdef.jpg"
+      )
+    ).toBe(
+      `${API_URL}/api/commercial/feed/64c000000000000000000001/harvest-media/1-abcdef.jpg`
+    );
     expect(resolveImageUri("https://example.test/photo.jpg")).toBe(
       "https://example.test/photo.jpg"
     );

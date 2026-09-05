@@ -185,4 +185,63 @@ describe("commercial feed API", () => {
       })
     ]);
   });
+
+  it("keeps the bounded Harvest source and gallery metadata returned by the Feed", async () => {
+    const { listCommercialFeedCampaigns } = require("@/api/commercialFeed");
+    mockApiRequest.mockResolvedValueOnce({
+      items: [
+        {
+          id: "64c000000000000000000001",
+          type: "education",
+          sourceType: "harvest_readiness",
+          title: "Harvest Readiness — Deep Review",
+          body: "Owner-reviewed analysis of visible sampled areas.",
+          tags: ["harvest-readiness"],
+          contentLabels: ["cannabis", "ai-assisted", "owner-reviewed"],
+          media: [
+            {
+              kind: "harvest_inspection_view",
+              url: "/api/commercial/feed/64c000000000000000000001/harvest-media/opaque-1.jpg",
+              label: "Supplemental inspected zoom 1",
+              altText: "Supplemental inspected view; not an independent sample.",
+              width: 800,
+              height: 800,
+              mimeType: "image/jpeg"
+            },
+            {
+              kind: "harvest_inspection_view",
+              url: "/api/commercial/feed/64c000000000000000000001/harvest-media/opaque-2.jpg",
+              label: "Supplemental inspected zoom 2",
+              altText: "Supplemental inspected view; not an independent sample.",
+              width: 640,
+              height: 640,
+              mimeType: "image/jpeg"
+            },
+            { kind: "private_source", url: "/uploads/private-source.jpg" }
+          ]
+        }
+      ]
+    });
+
+    const result = await listCommercialFeedCampaigns();
+
+    expect(result.items[0]).toEqual(
+      expect.objectContaining({
+        sourceType: "harvest_readiness",
+        media: [
+          expect.objectContaining({
+            kind: "harvest_inspection_view",
+            url: "/api/commercial/feed/64c000000000000000000001/harvest-media/opaque-1.jpg",
+            width: 800,
+            height: 800
+          }),
+          expect.objectContaining({
+            kind: "harvest_inspection_view",
+            url: "/api/commercial/feed/64c000000000000000000001/harvest-media/opaque-2.jpg"
+          })
+        ]
+      })
+    );
+    expect(result.items[0].media).toHaveLength(2);
+  });
 });

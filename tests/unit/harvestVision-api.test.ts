@@ -15,6 +15,9 @@ const {
   createHarvestFeedReviewDraft,
   deleteHarvestFeedReviewDraft,
   getHarvestFeedReviewDraft,
+  getHarvestFeedReviewPublication,
+  publishHarvestFeedReview,
+  revokeHarvestFeedReview,
   isSupportedHarvestReviewPolicy,
   submitHarvestTrichomeFeedback
 } = require("@/api/harvestVision");
@@ -537,6 +540,9 @@ describe("Harvest vision receipt policies", () => {
         body: "A bounded signed review of visible sampled areas.",
         tags: ["harvest-readiness"],
         contentLabels: ["cannabis", "education"],
+        lifecycleRevision: 0,
+        publicationState: "private",
+        cleanupPending: false,
         selectedViewCount: 1,
         selectionDigest: digest("e"),
         selectedViews: [selectedView]
@@ -584,6 +590,184 @@ describe("Harvest vision receipt policies", () => {
       expect.objectContaining({
         params: expect.objectContaining({ facilityId: "facility-1" })
       })
+    );
+  });
+
+  it("publishes and removes only the exact reviewed Harvest draft with explicit confirmations", async () => {
+    const workspace = {
+      workspaceType: "facility" as const,
+      workspaceId: "facility-1",
+      facilityId: "facility-1"
+    };
+    const identity = {
+      draftId: "64c000000000000000000001",
+      selectionDigest: digest("e"),
+      expectedLifecycleRevision: 0
+    };
+    const publication = {
+      id: identity.draftId,
+      status: "published",
+      type: "education",
+      sourceType: "harvest_readiness",
+      title: "Harvest Readiness — Deep Review",
+      body: "Owner-reviewed analysis of visible sampled areas.",
+      contentLabels: [
+        "cannabis",
+        "education",
+        "harvest-readiness",
+        "ai-assisted",
+        "owner-reviewed"
+      ],
+      media: [
+        {
+          kind: "harvest_inspection_view",
+          url: "/api/commercial/feed/64c000000000000000000001/harvest-media/0123456789abcdef-1-0-abcdef123456.jpg",
+          label: "Supplemental inspected zoom 1",
+          altText: "Supplemental inspected view; not an independent sample.",
+          width: 800,
+          height: 800,
+          mimeType: "image/jpeg"
+        }
+      ],
+      feedUrl: "https://growpathai.com/feed?campaignId=64c000000000000000000001",
+      socialPreviewUrl:
+        "https://api.growpathai.com/api/commercial/feed/64c000000000000000000001/share",
+      publishedAt: "2026-09-04T12:00:00.000Z",
+      revokedAt: null,
+      lifecycleRevision: 1,
+      selectionDigest: identity.selectionDigest,
+      selectedViewCount: 1,
+      cleanupPending: false,
+      cleanupError: ""
+    };
+    mockApiRequest
+      .mockResolvedValueOnce({
+        success: true,
+        idempotentReplay: false,
+        publication
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        idempotentReplay: true,
+        publication
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        idempotentReplay: false,
+        cleanupPending: false,
+        draft: {
+          id: identity.draftId,
+          status: "draft",
+          type: "education",
+          sourceType: "harvest_readiness",
+          title: "Private Harvest Readiness review",
+          body: "A bounded signed review of visible sampled areas.",
+          tags: ["harvest-readiness"],
+          contentLabels: ["cannabis", "education"],
+          lifecycleRevision: 2,
+          publicationState: "private",
+          cleanupPending: false,
+          selectedViewCount: 1,
+          selectionDigest: identity.selectionDigest,
+          selectedViews: [
+            {
+              sourceEvidenceAssetId: "64b000000000000000000001",
+              sourceImageIndex: 4,
+              kind: "macro-grid-2",
+              cropStrategy: "macro_coverage",
+              derivationVersion: "retained-original-macro-jpeg-v1",
+              sourceBounds: {
+                left: 100,
+                top: 200,
+                width: 800,
+                height: 800,
+                sourceWidth: 1920,
+                sourceHeight: 1080
+              },
+              width: 800,
+              height: 800,
+              mimeType: "image/jpeg",
+              sha256: digest("f")
+            }
+          ]
+        }
+      });
+
+    await expect(
+      publishHarvestFeedReview("operation-deep-1", workspace, identity)
+    ).resolves.toEqual(
+      expect.objectContaining({
+        publication: expect.objectContaining({
+          status: "published",
+          media: [expect.objectContaining({ kind: "harvest_inspection_view" })]
+        })
+      })
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/api/ai/harvest/trichomes/operations/operation-deep-1/feed-publication/publish",
+      {
+        method: "POST",
+        signal: undefined,
+        timeoutMs: 60000,
+        retries: 0,
+        body: {
+          ...workspace,
+          ...identity,
+          confirmation: "PUBLISH_CANNABIS_HARVEST_REVIEW"
+        }
+      }
+    );
+
+    await expect(
+      getHarvestFeedReviewPublication("operation-deep-1", workspace)
+    ).resolves.toEqual(
+      expect.objectContaining({
+        idempotentReplay: true,
+        publication: expect.objectContaining({ status: "published" })
+      })
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      2,
+      "/api/ai/harvest/trichomes/operations/operation-deep-1/feed-publication",
+      {
+        signal: undefined,
+        timeoutMs: 30000,
+        retries: 0,
+        params: workspace
+      }
+    );
+
+    await expect(
+      revokeHarvestFeedReview("operation-deep-1", workspace, {
+        ...identity,
+        expectedLifecycleRevision: 1
+      })
+    ).resolves.toEqual(
+      expect.objectContaining({
+        idempotentReplay: false,
+        cleanupPending: false,
+        draft: expect.objectContaining({
+          lifecycleRevision: 2,
+          publicationState: "private"
+        })
+      })
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      3,
+      "/api/ai/harvest/trichomes/operations/operation-deep-1/feed-publication/revoke",
+      {
+        method: "POST",
+        signal: undefined,
+        timeoutMs: 60000,
+        retries: 0,
+        body: {
+          ...workspace,
+          ...identity,
+          expectedLifecycleRevision: 1,
+          confirmation: "REMOVE_CANNABIS_HARVEST_REVIEW_FROM_FEED"
+        }
+      }
     );
   });
 
@@ -658,6 +842,9 @@ describe("Harvest vision receipt policies", () => {
         body: "A bounded signed review of visible sampled areas.",
         tags: ["harvest-readiness"],
         contentLabels: ["cannabis", "education"],
+        lifecycleRevision: 0,
+        publicationState: "private",
+        cleanupPending: false,
         selectedViewCount: 1,
         selectionDigest: digest("e"),
         selectedViews: [

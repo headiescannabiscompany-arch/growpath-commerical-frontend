@@ -1,12 +1,19 @@
 import { uploadImage } from "@/api/uploads";
 import { API_URL } from "@/api/apiRequest";
 
+function isHarvestFeedPublicationMediaPath(value: string) {
+  return /^\/api\/commercial\/feed\/[a-f0-9]{24}\/harvest-media\/[a-f0-9-]+\.jpg(?:\?.*)?$/i.test(
+    value
+  );
+}
+
 export function isPersistedImageUri(uri: string) {
   return (
     /^https?:\/\//i.test(uri) ||
     uri.startsWith("/uploads/") ||
     uri.startsWith("/api/videos/uploads/") ||
-    uri.startsWith("/api/evidence-assets/uploads/")
+    uri.startsWith("/api/evidence-assets/uploads/") ||
+    isHarvestFeedPublicationMediaPath(uri)
   );
 }
 
@@ -26,7 +33,8 @@ export function resolveImageUri(uri: string | null | undefined) {
       const isApiUploadPath =
         parsed.pathname.startsWith("/uploads/") ||
         parsed.pathname.startsWith("/api/videos/uploads/") ||
-        parsed.pathname.startsWith("/api/evidence-assets/uploads/");
+        parsed.pathname.startsWith("/api/evidence-assets/uploads/") ||
+        isHarvestFeedPublicationMediaPath(`${parsed.pathname}${parsed.search}`);
       const apiRootHost = api?.hostname.replace(/^api\./i, "");
       const pointsAtFirstPartyWebHost = Boolean(
         apiRootHost &&
@@ -51,6 +59,7 @@ export function resolveImageUri(uri: string | null | undefined) {
   if (value.startsWith("/api/evidence-assets/uploads/")) {
     return `${apiOrigin}${value}`;
   }
+  if (isHarvestFeedPublicationMediaPath(value)) return `${apiOrigin}${value}`;
   if (value.startsWith("uploads/")) return `${apiOrigin}/${value}`;
   return value;
 }

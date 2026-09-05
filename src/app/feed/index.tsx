@@ -247,8 +247,30 @@ function campaignMeta(post: CommercialFeedCampaign) {
 }
 
 function campaignImage(post: CommercialFeedCampaign) {
-  return resolveImageUri(
-    post.imageUrl || post.creativeImageUrl || post.bannerImageUrl || ""
+  return campaignImages(post)[0] || "";
+}
+
+function campaignImages(post: CommercialFeedCampaign) {
+  const values = [
+    post.imageUrl,
+    post.creativeImageUrl,
+    post.bannerImageUrl,
+    ...(isHarvestReadinessCampaign(post) ? post.media || [] : []).map((item) => item.url)
+  ]
+    .map((value) => resolveImageUri(String(value || "")))
+    .filter(Boolean);
+  return [...new Set(values)].slice(0, 8);
+}
+
+function isHarvestReadinessCampaign(post: CommercialFeedCampaign) {
+  return (
+    post.sourceType === "harvest_readiness" ||
+    (post.contentLabels || []).some(
+      (label) =>
+        String(label || "")
+          .trim()
+          .toLowerCase() === "harvest-readiness"
+    )
   );
 }
 
@@ -262,6 +284,7 @@ function isCannabisCampaign(post: CommercialFeedCampaign) {
 }
 
 function visibleCampaignType(post: CommercialFeedCampaign) {
+  if (isHarvestReadinessCampaign(post)) return "Owner-reviewed Harvest Readiness";
   if (post.campaignKind && campaignKindLabels[post.campaignKind as CampaignKind]) {
     return campaignKindLabels[post.campaignKind as CampaignKind];
   }
@@ -1601,6 +1624,7 @@ export default function CommercialFeedRoute() {
         .filter((post) => !hiddenCampaignIds.includes(post.id))
         .map((post) => {
           const destination = campaignDestination(post);
+          const images = campaignImages(post);
           const isCampaignFocused = Boolean(
             focusedCampaignId && focusedCampaignId === post.id
           );
@@ -1630,13 +1654,29 @@ export default function CommercialFeedRoute() {
                 </Text>
               </View>
               <Text style={styles.postTitle}>{post.title || "Feed campaign"}</Text>
-              {campaignImage(post) ? (
+              {images[0] ? (
                 <Image
-                  source={{ uri: campaignImage(post) }}
+                  source={{ uri: images[0] }}
                   style={styles.feedImage}
                   resizeMode="cover"
                   accessibilityLabel={`${post.title || "Feed campaign"} image`}
                 />
+              ) : null}
+              {images.length > 1 ? (
+                <View
+                  accessibilityLabel={`${post.title || "Feed campaign"} photo gallery`}
+                  style={styles.feedGallery}
+                >
+                  {images.slice(1).map((url, imageIndex) => (
+                    <Image
+                      key={url}
+                      source={{ uri: url }}
+                      style={styles.feedGalleryImage}
+                      resizeMode="cover"
+                      accessibilityLabel={`${post.title || "Feed campaign"} supplemental photo ${imageIndex + 2}`}
+                    />
+                  ))}
+                </View>
               ) : null}
               <Text style={styles.postBody}>{post.body}</Text>
               {post.tags.length ? (
@@ -1937,6 +1977,13 @@ export const createFeedCampaignStyles = (palette: ThemePalette) =>
       width: "100%",
       maxWidth: 640,
       aspectRatio: 16 / 7,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceStrong
+    },
+    feedGallery: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    feedGalleryImage: {
+      width: 112,
+      height: 84,
       borderRadius: radius.card,
       backgroundColor: palette.surfaceStrong
     },

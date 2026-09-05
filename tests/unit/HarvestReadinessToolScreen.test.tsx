@@ -100,6 +100,9 @@ const mockGetDeepTrichomeReviewOperation = jest.fn();
 const mockCreateHarvestFeedReviewDraft = jest.fn();
 const mockDeleteHarvestFeedReviewDraft = jest.fn();
 const mockGetHarvestFeedReviewDraft = jest.fn();
+const mockGetHarvestFeedReviewPublication = jest.fn();
+const mockPublishHarvestFeedReview = jest.fn();
+const mockRevokeHarvestFeedReview = jest.fn();
 const mockSubmitHarvestTrichomeFeedback = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
 const mockListPersonalGrows = jest.fn();
@@ -556,6 +559,10 @@ jest.mock("@/api/harvestVision", () => {
     deleteHarvestFeedReviewDraft: (...args: any[]) =>
       mockDeleteHarvestFeedReviewDraft(...args),
     getHarvestFeedReviewDraft: (...args: any[]) => mockGetHarvestFeedReviewDraft(...args),
+    getHarvestFeedReviewPublication: (...args: any[]) =>
+      mockGetHarvestFeedReviewPublication(...args),
+    publishHarvestFeedReview: (...args: any[]) => mockPublishHarvestFeedReview(...args),
+    revokeHarvestFeedReview: (...args: any[]) => mockRevokeHarvestFeedReview(...args),
     submitHarvestTrichomeFeedback: (...args: any[]) =>
       mockSubmitHarvestTrichomeFeedback(...args)
   };
@@ -709,6 +716,9 @@ function privateFeedReviewDraft() {
       body: "A bounded signed review of visible sampled areas.",
       tags: ["harvest-readiness"],
       contentLabels: ["cannabis", "education"],
+      lifecycleRevision: 0,
+      publicationState: "private",
+      cleanupPending: false,
       selectedViewCount: 1,
       selectionDigest: feedDraftDigest("9"),
       selectedViews: [
@@ -722,6 +732,49 @@ function privateFeedReviewDraft() {
           }).result.inspectionViews[0]
         }
       ]
+    }
+  };
+}
+
+function publishedFeedReview() {
+  return {
+    success: true,
+    idempotentReplay: false,
+    publication: {
+      id: "64c000000000000000000001",
+      status: "published",
+      type: "education",
+      sourceType: "harvest_readiness",
+      title: "Harvest Readiness — Deep Review",
+      body: "Owner-reviewed analysis of visible sampled areas.",
+      contentLabels: [
+        "cannabis",
+        "education",
+        "harvest-readiness",
+        "ai-assisted",
+        "owner-reviewed"
+      ],
+      media: [
+        {
+          kind: "harvest_inspection_view",
+          url: "/api/commercial/feed/64c000000000000000000001/harvest-media/0123456789abcdef-1-0-abcdef123456.jpg",
+          label: "Supplemental inspected zoom 1",
+          altText: "Enlarged supplemental view; not an independent sample.",
+          width: 640,
+          height: 640,
+          mimeType: "image/jpeg"
+        }
+      ],
+      feedUrl: "https://growpathai.com/feed?campaignId=64c000000000000000000001",
+      socialPreviewUrl:
+        "https://api.growpathai.com/api/commercial/feed/64c000000000000000000001/share",
+      publishedAt: "2026-09-04T12:00:00.000Z",
+      revokedAt: null,
+      lifecycleRevision: 1,
+      selectionDigest: feedDraftDigest("9"),
+      selectedViewCount: 1,
+      cleanupPending: false,
+      cleanupError: ""
     }
   };
 }
@@ -782,6 +835,9 @@ describe("HarvestReadinessToolRoute", () => {
     mockFetchCommercialGrows.mockResolvedValue([]);
     mockListEvidenceAssets.mockResolvedValue([]);
     mockFindDeepTrichomeReviewOperation.mockResolvedValue(null);
+    mockGetHarvestFeedReviewPublication.mockRejectedValue(
+      Object.assign(new Error("not found"), { status: 404 })
+    );
     mockGetHarvestFeedReviewDraft.mockRejectedValue(
       Object.assign(new Error("not found"), { status: 404 })
     );
@@ -2104,6 +2160,98 @@ describe("HarvestReadinessToolRoute", () => {
         screen.getByLabelText("Prepare a new harvest review quote")
       ).not.toBeDisabled()
     );
+  });
+
+  it("publishes an explicitly confirmed owner-reviewed result and can remove it again", async () => {
+    mockPublishHarvestFeedReview.mockResolvedValueOnce(publishedFeedReview());
+    mockRevokeHarvestFeedReview.mockResolvedValueOnce({
+      ...privateFeedReviewDraft(),
+      idempotentReplay: false,
+      cleanupPending: false,
+      draft: {
+        ...privateFeedReviewDraft().draft,
+        lifecycleRevision: 2,
+        publicationState: "private",
+        cleanupPending: false
+      }
+    });
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation(
+        (_title: string, _message?: string, buttons?: AlertButton[]) => {
+          buttons
+            ?.find(
+              (button) =>
+                button.text === "Publish to Feed" || button.text === "Remove from Feed"
+            )
+            ?.onPress?.();
+        }
+      );
+
+    try {
+      const screen = await renderRestoredPrivateFeedDraft();
+
+      fireEvent.press(
+        screen.getByLabelText("Publish owner-reviewed Harvest result to Feed")
+      );
+
+      await screen.findByLabelText("Published Harvest Feed review");
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Publish cannabis Harvest review?",
+        expect.stringMatching(/private source photos.*your email are not published/i),
+        expect.arrayContaining([
+          expect.objectContaining({ text: "Keep Private", style: "cancel" }),
+          expect.objectContaining({ text: "Publish to Feed" })
+        ])
+      );
+      expect(mockPublishHarvestFeedReview).toHaveBeenCalledWith(
+        "operation-deep-feed-delete",
+        { workspaceType: "personal" },
+        {
+          draftId: "64c000000000000000000001",
+          selectionDigest: feedDraftDigest("9"),
+          expectedLifecycleRevision: 0
+        },
+        { signal: expect.any(AbortSignal) }
+      );
+      expect(
+        screen.getByText(/Cannabis content · AI-assisted · Owner reviewed/i)
+      ).toBeTruthy();
+      expect(screen.getByLabelText("View published Harvest review in Feed")).toBeTruthy();
+      expect(screen.getByLabelText("Share published Harvest review")).toBeTruthy();
+      expect(
+        screen.queryByLabelText("Delete private GrowPath Feed review draft")
+      ).toBeNull();
+
+      fireEvent.press(screen.getByLabelText("Remove published Harvest review from Feed"));
+
+      await waitFor(() => expect(mockRevokeHarvestFeedReview).toHaveBeenCalledTimes(1));
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Remove Harvest review from Feed?",
+        expect.stringMatching(/disappears from the Feed before.*public photo copies/i),
+        expect.arrayContaining([
+          expect.objectContaining({ text: "Cancel", style: "cancel" }),
+          expect.objectContaining({ text: "Remove from Feed", style: "destructive" })
+        ])
+      );
+      expect(mockRevokeHarvestFeedReview).toHaveBeenCalledWith(
+        "operation-deep-feed-delete",
+        { workspaceType: "personal" },
+        {
+          draftId: "64c000000000000000000001",
+          selectionDigest: feedDraftDigest("9"),
+          expectedLifecycleRevision: 1
+        },
+        { signal: expect.any(AbortSignal) }
+      );
+      await screen.findByLabelText("Private Harvest Feed draft preview");
+      expect(screen.queryByLabelText("Published Harvest Feed review")).toBeNull();
+      expect(
+        screen.getByText(/removed from the Feed.*source evidence were kept/i)
+      ).toBeTruthy();
+    } finally {
+      alertSpy.mockRestore();
+    }
   });
 
   it("confirms private Feed draft deletion and preserves the signed result and evidence", async () => {

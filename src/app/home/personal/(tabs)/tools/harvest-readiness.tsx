@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
+  Linking,
   Pressable,
   StyleSheet,
   Switch,
@@ -27,13 +28,17 @@ import {
   createHarvestFeedReviewDraft,
   deleteHarvestFeedReviewDraft,
   getHarvestFeedReviewDraft,
+  getHarvestFeedReviewPublication,
   HARVEST_FEED_DRAFT_MAX_VIEWS,
   isSupportedHarvestReviewPolicy,
+  publishHarvestFeedReview,
+  revokeHarvestFeedReview,
   submitHarvestTrichomeFeedback,
   type HarvestDeepReviewOperation,
   type HarvestDeepReviewQuote,
   type HarvestFeedDraftView,
   type HarvestFeedReviewDraft,
+  type HarvestFeedReviewPublication,
   type TrichomeVisionResult
 } from "@/api/harvestVision";
 import type { VideoWorkspaceType } from "@/api/videos";
@@ -71,6 +76,7 @@ import {
 } from "@/types/evidence";
 import { businessDeskProviderSignatureSha256 } from "@/features/businessDesk/providerOperationPersistence";
 import { restorableHarvestEvidence } from "@/features/personal/evidence/harvestEvidenceRestore";
+import { sharePublicLink } from "@/utils/publicLinks";
 
 const MIN_HARVEST_PHOTOS = 4;
 const MAX_HARVEST_PROVIDER_IMAGES = 80;
@@ -473,6 +479,8 @@ function HarvestPhotoAnalyzer({
   const [feedReviewDraft, setFeedReviewDraft] = useState<HarvestFeedReviewDraft | null>(
     null
   );
+  const [feedReviewPublication, setFeedReviewPublication] =
+    useState<HarvestFeedReviewPublication | null>(null);
   const [feedReviewDraftBusy, setFeedReviewDraftBusy] = useState(false);
   const [feedReviewDraftFeedback, setFeedReviewDraftFeedback] = useState("");
   const [feedDraftLookupBusy, setFeedDraftLookupBusy] = useState(false);
@@ -490,9 +498,11 @@ function HarvestPhotoAnalyzer({
   const mountedAnalysisRef = useRef(initialAnalysis);
   const mountedAnalysisOperationIdRef = useRef(String(initialAnalysisOperationId || ""));
   const feedReviewDraftRef = useRef(feedReviewDraft);
+  const feedReviewPublicationRef = useRef(feedReviewPublication);
   const feedDraftLookupControllerRef = useRef<AbortController | null>(null);
   const feedDraftCreateControllerRef = useRef<AbortController | null>(null);
   const feedDraftDeleteControllerRef = useRef<AbortController | null>(null);
+  const feedPublicationActionControllerRef = useRef<AbortController | null>(null);
   const evidenceWorkspace = useMemo(
     () => ({
       workspaceType,
@@ -722,6 +732,7 @@ function HarvestPhotoAnalyzer({
   const feedDraftRequestIdentityRef = useRef(feedDraftRequestIdentity);
   feedDraftRequestIdentityRef.current = feedDraftRequestIdentity;
   feedReviewDraftRef.current = feedReviewDraft;
+  feedReviewPublicationRef.current = feedReviewPublication;
   const privateFeedDraftLifecycleSettled = Boolean(
     !succeededDeepReviewOperationId ||
     (feedDraftOperationId === succeededDeepReviewOperationId &&
@@ -732,6 +743,7 @@ function HarvestPhotoAnalyzer({
     feedDraftLookupBusy ||
     feedReviewDraftBusy ||
     feedReviewDraft ||
+    feedReviewPublication ||
     !privateFeedDraftLifecycleSettled
   );
 
@@ -742,6 +754,8 @@ function HarvestPhotoAnalyzer({
     feedDraftCreateControllerRef.current = null;
     feedDraftDeleteControllerRef.current?.abort();
     feedDraftDeleteControllerRef.current = null;
+    feedPublicationActionControllerRef.current?.abort();
+    feedPublicationActionControllerRef.current = null;
     setFeedDraftLookupBusy(false);
     setFeedDraftLookupSettledOperationId("");
     setFeedReviewDraftBusy(false);
@@ -749,6 +763,7 @@ function HarvestPhotoAnalyzer({
       feedDraftLookupControllerRef.current?.abort();
       feedDraftCreateControllerRef.current?.abort();
       feedDraftDeleteControllerRef.current?.abort();
+      feedPublicationActionControllerRef.current?.abort();
     };
   }, [feedDraftRequestIdentity]);
 
@@ -789,6 +804,7 @@ function HarvestPhotoAnalyzer({
     setResultShareFeedback("");
     setSelectedFeedDraftViewKeys([]);
     setFeedReviewDraft(null);
+    setFeedReviewPublication(null);
     setFeedReviewDraftFeedback("");
   }, [analysis?.analysisId]);
 
@@ -805,54 +821,85 @@ function HarvestPhotoAnalyzer({
     feedDraftLookupControllerRef.current = controller;
     setFeedDraftLookupBusy(true);
     setFeedDraftLookupSettledOperationId("");
-    void getHarvestFeedReviewDraft(operationId, evidenceWorkspace, {
-      signal: controller.signal
-    })
-      .then((packet) => {
-        if (
-          controller.signal.aborted ||
-          feedDraftLookupControllerRef.current !== controller ||
-          feedDraftRequestIdentityRef.current !== requestIdentity
-        ) {
-          return;
-        }
-        setFeedReviewDraft(packet.draft);
-        const restored = new Set(
-          packet.draft.selectedViews.map(aiInspectionViewIdentityKey)
-        );
-        setSelectedFeedDraftViewKeys(
-          feedDraftEligibleViews
-            .map(aiInspectionViewIdentityKey)
-            .filter((key) => restored.has(key))
-        );
-        setFeedReviewDraftFeedback(
-          "Your private GrowPath Feed review draft was restored. It is not public."
-        );
-        setFeedDraftLookupSettledOperationId(operationId);
-      })
-      .catch((error: any) => {
-        if (
-          harvestRequestWasCancelled(error, controller.signal) ||
-          feedDraftLookupControllerRef.current !== controller ||
-          feedDraftRequestIdentityRef.current !== requestIdentity
-        ) {
-          return;
-        }
-        if (Number(error?.status || 0) === 404) {
+    const isCurrent = () =>
+      !controller.signal.aborted &&
+      feedDraftLookupControllerRef.current === controller &&
+      feedDraftRequestIdentityRef.current === requestIdentity;
+    void (async () => {
+      try {
+        try {
+          const packet = await getHarvestFeedReviewPublication(
+            operationId,
+            evidenceWorkspace,
+            { signal: controller.signal }
+          );
+          if (!isCurrent()) return;
           setFeedReviewDraft(null);
+          setFeedReviewPublication(packet.publication);
+          setFeedReviewDraftFeedback(
+            packet.publication.status === "published"
+              ? "Your owner-reviewed Harvest result is published in the GrowPath Feed."
+              : packet.publication.status === "cleanup_pending"
+                ? "This review is no longer visible in the Feed, but its public photo cleanup must be retried."
+                : "GrowPath is safely finishing this Harvest Feed publication change."
+          );
           setFeedDraftLookupSettledOperationId(operationId);
           return;
+        } catch (error: any) {
+          if (harvestRequestWasCancelled(error, controller.signal) || !isCurrent()) {
+            return;
+          }
+          if (Number(error?.status || 0) !== 404) throw error;
+        }
+
+        try {
+          const packet = await getHarvestFeedReviewDraft(operationId, evidenceWorkspace, {
+            signal: controller.signal
+          });
+          if (!isCurrent()) return;
+          setFeedReviewPublication(null);
+          setFeedReviewDraft(packet.draft);
+          const restored = new Set(
+            packet.draft.selectedViews.map(aiInspectionViewIdentityKey)
+          );
+          setSelectedFeedDraftViewKeys(
+            feedDraftEligibleViews
+              .map(aiInspectionViewIdentityKey)
+              .filter((key) => restored.has(key))
+          );
+          setFeedReviewDraftFeedback(
+            packet.draft.cleanupPending
+              ? "This review is private, but public photo cleanup must be retried before the draft can be deleted or published again."
+              : "Your private GrowPath Feed review draft was restored. It is not public."
+          );
+          setFeedDraftLookupSettledOperationId(operationId);
+        } catch (error: any) {
+          if (harvestRequestWasCancelled(error, controller.signal) || !isCurrent()) {
+            return;
+          }
+          if (Number(error?.status || 0) === 404) {
+            setFeedReviewDraft(null);
+            setFeedReviewPublication(null);
+            setFeedDraftLookupSettledOperationId(operationId);
+            return;
+          }
+          throw error;
+        }
+      } catch (error: any) {
+        if (harvestRequestWasCancelled(error, controller.signal) || !isCurrent()) {
+          return;
         }
         setFeedReviewDraftFeedback(
-          error?.message || "GrowPath could not check for an existing Feed review draft."
+          error?.message ||
+            "GrowPath could not check the Harvest Feed review publication."
         );
-      })
-      .finally(() => {
-        if (feedDraftLookupControllerRef.current === controller) {
-          feedDraftLookupControllerRef.current = null;
-          setFeedDraftLookupBusy(false);
-        }
-      });
+      }
+    })().finally(() => {
+      if (feedDraftLookupControllerRef.current === controller) {
+        feedDraftLookupControllerRef.current = null;
+        setFeedDraftLookupBusy(false);
+      }
+    });
     return () => controller.abort();
   }, [
     analysis?.analysisMode,
@@ -1390,7 +1437,7 @@ function HarvestPhotoAnalyzer({
   }
 
   function updateFeedDraftViewSelection(nextViewKeys: string[]) {
-    if (feedReviewDraft) return;
+    if (feedReviewDraft || feedReviewPublication) return;
     const requested = new Set(nextViewKeys.map(String).filter(Boolean));
     const exactSelection = feedDraftEligibleViews
       .map(aiInspectionViewIdentityKey)
@@ -1414,6 +1461,7 @@ function HarvestPhotoAnalyzer({
     if (
       feedReviewDraftBusy ||
       feedReviewDraft ||
+      feedReviewPublication ||
       !feedDraftOperationId ||
       analysis?.analysisMode !== "deep" ||
       !isShareableSignedHarvestResult(analysis) ||
@@ -1446,6 +1494,7 @@ function HarvestPhotoAnalyzer({
         return;
       }
       setFeedReviewDraft(packet.draft);
+      setFeedReviewPublication(null);
       setFeedReviewDraftFeedback(
         packet.idempotentReplay
           ? "The exact private GrowPath Feed review draft already existed and was restored. Nothing was published."
@@ -1472,6 +1521,12 @@ function HarvestPhotoAnalyzer({
 
   function confirmDeleteFeedReviewDraft() {
     if (!feedReviewDraft || feedReviewDraftBusy || !feedDraftOperationId) return;
+    if (feedReviewDraft.cleanupPending) {
+      setFeedReviewDraftFeedback(
+        "Retry public photo cleanup before deleting this private Feed review draft."
+      );
+      return;
+    }
     Alert.alert(
       "Delete private Feed draft?",
       "This removes only the owner-review Feed draft. It does not delete the signed Harvest result, retained source video, or zoom-source photos.",
@@ -1539,7 +1594,222 @@ function HarvestPhotoAnalyzer({
     }
   }
 
+  function confirmPublishFeedReview() {
+    if (
+      !feedReviewDraft ||
+      feedReviewDraft.cleanupPending ||
+      feedReviewDraft.publicationState !== "private" ||
+      feedReviewDraftBusy ||
+      !feedDraftOperationId
+    ) {
+      return;
+    }
+    Alert.alert(
+      "Publish cannabis Harvest review?",
+      "This makes the sanitized result and only the selected inspected zooms public in the GrowPath Feed. It will be labeled Cannabis content, AI-assisted, and Owner reviewed. Private source photos, video, GPS/EXIF, notes, IDs, receipts, and your email are not published.",
+      [
+        { text: "Keep Private", style: "cancel" },
+        {
+          text: "Publish to Feed",
+          onPress: () => void publishFeedReview()
+        }
+      ]
+    );
+  }
+
+  async function publishFeedReview() {
+    const draft = feedReviewDraftRef.current;
+    if (
+      !draft ||
+      draft.cleanupPending ||
+      draft.publicationState !== "private" ||
+      feedReviewDraftBusy ||
+      !feedDraftOperationId
+    ) {
+      return;
+    }
+    const requestIdentity = feedDraftRequestIdentity;
+    const controller = new AbortController();
+    feedPublicationActionControllerRef.current?.abort();
+    feedPublicationActionControllerRef.current = controller;
+    setFeedReviewDraftBusy(true);
+    setFeedReviewDraftFeedback(
+      "Regenerating and verifying the selected public photos before publication..."
+    );
+    try {
+      const packet = await publishHarvestFeedReview(
+        feedDraftOperationId,
+        evidenceWorkspace,
+        {
+          draftId: draft.id,
+          selectionDigest: draft.selectionDigest,
+          expectedLifecycleRevision: draft.lifecycleRevision
+        },
+        { signal: controller.signal }
+      );
+      if (
+        controller.signal.aborted ||
+        feedPublicationActionControllerRef.current !== controller ||
+        feedDraftRequestIdentityRef.current !== requestIdentity ||
+        String(feedReviewDraftRef.current?.id || "") !== draft.id ||
+        packet.publication.id !== draft.id ||
+        packet.publication.selectionDigest !== draft.selectionDigest
+      ) {
+        return;
+      }
+      setFeedReviewDraft(null);
+      setFeedReviewPublication(packet.publication);
+      setFeedReviewDraftFeedback(
+        packet.idempotentReplay
+          ? "GrowPath verified that this owner-reviewed Harvest result is already public in the Feed."
+          : "Owner-reviewed Harvest result published to the GrowPath Feed with privacy-safe photo copies."
+      );
+    } catch (error: any) {
+      if (
+        harvestRequestWasCancelled(error, controller.signal) ||
+        feedPublicationActionControllerRef.current !== controller ||
+        feedDraftRequestIdentityRef.current !== requestIdentity
+      ) {
+        return;
+      }
+      setFeedReviewDraftFeedback(
+        error?.message || "GrowPath could not publish this Harvest Feed review."
+      );
+    } finally {
+      if (feedPublicationActionControllerRef.current === controller) {
+        feedPublicationActionControllerRef.current = null;
+        setFeedReviewDraftBusy(false);
+      }
+    }
+  }
+
+  function confirmRemoveFeedReview() {
+    const publication = feedReviewPublicationRef.current;
+    const cleanupDraft = feedReviewDraftRef.current?.cleanupPending
+      ? feedReviewDraftRef.current
+      : null;
+    if ((!publication && !cleanupDraft) || feedReviewDraftBusy) return;
+    Alert.alert(
+      publication?.status === "published"
+        ? "Remove Harvest review from Feed?"
+        : "Retry public photo cleanup?",
+      publication?.status === "published"
+        ? "The post disappears from the Feed before GrowPath removes its public photo copies. Your private signed result and protected source evidence remain available."
+        : "The post is already private. GrowPath will retry removing its remaining public photo copies.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text:
+            publication?.status === "published" ? "Remove from Feed" : "Retry Cleanup",
+          style: "destructive",
+          onPress: () => void removeFeedReview()
+        }
+      ]
+    );
+  }
+
+  async function removeFeedReview() {
+    const publication = feedReviewPublicationRef.current;
+    const cleanupDraft = feedReviewDraftRef.current?.cleanupPending
+      ? feedReviewDraftRef.current
+      : null;
+    const identity = publication || cleanupDraft;
+    if (!identity || feedReviewDraftBusy || !feedDraftOperationId) return;
+    const requestIdentity = feedDraftRequestIdentity;
+    const controller = new AbortController();
+    feedPublicationActionControllerRef.current?.abort();
+    feedPublicationActionControllerRef.current = controller;
+    setFeedReviewDraftBusy(true);
+    setFeedReviewDraftFeedback(
+      publication?.status === "published"
+        ? "Removing this review from the public Feed before cleaning up its public photos..."
+        : "Retrying public Harvest photo cleanup..."
+    );
+    try {
+      const packet = await revokeHarvestFeedReview(
+        feedDraftOperationId,
+        evidenceWorkspace,
+        {
+          draftId: identity.id,
+          selectionDigest: identity.selectionDigest,
+          expectedLifecycleRevision: identity.lifecycleRevision
+        },
+        { signal: controller.signal }
+      );
+      if (
+        controller.signal.aborted ||
+        feedPublicationActionControllerRef.current !== controller ||
+        feedDraftRequestIdentityRef.current !== requestIdentity ||
+        packet.draft.id !== identity.id ||
+        packet.draft.selectionDigest !== identity.selectionDigest
+      ) {
+        return;
+      }
+      setFeedReviewPublication(null);
+      setFeedReviewDraft(packet.draft);
+      setFeedReviewDraftFeedback(
+        packet.cleanupPending || packet.draft.cleanupPending
+          ? "The review is no longer visible in the Feed. Public photo cleanup is still pending; use Retry Cleanup."
+          : packet.idempotentReplay
+            ? "GrowPath verified that this Harvest review is private and its public photo copies are gone."
+            : "Harvest review removed from the Feed. The private signed result and source evidence were kept."
+      );
+    } catch (error: any) {
+      if (
+        harvestRequestWasCancelled(error, controller.signal) ||
+        feedPublicationActionControllerRef.current !== controller ||
+        feedDraftRequestIdentityRef.current !== requestIdentity
+      ) {
+        return;
+      }
+      setFeedReviewDraftFeedback(
+        error?.message || "GrowPath could not finish removing this Feed review."
+      );
+    } finally {
+      if (feedPublicationActionControllerRef.current === controller) {
+        feedPublicationActionControllerRef.current = null;
+        setFeedReviewDraftBusy(false);
+      }
+    }
+  }
+
+  async function openPublishedFeedReview() {
+    const publication = feedReviewPublicationRef.current;
+    if (!publication?.feedUrl) return;
+    try {
+      await Linking.openURL(publication.feedUrl);
+    } catch (error: any) {
+      setFeedReviewDraftFeedback(
+        error?.message || "GrowPath could not open the published Feed review."
+      );
+    }
+  }
+
+  async function sharePublishedFeedReview() {
+    const publication = feedReviewPublicationRef.current;
+    if (!publication?.feedUrl || publication.status !== "published") return;
+    try {
+      await sharePublicLink(publication.title, publication.feedUrl, {
+        description: `Cannabis content. ${publication.body}`,
+        socialPreviewUrl: publication.socialPreviewUrl
+      });
+      setFeedReviewDraftFeedback(
+        "The public Harvest review share link and photo preview are ready."
+      );
+    } catch (error: any) {
+      setFeedReviewDraftFeedback(
+        error?.message || "GrowPath could not open share options for this review."
+      );
+    }
+  }
+
   async function prepareNewReviewQuote() {
+    if (feedReviewPublication) {
+      setFeedReviewDraftFeedback(
+        "Remove this owner-reviewed Harvest result from the Feed before preparing a new review."
+      );
+      return;
+    }
     if (feedReviewDraft) {
       setFeedReviewDraftFeedback(
         "Delete the private GrowPath Feed review draft before preparing a new review. The completed operation remains saved so this draft cannot be orphaned."
@@ -2172,7 +2442,9 @@ function HarvestPhotoAnalyzer({
                 <Text style={photoStyles.help}>
                   {feedReviewDraft
                     ? "Delete the existing private Feed review draft first. GrowPath keeps the completed operation address until that exact draft is gone."
-                    : "GrowPath is checking this completed operation for a private Feed review draft. Prepare New Review stays unavailable until that check finishes."}
+                    : feedReviewPublication
+                      ? "Remove the published Harvest review from the Feed and finish public photo cleanup before preparing a new review."
+                      : "GrowPath is checking this completed operation for a private Feed review draft. Prepare New Review stays unavailable until that check finishes."}
                 </Text>
               ) : null}
             </View>
@@ -2338,7 +2610,10 @@ function HarvestPhotoAnalyzer({
                   ? {
                       selectedViewKeys: selectedFeedDraftViewKeys,
                       maxSelected: HARVEST_FEED_DRAFT_MAX_VIEWS,
-                      disabled: feedReviewDraftBusy || Boolean(feedReviewDraft),
+                      disabled:
+                        feedReviewDraftBusy ||
+                        Boolean(feedReviewDraft) ||
+                        Boolean(feedReviewPublication),
                       onChange: updateFeedDraftViewSelection
                     }
                   : undefined
@@ -2369,6 +2644,7 @@ function HarvestPhotoAnalyzer({
                 disabled={
                   feedReviewDraftBusy ||
                   Boolean(feedReviewDraft) ||
+                  Boolean(feedReviewPublication) ||
                   selectedFeedDraftViews.length < 1
                 }
                 onPress={() => void createFeedReviewDraft()}
@@ -2376,38 +2652,144 @@ function HarvestPhotoAnalyzer({
                   photoStyles.secondaryButton,
                   (feedReviewDraftBusy ||
                     Boolean(feedReviewDraft) ||
+                    Boolean(feedReviewPublication) ||
                     selectedFeedDraftViews.length < 1) &&
                     photoStyles.disabled
                 ]}
               >
                 <Text style={photoStyles.secondaryButtonText}>
-                  {feedReviewDraft
-                    ? "Private Feed Draft Ready"
-                    : feedReviewDraftBusy
-                      ? "Creating Private Feed Draft..."
-                      : "Create Private Feed Review Draft"}
+                  {feedReviewPublication
+                    ? feedReviewPublication.status === "published"
+                      ? "Harvest Review Published"
+                      : "Finishing Publication Change..."
+                    : feedReviewDraft
+                      ? feedReviewDraft.cleanupPending
+                        ? "Public Photo Cleanup Pending"
+                        : "Private Feed Draft Ready"
+                      : feedReviewDraftBusy
+                        ? "Creating Private Feed Draft..."
+                        : "Create Private Feed Review Draft"}
                 </Text>
               </Pressable>
+              {feedReviewPublication ? (
+                <View accessibilityLabel="Published Harvest Feed review">
+                  <Text style={photoStyles.analysisTitle}>
+                    {feedReviewPublication.title}
+                  </Text>
+                  <Text style={photoStyles.feedback}>{feedReviewPublication.body}</Text>
+                  <Text style={photoStyles.help}>
+                    {feedReviewPublication.status === "published"
+                      ? `Published · Cannabis content · AI-assisted · Owner reviewed · ${feedReviewPublication.selectedViewCount} privacy-safe supplemental zoom image${feedReviewPublication.selectedViewCount === 1 ? "" : "s"}`
+                      : feedReviewPublication.status === "cleanup_pending"
+                        ? "Private · public photo cleanup still pending"
+                        : feedReviewPublication.status === "publishing"
+                          ? "Publication is still being safely completed. Reload this result shortly to verify its final state."
+                          : "The review is already hidden while GrowPath finishes removing its public photo copies."}
+                  </Text>
+                  {feedReviewPublication.status === "published" ? (
+                    <>
+                      <Pressable
+                        accessibilityRole="link"
+                        accessibilityLabel="View published Harvest review in Feed"
+                        onPress={() => void openPublishedFeedReview()}
+                        style={photoStyles.secondaryButton}
+                      >
+                        <Text style={photoStyles.secondaryButtonText}>View in Feed</Text>
+                      </Pressable>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Share published Harvest review"
+                        onPress={() => void sharePublishedFeedReview()}
+                        style={photoStyles.secondaryButton}
+                      >
+                        <Text style={photoStyles.secondaryButtonText}>
+                          Share Public Review
+                        </Text>
+                      </Pressable>
+                    </>
+                  ) : null}
+                  {feedReviewPublication.status === "published" ||
+                  feedReviewPublication.status === "cleanup_pending" ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        feedReviewPublication.status === "published"
+                          ? "Remove published Harvest review from Feed"
+                          : "Retry public Harvest photo cleanup"
+                      }
+                      accessibilityHint="Asks for confirmation, then hides the post before removing its privacy-safe public photo copies."
+                      disabled={feedReviewDraftBusy}
+                      onPress={confirmRemoveFeedReview}
+                      style={[
+                        photoStyles.secondaryButton,
+                        feedReviewDraftBusy && photoStyles.disabled
+                      ]}
+                    >
+                      <Text style={photoStyles.secondaryButtonText}>
+                        {feedReviewPublication.status === "published"
+                          ? "Remove from Feed"
+                          : "Retry Public Photo Cleanup"}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              ) : null}
               {feedReviewDraft ? (
                 <View accessibilityLabel="Private Harvest Feed draft preview">
                   <Text style={photoStyles.analysisTitle}>{feedReviewDraft.title}</Text>
                   <Text style={photoStyles.feedback}>{feedReviewDraft.body}</Text>
                   <Text style={photoStyles.help}>
-                    Draft · owner review only · {feedReviewDraft.selectedViewCount}{" "}
-                    selected supplemental zoom image
+                    {feedReviewDraft.cleanupPending
+                      ? "Private · public photo cleanup pending"
+                      : "Draft · owner review only"}{" "}
+                    · {feedReviewDraft.selectedViewCount} selected supplemental zoom image
                     {feedReviewDraft.selectedViewCount === 1 ? "" : "s"}. These images do
                     not count as independent samples. Nothing has been posted publicly or
                     sent to Facebook.
                   </Text>
+                  {feedReviewDraft.cleanupPending ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Retry public Harvest photo cleanup"
+                      accessibilityHint="Asks for confirmation, then retries removing only the privacy-safe public photo copies."
+                      disabled={feedReviewDraftBusy}
+                      onPress={confirmRemoveFeedReview}
+                      style={[
+                        photoStyles.secondaryButton,
+                        feedReviewDraftBusy && photoStyles.disabled
+                      ]}
+                    >
+                      <Text style={photoStyles.secondaryButtonText}>
+                        Retry Public Photo Cleanup
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Publish owner-reviewed Harvest result to Feed"
+                      accessibilityHint="Asks for confirmation, then publishes only the sanitized result and selected privacy-safe zoom copies."
+                      disabled={feedReviewDraftBusy}
+                      onPress={confirmPublishFeedReview}
+                      style={[
+                        photoStyles.secondaryButton,
+                        feedReviewDraftBusy && photoStyles.disabled
+                      ]}
+                    >
+                      <Text style={photoStyles.secondaryButtonText}>
+                        Publish Owner-Reviewed Result
+                      </Text>
+                    </Pressable>
+                  )}
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Delete private GrowPath Feed review draft"
                     accessibilityHint="Asks for confirmation, then deletes only this private owner-review draft."
-                    disabled={feedReviewDraftBusy}
+                    disabled={feedReviewDraftBusy || feedReviewDraft.cleanupPending}
                     onPress={confirmDeleteFeedReviewDraft}
                     style={[
                       photoStyles.secondaryButton,
-                      feedReviewDraftBusy && photoStyles.disabled
+                      (feedReviewDraftBusy || feedReviewDraft.cleanupPending) &&
+                        photoStyles.disabled
                     ]}
                   >
                     <Text style={photoStyles.secondaryButtonText}>

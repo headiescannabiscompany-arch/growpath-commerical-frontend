@@ -276,9 +276,57 @@ export type HarvestFeedReviewDraft = {
   contentLabels: string[];
   selectedViewCount: number;
   selectionDigest: string;
+  lifecycleRevision: number;
+  publicationState:
+    | "private"
+    | "preparing"
+    | "published"
+    | "revoking"
+    | "cleanup_pending";
+  cleanupPending: boolean;
   selectedViews: HarvestFeedDraftView[];
   createdAt?: string;
   updatedAt?: string;
+};
+
+export const HARVEST_FEED_PUBLISH_CONFIRMATION = "PUBLISH_CANNABIS_HARVEST_REVIEW";
+export const HARVEST_FEED_REVOKE_CONFIRMATION =
+  "REMOVE_CANNABIS_HARVEST_REVIEW_FROM_FEED";
+
+export type HarvestFeedPublicationMedia = {
+  kind: "harvest_inspection_view";
+  url: string;
+  label: string;
+  altText: string;
+  width: number | null;
+  height: number | null;
+  mimeType: "image/jpeg";
+};
+
+export type HarvestFeedReviewPublication = {
+  id: string;
+  status: "published" | "publishing" | "removing" | "cleanup_pending";
+  type: "education";
+  sourceType: "harvest_readiness";
+  title: string;
+  body: string;
+  contentLabels: string[];
+  media: HarvestFeedPublicationMedia[];
+  feedUrl: string;
+  socialPreviewUrl: string;
+  publishedAt?: string | null;
+  revokedAt?: string | null;
+  lifecycleRevision: number;
+  selectionDigest: string;
+  selectedViewCount: number;
+  cleanupPending: boolean;
+  cleanupError?: string;
+};
+
+export type HarvestFeedReviewPublicationPacket = {
+  success: true;
+  idempotentReplay: boolean;
+  publication: HarvestFeedReviewPublication;
 };
 
 export type HarvestFeedReviewDraftPacket = {
@@ -299,6 +347,8 @@ function normalizedHarvestFeedReviewDraft(value: any): HarvestFeedReviewDraftPac
   const draft = packet?.draft;
   const selectedViews = Array.isArray(draft?.selectedViews) ? draft.selectedViews : [];
   const selectedViewCount = Number(draft?.selectedViewCount);
+  const lifecycleRevision = Number(draft?.lifecycleRevision ?? 0);
+  const publicationState = String(draft?.publicationState || "private");
   if (
     packet?.success !== true ||
     !String(draft?.id || "").trim() ||
@@ -314,6 +364,11 @@ function normalizedHarvestFeedReviewDraft(value: any): HarvestFeedReviewDraftPac
     selectedViewCount > HARVEST_FEED_DRAFT_MAX_VIEWS ||
     selectedViews.length !== selectedViewCount ||
     !/^[a-f0-9]{64}$/.test(String(draft?.selectionDigest || "")) ||
+    !Number.isInteger(lifecycleRevision) ||
+    lifecycleRevision < 0 ||
+    !["private", "preparing", "published", "revoking", "cleanup_pending"].includes(
+      publicationState
+    ) ||
     selectedViews.some(
       (view: any) =>
         !String(view?.sourceEvidenceAssetId || "").trim() ||
@@ -335,8 +390,110 @@ function normalizedHarvestFeedReviewDraft(value: any): HarvestFeedReviewDraftPac
   return {
     success: true,
     idempotentReplay: packet?.idempotentReplay === true,
-    draft: { ...draft, selectedViewCount, selectedViews }
+    draft: {
+      ...draft,
+      selectedViewCount,
+      selectedViews,
+      lifecycleRevision,
+      publicationState,
+      cleanupPending:
+        draft?.cleanupPending === true || publicationState === "cleanup_pending"
+    }
   } as HarvestFeedReviewDraftPacket;
+}
+
+function harvestPublicMediaUrl(value: unknown) {
+  const raw = String(value || "").trim();
+  return /^\/api\/commercial\/feed\/[a-f0-9]{24}\/harvest-media\/[a-f0-9-]+\.jpg$/i.test(
+    raw
+  );
+}
+
+function harvestPublicationLink(value: unknown, expectedPath: string) {
+  try {
+    const link = new URL(String(value || ""));
+    return (
+      ["http:", "https:"].includes(link.protocol) &&
+      !link.username &&
+      !link.password &&
+      link.pathname === expectedPath &&
+      !link.hash
+    );
+  } catch {
+    return false;
+  }
+}
+
+function normalizedHarvestFeedPublication(
+  value: any
+): HarvestFeedReviewPublicationPacket {
+  const packet = value?.data ?? value;
+  const publication = packet?.publication;
+  const status = String(publication?.status || "");
+  const media = Array.isArray(publication?.media) ? publication.media : [];
+  const lifecycleRevision = Number(publication?.lifecycleRevision);
+  const selectedViewCount = Number(publication?.selectedViewCount);
+  const isPublished = status === "published";
+  const publicationId = String(publication?.id || "");
+  const labels = new Set(
+    (Array.isArray(publication?.contentLabels) ? publication.contentLabels : []).map(
+      (label: unknown) =>
+        String(label || "")
+          .trim()
+          .toLowerCase()
+    )
+  );
+  if (
+    packet?.success !== true ||
+    !/^[a-f0-9]{24}$/i.test(publicationId) ||
+    !["published", "publishing", "removing", "cleanup_pending"].includes(status) ||
+    publication?.type !== "education" ||
+    publication?.sourceType !== "harvest_readiness" ||
+    !String(publication?.title || "").trim() ||
+    !String(publication?.body || "").trim() ||
+    !Array.isArray(publication?.contentLabels) ||
+    (isPublished &&
+      !["cannabis", "harvest-readiness", "ai-assisted", "owner-reviewed"].every((label) =>
+        labels.has(label)
+      )) ||
+    !Number.isInteger(lifecycleRevision) ||
+    lifecycleRevision < 1 ||
+    !Number.isInteger(selectedViewCount) ||
+    selectedViewCount < 1 ||
+    selectedViewCount > HARVEST_FEED_DRAFT_MAX_VIEWS ||
+    !/^[a-f0-9]{64}$/.test(String(publication?.selectionDigest || "")) ||
+    (isPublished &&
+      (!harvestPublicationLink(publication?.feedUrl, "/feed") ||
+        new URL(publication.feedUrl).searchParams.get("campaignId") !== publicationId ||
+        !harvestPublicationLink(
+          publication?.socialPreviewUrl,
+          `/api/commercial/feed/${publicationId}/share`
+        ) ||
+        media.length !== selectedViewCount)) ||
+    (!isPublished && media.length !== 0) ||
+    media.some(
+      (item: any) =>
+        item?.kind !== "harvest_inspection_view" ||
+        item?.mimeType !== "image/jpeg" ||
+        !harvestPublicMediaUrl(item?.url)
+    )
+  ) {
+    throw new Error(
+      "GrowPath did not return a complete Harvest Feed publication status."
+    );
+  }
+  return {
+    success: true,
+    idempotentReplay: packet?.idempotentReplay === true,
+    publication: {
+      ...publication,
+      status,
+      media,
+      lifecycleRevision,
+      selectedViewCount,
+      cleanupPending: publication?.cleanupPending === true || status === "cleanup_pending"
+    }
+  } as HarvestFeedReviewPublicationPacket;
 }
 
 function normalizedTrichomeVisionResult(value: any): TrichomeVisionResult {
@@ -834,6 +991,105 @@ export async function getHarvestFeedReviewDraft(
     }
   );
   return normalizedHarvestFeedReviewDraft(response);
+}
+
+export async function getHarvestFeedReviewPublication(
+  operationId: string,
+  workspace: HarvestFeedReviewDraftWorkspace,
+  options: { signal?: AbortSignal } = {}
+) {
+  const id = String(operationId || "").trim();
+  if (!id) throw new Error("A completed Deep Harvest review is required.");
+  const response = await apiRequest<any>(
+    `/api/ai/harvest/trichomes/operations/${encodeURIComponent(id)}/feed-publication`,
+    {
+      signal: options.signal,
+      timeoutMs: 30000,
+      retries: 0,
+      params: workspace
+    }
+  );
+  return normalizedHarvestFeedPublication(response);
+}
+
+type HarvestFeedPublicationIdentity = {
+  draftId: string;
+  selectionDigest: string;
+  expectedLifecycleRevision: number;
+};
+
+function verifiedPublicationIdentity(
+  identity: HarvestFeedPublicationIdentity
+): HarvestFeedPublicationIdentity {
+  const draftId = String(identity?.draftId || "").trim();
+  const selectionDigest = String(identity?.selectionDigest || "")
+    .trim()
+    .toLowerCase();
+  const expectedLifecycleRevision = Number(identity?.expectedLifecycleRevision);
+  if (
+    !/^[a-f0-9]{24}$/i.test(draftId) ||
+    !/^[a-f0-9]{64}$/.test(selectionDigest) ||
+    !Number.isInteger(expectedLifecycleRevision) ||
+    expectedLifecycleRevision < 0
+  ) {
+    throw new Error("Reload the exact Harvest Feed review before changing it.");
+  }
+  return { draftId, selectionDigest, expectedLifecycleRevision };
+}
+
+export async function publishHarvestFeedReview(
+  operationId: string,
+  workspace: HarvestFeedReviewDraftWorkspace,
+  identity: HarvestFeedPublicationIdentity,
+  options: { signal?: AbortSignal } = {}
+) {
+  const id = String(operationId || "").trim();
+  if (!id) throw new Error("A completed Deep Harvest review is required.");
+  const response = await apiRequest<any>(
+    `/api/ai/harvest/trichomes/operations/${encodeURIComponent(id)}/feed-publication/publish`,
+    {
+      method: "POST",
+      signal: options.signal,
+      timeoutMs: 60000,
+      retries: 0,
+      body: {
+        ...workspace,
+        ...verifiedPublicationIdentity(identity),
+        confirmation: HARVEST_FEED_PUBLISH_CONFIRMATION
+      }
+    }
+  );
+  return normalizedHarvestFeedPublication(response);
+}
+
+export async function revokeHarvestFeedReview(
+  operationId: string,
+  workspace: HarvestFeedReviewDraftWorkspace,
+  identity: HarvestFeedPublicationIdentity,
+  options: { signal?: AbortSignal } = {}
+) {
+  const id = String(operationId || "").trim();
+  if (!id) throw new Error("A completed Deep Harvest review is required.");
+  const response = await apiRequest<any>(
+    `/api/ai/harvest/trichomes/operations/${encodeURIComponent(id)}/feed-publication/revoke`,
+    {
+      method: "POST",
+      signal: options.signal,
+      timeoutMs: 60000,
+      retries: 0,
+      body: {
+        ...workspace,
+        ...verifiedPublicationIdentity(identity),
+        confirmation: HARVEST_FEED_REVOKE_CONFIRMATION
+      }
+    }
+  );
+  const draftPacket = normalizedHarvestFeedReviewDraft(response);
+  return {
+    ...draftPacket,
+    cleanupPending:
+      response?.cleanupPending === true || response?.data?.cleanupPending === true
+  };
 }
 
 export function submitHarvestTrichomeFeedback(input: HarvestTrichomeFeedbackInput) {
