@@ -5,9 +5,14 @@ import VideoDetailRoute from "@/app/videos/[videoId]";
 
 const mockGetVideo = jest.fn();
 const mockListVideoComments = jest.fn();
+const mockUpdateVideo = jest.fn();
+const mockPersistImageUri = jest.fn();
+const mockRequestMediaLibraryPermissions = jest.fn();
+const mockLaunchImageLibrary = jest.fn();
 let mockReportProps: any = null;
 let mockLessonMediaCardProps: any = null;
 let mockAppPageProps: any = null;
+let mockPublicShareProps: any = null;
 let mockUserId = "viewer-1";
 const mockPush = jest.fn();
 
@@ -26,8 +31,29 @@ jest.mock("@/auth/AuthContext", () => ({
 jest.mock("@/api/videos", () => ({
   getVideo: (...args: any[]) => mockGetVideo(...args),
   listVideoComments: (...args: any[]) => mockListVideoComments(...args),
+  updateVideo: (...args: any[]) => mockUpdateVideo(...args),
   createVideoComment: jest.fn(),
   deleteVideoComment: jest.fn()
+}));
+
+jest.mock("@/utils/photoUploads", () => ({
+  persistImageUri: (...args: any[]) => mockPersistImageUri(...args),
+  resolveImageUri: (value: string) => value
+}));
+
+jest.mock("expo-image-picker", () => ({
+  MediaTypeOptions: { Images: "Images" },
+  requestMediaLibraryPermissionsAsync: (...args: any[]) =>
+    mockRequestMediaLibraryPermissions(...args),
+  launchImageLibraryAsync: (...args: any[]) => mockLaunchImageLibrary(...args)
+}));
+
+jest.mock("@/components/sharing/PublicShareActions", () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockPublicShareProps = props;
+    return null;
+  }
 }));
 
 jest.mock("@/components/FollowButton", () => () => null);
@@ -85,7 +111,9 @@ const video = {
   durationSeconds: 90,
   tags: [],
   growInterests: [],
-  cannabisSpecific: false
+  cannabisSpecific: false,
+  socialPreviewUrl:
+    "https://api.growpathai.com/api/videos/64b7f0a1c2d3e4f567890123/share?v=abc"
 };
 
 describe("VideoDetailRoute reporting", () => {
@@ -94,9 +122,19 @@ describe("VideoDetailRoute reporting", () => {
     mockReportProps = null;
     mockLessonMediaCardProps = null;
     mockAppPageProps = null;
+    mockPublicShareProps = null;
     mockUserId = "viewer-1";
     mockGetVideo.mockResolvedValue(video);
     mockListVideoComments.mockResolvedValue([]);
+    mockPersistImageUri.mockResolvedValue("/uploads/video-thumbnails/selected.jpg");
+    mockRequestMediaLibraryPermissions.mockResolvedValue({ granted: true });
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: "file:///selected-thumbnail.jpg" }]
+    });
+    mockUpdateVideo.mockResolvedValue({
+      video: { ...video, thumbnailUrl: "/uploads/video-thumbnails/selected.jpg" }
+    });
   });
 
   it("uses exactly one shared back action with a videos fallback", async () => {
@@ -174,6 +212,36 @@ describe("VideoDetailRoute reporting", () => {
           playbackUrl: "https://r2.example/signed-playback"
         })
       })
+    );
+  });
+
+  it("lets the owner replace the thumbnail used by the existing social share action", async () => {
+    mockUserId = "owner-1";
+    render(<VideoDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Upload thumbnail for this video")).toBeTruthy()
+    );
+    expect(mockPublicShareProps).toEqual(
+      expect.objectContaining({
+        path: "/videos/video-1",
+        socialPreviewUrl:
+          "https://api.growpathai.com/api/videos/64b7f0a1c2d3e4f567890123/share?v=abc"
+      })
+    );
+
+    fireEvent.press(screen.getByLabelText("Upload thumbnail for this video"));
+
+    await waitFor(() =>
+      expect(mockPersistImageUri).toHaveBeenCalledWith("file:///selected-thumbnail.jpg")
+    );
+    expect(mockUpdateVideo).toHaveBeenCalledWith("video-1", {
+      thumbnailUrl: "/uploads/video-thumbnails/selected.jpg"
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByText("Thumbnail saved. New social shares will use this image.")
+      ).toBeTruthy()
     );
   });
 });
