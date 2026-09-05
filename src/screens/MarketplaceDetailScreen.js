@@ -1,7 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 
-import { getMarketplaceContent, purchaseContent } from "../api/marketplace";
+import {
+  getMarketplaceContent,
+  getPurchaseStatus,
+  purchaseContent,
+  reportMarketplacePaymentIssue,
+  requestMarketplaceRefund
+} from "../api/marketplace";
+import BuyerPaymentReviewCard from "../components/commerce/BuyerPaymentReviewCard";
 import ScreenContainer from "../components/ScreenContainer";
 import { radius } from "../theme/theme";
 import { MarketplaceDetailContent } from "./MarketplaceScreen";
@@ -24,6 +38,7 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
   const [loading, setLoading] = useState(!initialContent && !!id);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [purchaseStatus, setPurchaseStatus] = useState(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -42,6 +57,22 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
     load();
   }, [load]);
 
+  const refreshPurchaseStatus = useCallback(async () => {
+    if (!id) return null;
+    try {
+      const status = await getPurchaseStatus(id);
+      setPurchaseStatus(status);
+      return status;
+    } catch {
+      setPurchaseStatus(null);
+      return null;
+    }
+  }, [id]);
+
+  useEffect(() => {
+    void refreshPurchaseStatus();
+  }, [refreshPurchaseStatus]);
+
   async function handlePurchase() {
     if (!id) {
       setFeedback("This storefront offer is missing an id.");
@@ -58,6 +89,7 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
         setFeedback(purchase?.message || "Storefront offer added.");
       }
       await load();
+      await refreshPurchaseStatus();
     } catch (error) {
       setFeedback(error?.message || "Unable to purchase this storefront offer.");
     } finally {
@@ -90,7 +122,15 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
           <Text style={styles.emptyText}>Loading storefront offer detail...</Text>
         </View>
       ) : item ? (
-        <MarketplaceDetailContent item={item} />
+        <>
+          <MarketplaceDetailContent item={item} />
+          <BuyerPaymentReviewCard
+            status={purchaseStatus}
+            onRequestRefund={(input) => requestMarketplaceRefund(id, input)}
+            onReportPaymentIssue={(input) => reportMarketplacePaymentIssue(id, input)}
+            onRefresh={refreshPurchaseStatus}
+          />
+        </>
       ) : (
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>Storefront offer not found.</Text>

@@ -2,12 +2,21 @@ import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 
 export type CoursePaymentStatus = {
+  recordId?: string | null;
+  amountCents?: number;
+  currency?: string;
+  refundedAmountCents?: number;
   enrolled?: boolean;
   isEnrolled?: boolean;
   paymentStatus?: string;
   checkoutStatus?: string;
   refundStatus?: string;
+  refundRequestStatus?: string;
+  refundLifecycleStatus?: string;
   disputeStatus?: string;
+  providerDisputeStatus?: string;
+  disputeReportStatus?: string;
+  connectRecoveryStatus?: string;
   earningsStatus?: string;
   enrollmentId?: string;
 };
@@ -64,18 +73,30 @@ export async function getCoursePaymentStatus(
   return response?.data ?? response ?? {};
 }
 
-export async function requestCourseRefund(courseId: string, reason: string) {
+export type CoursePaymentReviewInput = {
+  recordId: string;
+  expectedRefundedAmountCents: number;
+  reason: string;
+};
+
+export async function requestCourseRefund(
+  courseId: string,
+  input: CoursePaymentReviewInput
+) {
   return apiRequest(apiRoutes.PAYMENTS.REFUND_REQUEST(courseId), {
     method: "POST",
     headers: { "Idempotency-Key": idempotencyKey("refund", courseId) },
-    body: { reason }
+    body: input
   });
 }
 
-export async function openCourseDispute(courseId: string, reason: string) {
+export async function openCourseDispute(
+  courseId: string,
+  input: CoursePaymentReviewInput
+) {
   return apiRequest(apiRoutes.PAYMENTS.DISPUTE(courseId), {
     method: "POST",
     headers: { "Idempotency-Key": idempotencyKey("dispute", courseId) },
-    body: { reason }
+    body: input
   });
 }

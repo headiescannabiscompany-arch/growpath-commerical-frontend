@@ -14,7 +14,13 @@ import {
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 
-import { checkoutProduct, getProductPurchaseStatus } from "@/api/products";
+import {
+  checkoutProduct,
+  getProductPurchaseStatus,
+  reportProductPaymentIssue,
+  requestProductRefund,
+  type StorefrontPurchaseStatus
+} from "@/api/products";
 import { API_URL } from "@/api/apiRequest";
 import {
   checkPublicProductAccess,
@@ -29,6 +35,7 @@ import { useAuth } from "@/auth/AuthContext";
 import ReportModal from "@/components/ReportModal";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import BuyerPaymentReviewCard from "@/components/commerce/BuyerPaymentReviewCard";
 import ProductPurchaseIntentControl from "@/components/commercial/ProductPurchaseIntentControl";
 import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { publicGrowInterests } from "@/utils/publicCommerce";
@@ -224,6 +231,9 @@ export default function PublicProductRoute() {
   const [accessResult, setAccessResult] = useState<PublicProductAccessResult | null>(
     null
   );
+  const [purchaseStatus, setPurchaseStatus] = useState<StorefrontPurchaseStatus | null>(
+    null
+  );
 
   const load = useCallback(async () => {
     if (!slug) return;
@@ -301,6 +311,7 @@ export default function PublicProductRoute() {
     );
     void getProductPurchaseStatus(checkoutProductId)
       .then((status) => {
+        setPurchaseStatus(status);
         if (status.paymentStatus === "paid") {
           setFeedback(
             status.fulfillmentStatus === "fulfilled"
@@ -343,6 +354,40 @@ export default function PublicProductRoute() {
     .filter((item) => productKey(item) !== productKey(product))
     .slice(0, 3);
   const productId = productKey(product);
+  const refreshProductPaymentStatus = useCallback(async () => {
+    if (!auth.isAuthed || !productId) {
+      setPurchaseStatus(null);
+      return null;
+    }
+    try {
+      const status = await getProductPurchaseStatus(productId);
+      setPurchaseStatus(status);
+      return status;
+    } catch {
+      setPurchaseStatus(null);
+      return null;
+    }
+  }, [auth.isAuthed, productId]);
+
+  useEffect(() => {
+    let active = true;
+    if (!auth.isAuthed || !productId) {
+      setPurchaseStatus(null);
+      return () => {
+        active = false;
+      };
+    }
+    void getProductPurchaseStatus(productId)
+      .then((status) => {
+        if (active) setPurchaseStatus(status);
+      })
+      .catch(() => {
+        if (active) setPurchaseStatus(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [auth.isAuthed, productId]);
   const productLineIds = [
     product?.productLineId,
     product?.linkedProductLineId,
@@ -685,6 +730,13 @@ export default function PublicProductRoute() {
               ) : null}
             </View>
           </AppCard>
+
+          <BuyerPaymentReviewCard
+            status={purchaseStatus}
+            onRequestRefund={(input) => requestProductRefund(productId, input)}
+            onReportPaymentIssue={(input) => reportProductPaymentIssue(productId, input)}
+            onRefresh={refreshProductPaymentStatus}
+          />
 
           <PublicShareActions
             heading="Share this product"

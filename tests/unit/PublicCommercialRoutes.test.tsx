@@ -25,6 +25,8 @@ const mockRecordCommercialAnalyticsEvent = jest.fn();
 const mockStartCourseCheckout = jest.fn();
 const mockSubmitProductPurchaseIntent = jest.fn();
 const mockGetProductPurchaseStatus = jest.fn();
+const mockRequestProductRefund = jest.fn();
+const mockReportProductPaymentIssue = jest.fn();
 const mockLinkHrefs: string[] = [];
 let mockRouteParams: Record<string, string> = {
   slug: "living-soil-labs",
@@ -84,6 +86,8 @@ jest.mock("@/api/storefront", () => ({
 jest.mock("@/api/products", () => ({
   checkoutProduct: jest.fn(),
   getProductPurchaseStatus: (...args: any[]) => mockGetProductPurchaseStatus(...args),
+  reportProductPaymentIssue: (...args: any[]) => mockReportProductPaymentIssue(...args),
+  requestProductRefund: (...args: any[]) => mockRequestProductRefund(...args),
   submitProductPurchaseIntent: (...args: any[]) =>
     mockSubmitProductPurchaseIntent(...args)
 }));
@@ -251,6 +255,26 @@ const publicPayload = {
   ]
 };
 
+const paidProductPurchaseStatus = {
+  productId: "product-1",
+  recordId: "507f191e810c19729de86001",
+  amountCents: 2500,
+  currency: "usd",
+  paymentStatus: "paid",
+  checkoutStatus: "completed",
+  fulfillmentStatus: "unfulfilled",
+  refundStatus: "none",
+  refundLifecycleStatus: "none",
+  refundRequestStatus: "none",
+  refundedAmountCents: 0,
+  disputeStatus: "none",
+  providerDisputeStatus: "none",
+  disputeReportStatus: "none",
+  connectRecoveryStatus: "not_attempted",
+  inventoryStatus: "applied",
+  accountingStatus: "applied"
+};
+
 describe("public commercial routes", () => {
   beforeEach(() => {
     mockFetchPublicStorefront.mockReset();
@@ -259,6 +283,8 @@ describe("public commercial routes", () => {
     mockStartCourseCheckout.mockReset();
     mockSubmitProductPurchaseIntent.mockReset();
     mockGetProductPurchaseStatus.mockReset();
+    mockRequestProductRefund.mockReset();
+    mockReportProductPaymentIssue.mockReset();
     mockLinkHrefs.length = 0;
     mockRouteParams = {
       slug: "living-soil-labs",
@@ -271,17 +297,12 @@ describe("public commercial routes", () => {
       response: "yes",
       summary: { yes: 5, maybe: 2, no: 1, total: 8 }
     });
-    mockGetProductPurchaseStatus.mockResolvedValue({
-      productId: "product-1",
-      paymentStatus: "paid",
-      checkoutStatus: "completed",
-      fulfillmentStatus: "unfulfilled",
-      refundStatus: "none",
-      refundedAmountCents: 0,
-      disputeStatus: "none",
-      inventoryStatus: "applied",
-      accountingStatus: "applied"
+    mockGetProductPurchaseStatus.mockImplementation(() => new Promise(() => {}));
+    mockRequestProductRefund.mockResolvedValue({
+      accepted: true,
+      message: "Refund request recorded for GrowPath payment review."
     });
+    mockReportProductPaymentIssue.mockResolvedValue({ accepted: true });
     mockFetchPublicStorefront.mockResolvedValue(publicPayload);
     mockCheckPublicProductAccess.mockResolvedValue({
       allowed: false,
@@ -465,6 +486,7 @@ describe("public commercial routes", () => {
   });
 
   it("verifies a storefront Checkout return without starting another Checkout", async () => {
+    mockGetProductPurchaseStatus.mockResolvedValue(paidProductPurchaseStatus);
     mockRouteParams = {
       slug: "living-soil-labs",
       productId: "product-1",
@@ -679,6 +701,29 @@ describe("public commercial routes", () => {
       )
     );
     openUrlSpy.mockRestore();
+  });
+
+  it("binds product refund support to the exact recorded Storefront order", async () => {
+    mockGetProductPurchaseStatus.mockResolvedValue(paidProductPurchaseStatus);
+    const screen = render(<PublicProductRoute />);
+
+    await waitFor(() =>
+      expect(mockGetProductPurchaseStatus).toHaveBeenCalledWith("product-1")
+    );
+    fireEvent.press(screen.getByLabelText("Open payment support"));
+    fireEvent.changeText(
+      screen.getByLabelText("Refund request reason"),
+      "The delivered product did not match the listing."
+    );
+    fireEvent.press(screen.getByText("Request refund review"));
+
+    await waitFor(() =>
+      expect(mockRequestProductRefund).toHaveBeenCalledWith("product-1", {
+        recordId: "507f191e810c19729de86001",
+        expectedRefundedAmountCents: 0,
+        reason: "The delivered product did not match the listing."
+      })
+    );
   });
 
   it("keeps a semantic product heading and shared recovery path on load failure", async () => {

@@ -18,7 +18,9 @@ export const MARKETPLACE_ROUTES = {
   UPDATE_PRICING: (contentId) => `/api/marketplace/${enc(contentId)}/pricing`,
   DELETE_CONTENT: (contentId) => `/api/marketplace/${enc(contentId)}`,
   PURCHASE: (contentId) => `/api/marketplace/${enc(contentId)}/purchase`,
-  PURCHASE_STATUS: (contentId) => `/api/marketplace/${enc(contentId)}/purchase-status`
+  PURCHASE_STATUS: (contentId) => `/api/marketplace/${enc(contentId)}/purchase-status`,
+  REFUND_REQUEST: (contentId) => `/api/marketplace/${enc(contentId)}/refund-request`,
+  DISPUTE_REPORT: (contentId) => `/api/marketplace/${enc(contentId)}/dispute-report`
 };
 
 function rows(payload) {
@@ -235,4 +237,18 @@ export const getPurchaseStatus = async (contentId) => {
   } catch (error) {
     throw new Error(`Failed to verify storefront offer purchase: ${error.message}`);
   }
+};
+
+export const requestMarketplaceRefund = async (contentId, input) => {
+  return apiRequest(MARKETPLACE_ROUTES.REFUND_REQUEST(contentId), {
+    method: "POST",
+    body: input
+  });
+};
+
+export const reportMarketplacePaymentIssue = async (contentId, input) => {
+  return apiRequest(MARKETPLACE_ROUTES.DISPUTE_REPORT(contentId), {
+    method: "POST",
+    body: input
+  });
 };

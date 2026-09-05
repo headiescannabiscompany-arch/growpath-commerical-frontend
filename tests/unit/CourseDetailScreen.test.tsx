@@ -314,10 +314,14 @@ describe("CourseDetailScreen learner player", () => {
     mockGetEnrollmentStatus.mockResolvedValue({ enrolled: true });
     mockGetCoursePaymentStatus.mockResolvedValue({
       enrolled: true,
+      recordId: "507f191e810c19729de86001",
+      refundedAmountCents: 0,
       paymentStatus: "paid",
       checkoutStatus: "recorded",
       refundStatus: "none",
-      disputeStatus: "none"
+      refundRequestStatus: "none",
+      disputeStatus: "none",
+      disputeReportStatus: "none"
     });
 
     const screen = render(
@@ -337,10 +341,11 @@ describe("CourseDetailScreen learner player", () => {
     fireEvent.press(screen.getByText("Report Payment Issue"));
 
     await waitFor(() =>
-      expect(mockOpenCourseDispute).toHaveBeenCalledWith(
-        "course-paid",
-        "I do not recognize this payment."
-      )
+      expect(mockOpenCourseDispute).toHaveBeenCalledWith("course-paid", {
+        recordId: "507f191e810c19729de86001",
+        expectedRefundedAmountCents: 0,
+        reason: "I do not recognize this payment."
+      })
     );
     expect(
       await screen.findByText(

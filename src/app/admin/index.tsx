@@ -19,6 +19,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import ComplimentaryGrantsAdminCard from "@/features/admin/ComplimentaryGrantsAdminCard";
 import AdminAccountBillingVerification from "@/features/admin/AdminAccountBillingVerification";
+import AdminCommercePaymentReviewCard from "@/features/admin/AdminCommercePaymentReviewCard";
 import AdminEvidenceVaultCard from "@/features/admin/AdminEvidenceVaultCard";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -2660,6 +2661,8 @@ export default function PlatformAdminRoute() {
       </AppCard>
 
       {showComplimentaryAccess ? <ComplimentaryGrantsAdminCard /> : null}
+
+      <AdminCommercePaymentReviewCard />
 
       <AdminEvidenceVaultCard
         users={orderedUsers.map((item) => ({

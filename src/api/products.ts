@@ -152,12 +152,20 @@ export async function checkoutProduct(
 
 export type StorefrontPurchaseStatus = {
   productId: string;
+  recordId: string | null;
+  amountCents: number;
+  currency: string;
   paymentStatus: string;
   checkoutStatus: string;
   fulfillmentStatus: string | null;
   refundStatus: string;
+  refundLifecycleStatus: string;
+  refundRequestStatus: string;
   refundedAmountCents: number;
   disputeStatus: string;
+  providerDisputeStatus: string;
+  disputeReportStatus: string;
+  connectRecoveryStatus: string;
   inventoryStatus: string | null;
   accountingStatus: string | null;
 };
@@ -167,5 +175,31 @@ export async function getProductPurchaseStatus(
 ): Promise<StorefrontPurchaseStatus> {
   return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}/purchase-status`, {
     method: "GET"
+  });
+}
+
+export type BuyerStorefrontPaymentReviewInput = {
+  recordId: string;
+  expectedRefundedAmountCents: number;
+  reason: string;
+};
+
+export async function requestProductRefund(
+  productId: string,
+  input: BuyerStorefrontPaymentReviewInput
+) {
+  return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}/refund-request`, {
+    method: "POST",
+    body: input
+  });
+}
+
+export async function reportProductPaymentIssue(
+  productId: string,
+  input: BuyerStorefrontPaymentReviewInput
+) {
+  return apiRequest(`${PRODUCTS_BASE}/${encodeURIComponent(productId)}/dispute-report`, {
+    method: "POST",
+    body: input
   });
 }

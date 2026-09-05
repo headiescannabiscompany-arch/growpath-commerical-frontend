@@ -15,6 +15,7 @@ const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockLogout = jest.fn();
 const mockComplimentaryAdminMount = jest.fn();
+const mockCommercePaymentReviewMount = jest.fn();
 let mockRouteParams: Record<string, string> = {};
 let mockRole = "admin";
 let mockThemeMode: "day" | "night" = "night";
@@ -39,6 +40,14 @@ jest.mock("@/features/admin/ComplimentaryGrantsAdminCard", () => {
   return function MockComplimentaryGrantsAdminCard() {
     mockComplimentaryAdminMount();
     return React.createElement(Text, null, "Complimentary access controls");
+  };
+});
+jest.mock("@/features/admin/AdminCommercePaymentReviewCard", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return function MockAdminCommercePaymentReviewCard() {
+    mockCommercePaymentReviewMount();
+    return React.createElement(Text, null, "Commerce payment review controls");
   };
 });
 jest.mock("@/theme/appTheme", () => {
@@ -535,6 +544,8 @@ describe("PlatformAdminRoute", () => {
     expect(screen.getByText(/AI amber 1% to 23%/)).toBeTruthy();
     expect(screen.getByText(/owner visible-area estimate 30%/)).toBeTruthy();
     expect(screen.getByText(/Not ground truth/)).toBeTruthy();
+    expect(mockCommercePaymentReviewMount).toHaveBeenCalled();
+    expect(screen.getByText("Commerce payment review controls")).toBeTruthy();
 
     expect(
       screen.getByRole("button", { name: "Email notice to member@example.com" })
@@ -1455,6 +1466,7 @@ describe("PlatformAdminRoute", () => {
         ).color
       ).toBe(palette.textMuted);
       expect(mockApiRequest).not.toHaveBeenCalled();
+      expect(mockCommercePaymentReviewMount).not.toHaveBeenCalled();
 
       fireEvent.press(screen.getByText("Return to GrowPathAI"));
       expect(mockReplace).toHaveBeenCalledWith("/home");

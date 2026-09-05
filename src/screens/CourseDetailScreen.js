@@ -186,7 +186,14 @@ export default function CourseDetailScreen({ route, navigation = null }) {
     "not_started";
   const normalizedPaymentStatus = String(paymentStatus).toLowerCase();
   const refundStatus = String(enrollment?.refundStatus || "none").toLowerCase();
+  const refundRequestStatus = String(
+    enrollment?.refundRequestStatus ||
+      (refundStatus === "requested" ? "requested" : "none")
+  ).toLowerCase();
   const disputeStatus = String(enrollment?.disputeStatus || "none").toLowerCase();
+  const disputeReportStatus = String(
+    enrollment?.disputeReportStatus || "none"
+  ).toLowerCase();
   const viewerId = String(auth.user?._id || auth.user?.id || "");
   const ownerId = String(
     course?.userId ||
@@ -204,11 +211,18 @@ export default function CourseDetailScreen({ route, navigation = null }) {
     (enrolled ||
       ["paid", "refunded", "disputed"].includes(normalizedPaymentStatus) ||
       refundStatus !== "none" ||
-      disputeStatus !== "none");
+      refundRequestStatus !== "none" ||
+      disputeStatus !== "none" ||
+      disputeReportStatus !== "none");
   const canOpenLessons =
     !isPaidCourse || ownsCourse || enrolled || course?._viewerHasAccess === true;
-  const canRequestRefund = !["requested", "refunded"].includes(refundStatus);
-  const canReportPaymentIssue = !["reported", "open"].includes(disputeStatus);
+  const canRequestRefund =
+    Boolean(enrollment?.recordId) &&
+    refundRequestStatus !== "requested" &&
+    refundStatus !== "refunded" &&
+    enrollment?.refundLifecycleStatus !== "full";
+  const canReportPaymentIssue =
+    Boolean(enrollment?.recordId) && disputeReportStatus !== "reported";
 
   useEffect(() => {
     const cents = Number(course?.priceCents || 0);
@@ -228,15 +242,24 @@ export default function CourseDetailScreen({ route, navigation = null }) {
     setFeedback("");
     try {
       const id = courseId || rowId(initialCourse);
-      const [courseResponse, statusResponse, reviewsResponse, notesResponse] =
-        await Promise.all([
-          id ? getCourse(id) : Promise.resolve(initialCourse),
-          id ? getEnrollmentStatus(id).catch(() => null) : Promise.resolve(null),
-          id ? getReviews(id).catch(() => []) : Promise.resolve([]),
-          id ? getCourseLearnerNotes(id).catch(() => null) : Promise.resolve(null)
-        ]);
+      const [
+        courseResponse,
+        statusResponse,
+        paymentResponse,
+        reviewsResponse,
+        notesResponse
+      ] = await Promise.all([
+        id ? getCourse(id) : Promise.resolve(initialCourse),
+        id ? getEnrollmentStatus(id).catch(() => null) : Promise.resolve(null),
+        id ? getCoursePaymentStatus(id).catch(() => null) : Promise.resolve(null),
+        id ? getReviews(id).catch(() => []) : Promise.resolve([]),
+        id ? getCourseLearnerNotes(id).catch(() => null) : Promise.resolve(null)
+      ]);
       setCourse(normalizeCourse(courseResponse, initialCourse));
-      setEnrollment(statusResponse?.data || statusResponse || null);
+      setEnrollment({
+        ...(paymentResponse || {}),
+        ...(statusResponse?.data || statusResponse || {})
+      });
       setReviews(normalizeList(reviewsResponse, "reviews"));
       const noteRows = normalizeList(notesResponse, "notes");
       setLearnerNotes(
@@ -542,7 +565,11 @@ export default function CourseDetailScreen({ route, navigation = null }) {
     if (!loadedCourseId || !refundReason.trim()) return;
     setSaving(true);
     try {
-      await requestCourseRefund(loadedCourseId, refundReason.trim());
+      await requestCourseRefund(loadedCourseId, {
+        recordId: String(enrollment?.recordId || ""),
+        expectedRefundedAmountCents: Number(enrollment?.refundedAmountCents || 0),
+        reason: refundReason.trim()
+      });
       setRefundReason("");
       setFeedback(
         "Refund request submitted. Final state comes from backend payment status."
@@ -559,7 +586,11 @@ export default function CourseDetailScreen({ route, navigation = null }) {
     if (!loadedCourseId || !disputeReason.trim()) return;
     setSaving(true);
     try {
-      await openCourseDispute(loadedCourseId, disputeReason.trim());
+      await openCourseDispute(loadedCourseId, {
+        recordId: String(enrollment?.recordId || ""),
+        expectedRefundedAmountCents: Number(enrollment?.refundedAmountCents || 0),
+        reason: disputeReason.trim()
+      });
       setDisputeReason("");
       setFeedback(
         "Payment issue sent to GrowPath support. This does not open a bank or card dispute."
@@ -813,7 +844,9 @@ export default function CourseDetailScreen({ route, navigation = null }) {
           </Text>
           <Text style={styles.meta}>Payment: {String(paymentStatus)}</Text>
           <Text style={styles.meta}>Refund: {refundStatus}</Text>
-          <Text style={styles.meta}>Payment support: {disputeStatus}</Text>
+          <Text style={styles.meta}>
+            Payment support: {disputeReportStatus} · provider dispute: {disputeStatus}
+          </Text>
           {!hasPaidPurchase ? (
             <Text style={styles.meta}>
               No completed payment is recorded for this course.
@@ -1248,7 +1281,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             accessibilityRole="button"
           >
             <Text style={styles.secondaryText}>
-              {refundStatus === "requested"
+              {refundRequestStatus === "requested"
                 ? "Refund Requested"
                 : refundStatus === "refunded"
                   ? "Refunded"
@@ -1275,7 +1308,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             accessibilityRole="button"
           >
             <Text style={styles.secondaryText}>
-              {["reported", "open"].includes(disputeStatus)
+              {disputeReportStatus === "reported"
                 ? "Payment Issue Reported"
                 : "Report Payment Issue"}
             </Text>
