@@ -61,27 +61,72 @@ describe("trial subscription status", () => {
     expect(screen.queryByText("Free")).toBeNull();
   });
 
-  it("maps a legacy used trial to Pro and shows the other two trials", async () => {
+  it("keeps a used legacy trial Free and allows paid checkout without another trial", async () => {
     (getSubscription as jest.Mock).mockResolvedValue({
       success: true,
       isPro: false,
+      active: false,
       plan: "free",
-      status: "inactive",
+      subscriptionStatus: "inactive",
+      source: "local_trial",
+      paymentState: "nonpaid",
       trialUsed: true,
-      trialPlansUsed: ["pro"]
+      trialPlansUsed: ["pro"],
+      trialEligibility: {
+        enabled: true,
+        eligible: false,
+        days: 30,
+        policy: "one_per_account"
+      },
+      canManageBilling: false,
+      canCancelSubscription: false,
+      canStartCheckout: true
     });
 
     const screen = render(
       <SubscriptionStatusScreen navigation={{ navigate: jest.fn() }} />
     );
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          "You have a separate 30-day trial available for Commercial, Facility."
-        )
-      ).toBeTruthy()
+    await waitFor(() => expect(screen.getByText("Free")).toBeTruthy());
+    expect(screen.getByText("inactive")).toBeTruthy();
+    expect(screen.queryByText(/30-day introductory trial/i)).toBeNull();
+    expect(screen.getByText(/Checkout remains available/i)).toBeTruthy();
+    expect(screen.getByText("Upgrade to PRO")).toBeTruthy();
+    expect(screen.queryByText(/paid confirmed/i)).toBeNull();
+  });
+
+  it("fails closed when paid-looking account state has no verified authority", async () => {
+    (getSubscription as jest.Mock).mockResolvedValue({
+      success: true,
+      isPro: false,
+      active: false,
+      plan: "free",
+      subscriptionStatus: "expired",
+      source: "unknown",
+      paymentState: "nonpaid",
+      trialUsed: true,
+      trialPlansUsed: ["pro"],
+      trialEligibility: {
+        enabled: true,
+        eligible: false,
+        days: 30,
+        policy: "one_per_account"
+      },
+      canManageBilling: false,
+      canCancelSubscription: false,
+      canStartCheckout: false,
+      checkoutBlockedReason: "billing_reconciliation_required"
+    });
+
+    const screen = render(
+      <SubscriptionStatusScreen navigation={{ navigate: jest.fn() }} />
     );
-    expect(screen.queryByText(/available for Pro/)).toBeNull();
+
+    await waitFor(() => expect(screen.getByText("Free")).toBeTruthy());
+    expect(screen.getByText("Expired")).toBeTruthy();
+    expect(screen.getByText(/Checkout is unavailable/i)).toBeTruthy();
+    expect(screen.queryByText("Upgrade to PRO")).toBeNull();
+    expect(screen.queryByText("Cancel Subscription")).toBeNull();
+    expect(screen.queryByText(/paid confirmed/i)).toBeNull();
   });
 });
