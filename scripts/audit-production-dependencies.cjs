@@ -42,11 +42,29 @@ function advisoryId(entry) {
 }
 
 function loadAuditReport() {
+  const npmCliCandidates = [
+    process.env.npm_execpath,
+    path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js")
+  ]
+    .map((candidate) => String(candidate || "").trim())
+    .filter(Boolean);
+  const npmCli = npmCliCandidates.find((candidate) => fs.existsSync(candidate));
+  if (!npmCli) {
+    process.stderr.write(
+      "Unable to locate npm-cli.js for the production dependency audit.\n"
+    );
+    process.exit(1);
+  }
   const result = spawnSync(
-    process.platform === "win32" ? "npm.cmd" : "npm",
-    ["audit", "--omit=dev", "--audit-level=high", "--json"],
+    process.execPath,
+    [npmCli, "audit", "--omit=dev", "--audit-level=high", "--json"],
     { cwd: ROOT, encoding: "utf8", maxBuffer: 20 * 1024 * 1024 }
   );
+
+  if (result.error) {
+    process.stderr.write(`Unable to run npm audit: ${result.error.message}\n`);
+    process.exit(1);
+  }
 
   const raw = result.stdout?.trim();
   if (!raw) {
