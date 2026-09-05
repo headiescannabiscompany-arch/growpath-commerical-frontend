@@ -377,9 +377,13 @@ test.describe("ETGU diagnosis intake", () => {
         waitUntil: "domcontentloaded"
       });
       await expect(
-        page.getByText("Possible root-zone stress; container olive leaf spotting", {
-          exact: true
-        })
+        page
+          .getByLabel(
+            "Selected timeline entry: Possible root-zone stress; container olive leaf spotting"
+          )
+          .getByText("Possible root-zone stress; container olive leaf spotting", {
+            exact: true
+          })
       ).toBeVisible();
       await expect(
         page.getByText(

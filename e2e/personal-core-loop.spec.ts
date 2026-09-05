@@ -359,7 +359,7 @@ test("personal grow core loop persists and reappears in timeline", async ({ page
   const state = await installCoreLoopMocks(page);
 
   await page.goto("/home/personal/grows/new", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { name: "New Grow" })).toBeVisible();
+  await expect(page.getByTestId("input-grow-name")).toBeVisible();
   await page.getByLabel("Grow name").fill("Blueberry Patio Release Loop");
   await page.getByLabel("Anchor date").click();
   await page.getByLabel("Anchor date year").selectOption("2026");
@@ -504,12 +504,17 @@ test("personal grow core loop persists and reappears in timeline", async ({ page
   await page.goto("/home/personal/grows/grow-core-loop-1/timeline", {
     waitUntil: "domcontentloaded"
   });
-  await expect(page.getByText("Blueberry Patio Release Loop created")).toBeVisible();
+  await expect(
+    page
+      .getByLabel("Selected timeline entry: Blueberry Patio Release Loop created")
+      .getByText("Blueberry Patio Release Loop created", { exact: true })
+  ).toBeVisible();
   await expect(page.getByText("Blueberry patio bush added")).toBeVisible();
   await expect(page.getByText("Blueberry leaf photo check")).toBeVisible();
   await expect(page.getByText("Photo attached to log")).toBeVisible();
   await expect(page.getByText("vpd result saved")).toBeVisible();
   await expect(page.getByText("Follow up: vpd")).toBeVisible();
+  await page.getByRole("button", { name: "Detailed List" }).click();
   await expect(page.getByText("Open Journal Source").first()).toBeVisible();
   await expect(page.getByText("Open Tool Source")).toBeVisible();
   await expect(page.getByText("Open Task Source")).toBeVisible();
