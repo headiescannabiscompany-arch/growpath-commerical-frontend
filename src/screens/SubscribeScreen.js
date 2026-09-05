@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Linking, Platform, Text } from "react-native";
+import { Alert, Linking, Text } from "react-native";
 
-import {
-  createCheckoutSession,
-  getSubscription,
-  verifyIapReceipt
-} from "../api/subscription";
+import { createCheckoutSession, getSubscription } from "../api/subscription";
 import Card from "../components/Card";
 import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
 import { PRO_PLAN_PRICE_DISPLAY } from "../constants/pricing";
 import { colors, spacing } from "../theme/theme";
 import { resolveSubscriptionSafety } from "../features/billing/subscriptionSafety";
-import { buySubscription, initIAP } from "../utils/iap";
 import { openExternalUrl } from "../utils/openExternalUrl";
-
-function isNativePurchasePlatform() {
-  return Platform.OS === "ios" || Platform.OS === "android";
-}
 
 export default function SubscribeScreen({ navigation }) {
   const [status, setStatus] = useState(null);
@@ -33,7 +24,6 @@ export default function SubscribeScreen({ navigation }) {
 
   useEffect(() => {
     load();
-    if (isNativePurchasePlatform()) initIAP();
   }, []);
 
   async function goToStatus() {
@@ -63,29 +53,10 @@ export default function SubscribeScreen({ navigation }) {
     );
   }
 
-  async function verifyNativePurchase() {
-    const purchase = await buySubscription();
-    await verifyIapReceipt({
-      receipt: purchase.transactionReceipt,
-      platform: Platform.OS,
-      productId: purchase.productId,
-      transactionId: purchase.transactionId
-    });
-    Alert.alert(
-      "Verification submitted",
-      "Access unlocks after the backend confirms subscription status.",
-      [{ text: "Check Status", onPress: goToStatus }]
-    );
-  }
-
   async function handleUpgrade() {
     try {
       setLoading(true);
-      if (isNativePurchasePlatform()) {
-        await verifyNativePurchase();
-      } else {
-        await openStripeCheckout();
-      }
+      await openStripeCheckout();
     } catch (err) {
       Alert.alert("Error", err?.message || "Unable to start payment.");
     } finally {
