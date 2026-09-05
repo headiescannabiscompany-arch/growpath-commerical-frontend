@@ -23,9 +23,9 @@ export function useFacilityBilling(facilityId: string | null) {
   });
 
   const cancelPlanMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: (confirmation: string) => {
       if (!facilityId) throw new Error("No facility selected");
-      return cancelFacilityPlan(facilityId);
+      return cancelFacilityPlan(facilityId, confirmation);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["billing", facilityId] });

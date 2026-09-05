@@ -191,7 +191,7 @@ describe("FacilityBillingHome", () => {
     fireEvent.press(screen.getByLabelText("Confirm cancel Facility renewal"));
 
     await waitFor(() => {
-      expect(mockCancelPlan).toHaveBeenCalledTimes(1);
+      expect(mockCancelPlan).toHaveBeenCalledWith("CANCEL FACILITY RENEWAL");
       expect(mockRefetch).toHaveBeenCalledTimes(1);
       expect(
         screen.getByText(

@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
 import { useFacilityBilling } from "@/hooks/useFacilityBilling";
+import { FACILITY_CANCELLATION_CONFIRMATION } from "@/api/billing";
 import { useRecurringPriceQuotes } from "@/hooks/useRecurringPriceQuotes";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -105,7 +106,7 @@ export default function FacilityBillingHome() {
     setCancelRequestPending(true);
     setBillingFeedback(null);
     try {
-      await cancelPlan();
+      await cancelPlan(FACILITY_CANCELLATION_CONFIRMATION);
       setCancelConfirmationOpen(false);
       setBillingFeedback({
         kind: "success",

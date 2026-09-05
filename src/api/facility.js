@@ -153,11 +153,16 @@ export const startFacilityCheckout = async (facilityId) => {
 };
 
 // Facility Plan billing: cancel at period end
-export const cancelFacilityPlan = async (facilityId) => {
+export const FACILITY_CANCELLATION_CONFIRMATION = "CANCEL FACILITY RENEWAL";
+
+export const cancelFacilityPlan = async (facilityId, confirmation) => {
   try {
+    if (confirmation !== FACILITY_CANCELLATION_CONFIRMATION) {
+      throw new Error("Confirm Facility cancellation before changing Stripe renewal.");
+    }
     const cancelRes = await apiRequest("/facility-billing/cancel", {
       method: "POST",
-      body: { facilityId }
+      body: { facilityId, confirmation }
     });
     return { success: true, data: cancelRes?.data ?? cancelRes };
   } catch (error) {

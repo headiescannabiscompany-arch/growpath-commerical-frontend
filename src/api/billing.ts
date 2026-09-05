@@ -1,6 +1,8 @@
 import { apiRequest } from "./apiRequest";
 import { endpoints } from "./endpoints";
 
+export const FACILITY_CANCELLATION_CONFIRMATION = "CANCEL FACILITY RENEWAL";
+
 export async function getFacilityBillingStatus(facilityId: string) {
   const statusRes = await apiRequest(endpoints.facilityBillingStatus, {
     params: { facility: facilityId }
@@ -34,10 +36,13 @@ export async function startFacilityCheckout(
   return checkoutRes?.data ?? checkoutRes;
 }
 
-export async function cancelFacilityPlan(facilityId: string) {
+export async function cancelFacilityPlan(facilityId: string, confirmation: string) {
+  if (confirmation !== FACILITY_CANCELLATION_CONFIRMATION) {
+    throw new Error("Confirm Facility cancellation before changing Stripe renewal.");
+  }
   const cancelRes = await apiRequest(endpoints.facilityBillingCancel, {
     method: "POST",
-    body: { facilityId }
+    body: { facilityId, confirmation }
   });
   return cancelRes?.data ?? cancelRes;
 }

@@ -14,6 +14,7 @@ import {
 import { useFacility } from "../../facility/FacilityProvider";
 import { handleApiError } from "../../ui/handleApiError";
 import { useFacilityBilling } from "../../hooks/useFacilityBilling";
+import { FACILITY_CANCELLATION_CONFIRMATION } from "../../api/billing";
 import { useSubscriptionStatus } from "../../hooks/useSubscriptionStatus";
 import { useFacilityReport } from "../../hooks/useFacilityReport";
 import {
@@ -118,7 +119,7 @@ export default function BillingAndReportingScreen() {
         style: "destructive",
         onPress: async () => {
           try {
-            await cancelPlan();
+            await cancelPlan(FACILITY_CANCELLATION_CONFIRMATION);
             refetchBilling();
             Alert.alert("Success", "Subscription cancelled at period end");
           } catch (err) {
