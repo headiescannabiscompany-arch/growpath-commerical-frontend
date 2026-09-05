@@ -104,7 +104,6 @@ export default function AdminEvidenceVaultCard({
   const [removalConfirmation, setRemovalConfirmation] = useState("");
 
   const [restoreArchiveId, setRestoreArchiveId] = useState("");
-  const [restoreTargetUserId, setRestoreTargetUserId] = useState("");
   const [restoreReview, setRestoreReview] = useState<RestoreReview | null>(null);
   const [restoreConfirmation, setRestoreConfirmation] = useState("");
 
@@ -237,16 +236,13 @@ export default function AdminEvidenceVaultCard({
   }
 
   async function runRestoreReview() {
-    if (busy || !restoreArchiveId.trim() || !restoreTargetUserId.trim()) return;
+    if (busy || !restoreArchiveId.trim()) return;
     setBusy("restore-review");
     setFeedback("");
     setRestoreReview(null);
     setRestoreConfirmation("");
     try {
-      const review = await reviewAccountRestore(
-        restoreArchiveId.trim(),
-        restoreTargetUserId.trim()
-      );
+      const review = await reviewAccountRestore(restoreArchiveId.trim());
       setRestoreReview(review);
       setFeedback("Restore review passed. Type the exact phrase to restore the account.");
     } catch (error) {
@@ -262,13 +258,11 @@ export default function AdminEvidenceVaultCard({
     setFeedback("");
     try {
       await restoreQuarantinedAccount(restoreReview.archiveId, {
-        targetUserId: restoreReview.target.id,
         reviewToken: restoreReview.reviewToken,
         confirmation: restoreConfirmation
       });
       setFeedback("The quarantined account was restored. The action remains audited.");
       setRestoreArchiveId("");
-      setRestoreTargetUserId("");
       setRestoreReview(null);
       setRestoreConfirmation("");
       const page = await listRemovedAccounts();
@@ -615,7 +609,6 @@ export default function AdminEvidenceVaultCard({
                       accessibilityRole="button"
                       onPress={() => {
                         setRestoreArchiveId(archive.archiveId);
-                        setRestoreTargetUserId("");
                         setRestoreReview(null);
                         setRestoreConfirmation("");
                       }}
@@ -635,24 +628,15 @@ export default function AdminEvidenceVaultCard({
               {restoreArchiveId ? (
                 <View style={styles.review}>
                   <Text style={styles.rowTitle}>Restore {restoreArchiveId}</Text>
-                  <TextInput
-                    accessibilityLabel="Exact target user ID for restore"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    onChangeText={(value) => {
-                      setRestoreTargetUserId(value);
-                      setRestoreReview(null);
-                      setRestoreConfirmation("");
-                    }}
-                    placeholder="Type the exact original user ID"
-                    placeholderTextColor={palette.textMuted}
-                    selectionColor={palette.accent}
-                    style={styles.input}
-                    value={restoreTargetUserId}
-                  />
+                  <Text style={styles.meta}>
+                    GrowPath will privately bind this review to the account stored in the
+                    selected archive. No user ID or email is exposed in the
+                    removed-account list.
+                  </Text>
                   <Pressable
                     accessibilityRole="button"
-                    disabled={Boolean(busy) || restoreTargetUserId.trim().length !== 24}
+                    accessibilityLabel="Review selected account restore"
+                    disabled={Boolean(busy)}
                     onPress={() => void runRestoreReview()}
                     style={styles.secondaryButton}
                   >

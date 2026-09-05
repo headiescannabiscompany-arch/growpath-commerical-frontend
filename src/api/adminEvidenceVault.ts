@@ -181,10 +181,10 @@ export async function listRemovedAccounts(cursor?: string) {
   return { accounts: response.accounts, nextCursor: response.nextCursor || null };
 }
 
-export async function reviewAccountRestore(archiveId: string, targetUserId: string) {
+export async function reviewAccountRestore(archiveId: string) {
   const response = await apiRequest<{ ok: true; review: RestoreReview }>(
     `${BASE}/removed-accounts/${encodeURIComponent(archiveId)}/restore-review`,
-    { method: "POST", body: { targetUserId }, cache: "no-store" }
+    { method: "POST", body: {}, cache: "no-store" }
   );
   if (response?.ok !== true || !response.review?.reviewToken) {
     throw new Error("GrowPath returned an invalid restore review.");
@@ -194,7 +194,7 @@ export async function reviewAccountRestore(archiveId: string, targetUserId: stri
 
 export async function restoreQuarantinedAccount(
   archiveId: string,
-  input: { targetUserId: string; reviewToken: string; confirmation: string }
+  input: { reviewToken: string; confirmation: string }
 ) {
   const response = await apiRequest<{
     ok: true;

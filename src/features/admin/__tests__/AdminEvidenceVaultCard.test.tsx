@@ -7,7 +7,9 @@ import {
   listRemovedAccounts,
   listRestrictedCases,
   quarantineAccount,
-  reviewAccountRemoval
+  restoreQuarantinedAccount,
+  reviewAccountRemoval,
+  reviewAccountRestore
 } from "@/api/adminEvidenceVault";
 
 jest.mock("@/api/adminEvidenceVault", () => ({
@@ -56,6 +58,12 @@ const mockReview = reviewAccountRemoval as jest.MockedFunction<
   typeof reviewAccountRemoval
 >;
 const mockQuarantine = quarantineAccount as jest.MockedFunction<typeof quarantineAccount>;
+const mockRestoreReview = reviewAccountRestore as jest.MockedFunction<
+  typeof reviewAccountRestore
+>;
+const mockRestore = restoreQuarantinedAccount as jest.MockedFunction<
+  typeof restoreQuarantinedAccount
+>;
 
 function capabilityReceipt() {
   return {
@@ -251,5 +259,44 @@ describe("AdminEvidenceVaultCard", () => {
     expect(screen.getByText(/Stripe could not be verified/)).toBeTruthy();
     expect(screen.queryByText("Quarantine reviewed account")).toBeNull();
     expect(mockQuarantine).not.toHaveBeenCalled();
+  });
+
+  test("restores from an opaque archive without making the Admin find a hidden user ID", async () => {
+    mockRestoreReview.mockResolvedValue({
+      target: { id: TARGET_ID, email: "member@example.com" },
+      archiveId: ARCHIVE_ID,
+      nextConfirmation: `RESTORE ${ARCHIVE_ID} ${TARGET_ID}`,
+      reviewToken: "restore-review-token",
+      reviewExpiresAt: "2030-01-01T00:05:00.000Z"
+    });
+    mockRestore.mockResolvedValue({
+      archiveId: ARCHIVE_ID,
+      targetUserId: TARGET_ID,
+      quarantineStatus: "restored"
+    });
+    const screen = render(
+      <AdminEvidenceVaultCard users={[{ id: TARGET_ID, email: "member@example.com" }]} />
+    );
+
+    fireEvent.press(screen.getByLabelText("Open evidence vault controls"));
+    await screen.findByText(`removed-account-${ARCHIVE_ID}`);
+    fireEvent.press(screen.getByText("Start reviewed restore"));
+
+    expect(screen.queryByLabelText("Exact target user ID for restore")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Review selected account restore"));
+    await waitFor(() => expect(mockRestoreReview).toHaveBeenCalledWith(ARCHIVE_ID));
+
+    fireEvent.changeText(
+      screen.getByLabelText("Exact account restore confirmation"),
+      `RESTORE ${ARCHIVE_ID} ${TARGET_ID}`
+    );
+    fireEvent.press(screen.getByText("Restore reviewed account"));
+
+    await waitFor(() =>
+      expect(mockRestore).toHaveBeenCalledWith(ARCHIVE_ID, {
+        reviewToken: "restore-review-token",
+        confirmation: `RESTORE ${ARCHIVE_ID} ${TARGET_ID}`
+      })
+    );
   });
 });
