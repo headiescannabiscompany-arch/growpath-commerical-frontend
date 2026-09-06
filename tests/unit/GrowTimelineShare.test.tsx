@@ -202,7 +202,7 @@ describe("GrowTimelineShare", () => {
     );
   });
 
-  it("posts the visual story to the feed with its canonical social preview image", async () => {
+  it("shares the visual story in Forum / Q&A with its canonical preview image", async () => {
     const socialPreviewImageUrl =
       "https://api.growpathai.com/api/public/grow-timelines/preview-token/share-image?v=1234567890abcdef";
     mockGetCurrent.mockResolvedValue({
@@ -219,7 +219,7 @@ describe("GrowTimelineShare", () => {
       expect.objectContaining({ heading: "Share Visual Grow Story" })
     );
 
-    fireEvent.press(screen.getByLabelText("Post Visual Grow Story to GrowPath feed"));
+    fireEvent.press(screen.getByLabelText("Share Visual Grow Story in Forum / Q&A"));
 
     await waitFor(() => expect(mockCreateForumPost).toHaveBeenCalledTimes(1));
     expect(mockCreateForumPost).toHaveBeenCalledWith(
@@ -232,11 +232,11 @@ describe("GrowTimelineShare", () => {
       })
     );
     expect(
-      screen.getByText("The Visual Grow Story was posted to the GrowPath feed.")
+      screen.getByText("The Visual Grow Story was shared in Forum / Q&A.")
     ).toBeTruthy();
   });
 
-  it("restores a published list presentation and uses truthful list feed wording", async () => {
+  it("restores a published list presentation and uses truthful community wording", async () => {
     const firstPhotoUrl = "https://api.growpathai.com/uploads/list-first-photo.jpg";
     mockGetCurrent.mockResolvedValue({
       ...publishedResult("list"),
@@ -252,7 +252,7 @@ describe("GrowTimelineShare", () => {
       expect.objectContaining({ heading: "Share Grow Timeline List" })
     );
 
-    fireEvent.press(screen.getByLabelText("Post Grow Timeline List to GrowPath feed"));
+    fireEvent.press(screen.getByLabelText("Share Grow Timeline List in Forum / Q&A"));
 
     await waitFor(() => expect(mockCreateForumPost).toHaveBeenCalledTimes(1));
     expect(mockCreateForumPost).toHaveBeenCalledWith(
@@ -265,7 +265,7 @@ describe("GrowTimelineShare", () => {
       })
     );
     expect(
-      screen.getByText("The Grow Timeline List was posted to the GrowPath feed.")
+      screen.getByText("The Grow Timeline List was shared in Forum / Q&A.")
     ).toBeTruthy();
   });
 

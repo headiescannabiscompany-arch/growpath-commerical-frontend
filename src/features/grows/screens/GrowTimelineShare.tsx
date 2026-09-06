@@ -66,7 +66,7 @@ export default function GrowTimelineShare({
   const [preview, setPreview] = useState<GrowTimelinePublicPreview | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [postingToFeed, setPostingToFeed] = useState(false);
+  const [sharingToCommunity, setSharingToCommunity] = useState(false);
   const [showEntrySelection, setShowEntrySelection] = useState(false);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -246,9 +246,9 @@ export default function GrowTimelineShare({
   const currentStoryLabel =
     current?.presentation === "list" ? "Grow Timeline List" : "Visual Grow Story";
 
-  const postToFeed = async () => {
+  const shareInCommunity = async () => {
     if (!current || !publicPath) return;
-    setPostingToFeed(true);
+    setSharingToCommunity(true);
     setError("");
     try {
       const feedImageUrl =
@@ -267,13 +267,13 @@ export default function GrowTimelineShare({
         growId,
         visibility: "public"
       });
-      setFeedback(`The ${currentStoryLabel} was posted to the GrowPath feed.`);
+      setFeedback(`The ${currentStoryLabel} was shared in Forum / Q&A.`);
     } catch (caught: any) {
       setError(
-        caught?.message || `The ${currentStoryLabel} could not be posted to the feed.`
+        caught?.message || `The ${currentStoryLabel} could not be shared in Forum / Q&A.`
       );
     } finally {
-      setPostingToFeed(false);
+      setSharingToCommunity(false);
     }
   };
 
@@ -307,13 +307,13 @@ export default function GrowTimelineShare({
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Post ${currentStoryLabel} to GrowPath feed`}
+              accessibilityLabel={`Share ${currentStoryLabel} in Forum / Q&A`}
               style={styles.primaryButton}
-              disabled={postingToFeed}
-              onPress={() => void postToFeed()}
+              disabled={sharingToCommunity}
+              onPress={() => void shareInCommunity()}
             >
               <Text style={styles.primaryText}>
-                {postingToFeed ? "Posting…" : "Post to GrowPath Feed"}
+                {sharingToCommunity ? "Sharing…" : "Share in Forum / Q&A"}
               </Text>
             </Pressable>
             <Pressable
