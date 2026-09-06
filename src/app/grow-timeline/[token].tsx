@@ -16,6 +16,7 @@ import {
 import ReportModal from "@/components/ReportModal";
 import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
+import { visualTimelineEvents } from "@/features/grows/timeline";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
@@ -143,19 +144,21 @@ export default function PublicGrowTimelineRoute() {
             </View>
           ) : (
             <GrowTimelineFlow
-              events={copy.events.map((event, index) => ({
-                id: event.id || `${event.timestamp}-${index}`,
-                title: event.title,
-                summary: event.summary,
-                timestamp: event.timestamp,
-                type: event.type,
-                highlights: event.tags,
-                photos: copy.photos
-                  .filter((photo) =>
-                    photo.eventRef ? photo.eventRef === event.id : index === 0
-                  )
-                  .map((photo) => photo.url)
-              }))}
+              events={visualTimelineEvents(
+                copy.events.map((event, index) => ({
+                  id: event.id || `${event.timestamp}-${index}`,
+                  title: event.title,
+                  summary: event.summary,
+                  timestamp: event.timestamp,
+                  type: event.type,
+                  highlights: event.tags,
+                  photos: copy.photos
+                    .filter((photo) =>
+                      photo.eventRef ? photo.eventRef === event.id : index === 0
+                    )
+                    .map((photo) => photo.url)
+                }))
+              )}
             />
           )}
           {feedback ? <Text style={styles.success}>{feedback}</Text> : null}

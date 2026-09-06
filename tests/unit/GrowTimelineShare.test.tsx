@@ -202,6 +202,89 @@ describe("GrowTimelineShare", () => {
     );
   });
 
+  it("keeps a deselected journal photo out of the exact visual preview", async () => {
+    const firstPhoto = "/uploads/first-journal-photo.jpg";
+    const privatePhoto = "/uploads/private-journal-photo.jpg";
+    const pairedEvents = [
+      {
+        id: "GrowLog:paired-log",
+        sourceId: "paired-log",
+        sourceModel: "GrowLog",
+        type: "log_created",
+        title: "Paired journal entry",
+        summary: "Only the selected photo should be shown.",
+        timestamp: "2026-08-08T12:00:00.000Z",
+        payload: { photos: [firstPhoto, privatePhoto] }
+      },
+      {
+        id: "GrowLog:paired-log:photo:0",
+        sourceId: "paired-log",
+        sourceModel: "GrowLog",
+        type: "photo_added",
+        title: "Photo added",
+        summary: "Photo selected for this grow timeline.",
+        timestamp: "2026-08-08T12:00:00.000Z",
+        payload: { linkedLogId: "paired-log", photoUrl: firstPhoto }
+      }
+    ];
+    mockGetTimeline.mockResolvedValueOnce(pairedEvents);
+    mockPreview.mockResolvedValueOnce({
+      ...previewResult("visual"),
+      events: pairedEvents.map(({ payload: _payload, ...event }) => event),
+      photoCount: 1
+    });
+    const screen = render(<GrowTimelineShare workspace="personal" />);
+
+    await waitFor(() =>
+      expect(screen.getAllByLabelText("Remove timeline photo")).toHaveLength(2)
+    );
+    fireEvent.press(screen.getAllByLabelText("Remove timeline photo")[1]);
+    fireEvent.press(screen.getByLabelText("Review public grow timeline preview"));
+
+    await waitFor(() => expect(mockPreview).toHaveBeenCalledTimes(1));
+    expect(mockPreview).toHaveBeenCalledWith(
+      "personal",
+      "grow-1",
+      expect.objectContaining({ photoUrls: [firstPhoto] })
+    );
+    expect(screen.getByText("1 points")).toBeTruthy();
+    expect(screen.getByLabelText("Photo 1 for Paired journal entry")).toBeTruthy();
+    expect(screen.queryByLabelText("Photo 2 for Paired journal entry")).toBeNull();
+  });
+
+  it("selects twelve unique photos when parent and audit events repeat URLs", async () => {
+    const repeatedPhotoEvents = Array.from({ length: 13 }, (_, index) => {
+      const photoUrl = `/uploads/journal-photo-${index + 1}.jpg`;
+      return [
+        {
+          id: `GrowLog:log-${index + 1}`,
+          sourceId: `log-${index + 1}`,
+          sourceModel: "GrowLog",
+          type: "log_created",
+          title: `Journal ${index + 1}`,
+          timestamp: `2026-08-${String(index + 1).padStart(2, "0")}T12:00:00.000Z`,
+          payload: { photos: [photoUrl] }
+        },
+        {
+          id: `GrowLog:log-${index + 1}:photo:0`,
+          sourceId: `log-${index + 1}`,
+          sourceModel: "GrowLog",
+          type: "photo_added",
+          title: `Photo ${index + 1}`,
+          timestamp: `2026-08-${String(index + 1).padStart(2, "0")}T12:00:00.000Z`,
+          payload: { linkedLogId: `log-${index + 1}`, photoUrl }
+        }
+      ];
+    }).flat();
+    mockGetTimeline.mockResolvedValueOnce(repeatedPhotoEvents);
+    const screen = render(<GrowTimelineShare workspace="personal" />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/12 of 12 available photos/)).toBeTruthy()
+    );
+    expect(screen.getAllByLabelText("Remove timeline photo")).toHaveLength(12);
+  });
+
   it("shares the visual story in Forum / Q&A with its canonical preview image", async () => {
     const socialPreviewImageUrl =
       "https://api.growpathai.com/api/public/grow-timelines/preview-token/share-image?v=1234567890abcdef";

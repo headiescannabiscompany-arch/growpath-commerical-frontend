@@ -67,19 +67,24 @@ export function isCannabisGrow(
   return Boolean(String(grow.strain || grow.cultivar || "").trim());
 }
 
-export function fmtDate(input?: string) {
-  if (!input) return "n/a";
+export function parseDisplayDate(input?: string) {
+  if (!input) return null;
   const calendarDate = String(input).match(
     /^(\d{4})-(\d{2})-(\d{2})(?:T00:00:00(?:\.000)?Z)?$/
   );
   if (calendarDate) {
     const [, year, month, day] = calendarDate;
     const localDate = new Date(Number(year), Number(month) - 1, Number(day));
-    if (!Number.isNaN(localDate.getTime())) return localDate.toLocaleDateString();
+    if (!Number.isNaN(localDate.getTime())) return localDate;
   }
   const d = new Date(input);
-  if (Number.isNaN(d.getTime())) return input;
-  return d.toLocaleDateString();
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+export function fmtDate(input?: string) {
+  if (!input) return "n/a";
+  const date = parseDisplayDate(input);
+  return date ? date.toLocaleDateString() : input;
 }
 
 export function localCalendarDate(date = new Date()) {

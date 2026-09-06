@@ -3,7 +3,8 @@ import {
   buildCommercialGrowTimeline,
   groupTimelineEvents,
   timelineEventPhotos,
-  timelinePeriodKey
+  timelinePeriodKey,
+  visualTimelineEvents
 } from "../timeline";
 
 describe("buildGrowTimeline", () => {
@@ -132,13 +133,45 @@ describe("visual grow timeline", () => {
 
   it("groups events at lifecycle, month, week, and day zoom levels", () => {
     const events = [
-      { timestamp: "2026-08-14T12:00:00.000Z", id: "a" },
+      { timestamp: "2026-07-02T12:00:00.000Z", id: "c" },
       { timestamp: "2026-08-12T12:00:00.000Z", id: "b" },
-      { timestamp: "2026-07-02T12:00:00.000Z", id: "c" }
+      { timestamp: "2026-08-14T12:00:00.000Z", id: "a" }
     ];
     expect(groupTimelineEvents(events, "lifecycle")).toHaveLength(1);
-    expect(groupTimelineEvents(events, "month")).toHaveLength(2);
+    const monthGroups = groupTimelineEvents(events, "month");
+    expect(monthGroups).toHaveLength(2);
+    expect(monthGroups.map((group) => group.key)).toEqual(["2026-08", "2026-07"]);
+    expect(monthGroups[0].items.map((event) => event.id)).toEqual(["a", "b"]);
     expect(groupTimelineEvents(events, "week")).toHaveLength(2);
-    expect(timelinePeriodKey(events[0].timestamp, "day")).toBe("2026-08-14");
+    expect(timelinePeriodKey(events[2].timestamp, "day")).toBe("2026-08-14");
+    expect(timelinePeriodKey("2026-09-01T00:00:00.000Z", "day")).toBe("2026-09-01");
+  });
+
+  it("places photo audit events on their matching journal milestone", () => {
+    const visual = visualTimelineEvents([
+      {
+        id: "GrowLog:log-1",
+        sourceId: "log-1",
+        sourceModel: "GrowLog",
+        type: "log_created",
+        title: "Pest check"
+      },
+      {
+        id: "GrowLog:log-1:photo:0",
+        sourceId: "log-1",
+        sourceModel: "GrowLog",
+        type: "photo_added",
+        title: "Photo added: Pest check",
+        payload: { linkedLogId: "log-1", url: "/uploads/pest-check.jpg" }
+      }
+    ]);
+
+    expect(visual).toHaveLength(1);
+    expect(visual[0]).toEqual(
+      expect.objectContaining({
+        id: "GrowLog:log-1",
+        photos: ["/uploads/pest-check.jpg"]
+      })
+    );
   });
 });

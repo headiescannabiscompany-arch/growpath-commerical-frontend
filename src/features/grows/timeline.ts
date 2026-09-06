@@ -1,5 +1,6 @@
 import { sourceObjectHref } from "@/utils/sourceLinks";
 import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
+import { parseDisplayDate } from "@/features/grows/routeUtils";
 
 export type GrowTimelineKind = "log" | "tool_run" | "task";
 
@@ -59,9 +60,67 @@ export function timelineEventPhotos(event: Record<string, any>): string[] {
   return photos.slice(0, 12);
 }
 
+function eventLogId(event: Record<string, any>) {
+  const direct = String(event?.payload?.linkedLogId || event?.sourceId || "").trim();
+  if (direct) return direct;
+  const id = String(event?.id || "");
+  const match = id.match(/^GrowLog:([^:]+)(?::photo:\d+)?$/i);
+  return match?.[1] || "";
+}
+
+/**
+ * A journal photo is retained as its own audit event, but the visual story should
+ * display it on the journal milestone it documents. Standalone photo events are
+ * kept when their journal event was not selected.
+ */
+export function visualTimelineEvents<T extends Record<string, any>>(events: T[]) {
+  const rows = events.map((event) => ({
+    ...event,
+    photos: timelineEventPhotos(event)
+  }));
+  const journalIds = new Set(
+    rows
+      .filter((event) => String(event.type || "").toLowerCase() !== "photo_added")
+      .filter(
+        (event) =>
+          String(event.sourceModel || "").toLowerCase() === "growlog" ||
+          /^GrowLog:[^:]+$/i.test(String(event.id || ""))
+      )
+      .map(eventLogId)
+      .filter(Boolean)
+  );
+  const photosByJournal = new Map<string, string[]>();
+  rows
+    .filter((event) => String(event.type || "").toLowerCase() === "photo_added")
+    .forEach((event) => {
+      const id = eventLogId(event);
+      if (!id || !journalIds.has(id)) return;
+      const current = photosByJournal.get(id) || [];
+      timelineEventPhotos(event).forEach((photo) => {
+        if (!current.includes(photo)) current.push(photo);
+      });
+      photosByJournal.set(id, current);
+    });
+
+  return rows
+    .filter((event) => {
+      if (String(event.type || "").toLowerCase() !== "photo_added") return true;
+      const id = eventLogId(event);
+      return !id || !journalIds.has(id);
+    })
+    .map((event) => {
+      const id = eventLogId(event);
+      const merged = [...event.photos];
+      (photosByJournal.get(id) || []).forEach((photo) => {
+        if (!merged.includes(photo)) merged.push(photo);
+      });
+      return { ...event, photos: merged.slice(0, 12) };
+    });
+}
+
 export function timelinePeriodKey(timestamp: string, zoom: GrowTimelineZoom) {
-  const date = new Date(timestamp);
-  if (!Number.isFinite(date.getTime())) return "unknown";
+  const date = parseDisplayDate(timestamp);
+  if (!date) return "unknown";
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   if (zoom === "lifecycle") return String(year);
@@ -79,10 +138,19 @@ export function groupTimelineEvents<T extends { timestamp: string }>(
   zoom: GrowTimelineZoom
 ) {
   const groups = new Map<string, T[]>();
-  events.forEach((event) => {
-    const key = timelinePeriodKey(event.timestamp, zoom);
-    groups.set(key, [...(groups.get(key) || []), event]);
-  });
+  [...events]
+    .sort((left, right) => {
+      const leftTime = parseDisplayDate(left.timestamp)?.getTime();
+      const rightTime = parseDisplayDate(right.timestamp)?.getTime();
+      if (leftTime == null && rightTime == null) return 0;
+      if (leftTime == null) return 1;
+      if (rightTime == null) return -1;
+      return rightTime - leftTime;
+    })
+    .forEach((event) => {
+      const key = timelinePeriodKey(event.timestamp, zoom);
+      groups.set(key, [...(groups.get(key) || []), event]);
+    });
   return Array.from(groups, ([key, items]) => ({ key, items }));
 }
 

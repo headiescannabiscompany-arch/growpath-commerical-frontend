@@ -14,9 +14,13 @@ the individual owner. Facility-internal records are not eligible for this public
 The server accepts only bounded plain-text event title, summary and timestamp fields. It
 does not accept arbitrary HTML, event payloads, telemetry values, task internals, identifiers,
 exact locations, private notes, AI receipts, provider credentials or evidence permissions.
-Selected photos must be uploaded evidence owned by the same actor and linked to the same
-grow. Publication creates safe public derivatives through the existing protected-media
-pipeline; it never exposes a protected upload URL or expiring signed URL.
+Selected photos must be owned media referenced by a selected server-known event. Existing
+protected evidence must belong to the same actor, workspace and grow. For an older journal
+image uploaded through GrowPath's ordinary image screen, preview only verifies the active
+upload record and makes no evidence or publication write. Publish re-verifies that record,
+then idempotently materializes a non-AI, grow-scoped evidence record before creating a safe
+public derivative through the existing protected-media pipeline. The public copy never
+exposes a protected upload URL or expiring signed URL.
 
 Publishing freezes a versioned snapshot behind a random, unguessable viewer token. Later
 private edits never silently change it. Only a published snapshot is publicly readable.

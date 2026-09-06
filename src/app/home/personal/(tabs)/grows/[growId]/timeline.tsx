@@ -25,6 +25,7 @@ import { resolveImageUri } from "@/utils/photoUploads";
 import {
   groupTimelineEvents,
   timelineEventPhotos,
+  visualTimelineEvents,
   type GrowTimelineZoom
 } from "@/features/grows/timeline";
 import {
@@ -365,13 +366,13 @@ export default function GrowTimelineScreen({
   );
   const flowEvents = useMemo(
     () =>
-      visibleEvents.map((event) => ({
+      visualTimelineEvents(visibleEvents as any[]).map((event) => ({
         id: String(event.id),
         title: event.title,
         summary: event.summary,
         timestamp: event.timestamp,
         type: event.type,
-        photos: timelineEventPhotos(event as any),
+        photos: event.photos,
         highlights: [
           ...eventPayloadDetails(event),
           ...(Array.isArray(event.tags) ? event.tags : [])

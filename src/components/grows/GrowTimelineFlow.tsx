@@ -4,6 +4,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { parseDisplayDate } from "@/features/grows/routeUtils";
 
 export type GrowTimelineFlowEvent = {
   id: string;
@@ -22,8 +23,8 @@ function readableType(value?: string) {
 }
 
 function readableDate(value: string) {
-  const date = new Date(value);
-  return Number.isFinite(date.getTime())
+  const date = parseDisplayDate(value);
+  return date
     ? date.toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
@@ -44,7 +45,9 @@ export default function GrowTimelineFlow({
   const chronological = useMemo(
     () =>
       [...events].sort(
-        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        (a, b) =>
+          (parseDisplayDate(a.timestamp)?.getTime() || 0) -
+          (parseDisplayDate(b.timestamp)?.getTime() || 0)
       ),
     [events]
   );

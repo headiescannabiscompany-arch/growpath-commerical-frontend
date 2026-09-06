@@ -25,7 +25,7 @@ import { createForumPost } from "@/api/communitySocial";
 import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
 import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
-import { timelineEventPhotos } from "@/features/grows/timeline";
+import { timelineEventPhotos, visualTimelineEvents } from "@/features/grows/timeline";
 import {
   getWorkspaceGrow,
   getWorkspaceGrowTimeline,
@@ -89,7 +89,9 @@ export default function GrowTimelineShare({
       setSelectedEventIds(new Set(timeline.map((event) => String(event.id))));
       setSelectedPhotoUrls(
         new Set(
-          timeline.flatMap((event) => timelineEventPhotos(event as any)).slice(0, 12)
+          Array.from(
+            new Set(timeline.flatMap((event) => timelineEventPhotos(event as any)))
+          ).slice(0, 12)
         )
       );
       setTitle(copy?.title || `Grow timeline: ${grow?.name || "My grow"}`);
@@ -169,20 +171,29 @@ export default function GrowTimelineShare({
 
   const previewFlowEvents = useMemo(() => {
     if (!preview) return [];
-    return preview.events.map((event, index) => {
-      const source = events.find((candidate) => String(candidate.id) === event.id);
-      return {
-        id: event.id || `${event.timestamp}-${index}`,
-        title: event.title,
-        summary: event.summary,
-        timestamp: event.timestamp,
-        type: event.type,
-        highlights: event.tags,
-        photos: source
-          ? timelineEventPhotos(source as any).filter((url) => selectedPhotoUrls.has(url))
-          : []
-      };
-    });
+    return visualTimelineEvents(
+      preview.events.map((event, index) => {
+        const source = events.find((candidate) => String(candidate.id) === event.id);
+        return {
+          id: event.id || `${event.timestamp}-${index}`,
+          sourceId: source?.sourceId,
+          sourceModel: source?.sourceModel,
+          title: event.title,
+          summary: event.summary,
+          timestamp: event.timestamp,
+          type: event.type,
+          highlights: event.tags,
+          payload: source?.payload?.linkedLogId
+            ? { linkedLogId: source.payload.linkedLogId }
+            : undefined,
+          photos: source
+            ? timelineEventPhotos(source as any).filter((url) =>
+                selectedPhotoUrls.has(url)
+              )
+            : []
+        };
+      })
+    );
   }, [events, preview, selectedPhotoUrls]);
 
   const review = async () => {
