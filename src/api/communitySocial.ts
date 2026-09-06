@@ -97,6 +97,7 @@ export async function createForumPost(data: {
   plantId?: string;
   diagnosisId?: string;
   toolRunId?: string;
+  visibility?: "public" | "unlisted" | "private" | "facilityOnly";
 }): Promise<SocialPost> {
   const photos = await persistImageUris((data.photos || []).slice(0, 10));
   const tags = data.tags?.length
@@ -126,6 +127,7 @@ export async function createForumPost(data: {
       toolRunId: data.toolRunId,
       linkedToolRunId: data.toolRunId,
       photos,
+      ...(data.visibility ? { visibility: data.visibility } : {}),
       ...(tags ? { tags } : {}),
       ...(growInterests ? { growInterests } : {})
     }

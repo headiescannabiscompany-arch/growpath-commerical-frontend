@@ -32,6 +32,7 @@ export type GrowTimelinePublicCopy = {
   publishedAt: string;
   withdrawnAt?: string | null;
   socialPreviewUrl?: string;
+  socialPreviewImageUrl?: string;
 };
 
 export type GrowTimelinePublicPreview = {

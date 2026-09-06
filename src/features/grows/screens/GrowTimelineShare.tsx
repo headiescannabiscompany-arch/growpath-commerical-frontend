@@ -47,6 +47,10 @@ export default function GrowTimelineShare({
     presentation?: string | string[];
   }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const requestedPresentation = useMemo(() => {
+    const value = coerceParam(rawPresentation);
+    return value === "visual" || value === "list" ? value : null;
+  }, [rawPresentation]);
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -56,7 +60,7 @@ export default function GrowTimelineShare({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [presentation, setPresentation] = useState<"visual" | "list">(
-    coerceParam(rawPresentation) === "list" ? "list" : "visual"
+    requestedPresentation || "visual"
   );
   const [current, setCurrent] = useState<GrowTimelinePublicCopy | null>(null);
   const [preview, setPreview] = useState<GrowTimelinePublicPreview | null>(null);
@@ -90,6 +94,7 @@ export default function GrowTimelineShare({
       );
       setTitle(copy?.title || `Grow timeline: ${grow?.name || "My grow"}`);
       setDescription(copy?.description || "");
+      setPresentation(requestedPresentation || copy?.presentation || "visual");
       setCurrent(copy);
       setPreview(null);
     } catch (caught: any) {
@@ -97,7 +102,7 @@ export default function GrowTimelineShare({
     } finally {
       setLoading(false);
     }
-  }, [growId, workspace]);
+  }, [growId, requestedPresentation, workspace]);
 
   useFocusEffect(
     useCallback(() => {
@@ -236,24 +241,36 @@ export default function GrowTimelineShare({
   };
 
   const publicPath = current?.token ? `/grow-timeline/${current.token}` : "";
+  const selectedStoryLabel =
+    presentation === "list" ? "Grow Timeline List" : "Visual Grow Story";
+  const currentStoryLabel =
+    current?.presentation === "list" ? "Grow Timeline List" : "Visual Grow Story";
 
   const postToFeed = async () => {
     if (!current || !publicPath) return;
     setPostingToFeed(true);
     setError("");
     try {
+      const feedImageUrl =
+        current.socialPreviewImageUrl || current.photos?.[0]?.url || "";
+      const invitation =
+        current.presentation === "list"
+          ? "Explore the detailed Grow Timeline List"
+          : "Explore the horizontal Visual Grow Story";
       await createForumPost({
         title: current.title,
-        body: `${current.cannabisSpecific ? "Cannabis content.\n\n" : ""}Explore the horizontal Visual Grow Story: ${currentPublicUrl(publicPath)}`,
-        photos: current.photos?.[0]?.url ? [current.photos[0].url] : [],
+        body: `${current.cannabisSpecific ? "Cannabis content.\n\n" : ""}${invitation}: ${currentPublicUrl(publicPath)}`,
+        photos: feedImageUrl ? [feedImageUrl] : [],
         tags: current.cannabisSpecific ? ["cannabis", "grow story"] : ["grow story"],
+        authorType: workspace === "commercial" ? "commercial" : "user",
         workspaceContext: workspace,
-        growId
+        growId,
+        visibility: "public"
       });
-      setFeedback("The Visual Grow Story was posted to the GrowPath feed.");
+      setFeedback(`The ${currentStoryLabel} was posted to the GrowPath feed.`);
     } catch (caught: any) {
       setError(
-        caught?.message || "The Visual Grow Story could not be posted to the feed."
+        caught?.message || `The ${currentStoryLabel} could not be posted to the feed.`
       );
     } finally {
       setPostingToFeed(false);
@@ -290,7 +307,7 @@ export default function GrowTimelineShare({
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Post visual grow story to GrowPath feed"
+              accessibilityLabel={`Post ${currentStoryLabel} to GrowPath feed`}
               style={styles.primaryButton}
               disabled={postingToFeed}
               onPress={() => void postToFeed()}
@@ -323,7 +340,7 @@ export default function GrowTimelineShare({
             </Pressable>
           </View>
           <PublicShareActions
-            heading="Share Visual Grow Story"
+            heading={`Share ${currentStoryLabel}`}
             title={current.title}
             description={current.description}
             path={publicPath}
@@ -393,8 +410,8 @@ export default function GrowTimelineShare({
             <>
               <Text style={styles.help}>
                 {selectedPhotoUrls.size} of {availablePhotos.length} available photos are
-                included. Each photo appears at its matching point in the Visual Grow
-                Story. Tap a photo only if you want to keep it private.
+                included. Each photo appears with its matching timeline entry in the{" "}
+                {selectedStoryLabel}. Tap a photo only if you want to keep it private.
               </Text>
               <View style={styles.photoGrid}>
                 {availablePhotos.map((url) => {
@@ -439,7 +456,7 @@ export default function GrowTimelineShare({
               onPress={() => void review()}
             >
               <Text style={styles.primaryText}>
-                {saving ? "Preparing…" : "Preview Visual Grow Story"}
+                {saving ? "Preparing…" : `Preview ${selectedStoryLabel}`}
               </Text>
             </Pressable>
           </View>

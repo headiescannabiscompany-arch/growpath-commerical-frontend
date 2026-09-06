@@ -35,6 +35,7 @@ describe("community social API", () => {
       authorType: "user",
       authorId: "user-1",
       workspaceContext: "personal",
+      visibility: "public",
       photos: ["file:///tmp/forum-a.jpg", "/uploads/forum-b.jpg"]
     });
 
@@ -51,6 +52,7 @@ describe("community social API", () => {
         authorType: "user",
         authorId: "user-1",
         workspaceContext: "personal",
+        visibility: "public",
         photos: ["/uploads/forum-a.jpg", "/uploads/forum-b.jpg"]
       }
     });

@@ -9,8 +9,49 @@ const mockGetCurrent = jest.fn();
 const mockPreview = jest.fn();
 const mockPublish = jest.fn();
 const mockWithdraw = jest.fn();
+const mockCreateForumPost = jest.fn();
+const mockPublicShareActions = jest.fn((_props: any) => null);
 const mockBack = jest.fn();
 const mockPush = jest.fn();
+
+function previewResult(presentation: "visual" | "list") {
+  return {
+    title: "Grow timeline: Tomato test",
+    description: "Public summary",
+    presentation,
+    dateRange: {
+      start: "2026-08-08T12:00:00.000Z",
+      end: "2026-08-08T12:00:00.000Z"
+    },
+    events: [
+      {
+        id: "GrowLog:log-2:photo:0",
+        type: "photo_added",
+        title: "Week two photo",
+        summary: "Photo selected for this grow timeline.",
+        timestamp: "2026-08-08T12:00:00.000Z",
+        tags: []
+      }
+    ],
+    photoCount: 1,
+    cannabisSpecific: false
+  };
+}
+
+function publishedResult(presentation: "visual" | "list") {
+  return {
+    id: "copy-1",
+    token: "A".repeat(43),
+    version: 1,
+    title: "Grow timeline: Tomato test",
+    description: "",
+    presentation,
+    events: [],
+    photos: [],
+    status: "published",
+    workspaceType: "personal"
+  };
+}
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -36,7 +77,14 @@ jest.mock("@/api/growTimelineCopies", () => ({
   withdrawGrowTimelineCopy: (...args: any[]) => mockWithdraw(...args)
 }));
 
-jest.mock("@/components/sharing/PublicShareActions", () => () => null);
+jest.mock("@/api/communitySocial", () => ({
+  createForumPost: (...args: any[]) => mockCreateForumPost(...args)
+}));
+
+jest.mock(
+  "@/components/sharing/PublicShareActions",
+  () => (props: any) => mockPublicShareActions(props)
+);
 
 jest.mock("@/utils/publicLinks", () => ({
   sharePublicLink: jest.fn(),
@@ -71,37 +119,9 @@ beforeEach(() => {
   mockGetGrow.mockResolvedValue({ id: "grow-1", name: "Tomato test" });
   mockGetTimeline.mockResolvedValue(events);
   mockGetCurrent.mockResolvedValue(null);
-  mockPublish.mockResolvedValue({
-    id: "copy-1",
-    token: "A".repeat(43),
-    version: 1,
-    title: "Grow timeline: Tomato test",
-    description: "",
-    events: [],
-    photos: [],
-    status: "published",
-    workspaceType: "personal"
-  });
-  mockPreview.mockResolvedValue({
-    title: "Grow timeline: Tomato test",
-    description: "Public summary",
-    dateRange: {
-      start: "2026-08-08T12:00:00.000Z",
-      end: "2026-08-08T12:00:00.000Z"
-    },
-    events: [
-      {
-        id: "GrowLog:log-2:photo:0",
-        type: "photo_added",
-        title: "Week two photo",
-        summary: "Photo selected for this grow timeline.",
-        timestamp: "2026-08-08T12:00:00.000Z",
-        tags: []
-      }
-    ],
-    photoCount: 1,
-    cannabisSpecific: false
-  });
+  mockPublish.mockResolvedValue(publishedResult("visual"));
+  mockPreview.mockResolvedValue(previewResult("visual"));
+  mockCreateForumPost.mockResolvedValue({ id: "post-1" });
 });
 
 describe("GrowTimelineShare", () => {
@@ -124,7 +144,13 @@ describe("GrowTimelineShare", () => {
     fireEvent.press(screen.getByLabelText("Review public grow timeline preview"));
 
     await waitFor(() => expect(mockPreview).toHaveBeenCalledTimes(1));
+    expect(mockPreview).toHaveBeenCalledWith(
+      "personal",
+      "grow-1",
+      expect.objectContaining({ presentation: "visual" })
+    );
     expect(screen.getByLabelText("Public timeline preview")).toBeTruthy();
+    expect(screen.getByLabelText("Visual grow timeline flowchart")).toBeTruthy();
     expect(screen.getByText("Photo selected for this grow timeline.")).toBeTruthy();
     expect(mockPublish).not.toHaveBeenCalled();
     fireEvent.press(screen.getByLabelText("Publish reviewed grow timeline"));
@@ -136,6 +162,7 @@ describe("GrowTimelineShare", () => {
       expect.objectContaining({
         title: "Grow timeline: Tomato test",
         description: "Public summary",
+        presentation: "visual",
         eventIds: ["GrowLog:log-2:photo:0"],
         photoUrls: [
           "https://api.growpathai.com/api/evidence-assets/uploads/507f1f77bcf86cd799439011/object"
@@ -143,6 +170,103 @@ describe("GrowTimelineShare", () => {
       })
     );
     expect(screen.getByText("Published version 1")).toBeTruthy();
+  });
+
+  it("preserves list presentation through preview and publish", async () => {
+    mockPreview.mockResolvedValue(previewResult("list"));
+    mockPublish.mockResolvedValue(publishedResult("list"));
+    const screen = render(<GrowTimelineShare workspace="personal" />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Review public grow timeline preview")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByText("Vertical Detailed List"));
+    fireEvent.press(screen.getByLabelText("Review public grow timeline preview"));
+
+    await waitFor(() => expect(mockPreview).toHaveBeenCalledTimes(1));
+    expect(mockPreview).toHaveBeenCalledWith(
+      "personal",
+      "grow-1",
+      expect.objectContaining({ presentation: "list" })
+    );
+    expect(screen.getByLabelText("Public timeline preview")).toBeTruthy();
+    expect(screen.queryByLabelText("Visual grow timeline flowchart")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Publish reviewed grow timeline"));
+
+    await waitFor(() => expect(mockPublish).toHaveBeenCalledTimes(1));
+    expect(mockPublish).toHaveBeenCalledWith(
+      "personal",
+      "grow-1",
+      expect.objectContaining({ presentation: "list" })
+    );
+  });
+
+  it("posts the visual story to the feed with its canonical social preview image", async () => {
+    const socialPreviewImageUrl =
+      "https://api.growpathai.com/api/public/grow-timelines/preview-token/share-image?v=1234567890abcdef";
+    mockGetCurrent.mockResolvedValue({
+      ...publishedResult("visual"),
+      version: 3,
+      cannabisSpecific: true,
+      socialPreviewImageUrl,
+      photos: [{ url: "https://api.growpathai.com/uploads/first-photo.jpg" }]
+    });
+    const screen = render(<GrowTimelineShare workspace="personal" />);
+
+    await waitFor(() => expect(screen.getByText("Published version 3")).toBeTruthy());
+    expect(mockPublicShareActions).toHaveBeenCalledWith(
+      expect.objectContaining({ heading: "Share Visual Grow Story" })
+    );
+
+    fireEvent.press(screen.getByLabelText("Post Visual Grow Story to GrowPath feed"));
+
+    await waitFor(() => expect(mockCreateForumPost).toHaveBeenCalledTimes(1));
+    expect(mockCreateForumPost).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: `Cannabis content.\n\nExplore the horizontal Visual Grow Story: https://growpathai.com/grow-timeline/${"A".repeat(43)}`,
+        photos: [socialPreviewImageUrl],
+        tags: ["cannabis", "grow story"],
+        authorType: "user",
+        visibility: "public"
+      })
+    );
+    expect(
+      screen.getByText("The Visual Grow Story was posted to the GrowPath feed.")
+    ).toBeTruthy();
+  });
+
+  it("restores a published list presentation and uses truthful list feed wording", async () => {
+    const firstPhotoUrl = "https://api.growpathai.com/uploads/list-first-photo.jpg";
+    mockGetCurrent.mockResolvedValue({
+      ...publishedResult("list"),
+      photos: [{ url: firstPhotoUrl }],
+      cannabisSpecific: false
+    });
+    const screen = render(<GrowTimelineShare workspace="personal" />);
+
+    await waitFor(() => expect(screen.getByText("Published version 1")).toBeTruthy());
+    expect(screen.getByText("✓ Vertical Detailed List")).toBeTruthy();
+    expect(screen.getByText("Preview Grow Timeline List")).toBeTruthy();
+    expect(mockPublicShareActions).toHaveBeenCalledWith(
+      expect.objectContaining({ heading: "Share Grow Timeline List" })
+    );
+
+    fireEvent.press(screen.getByLabelText("Post Grow Timeline List to GrowPath feed"));
+
+    await waitFor(() => expect(mockCreateForumPost).toHaveBeenCalledTimes(1));
+    expect(mockCreateForumPost).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: `Explore the detailed Grow Timeline List: https://growpathai.com/grow-timeline/${"A".repeat(43)}`,
+        photos: [firstPhotoUrl],
+        tags: ["grow story"],
+        authorType: "user",
+        visibility: "public"
+      })
+    );
+    expect(
+      screen.getByText("The Grow Timeline List was posted to the GrowPath feed.")
+    ).toBeTruthy();
   });
 
   it("cancels without publishing and withdraws without changing the private grow", async () => {

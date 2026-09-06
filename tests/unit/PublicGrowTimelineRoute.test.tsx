@@ -43,6 +43,7 @@ beforeEach(() => {
     status: "published",
     title: "Tomato season",
     description: "A reviewed public timeline.",
+    presentation: "visual",
     dateRange: {
       start: "2026-08-01T12:00:00.000Z",
       end: "2026-08-08T12:00:00.000Z"
@@ -95,5 +96,41 @@ describe("PublicGrowTimelineRoute", () => {
       ).toBeTruthy()
     );
     expect(screen.queryByText("Tomato season")).toBeNull();
+  });
+
+  it("renders a published list presentation without the visual flow", async () => {
+    mockGetPublicCopy.mockResolvedValue({
+      id: "507f1f77bcf86cd799439012",
+      token: "A".repeat(43),
+      workspaceType: "personal",
+      version: 2,
+      status: "published",
+      title: "Tomato season list",
+      description: "A reviewed public list.",
+      presentation: "list",
+      dateRange: {
+        start: "2026-08-01T12:00:00.000Z",
+        end: "2026-08-08T12:00:00.000Z"
+      },
+      events: [
+        {
+          id: "GrowLog:log-1",
+          title: "Week one list entry",
+          summary: "Healthy growth in list mode",
+          timestamp: "2026-08-01T12:00:00.000Z",
+          tags: ["journal"]
+        }
+      ],
+      photos: [],
+      cannabisSpecific: false,
+      publishedAt: "2026-08-08T12:00:00.000Z"
+    });
+
+    const screen = render(<PublicGrowTimelineRoute />);
+    await waitFor(() => expect(screen.getByText("Tomato season list")).toBeTruthy());
+
+    expect(screen.getByText("Week one list entry")).toBeTruthy();
+    expect(screen.getByText("Healthy growth in list mode")).toBeTruthy();
+    expect(screen.queryByLabelText("Visual grow timeline flowchart")).toBeNull();
   });
 });
