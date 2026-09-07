@@ -16,8 +16,6 @@ import {
 } from "../recurringPriceQuotes";
 import { resolveSubscriptionSafety } from "../subscriptionSafety";
 
-const FACILITY_BILLING_ROLES = new Set(["OWNER", "FACILITY_ADMIN", "SUPER_ADMIN"]);
-
 function displayDate(value: unknown) {
   if (!value) return null;
   const date = new Date(String(value));
@@ -30,7 +28,7 @@ export default function FacilityBillingHome() {
   const facilityId = facility.selectedId || entitlementFacilityId || null;
   const facilityName = facility.selected?.name || "Selected Facility";
   const normalizedRole = String(facilityRole || "").toUpperCase();
-  const roleCanManageBilling = FACILITY_BILLING_ROLES.has(normalizedRole);
+  const roleCanManageBilling = normalizedRole === "OWNER";
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly");
@@ -248,7 +246,7 @@ export default function FacilityBillingHome() {
           {!canManageBilling ? (
             <Text style={styles.note}>
               {managementMessage ||
-                `Only the Facility owner or authorized Facility billing administrator can start checkout or cancel renewal. Your ${
+                `Only the Facility workspace owner can start checkout, open Stripe billing, or cancel renewal. Your ${
                   normalizedRole || "member"
                 } access is read-only here.`}
             </Text>

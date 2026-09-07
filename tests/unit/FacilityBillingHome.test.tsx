@@ -102,17 +102,23 @@ describe("FacilityBillingHome", () => {
     });
   });
 
-  it("shows the selected Facility status without exposing personal billing or mutation to staff", () => {
-    const screen = render(<FacilityBillingHome />);
+  it.each(["STAFF", "VIEWER", "FACILITY_ADMIN", "SUPER_ADMIN"])(
+    "shows the selected Facility status without exposing billing mutation to %s",
+    (facilityRole) => {
+      mockEntitlements.facilityRole = facilityRole;
+      const screen = render(<FacilityBillingHome />);
 
-    expect(screen.getByText("Triple Bag Genetics")).toBeTruthy();
-    expect(screen.getByText("active")).toBeTruthy();
-    expect(screen.getByText(/Your STAFF access is read-only here/)).toBeTruthy();
-    expect(screen.queryByLabelText("Cancel Facility renewal")).toBeNull();
-    expect(screen.queryByLabelText("Start Facility plan checkout")).toBeNull();
-    expect(screen.queryByLabelText("Manage Facility billing in Stripe")).toBeNull();
-    expect(screen.queryByText(/Plan: pro/i)).toBeNull();
-  });
+      expect(screen.getByText("Triple Bag Genetics")).toBeTruthy();
+      expect(screen.getByText("active")).toBeTruthy();
+      expect(
+        screen.getByText(new RegExp(`Your ${facilityRole} access is read-only here`))
+      ).toBeTruthy();
+      expect(screen.queryByLabelText("Cancel Facility renewal")).toBeNull();
+      expect(screen.queryByLabelText("Start Facility plan checkout")).toBeNull();
+      expect(screen.queryByLabelText("Manage Facility billing in Stripe")).toBeNull();
+      expect(screen.queryByText(/Plan: pro/i)).toBeNull();
+    }
+  );
 
   it("exposes the exact Facility cancellation action to its owner", () => {
     mockEntitlements.facilityRole = "OWNER";
