@@ -511,7 +511,11 @@ test("personal grow core loop persists and reappears in timeline", async ({ page
   ).toBeVisible();
   await expect(page.getByText("Blueberry patio bush added")).toBeVisible();
   await expect(page.getByText("Blueberry leaf photo check")).toBeVisible();
-  await expect(page.getByText("Photo attached to log")).toBeVisible();
+  await expect(
+    page.getByLabel("Timeline photo for Blueberry leaf photo check")
+  ).toBeVisible();
+  await expect(page.getByText("5 points", { exact: true })).toBeVisible();
+  await expect(page.getByText("Photo attached to log")).toHaveCount(0);
   await expect(page.getByText("vpd result saved")).toBeVisible();
   await expect(page.getByText("Follow up: vpd")).toBeVisible();
   await page.getByRole("button", { name: "Detailed List" }).click();
