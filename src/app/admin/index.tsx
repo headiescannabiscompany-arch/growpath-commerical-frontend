@@ -2755,28 +2755,26 @@ export default function PlatformAdminRoute() {
               >
                 <Text style={styles.dangerText}>Ban</Text>
               </Pressable>
-              {item.syntheticCleanupApproved === true ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    cleanupReviewId === item._id
-                      ? `Opening Evidence Vault review for ${item.email}`
-                      : `Review ${item.email} in Evidence Vault`
-                  }
-                  accessibilityState={{
-                    disabled: Boolean(cleanupReviewId) || busyId === item._id
-                  }}
-                  disabled={Boolean(cleanupReviewId) || busyId === item._id}
-                  style={styles.secondaryButton}
-                  onPress={() => void reviewSyntheticCleanup(item)}
-                >
-                  <Text accessibilityLiveRegion="polite" style={styles.secondaryText}>
-                    {cleanupReviewId === item._id
-                      ? "Opening Evidence Vault…"
-                      : "Review in Evidence Vault"}
-                  </Text>
-                </Pressable>
-              ) : null}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  cleanupReviewId === item._id
+                    ? `Opening Evidence Vault review for ${item.email}`
+                    : `Review ${item.email} in Evidence Vault`
+                }
+                accessibilityState={{
+                  disabled: Boolean(cleanupReviewId) || busyId === item._id
+                }}
+                disabled={Boolean(cleanupReviewId) || busyId === item._id}
+                style={styles.secondaryButton}
+                onPress={() => void reviewSyntheticCleanup(item)}
+              >
+                <Text accessibilityLiveRegion="polite" style={styles.secondaryText}>
+                  {cleanupReviewId === item._id
+                    ? "Opening Evidence Vault…"
+                    : "Review in Evidence Vault"}
+                </Text>
+              </Pressable>
             </View>
             {cleanupPreview?.target.id === item._id ? (
               <View

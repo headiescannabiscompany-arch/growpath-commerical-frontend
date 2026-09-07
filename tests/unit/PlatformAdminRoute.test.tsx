@@ -727,12 +727,10 @@ describe("PlatformAdminRoute", () => {
     );
   });
 
-  it("routes per-row test-account review into the Evidence Vault without calling the retired endpoint", async () => {
+  it("routes every per-row account review into the guarded Evidence Vault without calling the retired endpoint", async () => {
     mockApiRequest.mockImplementation((path: string) => {
       if (path.startsWith("/api/admin/users")) {
-        return Promise.resolve({
-          users: [{ ...member, syntheticCleanupApproved: true }]
-        });
+        return Promise.resolve({ users: [member] });
       }
       if (path === "/api/admin/evidence-vault/capabilities") {
         return Promise.resolve({
