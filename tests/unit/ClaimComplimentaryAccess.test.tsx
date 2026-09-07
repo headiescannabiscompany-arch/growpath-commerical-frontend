@@ -43,6 +43,7 @@ const summary = {
   recipientName: "Recipient",
   plan: "commercial",
   duration: "year",
+  facilityId: null,
   message: "Welcome to GrowPathAI",
   complimentary: true,
   paymentState: "nonpaid",
@@ -90,6 +91,22 @@ describe("ClaimComplimentaryAccessScreen", () => {
     });
     expect(JSON.stringify(mockPush.mock.calls)).not.toContain("complimentary-token-1");
     await expect(readComplimentaryClaimToken()).resolves.toBe("complimentary-token-1");
+  });
+
+  it("states that a Facility grant is bound to the selected workspace", async () => {
+    mockPreview.mockResolvedValue({
+      ...summary,
+      plan: "facility",
+      facilityId: "507f191e810c19729de86001"
+    });
+    const screen = render(<ClaimComplimentaryAccessScreen />);
+
+    await waitFor(() => expect(screen.getByText("One year of facility")).toBeTruthy());
+    expect(
+      screen.getByText(
+        "This access is bound to the specific Facility workspace selected by GrowPathAI."
+      )
+    ).toBeTruthy();
   });
 
   it("captures a fragment token and removes it from the visible browser URL", async () => {

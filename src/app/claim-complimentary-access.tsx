@@ -202,6 +202,12 @@ export default function ClaimComplimentaryAccessScreen() {
             <Text style={styles.helper}>
               Access starts only when the matching verified account claims it.
             </Text>
+            {summary.plan === "facility" && summary.facilityId ? (
+              <Text style={styles.helper}>
+                This access is bound to the specific Facility workspace selected by
+                GrowPathAI.
+              </Text>
+            ) : null}
           </View>
         ) : null}
 

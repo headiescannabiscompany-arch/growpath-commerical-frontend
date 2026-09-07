@@ -1,6 +1,7 @@
 import {
   claimComplimentaryGrant,
   issueComplimentaryGrant,
+  listComplimentaryFacilityWorkspaces,
   listComplimentaryGrants,
   previewComplimentaryGrant,
   resendComplimentaryGrant,
@@ -20,6 +21,7 @@ const grant = {
   message: "Welcome",
   plan: "commercial",
   duration: "year",
+  facilityId: null,
   status: "pending",
   reason: "Influencer access",
   issuedAt: "2026-09-03T12:00:00.000Z",
@@ -45,6 +47,7 @@ const claimResult = {
   claimed: true,
   plan: "commercial",
   duration: "year",
+  facilityId: null,
   expiresAt: "2027-09-03T12:00:00.000Z",
   complimentary: true,
   paymentState: "nonpaid",
@@ -113,6 +116,74 @@ describe("complimentary grant API", () => {
         reason: "Influencer access"
       }
     });
+  });
+
+  it("lists safe owned workspaces for an Admin Facility grant", async () => {
+    const workspaces = [
+      {
+        facilityId: "507f191e810c19729de86001",
+        name: "North Greenhouse",
+        workspaceReference: "FAC-101"
+      }
+    ];
+    mockApiRequest.mockResolvedValue({
+      ok: true,
+      recipientEmail: "recipient@example.com",
+      workspaces
+    });
+
+    await expect(
+      listComplimentaryFacilityWorkspaces("recipient@example.com")
+    ).resolves.toEqual({ recipientEmail: "recipient@example.com", workspaces });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/admin/complimentary-grants/facility-workspaces",
+      {
+        method: "GET",
+        cache: "no-store",
+        params: { recipientEmail: "recipient@example.com" }
+      }
+    );
+  });
+
+  it("rejects mismatched workspace lookup and Facility issue responses", async () => {
+    const facilityId = "507f191e810c19729de86001";
+    mockApiRequest
+      .mockResolvedValueOnce({
+        recipientEmail: "different@example.com",
+        workspaces: [{ facilityId, name: "Wrong recipient", workspaceReference: null }]
+      })
+      .mockResolvedValueOnce({
+        grant: {
+          ...grant,
+          recipientEmail: "recipient@example.com",
+          plan: "facility",
+          facilityId: "507f191e810c19729de86002"
+        },
+        deliveryAccepted: true
+      });
+
+    await expect(
+      listComplimentaryFacilityWorkspaces("recipient@example.com")
+    ).rejects.toThrow("invalid complimentary-access response");
+    await expect(
+      issueComplimentaryGrant({
+        recipientEmail: "recipient@example.com",
+        plan: "facility",
+        duration: "year",
+        facilityId,
+        reason: "Approved Facility demonstration access"
+      })
+    ).rejects.toThrow("invalid complimentary-access response");
+  });
+
+  it("rejects empty, duplicate, or malformed Facility workspace identifiers", async () => {
+    mockApiRequest.mockResolvedValue({
+      recipientEmail: "recipient@example.com",
+      workspaces: [{ facilityId: "", name: "Invalid", workspaceReference: null }]
+    });
+    await expect(
+      listComplimentaryFacilityWorkspaces("recipient@example.com")
+    ).rejects.toThrow("invalid complimentary-access response");
   });
 
   it("encodes grant IDs before resend and revoke actions", async () => {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
 import {
   ActivityIndicator,
@@ -11,11 +11,13 @@ import {
 
 import {
   issueComplimentaryGrant,
+  listComplimentaryFacilityWorkspaces,
   listComplimentaryGrants,
   resendComplimentaryGrant,
   revokeComplimentaryGrant,
   type ComplimentaryGrant,
   type ComplimentaryGrantDuration,
+  type ComplimentaryFacilityWorkspace,
   type ComplimentaryGrantPlan
 } from "@/api/complimentaryGrants";
 import AppCard from "@/components/layout/AppCard";
@@ -47,9 +49,23 @@ export default function ComplimentaryGrantsAdminCard() {
   const [message, setMessage] = useState("");
   const [plan, setPlan] = useState<ComplimentaryGrantPlan>("pro");
   const [duration, setDuration] = useState<ComplimentaryGrantDuration>("month");
+  const [facilityId, setFacilityId] = useState("");
+  const [facilityWorkspaces, setFacilityWorkspaces] = useState<
+    ComplimentaryFacilityWorkspace[]
+  >([]);
+  const [facilityWorkspacesLoading, setFacilityWorkspacesLoading] = useState(false);
+  const [facilityLookupEmail, setFacilityLookupEmail] = useState("");
+  const facilityLookupGeneration = useRef(0);
+  const currentRecipientEmail = useRef("");
+  const currentPlan = useRef<ComplimentaryGrantPlan>("pro");
   const [reason, setReason] = useState("");
   const [actionReasons, setActionReasons] = useState<Record<string, string>>({});
-  const canIssue = !busy && validEmail(recipientEmail) && reason.trim().length >= 8;
+  const facilityReady =
+    plan !== "facility" ||
+    (facilityLookupEmail === recipientEmail.trim().toLowerCase() &&
+      facilityWorkspaces.some((workspace) => workspace.facilityId === facilityId));
+  const canIssue =
+    !busy && validEmail(recipientEmail) && reason.trim().length >= 8 && facilityReady;
 
   const load = useCallback(async (cursor: string | null = null) => {
     setLoading(true);
@@ -85,6 +101,45 @@ export default function ComplimentaryGrantsAdminCard() {
     });
   }
 
+  async function loadFacilityWorkspaces() {
+    const email = recipientEmail.trim().toLowerCase();
+    if (!validEmail(email) || facilityWorkspacesLoading) return;
+    const generation = facilityLookupGeneration.current + 1;
+    facilityLookupGeneration.current = generation;
+    setFacilityWorkspacesLoading(true);
+    setFacilityLookupEmail("");
+    setFacilityId("");
+    setFacilityWorkspaces([]);
+    setFeedback("");
+    try {
+      const result = await listComplimentaryFacilityWorkspaces(email);
+      if (
+        generation !== facilityLookupGeneration.current ||
+        currentPlan.current !== "facility" ||
+        currentRecipientEmail.current.trim().toLowerCase() !== email
+      ) {
+        return;
+      }
+      setFacilityWorkspaces(result.workspaces);
+      setFacilityLookupEmail(result.recipientEmail);
+      if (!result.workspaces.length) {
+        setFeedback(
+          "This recipient does not own a Facility workspace that can receive access."
+        );
+      }
+    } catch (error) {
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "Unable to load the recipient's Facility workspaces."
+      );
+    } finally {
+      if (generation === facilityLookupGeneration.current) {
+        setFacilityWorkspacesLoading(false);
+      }
+    }
+  }
+
   async function issue() {
     if (busy) return;
     setBusy("issue");
@@ -96,12 +151,16 @@ export default function ComplimentaryGrantsAdminCard() {
         message: message.trim(),
         plan,
         duration,
+        ...(plan === "facility" ? { facilityId } : {}),
         reason: reason.trim()
       });
       replaceGrant(result.grant);
       setRecipientEmail("");
       setRecipientName("");
       setMessage("");
+      setFacilityId("");
+      setFacilityWorkspaces([]);
+      setFacilityLookupEmail("");
       setReason("");
       setFeedback(
         result.deliveryAccepted
@@ -156,7 +215,15 @@ export default function ComplimentaryGrantsAdminCard() {
           accessibilityLabel="Complimentary recipient email"
           autoCapitalize="none"
           keyboardType="email-address"
-          onChangeText={setRecipientEmail}
+          onChangeText={(value) => {
+            facilityLookupGeneration.current += 1;
+            currentRecipientEmail.current = value;
+            setRecipientEmail(value);
+            setFacilityId("");
+            setFacilityWorkspaces([]);
+            setFacilityLookupEmail("");
+            setFacilityWorkspacesLoading(false);
+          }}
           placeholder="Recipient email"
           placeholderTextColor={palette.textMuted}
           selectionColor={palette.accent}
@@ -178,7 +245,16 @@ export default function ComplimentaryGrantsAdminCard() {
               accessibilityLabel="Complimentary plan"
               selectedValue={plan}
               style={styles.picker}
-              onValueChange={(value) => setPlan(value as ComplimentaryGrantPlan)}
+              onValueChange={(value) => {
+                const nextPlan = value as ComplimentaryGrantPlan;
+                facilityLookupGeneration.current += 1;
+                currentPlan.current = nextPlan;
+                setPlan(nextPlan);
+                setFacilityId("");
+                setFacilityWorkspaces([]);
+                setFacilityLookupEmail("");
+                setFacilityWorkspacesLoading(false);
+              }}
             >
               <Picker.Item label="Personal Pro" value="pro" />
               <Picker.Item label="Commercial" value="commercial" />
@@ -197,6 +273,57 @@ export default function ComplimentaryGrantsAdminCard() {
             </Picker>
           </View>
         </View>
+        {plan === "facility" ? (
+          <View style={styles.facilityPickerSection}>
+            <Text style={styles.meta}>
+              Facility access must be bound to one workspace currently owned by the
+              recipient.
+            </Text>
+            <Pressable
+              accessibilityLabel="Find complimentary recipient Facility workspaces"
+              accessibilityRole="button"
+              accessibilityState={{
+                disabled: !validEmail(recipientEmail) || facilityWorkspacesLoading
+              }}
+              disabled={!validEmail(recipientEmail) || facilityWorkspacesLoading}
+              onPress={() => void loadFacilityWorkspaces()}
+              style={[
+                styles.secondary,
+                (!validEmail(recipientEmail) || facilityWorkspacesLoading) &&
+                  styles.disabled
+              ]}
+            >
+              <Text style={styles.secondaryText}>
+                {facilityWorkspacesLoading
+                  ? "Finding workspaces..."
+                  : "Find owned workspaces"}
+              </Text>
+            </Pressable>
+            {facilityWorkspaces.length ? (
+              <View style={styles.pickerWrap}>
+                <Picker
+                  accessibilityLabel="Complimentary Facility workspace"
+                  selectedValue={facilityId}
+                  style={styles.picker}
+                  onValueChange={(value) => setFacilityId(String(value || ""))}
+                >
+                  <Picker.Item label="Select one Facility workspace" value="" />
+                  {facilityWorkspaces.map((workspace) => (
+                    <Picker.Item
+                      key={workspace.facilityId}
+                      label={
+                        workspace.workspaceReference
+                          ? `${workspace.name} · ${workspace.workspaceReference}`
+                          : workspace.name
+                      }
+                      value={workspace.facilityId}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
         <TextInput
           accessibilityLabel="Complimentary message"
           multiline
@@ -276,6 +403,13 @@ export default function ComplimentaryGrantsAdminCard() {
                 : `Access ends: ${dateLabel(grant.entitlementEndsAt)}`}
             </Text>
             <Text style={styles.meta}>Audit reason: {grant.reason}</Text>
+            {grant.plan === "facility" ? (
+              <Text style={styles.meta}>
+                {grant.facilityId
+                  ? "Bound to one Facility workspace"
+                  : "Legacy Facility grant · primary workspace compatibility"}
+              </Text>
+            ) : null}
             {actionable ? (
               <>
                 <TextInput
@@ -351,6 +485,7 @@ function createStyles(palette: ThemePalette) {
   return StyleSheet.create({
     warning: { color: palette.warning, fontWeight: "700", lineHeight: 20 },
     form: { gap: 10 },
+    facilityPickerSection: { gap: 8 },
     input: {
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.border,

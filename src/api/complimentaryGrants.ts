@@ -3,6 +3,12 @@ import { apiRequest } from "./apiRequest";
 export type ComplimentaryGrantPlan = "pro" | "commercial" | "facility";
 export type ComplimentaryGrantDuration = "month" | "year";
 
+export type ComplimentaryFacilityWorkspace = {
+  facilityId: string;
+  name: string;
+  workspaceReference: string | null;
+};
+
 export type ComplimentaryGrant = {
   id: string;
   recipientEmail: string;
@@ -10,6 +16,7 @@ export type ComplimentaryGrant = {
   message: string;
   plan: ComplimentaryGrantPlan;
   duration: ComplimentaryGrantDuration;
+  facilityId: string | null;
   status: "pending" | "active" | "expired" | "revoked";
   reason: string;
   issuedAt: string | null;
@@ -36,6 +43,7 @@ export type ComplimentaryClaimSummary = {
   recipientName: string;
   plan: ComplimentaryGrantPlan;
   duration: ComplimentaryGrantDuration;
+  facilityId: string | null;
   message: string;
   complimentary: true;
   paymentState: "nonpaid";
@@ -46,6 +54,7 @@ export type ComplimentaryClaimResult = {
   claimed: true;
   plan: ComplimentaryGrantPlan;
   duration: ComplimentaryGrantDuration;
+  facilityId: string | null;
   expiresAt: string;
   complimentary: true;
   paymentState: "nonpaid";
@@ -73,6 +82,25 @@ function stringOrNull(value: unknown) {
   return value === null || typeof value === "string";
 }
 
+function normalizedEmail(value: unknown) {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
+}
+
+function validFacilityId(value: unknown): value is string {
+  return typeof value === "string" && /^[a-f\d]{24}$/i.test(value);
+}
+
+function validFacilityBinding(
+  plan: ComplimentaryGrantPlan,
+  facilityId: unknown,
+  allowLegacyFacilityNull: boolean
+) {
+  if (plan !== "facility") return facilityId === null;
+  return validFacilityId(facilityId) || (allowLegacyFacilityNull && facilityId === null);
+}
+
 function validPlan(value: unknown): value is ComplimentaryGrantPlan {
   return GRANT_PLANS.has(value as ComplimentaryGrantPlan);
 }
@@ -94,6 +122,7 @@ function checkedGrant(value: unknown): ComplimentaryGrant {
     typeof grant.message !== "string" ||
     !validPlan(grant.plan) ||
     !validDuration(grant.duration) ||
+    !validFacilityBinding(grant.plan, grant.facilityId, true) ||
     !GRANT_STATUSES.has(grant.status) ||
     typeof grant.reason !== "string" ||
     !stringOrNull(grant.issuedAt) ||
@@ -128,6 +157,7 @@ function checkedClaimSummary(value: unknown): ComplimentaryClaimSummary {
     typeof summary.recipientName !== "string" ||
     !validPlan(summary.plan) ||
     !validDuration(summary.duration) ||
+    !validFacilityBinding(summary.plan, summary.facilityId, true) ||
     typeof summary.message !== "string" ||
     summary.complimentary !== true ||
     summary.paymentState !== "nonpaid" ||
@@ -145,6 +175,7 @@ function checkedClaimResult(value: unknown): ComplimentaryClaimResult {
     result.claimed !== true ||
     !validPlan(result.plan) ||
     !validDuration(result.duration) ||
+    !validFacilityBinding(result.plan, result.facilityId, true) ||
     typeof result.expiresAt !== "string" ||
     !result.expiresAt.trim() ||
     result.complimentary !== true ||
@@ -207,8 +238,16 @@ export async function issueComplimentaryGrant(input: {
   message?: string;
   plan: ComplimentaryGrantPlan;
   duration: ComplimentaryGrantDuration;
+  facilityId?: string;
   reason: string;
 }): Promise<{ grant: ComplimentaryGrant; deliveryAccepted: boolean }> {
+  const expectedFacilityId = input.plan === "facility" ? input.facilityId : null;
+  if (
+    !validFacilityBinding(input.plan, expectedFacilityId, false) ||
+    (input.plan !== "facility" && input.facilityId !== undefined)
+  ) {
+    return invalidResponse();
+  }
   const response = await apiRequest("/api/admin/complimentary-grants", {
     method: "POST",
     body: input
@@ -217,10 +256,66 @@ export async function issueComplimentaryGrant(input: {
   if (!payload || typeof payload.deliveryAccepted !== "boolean") {
     return invalidResponse();
   }
+  const grant = checkedGrant(payload.grant);
+  if (
+    grant.plan !== input.plan ||
+    grant.duration !== input.duration ||
+    normalizedEmail(grant.recipientEmail) !== normalizedEmail(input.recipientEmail) ||
+    grant.facilityId !== expectedFacilityId
+  ) {
+    return invalidResponse();
+  }
   return {
-    grant: checkedGrant(payload.grant),
+    grant,
     deliveryAccepted: payload.deliveryAccepted
   };
+}
+
+export async function listComplimentaryFacilityWorkspaces(
+  recipientEmail: string
+): Promise<{
+  recipientEmail: string;
+  workspaces: ComplimentaryFacilityWorkspace[];
+}> {
+  const response = await apiRequest(
+    "/api/admin/complimentary-grants/facility-workspaces",
+    {
+      method: "GET",
+      cache: "no-store",
+      params: { recipientEmail }
+    }
+  );
+  const payload = record(response?.data ?? response);
+  const expectedRecipientEmail = normalizedEmail(recipientEmail);
+  if (
+    !payload ||
+    typeof payload.recipientEmail !== "string" ||
+    normalizedEmail(payload.recipientEmail) !== expectedRecipientEmail ||
+    !expectedRecipientEmail ||
+    !Array.isArray(payload.workspaces)
+  ) {
+    return invalidResponse();
+  }
+  const workspaces = payload.workspaces.map((value: unknown) => {
+    const workspace = record(value);
+    if (
+      !workspace ||
+      !validFacilityId(workspace.facilityId) ||
+      typeof workspace.name !== "string" ||
+      !workspace.name.trim() ||
+      !stringOrNull(workspace.workspaceReference)
+    ) {
+      return invalidResponse();
+    }
+    return workspace as ComplimentaryFacilityWorkspace;
+  });
+  if (
+    new Set(workspaces.map((workspace) => workspace.facilityId)).size !==
+    workspaces.length
+  ) {
+    return invalidResponse();
+  }
+  return { recipientEmail: expectedRecipientEmail, workspaces };
 }
 
 export async function revokeComplimentaryGrant(id: string, reason: string) {
