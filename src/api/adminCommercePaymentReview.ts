@@ -2,6 +2,23 @@ import { apiRequest } from "./apiRequest";
 
 export type CommercePaymentReviewSource = "course" | "marketplace" | "storefront";
 
+export type DestinationRefundProviderReason =
+  | "duplicate"
+  | "fraudulent"
+  | "requested_by_customer";
+
+export type CommerceRefundRetryOperation = {
+  operationId: string;
+  amountCents: number;
+  expectedRefundedAmountCents: number;
+  currency: string;
+  providerReason: DestinationRefundProviderReason;
+  state: string;
+  providerStatus: string;
+  requestedAt: string | null;
+  lastAttemptAt: string | null;
+};
+
 export type CommercePaymentReviewCase = {
   recordId: string;
   sourceType: CommercePaymentReviewSource;
@@ -21,6 +38,10 @@ export type CommercePaymentReviewCase = {
   caseStatus: string;
   reason: string;
   updatedAt: string | null;
+  retryOperation: CommerceRefundRetryOperation | null;
+  canRetryRefundOperation: boolean;
+  connectRecoveryReverifyOperationId: string | null;
+  connectRecoveryReverifyConfirmation: string | null;
   canExecuteRefund: boolean;
   fullRefundConfirmation: string | null;
   canResolvePaymentIssue: boolean;
@@ -61,7 +82,7 @@ export type ExecuteDestinationRefundInput = {
   expectedRefundedAmountCents: number;
   confirmation: string;
   reason: string;
-  providerReason?: "duplicate" | "fraudulent" | "requested_by_customer";
+  providerReason?: DestinationRefundProviderReason;
 };
 
 export type ExecuteDestinationRefundResult = {
@@ -80,6 +101,32 @@ export async function executeDestinationRefund(
   const { sourceType, recordId, ...body } = input;
   return apiRequest(
     `/api/payments/admin/destination-refunds/${encodeURIComponent(sourceType)}/${encodeURIComponent(recordId)}`,
+    { method: "POST", body }
+  );
+}
+
+export type ReverifyDestinationRefundRecoveryInput = {
+  sourceType: CommercePaymentReviewSource;
+  recordId: string;
+  operationId: string;
+  confirmation: string;
+  reason: string;
+};
+
+export type ReverifyDestinationRefundRecoveryResult = {
+  accepted: boolean;
+  sourceType: CommercePaymentReviewSource;
+  recordId: string;
+  connectRecoveryStatus: string;
+  reconciliationStatus: string;
+};
+
+export async function reverifyDestinationRefundRecovery(
+  input: ReverifyDestinationRefundRecoveryInput
+): Promise<ReverifyDestinationRefundRecoveryResult> {
+  const { sourceType, recordId, ...body } = input;
+  return apiRequest(
+    `/api/payments/admin/destination-refunds/${encodeURIComponent(sourceType)}/${encodeURIComponent(recordId)}/reverify-connect`,
     { method: "POST", body }
   );
 }

@@ -11,6 +11,7 @@ import {
 import {
   executeDestinationRefund,
   listCommercePaymentReviewCases,
+  reverifyDestinationRefundRecovery,
   resolveCommercePaymentIssue,
   type CommercePaymentReviewCase,
   type CommercePaymentReviewPage
@@ -46,8 +47,13 @@ function newSupportOperationId(recordId: string) {
   return `commerce-support-${recordId}-${random}`.slice(0, 120);
 }
 
-function exactConfirmation(item: CommercePaymentReviewCase, amountCents: number) {
-  return `REFUND ${item.sourceType}:${item.recordId} ${amountCents} ${item.currency} AFTER ${item.refundedAmountCents}`;
+function exactConfirmation(
+  item: CommercePaymentReviewCase,
+  amountCents: number,
+  expectedRefundedAmountCents = item.refundedAmountCents,
+  currency = item.currency
+) {
+  return `REFUND ${item.sourceType}:${item.recordId} ${amountCents} ${currency} AFTER ${expectedRefundedAmountCents}`;
 }
 
 function detailedReason(value: string) {
@@ -68,6 +74,10 @@ export default function AdminCommercePaymentReviewCard() {
   const [confirmation, setConfirmation] = useState("");
   const [operationId, setOperationId] = useState("");
   const [executing, setExecuting] = useState(false);
+  const [reverifySelectedId, setReverifySelectedId] = useState("");
+  const [reverifyReason, setReverifyReason] = useState("");
+  const [reverifyConfirmation, setReverifyConfirmation] = useState("");
+  const [reverifying, setReverifying] = useState(false);
   const [supportSelectedId, setSupportSelectedId] = useState("");
   const [supportDecision, setSupportDecision] = useState<"resolve" | "decline">(
     "resolve"
@@ -78,19 +88,48 @@ export default function AdminCommercePaymentReviewCard() {
   const [resolvingSupport, setResolvingSupport] = useState(false);
 
   const selected = pageData?.cases.find((item) => item.recordId === selectedId) || null;
+  const selectedRetryOperation =
+    selected?.canRetryRefundOperation && selected.retryOperation
+      ? selected.retryOperation
+      : null;
   const amountCents = Number(amountText);
   const expectedConfirmation =
     selected && Number.isSafeInteger(amountCents) && amountCents > 0
-      ? exactConfirmation(selected, amountCents)
+      ? exactConfirmation(
+          selected,
+          amountCents,
+          selectedRetryOperation?.expectedRefundedAmountCents,
+          selectedRetryOperation?.currency
+        )
       : "";
+  const amountIsValid = Boolean(
+    selectedRetryOperation
+      ? amountCents === selectedRetryOperation.amountCents
+      : selected && amountCents <= selected.remainingRefundableAmountCents
+  );
   const canExecute = Boolean(
-    selected?.canExecuteRefund &&
+    (selected?.canExecuteRefund || selectedRetryOperation) &&
     Number.isSafeInteger(amountCents) &&
     amountCents > 0 &&
-    amountCents <= selected.remainingRefundableAmountCents &&
+    amountIsValid &&
     detailedReason(reason) &&
     confirmation === expectedConfirmation &&
-    !executing
+    !executing &&
+    !reverifying &&
+    !resolvingSupport
+  );
+  const reverifySelected =
+    pageData?.cases.find((item) => item.recordId === reverifySelectedId) || null;
+  const expectedReverifyConfirmation =
+    reverifySelected?.connectRecoveryReverifyConfirmation || "";
+  const canReverify = Boolean(
+    reverifySelected?.connectRecoveryReverifyOperationId &&
+    expectedReverifyConfirmation &&
+    detailedReason(reverifyReason) &&
+    reverifyConfirmation === expectedReverifyConfirmation &&
+    !reverifying &&
+    !executing &&
+    !resolvingSupport
   );
   const supportSelected =
     pageData?.cases.find((item) => item.recordId === supportSelectedId) || null;
@@ -100,7 +139,9 @@ export default function AdminCommercePaymentReviewCard() {
     supportSelected?.canResolvePaymentIssue &&
     detailedReason(supportReason) &&
     supportConfirmation === expectedSupportConfirmation &&
-    !resolvingSupport
+    !resolvingSupport &&
+    !executing &&
+    !reverifying
   );
 
   async function load(page = 1) {
@@ -114,6 +155,9 @@ export default function AdminCommercePaymentReviewCard() {
       }
       if (!result.cases.some((item) => item.recordId === supportSelectedId)) {
         setSupportSelectedId("");
+      }
+      if (!result.cases.some((item) => item.recordId === reverifySelectedId)) {
+        setReverifySelectedId("");
       }
     } catch (error) {
       setFeedback(
@@ -133,11 +177,23 @@ export default function AdminCommercePaymentReviewCard() {
   }
 
   function selectCase(item: CommercePaymentReviewCase) {
+    const retry = item.canRetryRefundOperation ? item.retryOperation : null;
+    setReverifySelectedId("");
+    setSupportSelectedId("");
     setSelectedId(item.recordId);
-    setAmountText(String(item.remainingRefundableAmountCents));
-    setReason(item.reason || "");
+    setAmountText(String(retry?.amountCents ?? item.remainingRefundableAmountCents));
+    setReason(retry ? "" : item.reason || "");
     setConfirmation("");
-    setOperationId("");
+    setOperationId(retry?.operationId || "");
+    setFeedback("");
+  }
+
+  function selectReverifyCase(item: CommercePaymentReviewCase) {
+    setSelectedId("");
+    setSupportSelectedId("");
+    setReverifySelectedId(item.recordId);
+    setReverifyReason("");
+    setReverifyConfirmation("");
     setFeedback("");
   }
 
@@ -145,6 +201,8 @@ export default function AdminCommercePaymentReviewCard() {
     item: CommercePaymentReviewCase,
     decision: "resolve" | "decline"
   ) {
+    setSelectedId("");
+    setReverifySelectedId("");
     setSupportSelectedId(item.recordId);
     setSupportDecision(decision);
     setSupportReason("");
@@ -155,7 +213,9 @@ export default function AdminCommercePaymentReviewCard() {
 
   async function executeRefund() {
     if (!selected || !canExecute || executing) return;
-    const stableOperationId = operationId || newOperationId(selected.recordId);
+    const retry = selectedRetryOperation;
+    const stableOperationId =
+      retry?.operationId || operationId || newOperationId(selected.recordId);
     setOperationId(stableOperationId);
     setExecuting(true);
     setFeedback("");
@@ -164,18 +224,19 @@ export default function AdminCommercePaymentReviewCard() {
         sourceType: selected.sourceType,
         recordId: selected.recordId,
         operationId: stableOperationId,
-        amountCents,
-        expectedRefundedAmountCents: selected.refundedAmountCents,
+        amountCents: retry?.amountCents ?? amountCents,
+        expectedRefundedAmountCents:
+          retry?.expectedRefundedAmountCents ?? selected.refundedAmountCents,
         confirmation,
         reason: reason.trim(),
-        providerReason: "requested_by_customer"
+        providerReason: retry?.providerReason || "requested_by_customer"
       });
-      setFeedback(
+      const successMessage =
         result.reconciliationStatus === "webhook_pending"
           ? "Stripe accepted the refund request. Signed webhook reconciliation is pending; seller reversal is not marked complete yet."
-          : "Refund request retained for payment reconciliation."
-      );
+          : "Refund request retained for payment reconciliation.";
       await load(pageData?.pagination.page || 1);
+      setFeedback(successMessage);
     } catch (error) {
       setFeedback(
         error instanceof Error
@@ -184,6 +245,43 @@ export default function AdminCommercePaymentReviewCard() {
       );
     } finally {
       setExecuting(false);
+    }
+  }
+
+  async function reverifyRecovery() {
+    if (
+      !reverifySelected?.connectRecoveryReverifyOperationId ||
+      !canReverify ||
+      reverifying
+    )
+      return;
+    setReverifying(true);
+    setFeedback("");
+    try {
+      const result = await reverifyDestinationRefundRecovery({
+        sourceType: reverifySelected.sourceType,
+        recordId: reverifySelected.recordId,
+        operationId: reverifySelected.connectRecoveryReverifyOperationId,
+        confirmation: reverifyConfirmation,
+        reason: reverifyReason.trim()
+      });
+      const successMessage =
+        result.reconciliationStatus === "verified"
+          ? "Stripe evidence verified and the exact refund recovery was reconciled."
+          : "Stripe evidence was checked; the exact recovery remains held for review.";
+      setReverifySelectedId("");
+      setReverifyReason("");
+      setReverifyConfirmation("");
+      await load(pageData?.pagination.page || 1);
+      setFeedback(successMessage);
+    } catch (error) {
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "Connect recovery evidence could not be verified. No new refund was created."
+      );
+    } finally {
+      setReverifying(false);
     }
   }
 
@@ -204,9 +302,9 @@ export default function AdminCommercePaymentReviewCard() {
         confirmation: supportConfirmation,
         reason: supportReason.trim()
       });
-      setFeedback(result.message);
       setSupportSelectedId("");
       await load(pageData?.pagination.page || 1);
+      setFeedback(result.message);
     } catch (error) {
       setFeedback(
         error instanceof Error
@@ -248,9 +346,13 @@ export default function AdminCommercePaymentReviewCard() {
             </Text>
             <Pressable
               accessibilityRole="button"
-              disabled={loading || executing}
+              disabled={loading || executing || reverifying || resolvingSupport}
               onPress={() => void load(pageData?.pagination.page || 1)}
-              style={[styles.secondary, (loading || executing) && styles.disabled]}
+              style={[
+                styles.secondary,
+                (loading || executing || reverifying || resolvingSupport) &&
+                  styles.disabled
+              ]}
             >
               <Text style={styles.secondaryText}>Refresh</Text>
             </Pressable>
@@ -286,11 +388,11 @@ export default function AdminCommercePaymentReviewCard() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={`Resolve payment issue for ${item.sourceType} record ${item.recordId}`}
-                    disabled={executing || resolvingSupport}
+                    disabled={executing || resolvingSupport || reverifying}
                     onPress={() => selectSupportCase(item, "resolve")}
                     style={[
                       styles.secondary,
-                      (executing || resolvingSupport) && styles.disabled
+                      (executing || resolvingSupport || reverifying) && styles.disabled
                     ]}
                   >
                     <Text style={styles.secondaryText}>Resolve support report</Text>
@@ -298,63 +400,113 @@ export default function AdminCommercePaymentReviewCard() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={`Decline payment issue for ${item.sourceType} record ${item.recordId}`}
-                    disabled={executing || resolvingSupport}
+                    disabled={executing || resolvingSupport || reverifying}
                     onPress={() => selectSupportCase(item, "decline")}
                     style={[
                       styles.secondary,
-                      (executing || resolvingSupport) && styles.disabled
+                      (executing || resolvingSupport || reverifying) && styles.disabled
                     ]}
                   >
                     <Text style={styles.secondaryText}>Decline support report</Text>
                   </Pressable>
                 </View>
               ) : null}
-              {!item.canExecuteRefund ? (
+              {item.retryOperation ? (
+                <Text style={styles.warning}>
+                  Exact refund operation: {item.retryOperation.state.replaceAll("_", " ")}
+                  {item.retryOperation.providerStatus
+                    ? ` · provider ${item.retryOperation.providerStatus}`
+                    : ""}
+                </Text>
+              ) : null}
+              {!item.canExecuteRefund &&
+              !item.canRetryRefundOperation &&
+              !item.connectRecoveryReverifyConfirmation ? (
                 <Text style={styles.warning}>
                   {item.connectRecoveryStatus === "policy_pending"
                     ? "A refund operation is already awaiting signed webhook reconciliation."
                     : "Connected-charge evidence is not sufficient for automatic refund execution. Manual provider review is required."}
                 </Text>
               ) : null}
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`Prepare refund for ${item.sourceType} record ${item.recordId}`}
-                disabled={!item.canExecuteRefund || executing}
-                onPress={() => selectCase(item)}
-                style={[
-                  styles.secondary,
-                  (!item.canExecuteRefund || executing) && styles.disabled
-                ]}
-              >
-                <Text style={styles.secondaryText}>Prepare reviewed refund</Text>
-              </Pressable>
+              {item.canExecuteRefund || item.canRetryRefundOperation ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${item.canRetryRefundOperation ? "Open exact refund recovery" : "Prepare refund"} for ${item.sourceType} record ${item.recordId}`}
+                  disabled={executing || reverifying || resolvingSupport}
+                  onPress={() => selectCase(item)}
+                  style={[
+                    styles.secondary,
+                    (executing || reverifying || resolvingSupport) && styles.disabled
+                  ]}
+                >
+                  <Text style={styles.secondaryText}>
+                    {item.canRetryRefundOperation
+                      ? "Resume exact refund operation"
+                      : "Prepare reviewed refund"}
+                  </Text>
+                </Pressable>
+              ) : null}
+              {item.connectRecoveryReverifyConfirmation &&
+              item.connectRecoveryReverifyOperationId ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Reverify Stripe recovery for ${item.sourceType} record ${item.recordId}`}
+                  disabled={executing || reverifying || resolvingSupport}
+                  onPress={() => selectReverifyCase(item)}
+                  style={[
+                    styles.secondary,
+                    (executing || reverifying || resolvingSupport) && styles.disabled
+                  ]}
+                >
+                  <Text style={styles.secondaryText}>Reverify Stripe recovery</Text>
+                </Pressable>
+              ) : null}
             </View>
           ))}
 
           {selected ? (
             <View style={styles.editor}>
-              <Text style={styles.caseTitle}>Refund {selected.sourceType} record</Text>
-              <TextInput
-                accessibilityLabel="Refund amount in cents"
-                keyboardType="number-pad"
-                onChangeText={(value) => {
-                  setAmountText(value.replace(/[^0-9]/g, ""));
-                  setConfirmation("");
-                  setOperationId("");
-                }}
-                placeholder="Refund amount in cents"
-                placeholderTextColor={palette.textMuted}
-                style={styles.input}
-                value={amountText}
-              />
+              <Text style={styles.caseTitle}>
+                {selectedRetryOperation ? "Resume" : "Refund"} {selected.sourceType}{" "}
+                record
+              </Text>
+              {selectedRetryOperation ? (
+                <Text style={styles.meta}>
+                  Resume the server-bound operation for{" "}
+                  {money(
+                    selectedRetryOperation.amountCents,
+                    selectedRetryOperation.currency
+                  )}
+                  . Amount, prior refunded total, provider reason, and operation ID cannot
+                  be changed here.
+                </Text>
+              ) : (
+                <TextInput
+                  accessibilityLabel="Refund amount in cents"
+                  keyboardType="number-pad"
+                  onChangeText={(value) => {
+                    setAmountText(value.replace(/[^0-9]/g, ""));
+                    setConfirmation("");
+                    setOperationId("");
+                  }}
+                  placeholder="Refund amount in cents"
+                  placeholderTextColor={palette.textMuted}
+                  style={styles.input}
+                  value={amountText}
+                />
+              )}
               <TextInput
                 accessibilityLabel="Commerce refund reason"
                 multiline
                 onChangeText={(value) => {
                   setReason(value);
-                  setOperationId("");
+                  if (!selectedRetryOperation) setOperationId("");
                 }}
-                placeholder="Detailed internal reason (at least 3 words and 16 characters)"
+                placeholder={
+                  selectedRetryOperation
+                    ? "New detailed Admin audit reason for this retry"
+                    : "Detailed internal reason (at least 3 words and 16 characters)"
+                }
                 placeholderTextColor={palette.textMuted}
                 style={[styles.input, styles.multiline]}
                 value={reason}
@@ -372,7 +524,7 @@ export default function AdminCommercePaymentReviewCard() {
               />
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Execute reviewed refund for ${selected.sourceType} record ${selected.recordId}`}
+                accessibilityLabel={`${selectedRetryOperation ? "Resume exact refund operation" : "Execute reviewed refund"} for ${selected.sourceType} record ${selected.recordId}`}
                 accessibilityState={{ disabled: !canExecute }}
                 disabled={!canExecute}
                 onPress={() => void executeRefund()}
@@ -380,15 +532,67 @@ export default function AdminCommercePaymentReviewCard() {
               >
                 <Text style={styles.dangerText}>
                   {executing
-                    ? "Submitting one refund operation..."
-                    : "Execute reviewed refund"}
+                    ? "Submitting one exact refund operation..."
+                    : selectedRetryOperation
+                      ? "Resume exact refund operation"
+                      : "Execute reviewed refund"}
                 </Text>
               </Pressable>
               {operationId ? (
                 <Text style={styles.meta}>
-                  This form will reuse the same operation on retry until an input changes.
+                  {selectedRetryOperation
+                    ? "This form is locked to the persisted operation returned by the server."
+                    : "This form will reuse the same operation on retry until an input changes."}
                 </Text>
               ) : null}
+            </View>
+          ) : null}
+
+          {reverifySelected?.connectRecoveryReverifyOperationId ? (
+            <View style={styles.editor}>
+              <Text style={styles.caseTitle}>
+                Reverify {reverifySelected.sourceType} refund recovery
+              </Text>
+              <Text style={styles.meta}>
+                Recheck Stripe for the exact server-bound recovery. This does not create a
+                new refund and cannot substitute evidence from another operation.
+              </Text>
+              <TextInput
+                accessibilityLabel="Connect recovery reverify reason"
+                multiline
+                onChangeText={setReverifyReason}
+                placeholder="New detailed Admin audit reason for this verification"
+                placeholderTextColor={palette.textMuted}
+                style={[styles.input, styles.multiline]}
+                value={reverifyReason}
+              />
+              <Text style={styles.meta}>
+                Type exactly: {expectedReverifyConfirmation}
+              </Text>
+              <TextInput
+                accessibilityLabel="Exact Connect recovery reverify confirmation"
+                autoCapitalize="none"
+                autoCorrect={false}
+                onChangeText={setReverifyConfirmation}
+                placeholder="Type the exact reverify phrase"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={reverifyConfirmation}
+              />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Confirm Stripe recovery reverify for ${reverifySelected.sourceType} record ${reverifySelected.recordId}`}
+                accessibilityState={{ disabled: !canReverify }}
+                disabled={!canReverify}
+                onPress={() => void reverifyRecovery()}
+                style={[styles.primary, !canReverify && styles.disabled]}
+              >
+                <Text style={styles.primaryText}>
+                  {reverifying
+                    ? "Rechecking exact Stripe evidence..."
+                    : "Reverify recovery"}
+                </Text>
+              </Pressable>
             </View>
           ) : null}
 
@@ -454,11 +658,22 @@ export default function AdminCommercePaymentReviewCard() {
             <View style={styles.pagination}>
               <Pressable
                 accessibilityRole="button"
-                disabled={loading || pageData.pagination.page <= 1}
+                disabled={
+                  loading ||
+                  executing ||
+                  reverifying ||
+                  resolvingSupport ||
+                  pageData.pagination.page <= 1
+                }
                 onPress={() => void load(pageData.pagination.page - 1)}
                 style={[
                   styles.secondary,
-                  (loading || pageData.pagination.page <= 1) && styles.disabled
+                  (loading ||
+                    executing ||
+                    reverifying ||
+                    resolvingSupport ||
+                    pageData.pagination.page <= 1) &&
+                    styles.disabled
                 ]}
               >
                 <Text style={styles.secondaryText}>Previous</Text>
@@ -469,12 +684,20 @@ export default function AdminCommercePaymentReviewCard() {
               <Pressable
                 accessibilityRole="button"
                 disabled={
-                  loading || pageData.pagination.page >= pageData.pagination.pages
+                  loading ||
+                  executing ||
+                  reverifying ||
+                  resolvingSupport ||
+                  pageData.pagination.page >= pageData.pagination.pages
                 }
                 onPress={() => void load(pageData.pagination.page + 1)}
                 style={[
                   styles.secondary,
-                  (loading || pageData.pagination.page >= pageData.pagination.pages) &&
+                  (loading ||
+                    executing ||
+                    reverifying ||
+                    resolvingSupport ||
+                    pageData.pagination.page >= pageData.pagination.pages) &&
                     styles.disabled
                 ]}
               >
