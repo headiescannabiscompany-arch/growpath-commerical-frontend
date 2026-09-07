@@ -1,7 +1,8 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
-import LiveStudioRoute from "@/app/live-studio";
+import LiveStudioRoute, { createLiveStudioStyles } from "@/app/live-studio";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockListVideoLibrary = jest.fn();
 const mockGetDiscordLiveConnection = jest.fn();
@@ -78,6 +79,17 @@ describe("LiveStudioRoute", () => {
       isPublished: false
     });
   });
+
+  it.each(["day", "night"] as const)(
+    "uses the active %s palette for the root scroll viewport",
+    (mode) => {
+      const palette = getThemePalette(mode, mode);
+      const styles = createLiveStudioStyles(palette);
+
+      expect(styles.page.backgroundColor).toBe(palette.page);
+      expect(styles.container.backgroundColor).toBe(palette.page);
+    }
+  );
 
   it("offers all-account live and premiere creation without a GrowPath picker", async () => {
     render(<LiveStudioRoute />);

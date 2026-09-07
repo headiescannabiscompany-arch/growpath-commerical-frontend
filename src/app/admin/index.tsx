@@ -12,6 +12,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError, apiRequest } from "@/api/apiRequest";
+import { normalizeAdminEvidenceRequests } from "@/api/adminEvidenceVault";
 import type { AccountBillingReadModel, AccountBillingSource } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
@@ -23,6 +24,7 @@ import AdminCommercePaymentReviewCard from "@/features/admin/AdminCommercePaymen
 import AdminEvidenceVaultCard, {
   type AdminEvidenceVaultUser
 } from "@/features/admin/AdminEvidenceVaultCard";
+import { RestrictedEvidenceRequestSummary } from "@/features/admin/AdminEvidenceApprovalPanel";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -363,6 +365,8 @@ export function moderationTargetHref(item: ModerationCase) {
 
 type EvidenceRequest = {
   _id: string;
+  detailsAvailable?: boolean;
+  targetBound?: boolean;
   requestType: string;
   requesterName: string;
   requesterOrganization?: string;
@@ -373,6 +377,7 @@ type EvidenceRequest = {
   scope: string;
   status: string;
   preservationHold: boolean;
+  preservationExpiresAt?: string | null;
   userNoticeStatus?: string;
   dateFrom?: string | null;
   dateTo?: string | null;
@@ -988,9 +993,7 @@ export default function PlatformAdminRoute() {
           Array.isArray(moderationResponse.cases) ? moderationResponse.cases : []
         );
       if (evidenceResponse)
-        setEvidenceRequests(
-          Array.isArray(evidenceResponse.requests) ? evidenceResponse.requests : []
-        );
+        setEvidenceRequests(normalizeAdminEvidenceRequests(evidenceResponse.requests));
       if (supportResponse)
         setSupportRequests(
           Array.isArray(supportResponse.requests) ? supportResponse.requests : []
@@ -2755,26 +2758,32 @@ export default function PlatformAdminRoute() {
               >
                 <Text style={styles.dangerText}>Ban</Text>
               </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={
-                  cleanupReviewId === item._id
-                    ? `Opening Evidence Vault review for ${item.email}`
-                    : `Review ${item.email} in Evidence Vault`
-                }
-                accessibilityState={{
-                  disabled: Boolean(cleanupReviewId) || busyId === item._id
-                }}
-                disabled={Boolean(cleanupReviewId) || busyId === item._id}
-                style={styles.secondaryButton}
-                onPress={() => void reviewSyntheticCleanup(item)}
-              >
-                <Text accessibilityLiveRegion="polite" style={styles.secondaryText}>
-                  {cleanupReviewId === item._id
-                    ? "Opening Evidence Vault…"
-                    : "Review in Evidence Vault"}
-                </Text>
-              </Pressable>
+              {item._id ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    vaultRequestedUser?.id === item._id
+                      ? `Evidence Vault opened above for ${item.email}`
+                      : cleanupReviewId === item._id
+                        ? `Opening Evidence Vault review for ${item.email}`
+                        : `Review ${item.email} in Evidence Vault`
+                  }
+                  accessibilityState={{
+                    disabled: Boolean(cleanupReviewId) || busyId === item._id
+                  }}
+                  disabled={Boolean(cleanupReviewId) || busyId === item._id}
+                  style={styles.secondaryButton}
+                  onPress={() => void reviewSyntheticCleanup(item)}
+                >
+                  <Text accessibilityLiveRegion="polite" style={styles.secondaryText}>
+                    {vaultRequestedUser?.id === item._id
+                      ? "Evidence Vault opened above ↑"
+                      : cleanupReviewId === item._id
+                        ? "Opening Evidence Vault…"
+                        : "Review in Evidence Vault"}
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
             {cleanupPreview?.target.id === item._id ? (
               <View
@@ -3242,9 +3251,8 @@ export default function PlatformAdminRoute() {
         <Text style={styles.evidencePreview}>
           The backend enforces legal approval, minimum-scope manifests, recipient/method
           recording, immutable custody, and audited transitions. Approval and disclosure
-          controls remain unavailable here until the reviewed operating procedure and
-          production fail-closed acceptance are complete. This screen cannot release
-          account data.
+          controls remain unavailable in this queue; independent approval is in the closed
+          Evidence Vault after its prerequisites. This screen cannot release account data.
         </Text>
         <Pressable
           accessibilityRole="button"
@@ -3408,6 +3416,15 @@ export default function PlatformAdminRoute() {
             const isFocused =
               focusedTargetKind === "legalevidencerequest" &&
               item._id === focusedTargetId;
+            if (item.detailsAvailable === false) {
+              return (
+                <RestrictedEvidenceRequestSummary
+                  focused={isFocused}
+                  key={item._id}
+                  request={item}
+                />
+              );
+            }
             const canBeginIdentity = item.status === "received";
             const canSendLegal = ["identity_review", "preserved"].includes(item.status);
             const canRejectOrClose = [

@@ -70,7 +70,7 @@ export default function LiveStudioRoute() {
   const auth = useAuth();
   const entitlements = useEntitlements();
   const { palette } = useAppTheme();
-  const styles = useMemo(() => createStyles(palette), [palette]);
+  const styles = useMemo(() => createLiveStudioStyles(palette), [palette]);
   const [sessionType, setSessionType] = useState<SessionType>("live");
   const [broadcastMode, setBroadcastMode] = useState<BroadcastMode>("external");
   const [title, setTitle] = useState("");
@@ -481,7 +481,7 @@ export default function LiveStudioRoute() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.page} contentContainerStyle={styles.container}>
       <BackButton fallbackHref="/lives" />
       <View style={styles.hero}>
         <Text style={styles.kicker}>Live Studio</Text>
@@ -1146,8 +1146,9 @@ export default function LiveStudioRoute() {
   );
 }
 
-function createStyles(palette: ThemePalette) {
+export function createLiveStudioStyles(palette: ThemePalette) {
   return StyleSheet.create({
+    page: { backgroundColor: palette.page, flex: 1 },
     container: { backgroundColor: palette.page, gap: 14, padding: 16, paddingBottom: 48 },
     centered: {
       alignItems: "center",

@@ -303,6 +303,17 @@ function defaultAdminApi(path: string) {
   if (path === "/api/admin/moderation-cases")
     return Promise.resolve({ cases: [moderationCase] });
   if (path === "/api/admin/evidence-requests") return Promise.resolve({ requests: [] });
+  if (path === "/api/admin/evidence-vault/capabilities")
+    return Promise.resolve({
+      ok: true,
+      configured: false,
+      capabilities: {
+        accountRemovalOwner: false,
+        evidenceAccess: false,
+        evidenceApproval: false,
+        severeHarmReview: false
+      }
+    });
   if (path === "/api/admin/support-requests")
     return Promise.resolve({ requests: [supportRequest] });
   if (path === "/api/admin/knowledge-registry") return Promise.resolve({ entries: [] });
@@ -730,7 +741,9 @@ describe("PlatformAdminRoute", () => {
   it("routes every per-row account review into the guarded Evidence Vault without calling the retired endpoint", async () => {
     mockApiRequest.mockImplementation((path: string) => {
       if (path.startsWith("/api/admin/users")) {
-        return Promise.resolve({ users: [member] });
+        return Promise.resolve({
+          users: [{ ...member, syntheticCleanupApproved: false }]
+        });
       }
       if (path === "/api/admin/evidence-vault/capabilities") {
         return Promise.resolve({
@@ -756,6 +769,11 @@ describe("PlatformAdminRoute", () => {
 
     fireEvent.press(reviewButton);
 
+    expect(
+      await screen.findByRole("button", {
+        name: "Evidence Vault opened above for member@example.com"
+      })
+    ).toBeTruthy();
     expect(
       await screen.findByText(
         "Selected account: member@example.com. Type the exact email and complete both review steps below."
@@ -1141,6 +1159,41 @@ describe("PlatformAdminRoute", () => {
 
     fireEvent.press(screen.getByRole("button", { name: "Load retained audit" }));
     expect(await screen.findByText(/evidence request created/)).toBeTruthy();
+  });
+
+  it("renders a redacted evidence queue row without sensitive details or controls", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/admin/evidence-requests") {
+        return Promise.resolve({
+          requests: [
+            {
+              id: "64b000000000000000000099",
+              requestType: "search_warrant",
+              status: "legal_review",
+              preservationHold: true,
+              targetBound: true,
+              restricted: true,
+              createdAt: "2026-09-07T12:00:00.000Z"
+            }
+          ]
+        });
+      }
+      return defaultAdminApi(path);
+    });
+
+    const screen = render(<PlatformAdminRoute />);
+    expect(
+      await screen.findByLabelText("Restricted legal evidence request summary")
+    ).toBeTruthy();
+    expect(screen.getByText("search_warrant · legal_review")).toBeTruthy();
+    expect(screen.queryByText(/Contact:/)).toBeNull();
+    expect(screen.queryByText(/Target account:/)).toBeNull();
+    expect(screen.queryByText(/Authority supplied:/)).toBeNull();
+    expect(screen.queryByText(/Requested scope:/)).toBeNull();
+    expect(screen.queryByLabelText(/Review reason for search_warrant/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Preservation active" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Load retained audit" })).toBeNull();
+    expect(screen.queryByLabelText(/Review legal workflow/)).toBeNull();
   });
 
   it("creates only a scoped received evidence-request record", async () => {

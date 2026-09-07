@@ -17,8 +17,11 @@ if (envFile) {
   }
 }
 
+// `cmd.exe` does not expand quoted globs. Keep the default acceptance pack
+// explicit so the same command runs on Windows and POSIX hosts.
 const commands =
-  process.env.ACCEPTANCE_COMMANDS || 'npm test -- "tests/acceptance/*.test.js"';
+  process.env.ACCEPTANCE_COMMANDS ||
+  "npm test -- tests/acceptance/userStories.test.js tests/acceptance/dashboard_feed.test.js";
 const shell = process.platform === "win32" ? "cmd" : "sh";
 const shellArgs = process.platform === "win32" ? ["/c", commands] : ["-c", commands];
 

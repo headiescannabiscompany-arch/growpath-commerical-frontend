@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import AdminEvidenceVaultCard from "../AdminEvidenceVaultCard";
 import {
   getEvidenceVaultCapabilities,
+  listAdminEvidenceRequests,
   listRemovedAccounts,
   listRestrictedCases,
   quarantineAccount,
@@ -15,6 +16,7 @@ import {
 jest.mock("@/api/adminEvidenceVault", () => ({
   addRestrictedCaseNote: jest.fn(),
   getEvidenceVaultCapabilities: jest.fn(),
+  listAdminEvidenceRequests: jest.fn(),
   listRemovedAccounts: jest.fn(),
   listRestrictedCaseRecords: jest.fn(),
   listRestrictedCases: jest.fn(),
@@ -49,6 +51,9 @@ const TARGET_ID = "64b000000000000000000005";
 const ARCHIVE_ID = "64b000000000000000000006";
 const mockCapabilities = getEvidenceVaultCapabilities as jest.MockedFunction<
   typeof getEvidenceVaultCapabilities
+>;
+const mockEvidenceRequests = listAdminEvidenceRequests as jest.MockedFunction<
+  typeof listAdminEvidenceRequests
 >;
 const mockRemoved = listRemovedAccounts as jest.MockedFunction<
   typeof listRemovedAccounts
@@ -106,6 +111,7 @@ describe("AdminEvidenceVaultCard", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCapabilities.mockResolvedValue(capabilityReceipt());
+    mockEvidenceRequests.mockResolvedValue([]);
     mockRemoved.mockResolvedValue({
       accounts: [
         {
@@ -138,7 +144,42 @@ describe("AdminEvidenceVaultCard", () => {
     expect(screen.getByText("Removed accounts / Evidence vault")).toBeTruthy();
     expect(screen.queryByLabelText("Account selected for removal review")).toBeNull();
     expect(mockCapabilities).not.toHaveBeenCalled();
+    expect(mockEvidenceRequests).not.toHaveBeenCalled();
     expect(mockRemoved).not.toHaveBeenCalled();
+  });
+
+  test("loads the legal queue only after opening and shows it only to an approver", async () => {
+    mockCapabilities.mockResolvedValue({
+      configured: true,
+      capabilities: {
+        accountRemovalOwner: false,
+        evidenceAccess: true,
+        evidenceApproval: true,
+        severeHarmReview: false
+      }
+    });
+    mockEvidenceRequests.mockResolvedValue([
+      {
+        _id: "64b000000000000000000011",
+        requestType: "court_order",
+        status: "legal_review",
+        preservationHold: true,
+        preservationExpiresAt: "2099-01-01T00:00:00.000Z",
+        targetBound: true,
+        targetUserId: TARGET_ID,
+        detailsAvailable: true,
+        restricted: true,
+        requesterName: "Reviewed requester",
+        scope: "Account identity records only."
+      }
+    ]);
+    const screen = render(<AdminEvidenceVaultCard users={[]} />);
+
+    expect(mockEvidenceRequests).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Open evidence vault controls"));
+
+    expect(await screen.findByText("Independent legal review")).toBeTruthy();
+    expect(mockEvidenceRequests).toHaveBeenCalledTimes(1);
   });
 
   test("opens on a requested account but still requires the exact email and reviewed inputs", async () => {
@@ -156,6 +197,7 @@ describe("AdminEvidenceVaultCard", () => {
         "Selected account: member@example.com. Type the exact email and complete both review steps below."
       )
     ).toBeTruthy();
+    await waitFor(() => expect(mockEvidenceRequests).toHaveBeenCalledTimes(1));
     expect(screen.getByLabelText("Type the reviewed account email")).toHaveProp(
       "value",
       ""

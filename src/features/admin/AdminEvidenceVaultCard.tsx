@@ -30,6 +30,7 @@ import {
   type RestrictedCaseSummary
 } from "@/api/adminEvidenceVault";
 import AppCard from "@/components/layout/AppCard";
+import { AdminEvidenceApprovalWorkspace } from "@/features/admin/AdminEvidenceApprovalPanel";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -398,6 +399,8 @@ export default function AdminEvidenceVaultCard({
               {capabilities?.severeHarmReview ? "authorized" : "not authorized"}
             </Text>
           ) : null}
+
+          <AdminEvidenceApprovalWorkspace />
 
           {capabilities?.accountRemovalOwner ? (
             <View style={styles.section}>
