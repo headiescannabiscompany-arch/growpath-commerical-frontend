@@ -20,7 +20,7 @@ import {
 } from "../../../api/subscription";
 import { useAuth } from "../../../auth/AuthContext";
 import { PLAN_PRICING } from "../../../constants/pricing";
-import { BILLING_PLANS, type BillingPlanKey } from "../planCopy";
+import { BILLING_PLANS, GIFTABLE_BILLING_PLANS, type BillingPlanKey } from "../planCopy";
 import GiftCheckoutReviewAction from "../GiftCheckoutReviewAction";
 import GiftCheckoutRecoveryAction from "../GiftCheckoutRecoveryAction";
 import { openExternalUrl } from "../../../utils/openExternalUrl";
@@ -103,7 +103,7 @@ export default function UpgradePlan() {
 
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
   const giftRecipientValid = isLikelyEmail(giftRecipientValue);
-  const purchasablePlans = giftMode ? BILLING_PLANS : plans;
+  const purchasablePlans = giftMode ? GIFTABLE_BILLING_PLANS : plans;
   const handleGiftFeedback = useCallback((tone: FeedbackTone, message: string) => {
     setFeedbackTone(tone);
     setFeedback(message);
@@ -265,7 +265,7 @@ export default function UpgradePlan() {
         <Text style={styles.cardTitle}>Buy for someone else</Text>
         <Text style={styles.cardDesc}>
           {giftCheckoutConfigured
-            ? "Give one prepaid month or year of Pro, Commercial, or Facility access. Access starts when the recipient claims it and does not renew."
+            ? "Give one prepaid month or year of Pro or Commercial access. Access starts when the recipient claims it and does not renew. Facility billing stays tied to one selected workspace."
             : "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."}
         </Text>
         <View style={styles.segment}>

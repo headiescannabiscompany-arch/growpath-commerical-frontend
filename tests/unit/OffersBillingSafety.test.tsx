@@ -407,6 +407,12 @@ describe("Offers billing safety", () => {
     expect(screen.getByLabelText("Gift subscription mode")).toHaveAccessibilityState({
       selected: true
     });
+    expect(
+      screen.getByText(/Facility billing stays tied to one selected workspace/)
+    ).toBeTruthy();
+    expect(
+      screen.queryByLabelText("Review Facility authoritative gift price")
+    ).toBeNull();
   });
 
   it("does not enter gift mode from duplicate continuation values", async () => {

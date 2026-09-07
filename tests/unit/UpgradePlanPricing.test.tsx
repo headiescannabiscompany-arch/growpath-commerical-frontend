@@ -289,6 +289,12 @@ describe("UpgradePlan pricing", () => {
       expect(screen.getByLabelText("Gift subscription mode")).toBeEnabled()
     );
     fireEvent.press(screen.getByLabelText("Gift subscription mode"));
+    expect(
+      screen.getByText(/Facility billing stays tied to one selected workspace/)
+    ).toBeTruthy();
+    expect(
+      screen.queryByLabelText("Review Facility authoritative gift price")
+    ).toBeNull();
     expect(screen.queryByText("$10")).toBeNull();
     fireEvent.changeText(
       screen.getByLabelText("Gift recipient email"),

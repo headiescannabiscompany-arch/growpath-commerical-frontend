@@ -78,3 +78,9 @@ export const BILLING_PLANS: BillingPlanCopy[] = [
     ]
   }
 ];
+
+// Facility billing belongs to one selected workspace, not an email recipient.
+// Generic email and Live-chat gifts therefore remain account-plan gifts only.
+export const GIFTABLE_BILLING_PLANS = BILLING_PLANS.filter(
+  (plan) => plan.key !== "facility"
+);

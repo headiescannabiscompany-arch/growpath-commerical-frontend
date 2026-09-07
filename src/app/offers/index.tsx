@@ -22,7 +22,11 @@ import { useAuth } from "@/auth/AuthContext";
 import PaymentHelpDialog from "@/components/PaymentHelpDialog";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
-import { BILLING_PLANS, type BillingPlanKey } from "@/features/billing/planCopy";
+import {
+  BILLING_PLANS,
+  GIFTABLE_BILLING_PLANS,
+  type BillingPlanKey
+} from "@/features/billing/planCopy";
 import GiftCheckoutReviewAction from "@/features/billing/GiftCheckoutReviewAction";
 import GiftCheckoutRecoveryAction from "@/features/billing/GiftCheckoutRecoveryAction";
 import {
@@ -182,7 +186,7 @@ export default function Offers() {
   );
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
   const giftRecipientValid = isLikelyEmail(giftRecipientValue);
-  const purchasablePlans = BILLING_PLANS;
+  const purchasablePlans = giftMode ? GIFTABLE_BILLING_PLANS : BILLING_PLANS;
   const handleGiftFeedback = useCallback((tone: FeedbackTone, message: string) => {
     setFeedbackTone(tone);
     setFeedback(message);
@@ -426,7 +430,7 @@ export default function Offers() {
           {giftContinuationRequested && giftSetupLoaded && !authenticated
             ? "Sign in with the purchasing account before gift checkout can continue. No price or payment request has started."
             : giftCheckoutConfigured
-              ? "Give one prepaid month or year of Pro, Commercial, or Facility access. Access starts when the recipient claims it and does not renew."
+              ? "Give one prepaid month or year of Pro or Commercial access. Access starts when the recipient claims it and does not renew. Facility billing stays tied to one selected workspace."
               : "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."}
         </Text>
         <View style={styles.segment}>
