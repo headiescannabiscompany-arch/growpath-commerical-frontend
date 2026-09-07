@@ -66,9 +66,7 @@ export default function Profile() {
   const emailChanged = emailDraft.trim().toLowerCase() !== email.toLowerCase();
   const canSaveEmail = emailDraft.trim().length > 3 && emailChanged && !savingEmail;
   const emailVerified = Boolean(auth.user?.emailVerified);
-  const canManageCreatorPayouts =
-    ent.can?.(CAPABILITY_KEYS.CREATOR_EARNINGS_VIEW) === true &&
-    ent.can?.(CAPABILITY_KEYS.CREATOR_PAYOUT_REQUEST) === true;
+  const canManageCreatorPayouts = ent.can?.(CAPABILITY_KEYS.COURSES_SELL_PAID) === true;
 
   const planNote = useMemo(() => {
     if (

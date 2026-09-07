@@ -8,8 +8,7 @@ import BillingHome from "@/features/billing/screens/BillingHome";
 export default function AccountBillingRoute() {
   const entitlements = useEntitlements();
   const showCreatorPayouts =
-    entitlements.can?.(CAPABILITY_KEYS.CREATOR_EARNINGS_VIEW) === true &&
-    entitlements.can?.(CAPABILITY_KEYS.CREATOR_PAYOUT_REQUEST) === true;
+    entitlements.can?.(CAPABILITY_KEYS.COURSES_SELL_PAID) === true;
 
   return (
     <RequireAuthGate>

@@ -131,8 +131,7 @@ export default function CommercialProfileRoute() {
   const { user } = useAuth();
   const entitlements = useEntitlements();
   const canManageCreatorPayouts =
-    entitlements.can?.(CAPABILITY_KEYS.CREATOR_EARNINGS_VIEW) === true &&
-    entitlements.can?.(CAPABILITY_KEYS.CREATOR_PAYOUT_REQUEST) === true;
+    entitlements.can?.(CAPABILITY_KEYS.COURSES_SELL_PAID) === true;
   const starterForm = useMemo(
     () => authenticatedBusinessStarter(user as BusinessIdentityUser | null),
     [user]

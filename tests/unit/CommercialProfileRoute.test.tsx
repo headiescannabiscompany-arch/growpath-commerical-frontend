@@ -35,12 +35,24 @@ jest.mock("@/components/InlineError", () => ({
 }));
 
 jest.mock("@/entitlements", () => ({
+  CAPABILITY_KEYS: {
+    COURSES_SELL_PAID: "COURSES_SELL_PAID"
+  },
   useEntitlements: () => ({
     ready: true,
     plan: "commercial",
-    mode: "commercial"
+    mode: "commercial",
+    can: (capability: string) => capability === "COURSES_SELL_PAID"
   })
 }));
+
+jest.mock("@/components/account/StripeConnectPayoutCard", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return function MockStripeConnectPayoutCard() {
+    return React.createElement(Text, null, "Stripe seller payouts");
+  };
+});
 
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
@@ -111,6 +123,7 @@ describe("CommercialProfileRoute", () => {
     expect(screen.queryByText(/Public product alias:/)).toBeNull();
     expect(screen.getByText("Switch Workspace")).toBeTruthy();
     expect(screen.getByText("Open Account Profile")).toBeTruthy();
+    expect(screen.getByText("Stripe seller payouts")).toBeTruthy();
     expect(screen.queryByText("Report Bug")).toBeNull();
     await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
     expect(screen.getByDisplayValue("support@growpathai.com")).toBeTruthy();
