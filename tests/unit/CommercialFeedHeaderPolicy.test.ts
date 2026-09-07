@@ -8,6 +8,8 @@ function read(relativePath: string) {
 describe("Commercial page header policy", () => {
   it("uses page headings without duplicate tab headers", () => {
     const layout = read("src/app/home/commercial/_layout.tsx");
+    const dashboard = read("src/app/home/commercial/index.tsx");
+    const profile = read("src/app/home/commercial/profile.tsx");
     const feed = read("src/app/feed/index.tsx");
     const orders = read("src/screens/commercial/OrdersScreen.tsx");
     const productLines = read("src/app/home/commercial/product-lines.tsx");
@@ -18,6 +20,15 @@ describe("Commercial page header policy", () => {
       "src/features/commercial/screens/CommercialEvidenceRunsScreen.tsx"
     );
 
+    expect(layout).toMatch(
+      /name="index"\s+options=\{\{[\s\S]*?title: "Dashboard",[\s\S]*?tabBarLabel: "Dashboard",[\s\S]*?headerShown: false/
+    );
+    expect(layout).toMatch(
+      /name="profile"\s+options=\{\{[\s\S]*?title: "Profile",[\s\S]*?tabBarLabel: "Profile",[\s\S]*?headerShown: false/
+    );
+    expect(layout).toMatch(
+      /name="grows\/\[growId\]"\s+options=\{\{[\s\S]*?title: "Grow Workspace",[\s\S]*?headerShown: false/
+    );
     expect(layout).toMatch(
       /name="feed"\s+options=\{\{[\s\S]*?title: "Feed \/ Campaigns",[\s\S]*?tabBarLabel: compactTabs \? "Feed" : "Feed \/ Campaigns",[\s\S]*?headerShown: false/
     );
@@ -54,6 +65,10 @@ describe("Commercial page header policy", () => {
     expect(layout).toMatch(
       /name="evidence-runs\/new"\s+options=\{\{[\s\S]*?title: "Create Product Trial Evidence Run",[\s\S]*?headerShown: false/
     );
+    expect(dashboard).toContain('accessibilityRole="header"');
+    expect(dashboard).toContain("aria-level={1}");
+    expect(profile).toContain('accessibilityRole="header"');
+    expect(profile).toContain("aria-level={1}");
     expect(feed).toContain('accessibilityRole="header"');
     expect(orders).toContain('accessibilityRole="header"');
     expect(productLines).toContain('accessibilityRole="header"');

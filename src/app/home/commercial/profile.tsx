@@ -200,7 +200,9 @@ export default function CommercialProfileRoute() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Brand Profile & Billing</Text>
+            <Text style={styles.title} accessibilityRole="header" aria-level={1}>
+              Brand Profile & Billing
+            </Text>
             <Text style={styles.subtitle}>
               Manage the brand identity that appears on public profiles, storefronts,
               courses, Feed/Campaigns, and Forum/Q&A support. Keep destructive account

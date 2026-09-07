@@ -24,7 +24,7 @@ export default function PersonalLayout() {
       />
       <Stack.Screen name="more/social-tools" options={{ title: "Forum / Q&A" }} />
       <Stack.Screen name="more/forum" options={{ title: "Forum / Q&A" }} />
-      <Stack.Screen name="more/links" options={{ title: "Links" }} />
+      <Stack.Screen name="more/links" options={{ title: "Links", headerShown: false }} />
       <Stack.Screen name="more/qa" options={{ title: "QA" }} />
     </Stack>
   );

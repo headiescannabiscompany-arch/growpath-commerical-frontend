@@ -25,18 +25,27 @@ describe("Personal root header policy", () => {
   );
 
   test("uses the profile billing page header without Expo's duplicate white bar", () => {
-    const profileLayout = read(
-      "src/app/home/personal/(tabs)/profile/_layout.tsx"
-    );
-    const billingPage = read(
-      "src/app/home/personal/(tabs)/profile/billing.tsx"
-    );
+    const profileLayout = read("src/app/home/personal/(tabs)/profile/_layout.tsx");
+    const billingPage = read("src/app/home/personal/(tabs)/profile/billing.tsx");
 
     expect(profileLayout).toContain(
       '<Stack.Screen name="billing" options={{ headerShown: false }} />'
     );
     expect(billingPage).toContain("ScreenBoundary");
     expect(billingPage).toContain("showBack");
+  });
+
+  test("uses the Public Links page heading without Expo's duplicate white bar", () => {
+    const personalLayout = read("src/app/home/personal/_layout.tsx");
+    const linksRoute = read("src/app/home/personal/more/links.tsx");
+    const linksScreen = read("src/screens/LinksScreen.js");
+
+    expect(personalLayout).toContain('options={{ title: "Links", headerShown: false }}');
+    expect(linksRoute).toContain("ScreenBoundary");
+    expect(linksRoute).toContain("showBack");
+    expect(linksRoute).toContain('backFallbackHref="/home/personal/profile"');
+    expect(linksScreen).toContain('accessibilityRole="header"');
+    expect(linksScreen).toContain("Public Links");
   });
 
   test("keeps a single navigator title when the AI page has no content heading", () => {

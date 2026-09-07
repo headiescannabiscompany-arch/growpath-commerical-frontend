@@ -82,7 +82,11 @@ export default function CommercialTabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: "Dashboard", tabBarLabel: "Dashboard" }}
+        options={{
+          title: "Dashboard",
+          tabBarLabel: "Dashboard",
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="storefront/index"
@@ -227,7 +231,7 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="profile"
-        options={{ title: "Profile", tabBarLabel: "Profile" }}
+        options={{ title: "Profile", tabBarLabel: "Profile", headerShown: false }}
       />
       <Tabs.Screen
         name="storefront/edit"
@@ -309,7 +313,8 @@ export default function CommercialTabsLayout() {
         name="grows/[growId]"
         options={{
           href: null,
-          title: "Grow Workspace"
+          title: "Grow Workspace",
+          headerShown: false
         }}
       />
       <Tabs.Screen

@@ -551,7 +551,9 @@ export default function CommercialHome() {
         <View style={styles.headerRow}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.headerTitle}>Brand Dashboard</Text>
+            <Text style={styles.headerTitle} accessibilityRole="header" aria-level={1}>
+              Brand Dashboard
+            </Text>
             <Text style={styles.headerSubtitle}>
               {auth.user?.email} | {plan} plan
             </Text>
