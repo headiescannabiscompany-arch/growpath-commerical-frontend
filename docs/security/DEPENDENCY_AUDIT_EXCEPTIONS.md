@@ -1,6 +1,6 @@
 # Dependency audit exceptions
 
-## `image-size` build-tool denial of service — expires 2026-09-08
+## `image-size` build-tool denial of service — expires 2026-10-06
 
 GitHub published two high-severity denial-of-service advisories for the npm
 `image-size` package:
@@ -8,8 +8,9 @@ GitHub published two high-severity denial-of-service advisories for the npm
 - `GHSA-w3rx-r6r6-pgpr` — ICNS parser infinite loop;
 - `GHSA-5p2g-fcmc-qvqq` — JXL and HEIF parser infinite loops.
 
-As reviewed on 2026-08-08, GitHub lists every released version through `2.0.2` as
-affected and lists no first patched version. GrowPathAI currently receives
+Re-reviewed on 2026-09-06, GitHub still lists every released version through
+`2.0.2` as affected and lists no first patched version; npm still identifies
+`2.0.2` as the latest release. GrowPathAI currently receives
 `image-size@1.2.1` transitively from Metro through Expo SDK 54. npm's proposed
 forced remediation downgrades Expo to SDK 53, which is a breaking application and
 native-build change and is not an acceptable unattended security fix.

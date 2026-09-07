@@ -7,7 +7,7 @@ const LOCK_PATH = path.join(ROOT, "package-lock.json");
 const HIGH_SEVERITIES = new Set(["high", "critical"]);
 
 const IMAGE_SIZE_EXCEPTION = {
-  expires: "2026-09-08",
+  expires: "2026-10-06",
   installedVersion: "1.2.1",
   advisoryIds: new Set(["GHSA-W3RX-R6R6-PGPR", "GHSA-5P2G-FCMC-QVQQ"]),
   packages: new Set([
