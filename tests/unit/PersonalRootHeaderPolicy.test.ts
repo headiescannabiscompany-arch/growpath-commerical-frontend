@@ -24,6 +24,21 @@ describe("Personal root header policy", () => {
     }
   );
 
+  test("uses the profile billing page header without Expo's duplicate white bar", () => {
+    const profileLayout = read(
+      "src/app/home/personal/(tabs)/profile/_layout.tsx"
+    );
+    const billingPage = read(
+      "src/app/home/personal/(tabs)/profile/billing.tsx"
+    );
+
+    expect(profileLayout).toContain(
+      '<Stack.Screen name="billing" options={{ headerShown: false }} />'
+    );
+    expect(billingPage).toContain("ScreenBoundary");
+    expect(billingPage).toContain("showBack");
+  });
+
   test("keeps a single navigator title when the AI page has no content heading", () => {
     const aiLayout = read("src/app/home/personal/(tabs)/ai/_layout.tsx");
 
