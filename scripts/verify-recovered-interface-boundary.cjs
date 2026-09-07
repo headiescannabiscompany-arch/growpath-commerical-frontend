@@ -1,9 +1,15 @@
 "use strict";
 
 const { spawnSync } = require("node:child_process");
+const path = require("node:path");
 
-const BASE_SHA = String(process.env.GROWPATH_INTERFACE_BASE_SHA || "302f5029").trim();
-const REJECTED_REDESIGN_SHA = "df50bf58";
+const BASE_SHA = String(
+  process.env.GROWPATH_INTERFACE_BASE_SHA ||
+    "302f5029ff824eee9ebf1627e249b25b6107fe29"
+).trim();
+const REJECTED_REDESIGN_SHA = "df50bf581bedf22c9cea0095d1d9d23ac7f68281";
+const EXACT_REVERT_SHA = "5958ca6bc7d22abc73569db38ec7b104c7ae1b14";
+const ROOT = path.resolve(__dirname, "..");
 
 const PROTECTED_PATHS = [
   "app.json",
@@ -30,8 +36,8 @@ const PAGE_CHANGE_BUDGETS = new Map([
   ["src/screens/EarningsScreen.js", 260]
 ]);
 
-function git(args, { allowFailure = false } = {}) {
-  const result = spawnSync("git", args, { encoding: "utf8" });
+function git(args, { allowFailure = false, cwd = ROOT } = {}) {
+  const result = spawnSync("git", args, { cwd, encoding: "utf8" });
   if (result.error) throw result.error;
   if (result.status !== 0 && !allowFailure) {
     throw new Error(
@@ -47,9 +53,20 @@ function protectedPath(path) {
   );
 }
 
-function changedPaths() {
-  const tracked = git(["diff", "--name-only", BASE_SHA, "--"]).stdout;
-  const untracked = git(["ls-files", "--others", "--exclude-standard"]).stdout;
+function assertCompleteHistory({ cwd = ROOT } = {}) {
+  const result = git(["rev-parse", "--is-shallow-repository"], { cwd });
+  if (String(result.stdout || "").trim() !== "false") {
+    throw new Error(
+      "Recovered interface ancestry requires complete Git history. Fetch the full history before running this guard."
+    );
+  }
+}
+
+function changedPaths({ baseSha = BASE_SHA, cwd = ROOT } = {}) {
+  const tracked = git(["diff", "--name-only", baseSha, "--"], { cwd }).stdout;
+  const untracked = git(["ls-files", "--others", "--exclude-standard"], {
+    cwd
+  }).stdout;
   return [
     ...new Set(
       `${tracked}\n${untracked}`
@@ -60,9 +77,9 @@ function changedPaths() {
   ];
 }
 
-function changedLineCounts() {
+function changedLineCounts({ baseSha = BASE_SHA, cwd = ROOT } = {}) {
   const counts = new Map();
-  const output = git(["diff", "--numstat", BASE_SHA, "--"]).stdout;
+  const output = git(["diff", "--numstat", baseSha, "--"], { cwd }).stdout;
   for (const line of output.split(/\r?\n/)) {
     const [addedRaw, deletedRaw, path] = line.split("\t");
     if (!path) continue;
@@ -76,23 +93,45 @@ function changedLineCounts() {
   return counts;
 }
 
-function main() {
-  git(["cat-file", "-e", `${BASE_SHA}^{commit}`]);
-  const rejected = git(["merge-base", "--is-ancestor", REJECTED_REDESIGN_SHA, "HEAD"], {
-    allowFailure: true
+function ancestorStatus(commitSha, { cwd = ROOT } = {}) {
+  const result = git(["merge-base", "--is-ancestor", commitSha, "HEAD"], {
+    allowFailure: true,
+    cwd
   });
-  if (rejected.status === 0) {
-    throw new Error(
-      `Rejected redesign commit ${REJECTED_REDESIGN_SHA} is in this branch's ancestry.`
-    );
-  }
-  if (rejected.status !== 1 && rejected.status !== 128) {
-    throw new Error(
-      String(rejected.stderr || "Unable to check redesign ancestry.").trim()
-    );
-  }
+  if (result.status === 0) return true;
+  if (result.status === 1) return false;
+  throw new Error(
+    `${String(result.stderr || "Unable to check interface ancestry.").trim()} ` +
+      "Fetch the complete Git history before running this guard."
+  );
+}
 
-  const paths = changedPaths();
+function verifyRedesignAncestry({
+  cwd = ROOT,
+  rejectedRedesignSha = REJECTED_REDESIGN_SHA,
+  exactRevertSha = EXACT_REVERT_SHA
+} = {}) {
+  if (!ancestorStatus(rejectedRedesignSha, { cwd })) return;
+
+  if (!ancestorStatus(exactRevertSha, { cwd })) {
+    throw new Error(
+      `Rejected redesign commit ${rejectedRedesignSha} is in this branch's ancestry ` +
+        `without its reviewed exact revert ${exactRevertSha}.`
+    );
+  }
+}
+
+function main({
+  baseSha = BASE_SHA,
+  cwd = ROOT,
+  rejectedRedesignSha = REJECTED_REDESIGN_SHA,
+  exactRevertSha = EXACT_REVERT_SHA
+} = {}) {
+  assertCompleteHistory({ cwd });
+  git(["cat-file", "-e", `${baseSha}^{commit}`], { cwd });
+  verifyRedesignAncestry({ cwd, rejectedRedesignSha, exactRevertSha });
+
+  const paths = changedPaths({ baseSha, cwd });
   const protectedChanges = paths.filter(protectedPath);
   if (protectedChanges.length) {
     throw new Error(
@@ -102,7 +141,7 @@ function main() {
     );
   }
 
-  const counts = changedLineCounts();
+  const counts = changedLineCounts({ baseSha, cwd });
   const oversizedPages = [];
   for (const [path, maximum] of PAGE_CHANGE_BUDGETS) {
     const count = counts.get(path);
@@ -120,13 +159,17 @@ function main() {
   }
 
   process.stdout.write(
-    `Recovered interface boundary PASS: ${paths.length} changed paths; global shell, layout, navigation, and theme remain untouched from ${BASE_SHA}.\n`
+    `Recovered interface boundary PASS: ${paths.length} changed paths; global shell, layout, navigation, and theme remain untouched from ${baseSha}.\n`
   );
 }
 
-try {
-  main();
-} catch (error) {
-  process.stderr.write(`Recovered interface boundary FAIL: ${error.message}\n`);
-  process.exitCode = 1;
+if (require.main === module) {
+  try {
+    main();
+  } catch (error) {
+    process.stderr.write(`Recovered interface boundary FAIL: ${error.message}\n`);
+    process.exitCode = 1;
+  }
 }
+
+module.exports = { assertCompleteHistory, main, verifyRedesignAncestry };

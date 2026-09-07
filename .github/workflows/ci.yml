@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -60,6 +62,9 @@ jobs:
 
       - name: Verify Codex Browser workflow contract
         run: npm run verify:codex-workflow
+
+      - name: Protect recovered interface ancestry
+        run: npm run guard:recovered-interface
 
       - name: Run delivery guard
         run: npm run guard

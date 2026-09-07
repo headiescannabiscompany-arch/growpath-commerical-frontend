@@ -54,6 +54,7 @@ function createPreflightRoot() {
   );
 
   [
+    "scripts/verify-recovered-interface-boundary.cjs",
     "scripts/scan-release.cjs",
     "scripts/verify-codex-workflow.cjs",
     "scripts/audit-full-surface.cjs",
@@ -186,6 +187,7 @@ describe("release preflight", () => {
 
     const names = readLog(tempRoot).map((entry) => entry.name);
     expect(names).toEqual([
+      "scripts/verify-recovered-interface-boundary.cjs",
       "scripts/scan-release.cjs",
       "scripts/verify-codex-workflow.cjs",
       "scripts/audit-full-surface.cjs",
@@ -219,7 +221,7 @@ describe("release preflight", () => {
       "scripts/verify-web-seo.cjs",
       "scripts/export-store-assets.cjs"
     ]);
-    expect(readLog(tempRoot)[26].argv).toEqual(
+    expect(readLog(tempRoot)[27].argv).toEqual(
       expect.arrayContaining([
         "--config",
         "jest.backend.config.cjs",
@@ -230,7 +232,7 @@ describe("release preflight", () => {
         "backend/routes/integrations.test.js"
       ])
     );
-    expect(readLog(tempRoot)[27].argv).toEqual(
+    expect(readLog(tempRoot)[28].argv).toEqual(
       expect.arrayContaining([
         "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
@@ -244,7 +246,8 @@ describe("release preflight", () => {
         "tests/release.data-rights.test.js",
         "tests/release.production-builds.test.js",
         "tests/release.machine-gates.test.js",
-        "tests/release.store-assets.test.js"
+        "tests/release.store-assets.test.js",
+        "tests/recovered-interface-boundary.test.js"
       ])
     );
   });
@@ -260,6 +263,7 @@ describe("release preflight", () => {
 
     const log = readLog(tempRoot);
     expect(log.map((entry) => entry.name)).toEqual([
+      "scripts/verify-recovered-interface-boundary.cjs",
       "scripts/scan-release.cjs",
       "scripts/verify-codex-workflow.cjs",
       "scripts/audit-full-surface.cjs",
@@ -296,9 +300,9 @@ describe("release preflight", () => {
       "scripts/verify-web-seo.cjs",
       "scripts/export-store-assets.cjs"
     ]);
-    expect(log[3].argv).toEqual(["--strict"]);
-    expect(log[4].strict).toBe("1");
-    expect(log[29].argv).toEqual(
+    expect(log[4].argv).toEqual(["--strict"]);
+    expect(log[5].strict).toBe("1");
+    expect(log[30].argv).toEqual(
       expect.arrayContaining([
         "--config",
         "jest.backend.config.cjs",
@@ -309,7 +313,7 @@ describe("release preflight", () => {
         "backend/routes/integrations.test.js"
       ])
     );
-    expect(log[30].argv).toEqual(
+    expect(log[31].argv).toEqual(
       expect.arrayContaining([
         "tests/unit/cropKnowledge-api.test.ts",
         "tests/release.scan.test.js",
@@ -323,10 +327,11 @@ describe("release preflight", () => {
         "tests/release.data-rights.test.js",
         "tests/release.production-builds.test.js",
         "tests/release.machine-gates.test.js",
-        "tests/release.store-assets.test.js"
+        "tests/release.store-assets.test.js",
+        "tests/recovered-interface-boundary.test.js"
       ])
     );
-    expect(log[31]).toEqual(
+    expect(log[32]).toEqual(
       expect.objectContaining({
         playwrightPort: "19025",
         playwrightVideo: "1"

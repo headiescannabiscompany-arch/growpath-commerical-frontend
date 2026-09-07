@@ -52,6 +52,9 @@ function writeStrictEvidence() {
 }
 
 async function main() {
+  run("recovered interface boundary", process.execPath, [
+    "scripts/verify-recovered-interface-boundary.cjs"
+  ]);
   run("release scan", process.execPath, ["scripts/scan-release.cjs"]);
   run("Codex workflow contract", process.execPath, ["scripts/verify-codex-workflow.cjs"]);
   run("full frontend/backend surface audit", process.execPath, [
@@ -160,6 +163,7 @@ async function main() {
     "tests/release.production-builds.test.js",
     "tests/release.machine-gates.test.js",
     "tests/release.store-assets.test.js",
+    "tests/recovered-interface-boundary.test.js",
     "src/api/__tests__/users.privacy.test.ts",
     "tests/unit/ProfilePrivacyControls.test.tsx",
     "src/features/personal/__tests__/homeModel.test.ts"
