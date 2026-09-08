@@ -1015,6 +1015,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "optional removable course thumbnail for compact cards and optional single learner-page banner",
       "shared Full Course Builder creation routed into the active workspace's canonical course collection, including Commercial draft persistence in Commercial Courses",
       "flat canonical Commercial course grow-interest tags with separately retained structured builder selections and legacy-reader normalization",
+      "transactional same-identity Commercial authoring and shared Course projection with collision-safe backfill, provider-verified paid-seller readiness, protected learner delivery, and exact structured cannabis labeling",
+      "Commercial public learner projection without owner IDs or unresolved private Product, Grow, or Live workspace references",
       "outer bounded-total independent public, owned, and Commercial-public catalog loading, including token retrieval, with partial results and a named retry action",
       "stable authenticated identity dependencies that cannot restart catalog loading on each result render",
       "optional catalog imagery plus one full-width course-detail hero selected from the saved banner, cover, image, or thumbnail without duplicate rendering",
@@ -1043,6 +1045,9 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never block course publication solely because an optional course thumbnail or banner is absent, and never restore deliberately cleared course media after reload.",
       "Never create a Commercial Full Course Builder draft through a separate generic course path that disappears from Commercial Courses or bypasses the Commercial lesson, publish, unpublish, and archive lifecycle.",
       "Never render a structured grow-interest selection as object text or assume every persisted Commercial course grow-interest value is already an array.",
+      "Never let generic Course authoring mutate a Commercial projection, backfill through an identity collision or unverified paid seller, or classify a course as cannabis from free-text prose.",
+      "Never require a Commercial course author to type Stripe Product or Price IDs; use the saved positive amount and provider-verified seller destination at Checkout.",
+      "Never expose Commercial owner or account IDs, or unresolved private Product, Grow, or Live workspace references, through the shared public Course response.",
       "Never let one unavailable course source leave the shared catalog loading forever or hide courses returned by the other sources.",
       "Never depend on a referentially unstable whole user object for the course catalog load effect.",
       "Never manufacture a generic image for a course with no saved imagery or render duplicate overview images for the same course.",
@@ -1146,6 +1151,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "readable calendar selection with direct year, month, day, and optional time controls",
       "single-flight review-first CSV and PDF catalog import with cross-platform status feedback",
       "server-enforced Commercial course readiness with draft-only creation, save-before-publish, explicit unpublish, and published-content mutation lock",
+      "transactional same-identity Commercial course projection for learner delivery and payments with collision-safe migration, provider-verified paid sellers, complete structured interests, and exact structured cannabis labeling",
       "confirmed owner-scoped soft archive for private Commercial course drafts with retained audit history"
     ],
     [
@@ -1214,6 +1220,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never require an ordinary Commercial user to type an ISO date or date-time string.",
       "Never depend on a native-only alert for Commercial catalog import fallback, permit duplicate concurrent extraction or draft-creation requests, accept a PDF extraction without a protected source URL, or imply an imported draft is published.",
       "Never publish an incomplete or unsaved Commercial course, accept typed lifecycle state, mutate published course content in place, or silently coerce an invalid paid price to zero.",
+      "Never let generic Course authoring mutate a Commercial course projection, migrate through an identity collision or unverified paid seller, drop structured interests, or infer cannabis classification from course prose.",
+      "Never require a Commercial course author to type Stripe Product or Price IDs; use the saved positive amount and provider-verified seller destination at Checkout.",
       "Never hard-delete a Commercial course through routine cleanup or archive a published course without returning it to draft first."
     ],
     [

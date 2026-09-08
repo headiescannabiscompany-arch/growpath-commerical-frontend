@@ -6,12 +6,14 @@ import ScreenContainer from "../components/ScreenContainer";
 import LessonMediaCard from "@/components/learning/LessonMediaCard";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
+import { lessonDocumentUrls } from "@/features/learning/lessonMedia";
 import { radius } from "../theme/theme";
 
 export default function LessonScreen({ route, navigation }) {
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
   const { lesson, courseId } = route.params;
+  const documentUrls = lessonDocumentUrls(lesson);
 
   if (!access.canViewCourses) {
     return (
@@ -30,11 +32,26 @@ export default function LessonScreen({ route, navigation }) {
 
       <LessonMediaCard lesson={lesson} />
 
-      {lesson.pdfUrl ? (
-        <Text style={styles.link} onPress={() => Linking.openURL(lesson.pdfUrl)}>
-          Open PDF Lesson
-        </Text>
-      ) : null}
+      {documentUrls.map((url, index) => {
+        const legacySinglePdf =
+          documentUrls.length === 1 && url === String(lesson.pdfUrl || "").trim();
+        const label = legacySinglePdf
+          ? "Open PDF Lesson"
+          : documentUrls.length === 1
+            ? "Open Lesson Document"
+            : `Open Lesson Document ${index + 1} of ${documentUrls.length}`;
+        return (
+          <Text
+            key={url}
+            accessibilityRole="link"
+            accessibilityLabel={label}
+            style={styles.link}
+            onPress={() => Linking.openURL(url)}
+          >
+            {label}
+          </Text>
+        );
+      })}
 
       {lesson.audioUrl ? (
         <Text style={styles.link} onPress={() => Linking.openURL(lesson.audioUrl)}>

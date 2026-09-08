@@ -47,7 +47,7 @@ import { createPersonalTask } from "@/api/tasks";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
-import { lessonHasMedia } from "@/features/learning/lessonMedia";
+import { lessonDocumentUrls, lessonHasMedia } from "@/features/learning/lessonMedia";
 import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { resolveImageUri } from "../utils/photoUploads";
@@ -155,6 +155,10 @@ export default function CourseDetailScreen({ route, navigation = null }) {
   const mediaAssets = useMemo(
     () => normalizeList(course?.mediaAssets, "mediaAssets"),
     [course]
+  );
+  const activeLessonDocuments = useMemo(
+    () => lessonDocumentUrls(activeLesson),
+    [activeLesson]
   );
   const completedLessonIds = useMemo(
     () =>
@@ -919,7 +923,8 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             ) : null}
             <Text style={styles.meta}>
               {lesson.content ? "Text" : ""} {lessonHasMedia(lesson) ? "Video" : ""}{" "}
-              {lesson.pdfUrl ? "PDF" : ""} {lesson.audioUrl ? "Audio" : ""}
+              {lessonDocumentUrls(lesson).length ? "Documents" : ""}{" "}
+              {lesson.audioUrl ? "Audio" : ""}
             </Text>
             <View style={styles.actions}>
               <Pressable
@@ -1144,11 +1149,26 @@ export default function CourseDetailScreen({ route, navigation = null }) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{activeLesson.title || "Lesson"}</Text>
           <LessonMediaCard lesson={activeLesson} compact />
-          {activeLesson.pdfUrl ? (
-            <Pressable onPress={() => Linking.openURL(activeLesson.pdfUrl)}>
-              <Text style={styles.link}>Open PDF lesson</Text>
-            </Pressable>
-          ) : null}
+          {activeLessonDocuments.map((url, index) => {
+            const legacySinglePdf =
+              activeLessonDocuments.length === 1 &&
+              url === String(activeLesson.pdfUrl || "").trim();
+            const label = legacySinglePdf
+              ? "Open PDF lesson"
+              : activeLessonDocuments.length === 1
+                ? "Open lesson document"
+                : `Open lesson document ${index + 1} of ${activeLessonDocuments.length}`;
+            return (
+              <Pressable
+                key={url}
+                accessibilityRole="link"
+                accessibilityLabel={label}
+                onPress={() => Linking.openURL(url)}
+              >
+                <Text style={styles.link}>{label}</Text>
+              </Pressable>
+            );
+          })}
           {activeLesson.audioUrl ? (
             <Pressable onPress={() => Linking.openURL(activeLesson.audioUrl)}>
               <Text style={styles.link}>Open audio lesson</Text>

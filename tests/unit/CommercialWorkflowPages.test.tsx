@@ -1379,17 +1379,10 @@ describe("commercial workflow pages", () => {
         name: "Set commercial course access to Paid"
       }).props.accessibilityState?.checked
     ).toBe(true);
-    expect(screen.getAllByText(/connect Stripe product/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/connect Stripe price/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/creates the Checkout price automatically/)).toBeTruthy();
+    expect(screen.queryByLabelText("Commercial course Stripe product ID")).toBeNull();
+    expect(screen.queryByLabelText("Commercial course Stripe price ID")).toBeNull();
     fireEvent.changeText(screen.getByLabelText("Commercial course price"), "49");
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course Stripe product ID"),
-      "prod_course_123"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course Stripe price ID"),
-      "price_course_123"
-    );
     fireEvent.press(screen.getByLabelText("Create commercial course"));
 
     await waitFor(() =>
@@ -1454,13 +1447,17 @@ describe("commercial workflow pages", () => {
               })
             ],
             access: "paid",
-            price: 49,
-            stripeProductId: "prod_course_123",
-            stripePriceId: "price_course_123"
+            price: 49
           })
         })
       )
     );
+    const createCourseCall = mockApiRequest.mock.calls.find(
+      ([path, options]) =>
+        path === "/api/commercial/courses" && options?.method === "POST"
+    );
+    expect(createCourseCall?.[1]?.body).not.toHaveProperty("stripeProductId");
+    expect(createCourseCall?.[1]?.body).not.toHaveProperty("stripePriceId");
   });
 
   it("keeps commercial courses usable when optional product-line suggestions fail", async () => {
@@ -1551,8 +1548,8 @@ describe("commercial workflow pages", () => {
       screen.getByText("Answer course/product questions in Forum/Q&A support threads.")
     ).toBeTruthy();
     expect(screen.getByText("Application rate")).toBeTruthy();
-    expect(screen.getByText("prod_course_existing")).toBeTruthy();
-    expect(screen.getByText("price_course_existing")).toBeTruthy();
+    expect(screen.queryByText("prod_course_existing")).toBeNull();
+    expect(screen.queryByText("price_course_existing")).toBeNull();
     expect(screen.getByText("https://example.com/course-banner.jpg")).toBeTruthy();
     expect(screen.queryByText(/add banner/)).toBeNull();
 
@@ -1577,14 +1574,13 @@ describe("commercial workflow pages", () => {
       "Updated product course description."
     );
     fireEvent.changeText(screen.getByLabelText("Commercial course detail price"), "59");
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course detail Stripe product ID"),
-      "prod_course_updated"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course detail Stripe price ID"),
-      "price_course_updated"
-    );
+    expect(screen.getByText(/creates the Checkout price automatically/)).toBeTruthy();
+    expect(
+      screen.queryByLabelText("Commercial course detail Stripe product ID")
+    ).toBeNull();
+    expect(
+      screen.queryByLabelText("Commercial course detail Stripe price ID")
+    ).toBeNull();
     expect(
       screen.getByLabelText("Commercial course detail linked evidence runs").props.value
     ).toBe("trial-1");
@@ -1625,8 +1621,6 @@ describe("commercial workflow pages", () => {
             thumbnailUrl: "https://example.com/course-updated-thumb.jpg",
             bannerUrl: "https://example.com/course-updated-banner.jpg",
             description: "Updated product course description.",
-            stripeProductId: "prod_course_updated",
-            stripePriceId: "price_course_updated",
             linkedProductIds: ["product-1", "product-2"],
             linkedProductLineIds: ["line-1"],
             linkedTrialIds: ["grow-1"],
@@ -1636,6 +1630,12 @@ describe("commercial workflow pages", () => {
         })
       )
     );
+    const updateCourseCall = mockApiRequest.mock.calls.find(
+      ([path, options]) =>
+        path === "/api/commercial/courses/course-1" && options?.method === "PATCH"
+    );
+    expect(updateCourseCall?.[1]?.body).not.toHaveProperty("stripeProductId");
+    expect(updateCourseCall?.[1]?.body).not.toHaveProperty("stripePriceId");
 
     fireEvent.press(screen.getByLabelText("Clear commercial course detail thumbnail"));
     fireEvent.press(screen.getByLabelText("Clear commercial course detail banner"));

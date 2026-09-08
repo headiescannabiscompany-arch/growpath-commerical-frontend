@@ -28,8 +28,6 @@ type CourseForm = {
   skillLevel: string;
   access: "free" | "paid" | "followers" | "customers" | "private";
   price: string;
-  stripeProductId: string;
-  stripePriceId: string;
   linkedProductIds: string;
   linkedProductLineIds: string;
   linkedGrowIds: string;
@@ -53,8 +51,6 @@ const EMPTY_FORM: CourseForm = {
   skillLevel: "",
   access: "free",
   price: "",
-  stripeProductId: "",
-  stripePriceId: "",
   linkedProductIds: "",
   linkedProductLineIds: "",
   linkedGrowIds: "",
@@ -169,8 +165,6 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
   if (!course.lessons?.length) warnings.push("add lesson");
   if (course.access === "paid") {
     if (!Number(course.price)) warnings.push("add paid price");
-    if (!course.stripeProductId?.trim()) warnings.push("connect Stripe product");
-    if (!course.stripePriceId?.trim()) warnings.push("connect Stripe price");
   }
   return warnings;
 }
@@ -224,8 +218,6 @@ export default function CommercialCoursesRoute() {
       Number.isFinite(Number(form.price)) && Number(form.price) > 0
         ? Number(form.price)
         : 0,
-    stripeProductId: form.stripeProductId,
-    stripePriceId: form.stripePriceId,
     modules: outlineItems(form.moduleOutline, "module"),
     lessons: outlineItems(form.lessonOutline, "lesson")
   });
@@ -275,8 +267,6 @@ export default function CommercialCoursesRoute() {
         skillLevel: form.skillLevel.trim() || undefined,
         access: form.access,
         price: form.access === "paid" ? Math.round(paidPrice * 100) / 100 : 0,
-        stripeProductId: form.stripeProductId.trim() || undefined,
-        stripePriceId: form.stripePriceId.trim() || undefined,
         linkedProductIds: splitIds(form.linkedProductIds),
         linkedProductLineIds: splitIds(form.linkedProductLineIds),
         linkedTrialIds: splitIds(form.linkedGrowIds),
@@ -347,12 +337,7 @@ export default function CommercialCoursesRoute() {
           linkedFeedPostIds: feedCampaignIds(course),
           linkedForumThreadId: course.forumThreadId,
           priority: warnings.some((warning) =>
-            [
-              "add lesson",
-              "add module",
-              "add paid price",
-              "connect Stripe price"
-            ].includes(warning)
+            ["add lesson", "add module", "add paid price"].includes(warning)
           )
             ? "high"
             : "normal",
@@ -674,29 +659,14 @@ export default function CommercialCoursesRoute() {
             placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
-          <TextInput
-            value={form.stripeProductId}
-            onChangeText={(stripeProductId) =>
-              setForm((prev) => ({ ...prev, stripeProductId }))
-            }
-            accessibilityLabel="Commercial course Stripe product ID"
-            placeholder="Stripe product ID for paid course"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            autoCapitalize="none"
-          />
-          <TextInput
-            value={form.stripePriceId}
-            onChangeText={(stripePriceId) =>
-              setForm((prev) => ({ ...prev, stripePriceId }))
-            }
-            accessibilityLabel="Commercial course Stripe price ID"
-            placeholder="Stripe price ID for paid course"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            autoCapitalize="none"
-          />
         </View>
+        {form.access === "paid" ? (
+          <Text style={styles.muted}>
+            Save the course price here. GrowPath verifies your Stripe payout connection
+            when you publish and creates the Checkout price automatically; no Stripe IDs
+            are required.
+          </Text>
+        ) : null}
         <TextInput
           value={form.moduleOutline}
           onChangeText={(moduleOutline) =>

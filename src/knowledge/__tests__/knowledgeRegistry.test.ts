@@ -652,6 +652,15 @@ describe("GrowPath knowledge registries", () => {
       "server-enforced Commercial course readiness with draft-only creation, save-before-publish, explicit unpublish, and published-content mutation lock"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "transactional same-identity Commercial course projection for learner delivery and payments with collision-safe migration, provider-verified paid sellers, complete structured interests, and exact structured cannabis labeling"
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never let generic Course authoring mutate a Commercial course projection, migrate through an identity collision or unverified paid seller, drop structured interests, or infer cannabis classification from course prose."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never require a Commercial course author to type Stripe Product or Price IDs; use the saved positive amount and provider-verified seller destination at Checkout."
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "confirmed owner-scoped soft archive for private Commercial course drafts with retained audit history"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -917,6 +926,21 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
       "optional removable course thumbnail for compact cards and optional single learner-page banner"
+    );
+    expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
+      "transactional same-identity Commercial authoring and shared Course projection with collision-safe backfill, provider-verified paid-seller readiness, protected learner delivery, and exact structured cannabis labeling"
+    );
+    expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
+      "Commercial public learner projection without owner IDs or unresolved private Product, Grow, or Live workspace references"
+    );
+    expect(getMethod("course-media-workflow")?.warnings).toContain(
+      "Never let generic Course authoring mutate a Commercial projection, backfill through an identity collision or unverified paid seller, or classify a course as cannabis from free-text prose."
+    );
+    expect(getMethod("course-media-workflow")?.warnings).toContain(
+      "Never require a Commercial course author to type Stripe Product or Price IDs; use the saved positive amount and provider-verified seller destination at Checkout."
+    );
+    expect(getMethod("course-media-workflow")?.warnings).toContain(
+      "Never expose Commercial owner or account IDs, or unresolved private Product, Grow, or Live workspace references, through the shared public Course response."
     );
     expect(getMethod("course-media-workflow")?.warnings).toContain(
       "Never block course publication solely because an optional course thumbnail or banner is absent, and never restore deliberately cleared course media after reload."

@@ -1,6 +1,6 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
-import { StyleSheet } from "react-native";
+import { Linking, StyleSheet } from "react-native";
 
 import CourseDetailScreen, {
   courseDetailImageSource,
@@ -230,6 +230,61 @@ describe("CourseDetailScreen learner player", () => {
     );
     fireEvent.press(screen.getByText("Ask AI About This Lesson"));
     expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("courseId=course-1"));
+  });
+
+  it("lists lesson documents and opens every unique canonical document", async () => {
+    const firstDocument = "https://example.com/lesson-one.pdf";
+    const secondDocument = "https://example.com/lesson-two.pdf";
+    mockGetCourse.mockResolvedValue({
+      ...freeCourse,
+      lessons: [
+        {
+          id: "lesson-1",
+          title: "Build the mix",
+          content: "Mix it.",
+          pdfUrl: firstDocument,
+          documentUrls: [firstDocument, ` ${firstDocument} `, secondDocument]
+        }
+      ]
+    });
+    const openUrl = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+
+    await screen.findByText("Living Soil Course");
+    expect(screen.getByText("Text  Documents")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Open lesson Build the mix"));
+
+    fireEvent.press(await screen.findByLabelText("Open lesson document 1 of 2"));
+    fireEvent.press(screen.getByLabelText("Open lesson document 2 of 2"));
+
+    expect(openUrl).toHaveBeenNthCalledWith(1, firstDocument);
+    expect(openUrl).toHaveBeenNthCalledWith(2, secondDocument);
+    expect(screen.queryByText("Open PDF lesson")).toBeNull();
+  });
+
+  it("keeps the legacy single-PDF lesson link", async () => {
+    const legacyPdf = "https://example.com/legacy-lesson.pdf";
+    mockGetCourse.mockResolvedValue({
+      ...freeCourse,
+      lessons: [
+        {
+          id: "lesson-1",
+          title: "Build the mix",
+          content: "Mix it.",
+          pdfUrl: legacyPdf
+        }
+      ]
+    });
+    const openUrl = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+
+    await screen.findByText("Living Soil Course");
+    expect(screen.getByText("Text  Documents")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Open lesson Build the mix"));
+    fireEvent.press(await screen.findByText("Open PDF lesson"));
+
+    expect(openUrl).toHaveBeenCalledTimes(1);
+    expect(openUrl).toHaveBeenCalledWith(legacyPdf);
   });
 
   it("opens the Expo lesson editor when legacy navigation is unavailable", async () => {

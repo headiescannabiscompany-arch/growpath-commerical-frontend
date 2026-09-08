@@ -121,8 +121,6 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
   });
   if (course.access === "paid") {
     if (!Number(course.price)) warnings.push("add paid price");
-    if (!course.stripeProductId?.trim()) warnings.push("connect Stripe product");
-    if (!course.stripePriceId?.trim()) warnings.push("connect Stripe price");
   }
   return warnings;
 }
@@ -141,9 +139,7 @@ function blocksCoursePublish(warning: string) {
     "add grow interests",
     "choose access",
     "add lesson",
-    "add paid price",
-    "connect Stripe product",
-    "connect Stripe price"
+    "add paid price"
   ].includes(warning);
 }
 
@@ -194,8 +190,6 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   const [category, setCategory] = useState("");
   const [growInterests, setGrowInterests] = useState("");
   const [description, setDescription] = useState("");
-  const [stripeProductId, setStripeProductId] = useState("");
-  const [stripePriceId, setStripePriceId] = useState("");
   const [linkedProductIds, setLinkedProductIds] = useState("");
   const [linkedProductLineIds, setLinkedProductLineIds] = useState("");
   const [linkedGrowIds, setLinkedGrowIds] = useState("");
@@ -232,8 +226,6 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setCategory(next?.category || "");
     setGrowInterests(courseGrowInterests(next?.growInterests).join(", "));
     setDescription(next?.description || "");
-    setStripeProductId(next?.stripeProductId || "");
-    setStripePriceId(next?.stripePriceId || "");
     setLinkedProductIds((next?.linkedProductIds || []).join(", "));
     setLinkedProductLineIds((next?.linkedProductLineIds || []).join(", "));
     setLinkedGrowIds((next?.linkedTrialIds || next?.linkedGrowIds || []).join(", "));
@@ -287,8 +279,6 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
       category: category.trim() || undefined,
       growInterests: splitIds(growInterests),
       description: description.trim(),
-      stripeProductId: stripeProductId.trim() || undefined,
-      stripePriceId: stripePriceId.trim() || undefined,
       linkedProductIds: splitIds(linkedProductIds),
       linkedProductLineIds: splitIds(linkedProductLineIds),
       linkedTrialIds: splitIds(linkedGrowIds),
@@ -577,8 +567,6 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     category,
     growInterests: splitIds(growInterests),
     description,
-    stripeProductId,
-    stripePriceId,
     linkedProductIds: splitIds(linkedProductIds),
     linkedProductLineIds: splitIds(linkedProductLineIds),
     linkedTrialIds: splitIds(linkedGrowIds),
@@ -737,8 +725,6 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           <DetailRow label="Access" value={course?.access} />
           <DetailRow label="Status" value={course?.status} />
           <DetailRow label="Price" value={course?.price ? `$${course.price}` : ""} />
-          <DetailRow label="Stripe product" value={course?.stripeProductId} />
-          <DetailRow label="Stripe price" value={course?.stripePriceId} />
           <DetailRow label="Lessons" value={lessons.length} />
           <DetailRow label="Linked products" value={course?.linkedProductIds} />
           <DetailRow label="Linked product lines" value={course?.linkedProductLineIds} />
@@ -958,25 +944,14 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
                 style={styles.input}
                 value={price}
               />
-              <TextInput
-                accessibilityLabel="Commercial course detail Stripe product ID"
-                autoCapitalize="none"
-                onChangeText={setStripeProductId}
-                placeholder="Stripe product ID for paid course"
-                placeholderTextColor={palette.textMuted}
-                style={styles.input}
-                value={stripeProductId}
-              />
-              <TextInput
-                accessibilityLabel="Commercial course detail Stripe price ID"
-                autoCapitalize="none"
-                onChangeText={setStripePriceId}
-                placeholder="Stripe price ID for paid course"
-                placeholderTextColor={palette.textMuted}
-                style={styles.input}
-                value={stripePriceId}
-              />
             </View>
+            {access === "paid" ? (
+              <Text style={styles.muted}>
+                Save the course price here. GrowPath verifies your Stripe payout
+                connection when you publish and creates the Checkout price automatically;
+                no Stripe IDs are required.
+              </Text>
+            ) : null}
             <TextInput
               accessibilityLabel="Commercial course detail linked products"
               onChangeText={setLinkedProductIds}

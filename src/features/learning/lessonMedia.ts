@@ -377,6 +377,22 @@ export function lessonHasMedia(lesson: any) {
   );
 }
 
+export function lessonDocumentUrls(lesson: any): string[] {
+  const urls = [
+    lesson?.pdfUrl,
+    ...(Array.isArray(lesson?.documentUrls) ? lesson.documentUrls : [])
+  ];
+  const seen = new Set<string>();
+
+  return urls.reduce<string[]>((result, value) => {
+    const url = String(value || "").trim();
+    if (!url || seen.has(url)) return result;
+    seen.add(url);
+    result.push(url);
+    return result;
+  }, []);
+}
+
 export function prepareLessonMediaSubmission(
   draft: LessonMediaDraft,
   urlOverride?: string
