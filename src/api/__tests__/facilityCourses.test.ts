@@ -58,6 +58,85 @@ describe("facilityCourses API", () => {
     expect(resolveFacilityCourseScope("", "facility-1", "OWNER")).toBeNull();
   });
 
+  it.each(["OWNER", "MANAGER", "STAFF", "VIEWER"])(
+    "resolves an exact server-provided Facility alias without changing the %s role",
+    (role) => {
+      expect(
+        resolveFacilityCourseScope("facility-db-id", "facility-public-id", role, {
+          id: "facility-db-id",
+          canonicalFacilityId: "facility-public-id"
+        })
+      ).toEqual({ facilityId: "facility-public-id", role });
+    }
+  );
+
+  it.each([
+    undefined,
+    { id: "facility-db-id" },
+    { canonicalFacilityId: "facility-public-id" },
+    { id: "other-db-id", canonicalFacilityId: "facility-public-id" },
+    { id: "facility-db-id", canonicalFacilityId: "other-public-id" }
+  ])("rejects missing, stale, or cross-Facility alias metadata: %j", (selectedRow) => {
+    expect(
+      resolveFacilityCourseScope(
+        "facility-db-id",
+        "facility-public-id",
+        "OWNER",
+        selectedRow
+      )
+    ).toBeNull();
+  });
+
+  it.each(["MANAGER", "STAFF", "VIEWER"])(
+    "uses the selected server alias for %s membership stored under the database ID",
+    async (role) => {
+      const scope = resolveFacilityCourseScope("facility-db-id", "facility-db-id", role, {
+        id: "facility-db-id",
+        canonicalFacilityId: "facility-public-id"
+      });
+      expect(scope).toEqual({ facilityId: "facility-public-id", role });
+      const storedCourse = { ...boundCourse, facilityId: "facility-public-id" };
+      mockApiRequest.mockResolvedValueOnce({ courses: [storedCourse] });
+      await expect(listFacilityCourses(scope!.facilityId)).resolves.toMatchObject({
+        courses: [{ id: courseId, facilityId: "facility-public-id" }]
+      });
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/facility/facility-public-id/courses"
+      );
+      if (role !== "VIEWER") {
+        mockApiRequest.mockResolvedValueOnce({ course: storedCourse });
+        await expect(
+          createFacilityCourse(scope!.facilityId, { title: "Member draft" })
+        ).resolves.toMatchObject({ id: courseId, facilityId: "facility-public-id" });
+        expect(mockApiRequest).toHaveBeenLastCalledWith(
+          "/api/facility/facility-public-id/courses",
+          { method: "POST", body: { title: "Member draft" } }
+        );
+      }
+    }
+  );
+
+  it("does not let a matching alias supply a missing ID or unknown role", () => {
+    const selectedRow = {
+      id: "facility-db-id",
+      canonicalFacilityId: "facility-public-id"
+    };
+    expect(
+      resolveFacilityCourseScope("", "facility-public-id", "OWNER", selectedRow)
+    ).toBeNull();
+    expect(
+      resolveFacilityCourseScope("facility-db-id", "", "OWNER", selectedRow)
+    ).toBeNull();
+    expect(
+      resolveFacilityCourseScope(
+        "facility-db-id",
+        "facility-public-id",
+        "QA",
+        selectedRow
+      )
+    ).toBeNull();
+  });
+
   it("fails closed for missing permissions and rejects a cross-Facility response", () => {
     expect(
       normalizeFacilityCourse(

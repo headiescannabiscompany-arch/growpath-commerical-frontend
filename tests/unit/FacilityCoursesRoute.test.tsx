@@ -11,7 +11,10 @@ const mockEntitlements = {
   facilityId: "facility-1",
   facilityRole: "OWNER"
 };
-const mockFacility = { selectedId: "facility-1" };
+const mockFacility: {
+  selectedId: string;
+  selected: { id: string; canonicalFacilityId?: string } | null;
+} = { selectedId: "facility-1", selected: null };
 const mockList = jest.fn();
 const mockGet = jest.fn();
 const mockCourseScreenProps = jest.fn();
@@ -99,6 +102,7 @@ describe("FacilityCoursesRoute", () => {
       facilityRole: "OWNER"
     });
     mockFacility.selectedId = "facility-1";
+    mockFacility.selected = null;
     mockList.mockResolvedValue({
       courses: [],
       permissions: { canCreateDraft: true, canSetPrice: true },
@@ -129,6 +133,57 @@ describe("FacilityCoursesRoute", () => {
       })
     );
   });
+
+  it("uses the session ID when the exact selected row supplies its server alias", async () => {
+    const databaseId = "507f191e810c19729de86110";
+    const canonicalId = "qa-facility:public-id";
+    mockFacility.selectedId = databaseId;
+    mockFacility.selected = { id: databaseId, canonicalFacilityId: canonicalId };
+    mockEntitlements.facilityId = canonicalId;
+
+    const screen = render(<FacilityCoursesRoute />);
+
+    expect(screen.getByText("Scoped course list")).toBeTruthy();
+    const workspace = mockCourseScreenProps.mock.calls[0][0].facilityWorkspace;
+    expect(workspace).toMatchObject({ facilityId: canonicalId, role: "OWNER" });
+    await workspace.api.list();
+    expect(mockList).toHaveBeenCalledWith(canonicalId);
+  });
+
+  it.each([
+    { id: "other-selected-row", canonicalFacilityId: "facility-1" },
+    { id: "facility-2", canonicalFacilityId: "other-facility" }
+  ])("rejects alias metadata for a different Facility or stale row: %j", (selected) => {
+    mockFacility.selectedId = "facility-2";
+    mockFacility.selected = selected;
+
+    const screen = render(<FacilityCoursesRoute />);
+
+    expect(screen.getByText("Facility course access unavailable")).toBeTruthy();
+    expect(mockCourseScreenProps).not.toHaveBeenCalled();
+    expect(mockList).not.toHaveBeenCalled();
+  });
+
+  it.each(["MANAGER", "STAFF", "VIEWER"])(
+    "keeps %s membership role while using the selected canonical course scope",
+    async (role) => {
+      mockFacility.selectedId = "facility-db-id";
+      mockFacility.selected = {
+        id: "facility-db-id",
+        canonicalFacilityId: "facility-public-id"
+      };
+      mockEntitlements.facilityId = "facility-db-id";
+      mockEntitlements.facilityRole = role;
+
+      const screen = render(<FacilityCoursesRoute />);
+
+      expect(screen.getByText("Scoped course list")).toBeTruthy();
+      const workspace = mockCourseScreenProps.mock.calls[0][0].facilityWorkspace;
+      expect(workspace).toMatchObject({ facilityId: "facility-public-id", role });
+      await workspace.api.list();
+      expect(mockList).toHaveBeenCalledWith("facility-public-id");
+    }
+  );
 
   it("fails closed when selected and entitled Facility IDs do not match", () => {
     mockFacility.selectedId = "facility-2";

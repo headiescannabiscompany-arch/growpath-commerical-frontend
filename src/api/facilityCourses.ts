@@ -105,23 +105,32 @@ function cleanBoundedStrings(value: unknown, maxLength: number, maxItems = 1000)
 export function resolveFacilityCourseScope(
   selectedFacilityId: unknown,
   entitlementFacilityId: unknown,
-  role: unknown
+  role: unknown,
+  selectedFacility?: { id?: unknown; canonicalFacilityId?: unknown } | null
 ): FacilityCourseScope | null {
   const selected = String(selectedFacilityId || "").trim();
   const entitled = String(entitlementFacilityId || "").trim();
+  // The authenticated Facility list preserves legacy database IDs while also
+  // supplying the document's public ID. Accept that alias only on the exact
+  // selected row; a stale row or another Facility must never resolve the scope.
+  const selectedRowId = String(selectedFacility?.id || "").trim();
+  const canonicalId = String(selectedFacility?.canonicalFacilityId || "").trim();
+  const hasSelectedAlias = selectedRowId === selected && Boolean(canonicalId);
+  const sameFacility =
+    selected === entitled || (hasSelectedAlias && canonicalId === entitled);
   const normalizedRole = String(role || "")
     .trim()
     .toUpperCase();
   if (
     !selected ||
     !entitled ||
-    selected !== entitled ||
+    !sameFacility ||
     !["OWNER", "MANAGER", "STAFF", "VIEWER"].includes(normalizedRole)
   ) {
     return null;
   }
   return {
-    facilityId: selected,
+    facilityId: hasSelectedAlias ? canonicalId : entitled,
     role: normalizedRole as FacilityCourseRole
   };
 }

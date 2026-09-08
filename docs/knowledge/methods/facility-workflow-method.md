@@ -58,6 +58,16 @@ The Facility AI Validation Lab is a platform-operations surface for a capable Fa
 
 Facility training lesson video follows the shared `course-media-workflow` method while course visibility remains Facility scoped. External provider rights, availability, privacy, and accessibility review do not make a lesson public or authorize cross-Facility disclosure.
 
+Facility course scope may reconcile the selected database ID with the session's public
+Facility ID only through the exact selected row's server-provided `canonicalFacilityId`.
+Keep existing selector IDs and session semantics unchanged, require a recognized Facility
+role, and use the resolved public ID for course requests and response binding. Membership
+may be stored under the database ID: the backend must resolve the exact Facility document
+and verify the same user's accepted, non-deleted membership before using its saved role.
+Missing, stale, or
+cross-Facility alias metadata must fail closed; never infer identity from a name or ID
+suffix. Every backend request still verifies the selected Facility membership and role.
+
 Local preview identities require an explicit preview query. A bare Facility route must preserve a real authenticated session and must never substitute a demo user or the `local-dev-facility` placeholder. API requests require the selected, authorized Facility identifier; compatibility routes must validate that identifier and fail without terminating the service.
 
 Facility analytics are selected-facility scoped and record-backed. Task and training completion come from stored task outcomes; SOP compliance comes from applicable recorded steps; alerts come from explicit sensor/environment alert events; batches come from BatchCycle history. Room stability may be reported only when a room-linked environment event explicitly records an in-range or out-of-range state. Keep rooms with missing or ambiguous evidence in an unknown bucket rather than assuming stability.

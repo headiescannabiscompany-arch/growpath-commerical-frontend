@@ -1255,6 +1255,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "record-backed facility analytics",
       "read-after-write Facility invitation session handoff",
       "Facility-subscription-backed member role capabilities",
+      "exact selected-row server alias reconciliation for Facility course scope",
       "selected-Facility renewal cancellation with active paid access through the recorded current period end",
       "selected-Facility AI balance, reservation, refund, and weekly usage ledger",
       "legacy missing-balance materialization from an effective owner Facility entitlement",

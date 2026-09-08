@@ -92,7 +92,8 @@ export default function FacilityCoursesRoute() {
   const scope = resolveFacilityCourseScope(
     facility.selectedId,
     entitlements.facilityId,
-    entitlements.facilityRole
+    entitlements.facilityRole,
+    facility.selected
   );
   const scopedFacilityId = scope?.facilityId || "";
   const scopedRole = scope?.role || "";

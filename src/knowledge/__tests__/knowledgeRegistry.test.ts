@@ -835,6 +835,9 @@ describe("GrowPath knowledge registries", () => {
       "readable Facility inventory details with confirmed mistaken-record removal"
     );
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "exact selected-row server alias reconciliation for Facility course scope"
+    );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "actionable SOP steps with a Facility Journal evidence path before status review"
     );
     expect(getMethod("facility-workflow")?.warnings).toContain(
