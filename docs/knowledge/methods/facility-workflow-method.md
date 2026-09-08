@@ -58,6 +58,8 @@ The Facility AI Validation Lab is a platform-operations surface for a capable Fa
 
 Facility training lesson video follows the shared `course-media-workflow` method while course visibility remains Facility scoped. External provider rights, availability, privacy, and accessibility review do not make a lesson public or authorize cross-Facility disclosure.
 
+The shared Schedule and Notification Center reuse the published Facility course catalog and current requester's learner-state boundary for course-live events. Each canonical course/session pair remains a separate Facility calendar item with a Facility course link. Joining marks attendance as confirmed and supplies an in-app upcoming-session reminder card; canceling removes that reminder but leaves the published calendar event available for another RSVP. Draft, hidden, archived, quarantined, invalid, and canceled sessions are excluded. Recheck course access before projecting attendance, discard stale results after an account or Facility switch, and show a retryable verification error rather than treating failed access checks as confirmed attendance. Do not project private learner notes, creator identity, external stream credentials, or another learner's attendance. These existing on-page reminder cards and their page-local read state are not proof of background, timed, email, or device-push delivery.
+
 Facility course scope may reconcile the selected database ID with the session's public
 Facility ID only through the exact selected row's server-provided `canonicalFacilityId`.
 Keep existing selector IDs and session semantics unchanged, require a recognized Facility

@@ -17,6 +17,7 @@ import BackButton from "@/components/nav/BackButton";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
+import { useFacilityCourseLiveEvents } from "@/hooks/useFacilityCourseLiveEvents";
 
 type CalendarItem = {
   id: string;
@@ -310,6 +311,7 @@ function courseLiveToItem(session: any): CalendarItem {
     session?.sessionId || session?.id || session?.scheduledStart || "live"
   );
   const courseId = String(session?.courseId || "");
+  const isFacility = session?.workspaceType === "facility";
   return {
     id: `${courseId}-${id}`,
     itemType: "live",
@@ -317,14 +319,16 @@ function courseLiveToItem(session: any): CalendarItem {
     startAt: String(session?.scheduledStart || ""),
     endAt: String(session?.scheduledEnd || ""),
     status: String(session?.status || "scheduled"),
-    workspaceType: "personal",
+    workspaceType: isFacility ? "facility" : "personal",
     sourceType: "course",
     sourceId: courseId,
     reminder: session?.rsvped
-      ? String(session?.reminderPlan?.label || "RSVP · 1 hour before")
+      ? isFacility
+        ? "Going · RSVP confirmed"
+        : String(session?.reminderPlan?.label || "RSVP · 1 hour before")
       : "Course event · RSVP available",
     href: courseId
-      ? `/courses?courseId=${encodeURIComponent(courseId)}`
+      ? `${isFacility ? "/home/facility/courses" : "/courses"}?courseId=${encodeURIComponent(courseId)}`
       : "/home/personal/courses"
   };
 }
@@ -378,7 +382,11 @@ function dedupeScheduleItems(rows: CalendarItem[]) {
     const category = ["feed_campaign", "product_launch"].includes(item.itemType)
       ? "campaign"
       : item.itemType;
-    const key = `${item.workspaceType || "personal"}:${category}:${item.sourceId || item.id}`;
+    const sourceKey =
+      item.itemType === "live" && item.sourceType === "course"
+        ? item.id
+        : item.sourceId || item.id;
+    const key = `${item.workspaceType || "personal"}:${category}:${sourceKey}`;
     const current = byKey.get(key);
     if (!current || item.itemType === "product_launch") byKey.set(key, item);
   });
@@ -422,6 +430,7 @@ function moveAnchor(anchorKey: string, view: CalendarView, direction: number) {
 }
 
 export default function HomeScheduleRoute() {
+  const facilityEvents = useFacilityCourseLiveEvents();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [items, setItems] = useState<CalendarItem[]>([]);
@@ -481,7 +490,10 @@ export default function HomeScheduleRoute() {
 
   const filteredItems = useMemo(() => {
     const range = viewDateRange(calendarView, anchorDate);
-    return items.filter((item) => {
+    return dedupeScheduleItems([
+      ...items,
+      ...facilityEvents.liveEvents.map(courseLiveToItem)
+    ]).filter((item) => {
       const workspaceMatches =
         workspaceFilter === "all" || item.workspaceType === workspaceFilter;
       const sourceMatches = sourceMatchesFilter(item, sourceFilter);
@@ -490,7 +502,14 @@ export default function HomeScheduleRoute() {
         !range || Boolean(key && key >= range.start && key <= range.end);
       return workspaceMatches && sourceMatches && dateMatches;
     });
-  }, [anchorDate, calendarView, items, sourceFilter, workspaceFilter]);
+  }, [
+    anchorDate,
+    calendarView,
+    items,
+    sourceFilter,
+    workspaceFilter,
+    facilityEvents.liveEvents
+  ]);
 
   const sections = useMemo(() => {
     const grouped: Record<SectionKey, CalendarItem[]> = {
@@ -587,7 +606,10 @@ export default function HomeScheduleRoute() {
         <Pressable
           accessibilityRole="button"
           style={styles.refreshButton}
-          onPress={loadSchedule}
+          onPress={() => {
+            void loadSchedule();
+            void facilityEvents.refresh();
+          }}
         >
           <Text style={styles.refreshText}>Refresh</Text>
         </Pressable>
@@ -747,7 +769,10 @@ export default function HomeScheduleRoute() {
       </View>
 
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
-      {loading ? (
+      {facilityEvents.error ? (
+        <Text style={styles.feedback}>{facilityEvents.error}</Text>
+      ) : null}
+      {loading || facilityEvents.loading ? (
         <View style={styles.card}>
           <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading schedule...</Text>

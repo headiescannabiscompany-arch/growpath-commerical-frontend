@@ -1257,6 +1257,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "read-after-write Facility invitation session handoff",
       "Facility-subscription-backed member role capabilities",
       "exact selected-row server alias reconciliation for Facility course scope",
+      "published Facility course/session calendar items with requester-verified RSVP reminders and Facility-safe source links",
       "selected-Facility renewal cancellation with active paid access through the recorded current period end",
       "selected-Facility AI balance, reservation, refund, and weekly usage ledger",
       "legacy missing-balance materialization from an effective owner Facility entitlement",
@@ -1299,6 +1300,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "A selected facility and authorization are required.",
+      "Facility course event projections must recheck requester access, preserve separate sessions, remove canceled RSVP reminders without removing the calendar event, reject stale account/Facility results, and never expose private notes or claim on-page cards prove background notification delivery.",
       "Facility AI must use the selected authorized Facility subscription balance for display, reservation, refund, and usage history; never fall back to a member's individual balance.",
       "Only a missing legacy Facility balance with an effective active or trialing owner Facility entitlement may be materialized; existing canceled or delinquent Facility subscription state remains authoritative.",
       "A confirmed Facility invitation must refresh canonical membership and enter the selected Facility without replacing the human's primary account.",

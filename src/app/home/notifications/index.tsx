@@ -26,6 +26,8 @@ import {
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
+import { useFacilityCourseLiveEvents } from "@/hooks/useFacilityCourseLiveEvents";
+import { isUpcomingFacilityCourseLiveEvent } from "@/api/facilityCourseLiveEvents";
 
 type NotificationRow = {
   [key: string]: any;
@@ -87,7 +89,7 @@ function rowId(row: NotificationRow) {
 
 function sourceHref(row: NotificationRow) {
   if (row.courseId)
-    return `/courses?courseId=${encodeURIComponent(String(row.courseId))}`;
+    return `${row.workspaceType === "facility" ? "/home/facility/courses" : "/courses"}?courseId=${encodeURIComponent(String(row.courseId))}`;
   return sourceObjectHref(row) || "/home/schedule";
 }
 
@@ -240,13 +242,15 @@ function statusText(
   const preferenceTitle = preferenceKey
     ? NOTIFICATION_PREFERENCE_TITLES[preferenceKey] || preferenceKey
     : "Other";
-  const pushLabel = prefs.pushEnabled
-    ? preferenceKey && prefs[preferenceKey]
-      ? "push eligible"
-      : preferenceKey
-        ? "muted in Profile"
-        : "in-app only"
-    : "device push off";
+  const pushLabel = row._facilityCourseLive
+    ? "in-app only"
+    : prefs.pushEnabled
+      ? preferenceKey && prefs[preferenceKey]
+        ? "push eligible"
+        : preferenceKey
+          ? "muted in Profile"
+          : "in-app only"
+      : "device push off";
   const parts = [
     row.workspaceType && `Workspace ${row.workspaceType}`,
     row.sourceType && `Source ${row.sourceType}`,
@@ -297,6 +301,43 @@ export default function NotificationCenterRoute() {
     ? params.notificationId[0]
     : params.notificationId;
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
+  const facilityEvents = useFacilityCourseLiveEvents();
+  const [readFacilityReminders, setReadFacilityReminders] = useState<
+    Record<string, string>
+  >({});
+  const facilityReminders = useMemo<NotificationRow[]>(
+    () =>
+      facilityEvents.liveEvents
+        .filter((session) => session.rsvped && isUpcomingFacilityCourseLiveEvent(session))
+        .map((session) => {
+          const id = `facility-course-live-${session.facilityId}-${session.courseId}-${session.sessionId}`;
+          const readKey = `${auth.user?.id || auth.user?._id || ""}:${id}`;
+          const readAt = readFacilityReminders[readKey];
+          return {
+            id,
+            title: `Upcoming live: ${session.title || session.courseTitle}`,
+            body: `Scheduled for ${session.scheduledStart}${session.timezone ? ` (${session.timezone})` : ""}. Your RSVP is confirmed.`,
+            sourceType: "live_event",
+            sourceId: session.sessionId,
+            linkedCourseId: session.courseId,
+            courseId: session.courseId,
+            scheduledFor: session.scheduledStart,
+            channel: "in_app",
+            workspaceType: "facility",
+            status: readAt ? "read" : "scheduled",
+            read: Boolean(readAt),
+            readAt,
+            _courseLive: true,
+            _facilityCourseLive: true,
+            _readKey: readKey
+          };
+        }),
+    [facilityEvents.liveEvents, readFacilityReminders, auth.user?.id, auth.user?._id]
+  );
+  const allNotifications = useMemo(
+    () => [...facilityReminders, ...notifications],
+    [facilityReminders, notifications]
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState<FilterKey>("unread");
@@ -376,13 +417,13 @@ export default function NotificationCenterRoute() {
   }, []);
 
   const filtered = useMemo(() => {
-    if (filter === "unread") return notifications.filter(isUnread);
-    if (filter === "all") return notifications;
-    return notifications.filter(
+    if (filter === "unread") return allNotifications.filter(isUnread);
+    if (filter === "all") return allNotifications;
+    return allNotifications.filter(
       (row) =>
         notificationPreferenceKeyForSourceType(String(row.sourceType || "")) === filter
     );
-  }, [filter, notifications]);
+  }, [filter, allNotifications]);
 
   async function markRead(row: NotificationRow) {
     const id = rowId(row);
@@ -392,6 +433,12 @@ export default function NotificationCenterRoute() {
     setError("");
     try {
       if (row._courseLive) {
+        if (row._facilityCourseLive) {
+          setReadFacilityReminders((current) => ({
+            ...current,
+            [row._readKey]: new Date().toISOString()
+          }));
+        }
         setNotifications((current) =>
           current.map((item) =>
             rowId(item) === id
@@ -428,6 +475,10 @@ export default function NotificationCenterRoute() {
     try {
       await apiRequest("/api/notifications/read-all", { method: "POST" });
       const readAt = new Date().toISOString();
+      setReadFacilityReminders((current) => ({
+        ...current,
+        ...Object.fromEntries(facilityReminders.map((row) => [row._readKey, readAt]))
+      }));
       setNotifications((current) =>
         current.map((item) => ({ ...item, read: true, readAt, status: "read" }))
       );
@@ -441,7 +492,7 @@ export default function NotificationCenterRoute() {
 
   async function createTaskFromNotification(row: NotificationRow) {
     const id = rowId(row);
-    if (!id || saving) return;
+    if (!id || saving || row._facilityCourseLive) return;
     setSaving(true);
     setFeedback("");
     setError("");
@@ -589,11 +640,11 @@ export default function NotificationCenterRoute() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Mark all notifications read"
-          disabled={saving || !notifications.some(isUnread)}
+          disabled={saving || !allNotifications.some(isUnread)}
           onPress={markAllRead}
           style={[
             styles.primaryButton,
-            (saving || !notifications.some(isUnread)) && styles.disabledButton
+            (saving || !allNotifications.some(isUnread)) && styles.disabledButton
           ]}
         >
           <Text style={styles.primaryButtonText}>
@@ -602,11 +653,26 @@ export default function NotificationCenterRoute() {
         </Pressable>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
+        {facilityEvents.error ? (
+          <View style={styles.actions}>
+            <Text style={styles.error}>{facilityEvents.error}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry Facility course reminders"
+              onPress={() => void facilityEvents.refresh()}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Refresh</Text>
+            </Pressable>
+          </View>
+        ) : null}
         {feedback ? <Text style={styles.success}>{feedback}</Text> : null}
 
-        {loading ? <ActivityIndicator color={palette.accent} /> : null}
+        {loading || facilityEvents.loading ? (
+          <ActivityIndicator color={palette.accent} />
+        ) : null}
 
-        {!loading && !filtered.length ? (
+        {!loading && !facilityEvents.loading && !filtered.length ? (
           <View style={styles.card}>
             <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
               No notifications
@@ -676,7 +742,8 @@ export default function NotificationCenterRoute() {
                     <Text style={styles.linkButtonText}>Watch on Twitch</Text>
                   </Pressable>
                 ) : null}
-                {String(row.sourceType || "").toLowerCase() !== "task" ? (
+                {!row._facilityCourseLive &&
+                String(row.sourceType || "").toLowerCase() !== "task" ? (
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Create task from notification"

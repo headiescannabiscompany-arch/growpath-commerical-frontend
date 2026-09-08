@@ -4,6 +4,11 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import HomeScheduleRoute from "@/app/home/schedule";
 
 const mockApiRequest = jest.fn();
+let mockFacilityEvents: any;
+const mockRefreshFacilityEvents = jest.fn();
+jest.mock("@/hooks/useFacilityCourseLiveEvents", () => ({
+  useFacilityCourseLiveEvents: () => mockFacilityEvents
+}));
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -29,6 +34,12 @@ jest.mock("@/components/nav/BackButton", () => {
 describe("HomeScheduleRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockFacilityEvents = {
+      liveEvents: [],
+      loading: false,
+      error: "",
+      refresh: mockRefreshFacilityEvents
+    };
     mockApiRequest.mockImplementation((path: string) => {
       if (path === "/api/tasks") {
         return Promise.resolve({
@@ -430,6 +441,56 @@ describe("HomeScheduleRoute", () => {
     expect(screen.queryByText("Bloom Mix Product Launch")).toBeNull();
     fireEvent.press(screen.getByLabelText("Schedule next period"));
     expect(screen.getByText("Bloom Mix Product Launch")).toBeTruthy();
+  });
+
+  it("keeps distinct Facility sessions and the event when an RSVP is canceled", async () => {
+    const event = {
+      facilityId: "facility-1",
+      workspaceType: "facility",
+      courseId: "course-qa",
+      sessionId: "session-1",
+      title: "Facility course first session",
+      scheduledStart: "2099-07-17T20:00:00Z",
+      rsvped: true
+    };
+    mockFacilityEvents.liveEvents = [
+      event,
+      {
+        ...event,
+        sessionId: "session-2",
+        title: "Facility course second session",
+        rsvped: false
+      }
+    ];
+    const screen = render(<HomeScheduleRoute />);
+    await waitFor(() => expect(screen.getByText(event.title)).toBeTruthy());
+    expect(screen.getByText("Facility course second session")).toBeTruthy();
+    expect(screen.getByText(/Going · RSVP confirmed/)).toBeTruthy();
+    expect(
+      screen.getAllByTestId("link-/home/facility/courses?courseId=course-qa")
+    ).toHaveLength(2);
+    fireEvent.press(screen.getByLabelText("Schedule workspace filter personal"));
+    expect(screen.queryByText(event.title)).toBeNull();
+    fireEvent.press(screen.getByLabelText("Schedule workspace filter facility"));
+    expect(screen.getByText(event.title)).toBeTruthy();
+    mockFacilityEvents = {
+      ...mockFacilityEvents,
+      liveEvents: [{ ...event, rsvped: false }]
+    };
+    screen.rerender(<HomeScheduleRoute />);
+    expect(screen.getByText(event.title)).toBeTruthy();
+    expect(screen.queryByText(/Going · RSVP confirmed/)).toBeNull();
+    expect(screen.getByText(/Course event · RSVP available/)).toBeTruthy();
+    fireEvent.press(screen.getByText("Refresh"));
+    expect(mockRefreshFacilityEvents).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows Facility verification failure without losing other schedule sources", async () => {
+    mockFacilityEvents.error =
+      "Facility course events could not be verified. Refresh to retry.";
+    const screen = render(<HomeScheduleRoute />);
+    await waitFor(() => expect(screen.getByText("Connect Stripe price")).toBeTruthy());
+    expect(screen.getByText(mockFacilityEvents.error)).toBeTruthy();
   });
 
   it("falls back to personal tasks when the global task feed is unavailable", async () => {

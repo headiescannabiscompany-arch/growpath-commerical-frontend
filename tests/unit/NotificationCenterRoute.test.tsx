@@ -7,6 +7,11 @@ import NotificationCenterRoute, {
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
+let mockFacilityEvents: any;
+const mockRefreshFacilityEvents = jest.fn();
+jest.mock("@/hooks/useFacilityCourseLiveEvents", () => ({
+  useFacilityCourseLiveEvents: () => mockFacilityEvents
+}));
 let mockWorkspaceMode = "personal";
 let mockWorkspaceParam: string | undefined;
 let mockNotificationPreferences: Record<string, boolean>;
@@ -77,6 +82,12 @@ describe("NotificationCenterRoute", () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    mockFacilityEvents = {
+      liveEvents: [],
+      loading: false,
+      error: "",
+      refresh: mockRefreshFacilityEvents
+    };
     mockWorkspaceMode = "personal";
     mockWorkspaceParam = undefined;
     mockNotificationPreferences = {
@@ -745,6 +756,85 @@ describe("NotificationCenterRoute", () => {
       )
     );
     expect(screen.getByText("Notification marked read.")).toBeTruthy();
+  });
+
+  it("shows only confirmed Facility RSVPs and returns to the Facility course", async () => {
+    mockApiRequest.mockResolvedValue({ notifications: [] });
+    const event = {
+      facilityId: "facility-1",
+      workspaceType: "facility",
+      courseId: "course-qa",
+      sessionId: "session-1",
+      title: "Facility course first session",
+      scheduledStart: "2099-07-17T20:00:00Z",
+      timezone: "America/New_York",
+      rsvped: true
+    };
+    mockFacilityEvents.liveEvents = [
+      event,
+      { ...event, sessionId: "session-2", title: "Not attending", rsvped: false }
+    ];
+    const screen = render(<NotificationCenterRoute />);
+    await waitFor(() =>
+      expect(screen.getByText(`Upcoming live: ${event.title}`)).toBeTruthy()
+    );
+    expect(screen.queryByText("Upcoming live: Not attending")).toBeNull();
+    expect(
+      screen.getByLabelText("Notification link /home/facility/courses?courseId=course-qa")
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Open live stream from reminder")).toBeNull();
+    expect(screen.queryByLabelText("Create task from notification")).toBeNull();
+    expect(screen.getByText(/Delivery in-app only/)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Mark notification read"));
+    expect(screen.queryByText(`Upcoming live: ${event.title}`)).toBeNull();
+    expect(
+      mockApiRequest.mock.calls.some(([path]) => String(path).endsWith("/read"))
+    ).toBe(false);
+    fireEvent.press(screen.getByLabelText("Notification filter all"));
+    expect(screen.getByText(`Upcoming live: ${event.title}`)).toBeTruthy();
+    mockFacilityEvents = {
+      ...mockFacilityEvents,
+      liveEvents: [{ ...event, rsvped: false }]
+    };
+    screen.rerender(<NotificationCenterRoute />);
+    expect(screen.queryByText(`Upcoming live: ${event.title}`)).toBeNull();
+  });
+
+  it("marks Facility reminder cards read with the existing Mark All Read action", async () => {
+    mockApiRequest.mockResolvedValue({ notifications: [] });
+    mockFacilityEvents.liveEvents = [
+      {
+        facilityId: "facility-1",
+        courseId: "course-qa",
+        sessionId: "session-1",
+        title: "Facility RSVP",
+        scheduledStart: "2099-07-17T20:00:00Z",
+        rsvped: true
+      }
+    ];
+    const screen = render(<NotificationCenterRoute />);
+    await waitFor(() =>
+      expect(screen.getByText("Upcoming live: Facility RSVP")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Mark all notifications read"));
+    await waitFor(() =>
+      expect(screen.queryByText("Upcoming live: Facility RSVP")).toBeNull()
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/notifications/read-all", {
+      method: "POST"
+    });
+  });
+
+  it("offers retry for Facility reminders while keeping existing notifications", async () => {
+    mockFacilityEvents.error =
+      "Facility course events could not be verified. Refresh to retry.";
+    const screen = render(<NotificationCenterRoute />);
+    await waitFor(() =>
+      expect(screen.getByText("Live starts in 15 minutes")).toBeTruthy()
+    );
+    expect(screen.getByText(mockFacilityEvents.error)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Retry Facility course reminders"));
+    expect(mockRefreshFacilityEvents).toHaveBeenCalledTimes(1);
   });
 
   it("marks all unread notifications read", async () => {
