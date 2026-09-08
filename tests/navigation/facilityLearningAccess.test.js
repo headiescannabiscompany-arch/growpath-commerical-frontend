@@ -22,6 +22,6 @@ describe("facility learning and community access", () => {
     expect(dashboardSource).toContain('to: "/lives"');
     expect(dashboardSource).toContain('label: "Live Studio"');
     expect(dashboardSource).toContain('to: "/live-studio"');
-    expect(dashboardSource).toContain('to: "/courses"');
+    expect(dashboardSource).toContain('to: "/home/facility/courses"');
   });
 });

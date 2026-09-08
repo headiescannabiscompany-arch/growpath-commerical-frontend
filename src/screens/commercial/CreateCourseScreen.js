@@ -23,14 +23,16 @@ import {
   getTwitchConnection,
   validateTwitchConnection
 } from "@/api/twitch";
-import { uploadCourseMedia } from "@/api/uploads";
+import { deleteCourseMediaAsset, uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import GrowInterestPicker from "@/components/GrowInterestPicker";
 import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
+import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import {
   emptyLessonMediaDraft,
+  lessonMediaDraftFromLesson,
   prepareLessonMediaSubmission
 } from "@/features/learning/lessonMedia";
 import { radius } from "@/theme/theme";
@@ -51,7 +53,7 @@ function splitPlanLines(input) {
     .filter(Boolean);
 }
 
-function buildLessons(input, mediaSubmissions = []) {
+function buildLessons(input, mediaSubmissions = [], videoAssetIds = []) {
   return splitPlanLines(input).map((title, index) => ({
     title,
     description: "",
@@ -59,6 +61,7 @@ function buildLessons(input, mediaSubmissions = []) {
     videoUrl: mediaSubmissions[index]?.videoUrl || "",
     externalVideoUrl: mediaSubmissions[index]?.externalVideoUrl || "",
     mediaSource: mediaSubmissions[index]?.mediaSource || undefined,
+    videoAssetId: String(videoAssetIds[index] || ""),
     uploadedVideoId: "",
     documentIds: [],
     imageIds: [],
@@ -140,21 +143,77 @@ function uploadedMediaRecord(asset, uploaded, kind) {
   };
 }
 
+function isVideoAsset(asset) {
+  const mimeType = String(asset?.mimeType || asset?.type || "").toLowerCase();
+  const fileName = fileNameOf(asset, "").toLowerCase();
+  return (
+    mimeType.startsWith("video/") || /\.(?:mp4|mov|m4v|webm)(?:$|[?#])/i.test(fileName)
+  );
+}
+
+function isAudioAsset(asset) {
+  const mimeType = String(asset?.mimeType || asset?.type || "").toLowerCase();
+  const fileName = fileNameOf(asset, "").toLowerCase();
+  return (
+    mimeType.startsWith("audio/") ||
+    /\.(?:mp3|m4a|aac|wav|ogg|oga|flac)(?:$|[?#])/i.test(fileName)
+  );
+}
+
+function isProtectedCourseMediaUrl(value) {
+  return /^\/api\/(?:uploads\/)?course-media\/[a-f0-9]{24}\/file(?:\?.*)?$/i.test(
+    String(value || "").trim()
+  );
+}
+
+async function waitForFacilityUploadBatch(promises, facilityMode) {
+  if (!facilityMode) return Promise.all(promises);
+  const settled = await Promise.allSettled(promises);
+  const failure = settled.find((result) => result.status === "rejected");
+  if (failure) throw failure.reason;
+  return settled.map((result) => result.value);
+}
+
+/**
+ * @param {{ navigation?: any; showBackToCourses?: boolean; facilityWorkspace?: any }} props
+ */
 export default function CreateCourseScreen({
   navigation = null,
-  showBackToCourses = true
+  showBackToCourses = true,
+  facilityWorkspace = null
 }) {
   const router = useRouter();
   const entitlements = useEntitlements();
-  const access = getLearningAccess(entitlements);
+  const baseAccess = getLearningAccess(entitlements);
+  const facilityMode = Boolean(facilityWorkspace);
+  const missingFacilityAdapter = entitlements.mode === "facility" && !facilityMode;
+  const access = useMemo(
+    () =>
+      facilityMode
+        ? {
+            ...baseAccess,
+            canCreateCourses: facilityWorkspace?.permissions?.canCreateDraft === true,
+            canSellPaidCourses: facilityWorkspace?.permissions?.canSetPrice === true,
+            maxPaidCourses: facilityWorkspace?.limits?.maxPaidCourses ?? null,
+            maxLessonsPerCourse: facilityWorkspace?.limits?.maxLessonsPerCourse ?? null
+          }
+        : missingFacilityAdapter
+          ? {
+              ...baseAccess,
+              canCreateCourses: false,
+              canSellPaidCourses: false
+            }
+          : baseAccess,
+    [baseAccess, facilityMode, facilityWorkspace, missingFacilityAdapter]
+  );
   const { palette } = useAppTheme();
   const styles = useMemo(() => createCourseStyles(palette), [palette]);
   const themeStyles = styles;
   const backTarget =
-    entitlements.mode === "commercial"
-      ? "/home/commercial/courses"
-      : entitlements.mode === "facility"
-        ? "/courses"
+    facilityMode || missingFacilityAdapter
+      ? "/home/facility/courses"
+      : entitlements.mode === "commercial"
+        ? "/home/commercial/courses"
         : "/home/personal/courses";
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
@@ -172,6 +231,7 @@ export default function CreateCourseScreen({
   const [curriculumPlan, setCurriculumPlan] = useState("");
   const [lessonMediaDrafts, setLessonMediaDrafts] = useState([]);
   const [lessonVideoFiles, setLessonVideoFiles] = useState([]);
+  const [lessonVideoAssetIds, setLessonVideoAssetIds] = useState([]);
   const [activeLessonMediaIndex, setActiveLessonMediaIndex] = useState(null);
   const [quizPlan, setQuizPlan] = useState("");
   const [documentPlan, setDocumentPlan] = useState("");
@@ -195,6 +255,7 @@ export default function CreateCourseScreen({
   const [linkedForumThreadIds, setLinkedForumThreadIds] = useState("");
   const [pricingMode, setPricingMode] = useState("free");
   const [price, setPrice] = useState("");
+  const [facilityVisibility, setFacilityVisibility] = useState("facilityOnly");
   const [submitting, setSubmitting] = useState(false);
 
   const priceCents = useMemo(() => toPriceCents(price.trim()), [price]);
@@ -264,10 +325,15 @@ export default function CreateCourseScreen({
       updated[index] = null;
       return updated;
     });
+    setLessonVideoAssetIds((current) => {
+      const updated = [...current];
+      updated[index] = "";
+      return updated;
+    });
   }
 
   async function pickLessonVideo(index) {
-    if (!access.canCreateCourses || submitting) return;
+    if (facilityMode || !access.canCreateCourses || submitting) return;
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ["video/*"],
@@ -278,6 +344,11 @@ export default function CreateCourseScreen({
       setLessonVideoFiles((current) => {
         const updated = [...current];
         updated[index] = asset;
+        return updated;
+      });
+      setLessonVideoAssetIds((current) => {
+        const updated = [...current];
+        updated[index] = "";
         return updated;
       });
       updateLessonMediaDraft(index, {
@@ -293,6 +364,23 @@ export default function CreateCourseScreen({
         String(error?.message || error || "Unable to choose the lesson video.")
       );
     }
+  }
+
+  function selectLessonLibraryVideo(index, video) {
+    setLessonVideoFiles((current) => {
+      const updated = [...current];
+      updated[index] = null;
+      return updated;
+    });
+    setLessonVideoAssetIds((current) => {
+      const updated = [...current];
+      updated[index] = video?.id || "";
+      return updated;
+    });
+    updateLessonMediaDraft(
+      index,
+      video ? lessonMediaDraftFromLesson(video) : emptyLessonMediaDraft("youtube")
+    );
   }
 
   async function refreshTwitchConnection(validate = true) {
@@ -366,6 +454,13 @@ export default function CreateCourseScreen({
 
   async function pickCourseDocuments() {
     if (!access.canCreateCourses || submitting) return;
+    if (facilityMode) {
+      Alert.alert(
+        "Facility documents unavailable",
+        "Document uploads will be available after secure file scanning is enabled. Use protected images or audio for now."
+      );
+      return;
+    }
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: [
@@ -397,7 +492,7 @@ export default function CreateCourseScreen({
     if (!access.canCreateCourses || submitting) return;
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["video/*", "audio/*", "application/pdf"],
+        type: facilityMode ? ["audio/*"] : ["video/*", "audio/*", "application/pdf"],
         multiple: true
       });
       const assets = Array.isArray(result?.assets)
@@ -405,7 +500,16 @@ export default function CreateCourseScreen({
         : firstDocumentAsset(result)
           ? [firstDocumentAsset(result)]
           : [];
-      if (assets.length) setMediaFiles((current) => [...current, ...assets]);
+      const safeAssets = facilityMode ? assets.filter(isAudioAsset) : assets;
+      if (facilityMode && safeAssets.length !== assets.length) {
+        Alert.alert(
+          "Protected Facility media only",
+          "Upload audio here, add images with Upload Images, or select protected video from Video Library. Documents need secure scanning and are not available yet."
+        );
+      }
+      if (safeAssets.length) {
+        setMediaFiles((current) => [...current, ...safeAssets]);
+      }
     } catch (e) {
       Alert.alert("Upload failed", String(e?.message || e || "Unable to pick media."));
     }
@@ -452,14 +556,44 @@ export default function CreateCourseScreen({
       );
       return;
     }
-
-    const lessonMediaPreviews = plannedLessonTitles.map((_lessonTitle, index) => {
-      if (lessonVideoFiles[index]) return null;
-      return prepareLessonMediaSubmission(
-        lessonMediaDraftAt(index),
-        lessonMediaDraftAt(index).originalUrl
+    if (facilityMode && pricingMode === "paid" && facilityVisibility === "facilityOnly") {
+      Alert.alert(
+        "Choose a paid-course audience",
+        "A paid Facility course must be Public Catalog or Unlisted Link before it can be saved."
       );
-    });
+      return;
+    }
+    if (
+      facilityMode &&
+      (mediaFiles.some(isVideoAsset) || lessonVideoFiles.some(Boolean))
+    ) {
+      Alert.alert(
+        "Use Video Library for course video",
+        "Remove the standalone video file and select an active protected Video Library item on its lesson."
+      );
+      return;
+    }
+    if (
+      facilityMode &&
+      (documentFiles.length > 0 ||
+        documentPlan.trim() ||
+        mediaFiles.some((asset) => !isAudioAsset(asset)))
+    ) {
+      Alert.alert(
+        "Facility documents unavailable",
+        "Remove document files or plans. Facility course documents will be available after secure file scanning is enabled."
+      );
+      return;
+    }
+
+    const lessonMediaPreviews = plannedLessonTitles.map((_lessonTitle, index) =>
+      lessonVideoFiles[index]
+        ? null
+        : prepareLessonMediaSubmission(
+            lessonMediaDraftAt(index),
+            lessonMediaDraftAt(index).originalUrl
+          )
+    );
     const invalidLessonMediaIndex = lessonMediaPreviews.findIndex(
       (preview) => preview?.errors.length
     );
@@ -473,16 +607,32 @@ export default function CreateCourseScreen({
     }
 
     setSubmitting(true);
+    const uploadedFacilityAssetIds = [];
+    let courseSaved = false;
     try {
+      const uploadOptions = facilityMode
+        ? {
+            workspaceType: "facility",
+            workspaceId: facilityWorkspace?.facilityId
+          }
+        : {};
+      const uploadTracked = async (asset) => {
+        const uploaded = await uploadCourseMedia(asset, uploadOptions);
+        if (facilityMode && uploaded?.assetId) {
+          uploadedFacilityAssetIds.push(String(uploaded.assetId));
+        }
+        return uploaded;
+      };
       const lessonMediaSubmissions = await Promise.all(
         plannedLessonTitles.map(async (_lessonTitle, index) => {
-          const draft = lessonMediaDraftAt(index);
           const videoFile = lessonVideoFiles[index];
           if (!videoFile) return lessonMediaPreviews[index];
-          const uploadedVideo = await uploadCourseMedia(videoFile);
+          const uploadedVideo = await uploadCourseMedia(videoFile, {
+            purpose: "video"
+          });
           return prepareLessonMediaSubmission(
             {
-              ...draft,
+              ...lessonMediaDraftAt(index),
               sourceType: "growpath_upload",
               availabilityStatus: "available",
               lastCheckedAt: new Date().toISOString(),
@@ -492,14 +642,19 @@ export default function CreateCourseScreen({
           );
         })
       );
-      const lessons = buildLessons(curriculumPlan, lessonMediaSubmissions);
-      const quizzes = buildQuizzes(quizPlan);
-      const uploadedDocuments = await Promise.all(
-        documentFiles.map(async (asset) =>
-          uploadedDocumentRecord(asset, await uploadCourseMedia(asset))
-        )
+      const lessons = buildLessons(
+        curriculumPlan,
+        lessonMediaSubmissions,
+        lessonVideoAssetIds
       );
-      const uploadedMediaFiles = await Promise.all(
+      const quizzes = buildQuizzes(quizPlan);
+      const uploadedDocuments = await waitForFacilityUploadBatch(
+        (facilityMode ? [] : documentFiles).map(async (asset) =>
+          uploadedDocumentRecord(asset, await uploadTracked(asset))
+        ),
+        facilityMode
+      );
+      const uploadedMediaFiles = await waitForFacilityUploadBatch(
         mediaFiles.map(async (asset) => {
           const type = String(asset?.mimeType || asset?.type || "").toLowerCase();
           const kind = type.startsWith("audio/")
@@ -507,23 +662,47 @@ export default function CreateCourseScreen({
             : type.startsWith("video/")
               ? "video"
               : "document";
-          return uploadedMediaRecord(asset, await uploadCourseMedia(asset), kind);
-        })
+          return uploadedMediaRecord(asset, await uploadTracked(asset), kind);
+        }),
+        facilityMode
       );
-      const persistedCourseImageUrls = await persistImageUris(
-        mediaImages.map((asset) => asset.uri)
-      );
+      const persistedCourseImageUrls = facilityMode
+        ? await waitForFacilityUploadBatch(
+            mediaImages.map(async (asset) => {
+              const uploaded = await uploadTracked(asset);
+              if (!uploaded?.url) throw new Error("Image upload did not return a URL.");
+              return uploaded.url;
+            }),
+            true
+          )
+        : await persistImageUris(mediaImages.map((asset) => asset.uri));
       const uploadedCourseImages = mediaImages.map((asset, index) =>
         uploadedMediaRecord(asset, { url: persistedCourseImageUrls[index] }, "image")
       );
-      const documents = [...buildDocuments(documentPlan), ...uploadedDocuments];
+      const documents = [
+        ...(facilityMode ? [] : buildDocuments(documentPlan)),
+        ...uploadedDocuments
+      ];
       const mediaAssets = [...uploadedMediaFiles, ...uploadedCourseImages].filter(
         (asset) => asset.storageUrl
       );
-      const persistedCoverImageUrl = await persistImageUri(coverImageUrl.trim());
+      const requestedCoverImageUrl = coverImageUrl.trim();
+      const persistedCoverImageUrl = facilityMode
+        ? requestedCoverImageUrl
+          ? isProtectedCourseMediaUrl(requestedCoverImageUrl)
+            ? requestedCoverImageUrl
+            : (await uploadTracked(requestedCoverImageUrl))?.url || ""
+          : ""
+        : await persistImageUri(requestedCoverImageUrl);
       const growInterestTags = flattenTierSelections(growInterestSelections);
-      const createDraft =
-        entitlements.mode === "commercial" ? createCommercialCourse : createCourse;
+      const createDraft = facilityMode
+        ? facilityWorkspace?.api?.create
+        : entitlements.mode === "commercial"
+          ? createCommercialCourse
+          : createCourse;
+      if (typeof createDraft !== "function") {
+        throw new Error("Course creation is unavailable for this workspace.");
+      }
       const course = await createDraft({
         title: title.trim(),
         summary: summary.trim(),
@@ -533,7 +712,7 @@ export default function CreateCourseScreen({
         difficulty: difficulty.trim(),
         cropType: selectedCropTypes[0] || "",
         growInterests:
-          entitlements.mode === "commercial"
+          entitlements.mode === "commercial" && !facilityMode
             ? growInterestTags
             : growInterestSelections,
         growInterestSelections,
@@ -565,7 +744,8 @@ export default function CreateCourseScreen({
         access: pricingMode,
         status: "draft",
         isPublished: false,
-        workspace: entitlements.mode || "personal",
+        ...(facilityMode ? { visibility: facilityVisibility } : {}),
+        workspace: facilityMode ? "facility" : entitlements.mode || "personal",
         authoringPlan: {
           step: "draft",
           requiredSteps: [
@@ -585,16 +765,20 @@ export default function CreateCourseScreen({
             selectedMedia:
               mediaFiles.length +
               mediaImages.length +
-              lessonVideoFiles.filter(Boolean).length,
+              lessonVideoFiles.filter(Boolean).length +
+              lessonVideoAssetIds.filter(Boolean).length,
             videoStorage:
-              mediaAssets.filter((asset) => asset.type === "video").length ||
+              mediaAssets.some((asset) => asset.type === "video") ||
               lessonVideoFiles.some(Boolean)
                 ? "selected_for_upload"
-                : "plan_limit",
+                : lessonVideoAssetIds.some(Boolean)
+                  ? "selected_from_library"
+                  : "plan_limit",
             liveSessionsPerMonth: "plan_limit"
           }
         }
       });
+      courseSaved = true;
 
       Alert.alert("Course created", "Your course draft has been created.");
       if (navigation?.replace) {
@@ -610,6 +794,13 @@ export default function CreateCourseScreen({
         navigation.goBack();
       }
     } catch (e) {
+      if (facilityMode && !courseSaved && uploadedFacilityAssetIds.length) {
+        await Promise.allSettled(
+          [...new Set(uploadedFacilityAssetIds)].map((assetId) =>
+            deleteCourseMediaAsset(assetId)
+          )
+        );
+      }
       Alert.alert("Create failed", String(e?.message || e || "Unknown error"));
     } finally {
       setSubmitting(false);
@@ -634,7 +825,9 @@ export default function CreateCourseScreen({
             </TouchableOpacity>
           ) : null}
         </View>
-        <PersonalFeedPlacement placement="top" routeKey="personal_course_create" />
+        {!facilityMode ? (
+          <PersonalFeedPlacement placement="top" routeKey="personal_course_create" />
+        ) : null}
         <View style={themeStyles.workflowCard}>
           <Text style={themeStyles.workflowTitle}>Course builder workflow</Text>
           <Text style={themeStyles.helpText}>
@@ -646,7 +839,9 @@ export default function CreateCourseScreen({
           <View style={themeStyles.lockedCard}>
             <Text style={themeStyles.lockedTitle}>Course creation unavailable</Text>
             <Text style={themeStyles.helpText}>
-              Sign in to an account with course access to create drafts.
+              {missingFacilityAdapter
+                ? "Open Facility Courses from the selected workspace before creating a Facility course."
+                : "Sign in to an account with course access to create drafts."}
             </Text>
           </View>
         ) : null}
@@ -802,7 +997,9 @@ export default function CreateCourseScreen({
                 const prepared = prepareLessonMediaSubmission(draft);
                 const providerLabel = lessonVideoFiles[index]
                   ? "GrowPath upload selected"
-                  : prepared.mediaSource?.providerLabel || "No video selected";
+                  : lessonVideoAssetIds[index]
+                    ? "Protected Video Library selection"
+                    : prepared.mediaSource?.providerLabel || "No video selected";
                 return (
                   <View
                     key={`${lessonTitle}-${index}`}
@@ -841,7 +1038,11 @@ export default function CreateCourseScreen({
                     updateLessonMediaDraft(activeLessonMediaIndex, next)
                   }
                   disabled={!access.canCreateCourses || submitting}
-                  onPickUpload={() => pickLessonVideo(activeLessonMediaIndex)}
+                  onPickUpload={
+                    facilityMode
+                      ? undefined
+                      : () => pickLessonVideo(activeLessonMediaIndex)
+                  }
                   pendingUploadName={
                     lessonVideoFiles[activeLessonMediaIndex]
                       ? fileNameOf(
@@ -851,6 +1052,16 @@ export default function CreateCourseScreen({
                       : ""
                   }
                   onRemove={() => removeLessonVideo(activeLessonMediaIndex)}
+                />
+              ) : null}
+              {activeLessonMediaIndex !== null &&
+              plannedLessonTitles[activeLessonMediaIndex] ? (
+                <VideoLibraryPicker
+                  selectedId={lessonVideoAssetIds[activeLessonMediaIndex] || ""}
+                  disabled={!access.canCreateCourses || submitting}
+                  onSelect={(video) =>
+                    selectLessonLibraryVideo(activeLessonMediaIndex, video)
+                  }
                 />
               ) : null}
             </View>
@@ -885,33 +1096,43 @@ export default function CreateCourseScreen({
           >
             3. Documents / media
           </Text>
-          <TextInput
-            value={documentPlan}
-            onChangeText={setDocumentPlan}
-            placeholder="PDFs, worksheets, checklists, SOPs, or handouts"
-            placeholderTextColor={palette.textMuted}
-            selectionColor={palette.accent}
-            multiline
-            editable={access.canCreateCourses && !submitting}
-            style={[themeStyles.input, styles.multiline]}
-            accessibilityLabel="Course documents"
-          />
-          <TouchableOpacity
-            onPress={pickCourseDocuments}
-            disabled={!access.canCreateCourses || submitting}
-            accessibilityRole="button"
-            accessibilityLabel="Upload course documents"
-            style={[
-              themeStyles.uploadButton,
-              (!access.canCreateCourses || submitting) && styles.buttonDisabled
-            ]}
-          >
-            <Text style={themeStyles.uploadButtonText}>
-              {documentFiles.length
-                ? `${documentFiles.length} Document${documentFiles.length === 1 ? "" : "s"} Selected`
-                : "Upload Documents"}
+          {facilityMode ? (
+            <Text style={themeStyles.helpText} accessibilityRole="text">
+              Facility document uploads are temporarily unavailable until secure file
+              scanning is enabled. Protected images and audio can be uploaded below;
+              protected video comes from Video Library.
             </Text>
-          </TouchableOpacity>
+          ) : (
+            <>
+              <TextInput
+                value={documentPlan}
+                onChangeText={setDocumentPlan}
+                placeholder="PDFs, worksheets, checklists, SOPs, or handouts"
+                placeholderTextColor={palette.textMuted}
+                selectionColor={palette.accent}
+                multiline
+                editable={access.canCreateCourses && !submitting}
+                style={[themeStyles.input, styles.multiline]}
+                accessibilityLabel="Course documents"
+              />
+              <TouchableOpacity
+                onPress={pickCourseDocuments}
+                disabled={!access.canCreateCourses || submitting}
+                accessibilityRole="button"
+                accessibilityLabel="Upload course documents"
+                style={[
+                  themeStyles.uploadButton,
+                  (!access.canCreateCourses || submitting) && styles.buttonDisabled
+                ]}
+              >
+                <Text style={themeStyles.uploadButtonText}>
+                  {documentFiles.length
+                    ? `${documentFiles.length} Document${documentFiles.length === 1 ? "" : "s"} Selected`
+                    : "Upload Documents"}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
           <TextInput
             value={mediaPlan}
             onChangeText={setMediaPlan}
@@ -938,7 +1159,9 @@ export default function CreateCourseScreen({
               <Text style={themeStyles.uploadButtonText}>
                 {mediaFiles.length
                   ? `${mediaFiles.length} Media File${mediaFiles.length === 1 ? "" : "s"}`
-                  : "Upload Video / Audio"}
+                  : facilityMode
+                    ? "Upload Audio"
+                    : "Upload Video / Audio"}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -1261,8 +1484,9 @@ export default function CreateCourseScreen({
           </Text>
           {!access.canSellPaidCourses ? (
             <Text style={themeStyles.helpText}>
-              Paid pricing should be available on every plan. Refresh the account or
-              contact support@growpathai.com if it remains unavailable.
+              {facilityMode
+                ? "Only Facility owners and managers with server-approved pricing access can set a paid course fee."
+                : "Paid pricing should be available on every plan. Refresh the account or contact support@growpathai.com if it remains unavailable."}
             </Text>
           ) : null}
           <View
@@ -1341,6 +1565,43 @@ export default function CreateCourseScreen({
           <Text style={themeStyles.helpText}>
             Uploaded video storage: 0 GB / plan limit
           </Text>
+          {facilityMode ? (
+            <>
+              <Text style={themeStyles.label}>Course audience</Text>
+              <Text style={themeStyles.helpText}>
+                Facility Only keeps training inside this workspace. Public Catalog lists
+                the course for discovery. Unlisted Link allows access through its direct
+                link. Paid courses must use Public Catalog or Unlisted Link.
+              </Text>
+              <View
+                style={styles.pricingModeRow}
+                accessibilityRole="radiogroup"
+                accessibilityLabel="Facility course audience"
+              >
+                {[
+                  ["facilityOnly", "Facility Only"],
+                  ["public", "Public Catalog"],
+                  ["unlisted", "Unlisted Link"]
+                ].map(([value, label]) => (
+                  <TouchableOpacity
+                    key={value}
+                    onPress={() => setFacilityVisibility(value)}
+                    disabled={!access.canCreateCourses || submitting}
+                    accessibilityRole="radio"
+                    aria-checked={facilityVisibility === value}
+                    accessibilityState={{ checked: facilityVisibility === value }}
+                    accessibilityLabel={`Set course audience to ${label}`}
+                    style={[
+                      themeStyles.pricingModeButton,
+                      facilityVisibility === value && themeStyles.pricingModeButtonActive
+                    ]}
+                  >
+                    <Text style={themeStyles.pricingModeText}>{label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </>
+          ) : null}
         </View>
 
         <View style={themeStyles.sectionCard}>
@@ -1356,7 +1617,9 @@ export default function CreateCourseScreen({
             and publish when the course is ready.
           </Text>
         </View>
-        <PersonalFeedPlacement placement="bottom" routeKey="personal_course_create" />
+        {!facilityMode ? (
+          <PersonalFeedPlacement placement="bottom" routeKey="personal_course_create" />
+        ) : null}
 
         <TouchableOpacity
           onPress={submitCourse}

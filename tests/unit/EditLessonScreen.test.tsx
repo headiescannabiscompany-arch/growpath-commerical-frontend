@@ -87,6 +87,7 @@ describe("EditLessonScreen theme", () => {
       })
     );
     expect(title.props.placeholderTextColor).toBe(nightPalette.textMuted);
+    expect(screen.getByText("PDF URL")).toBeTruthy();
 
     const dayStyles = createStyles(dayPalette);
     expect(dayStyles.header.color).toBe(dayPalette.text);
@@ -123,5 +124,39 @@ describe("EditLessonScreen theme", () => {
 
     expect(screen.getByDisplayValue("Unsaved title")).toBeTruthy();
     expect(screen.queryByDisplayValue("Saved title")).toBeNull();
+  });
+
+  it("does not offer unscanned document authoring in a Facility lesson", async () => {
+    const screen = render(
+      <EditLessonScreen
+        route={{
+          params: {
+            courseId: "course-1",
+            lessonId: "lesson-1",
+            lesson: {
+              id: "lesson-1",
+              title: "Facility lesson",
+              order: 1,
+              content: "Body",
+              pdfUrl: "/api/course-media/64f000000000000000000777/file"
+            }
+          }
+        }}
+        navigation={{ goBack: jest.fn() }}
+        facilityWorkspace={
+          {
+            facilityId: "facility-1",
+            permissions: { canEditLessons: true },
+            api: { updateLesson: jest.fn() }
+          } as any
+        }
+      />
+    );
+
+    expect(await screen.findByDisplayValue("Facility lesson")).toBeTruthy();
+    expect(screen.queryByText("PDF URL")).toBeNull();
+    expect(
+      screen.getByText(/Facility document uploads are temporarily unavailable/)
+    ).toBeTruthy();
   });
 });

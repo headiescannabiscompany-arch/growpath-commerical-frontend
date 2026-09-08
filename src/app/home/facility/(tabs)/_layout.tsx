@@ -36,6 +36,7 @@ export function shouldShowFacilityRouteHeader(routeName = "") {
     "team",
     "transfers",
     "rooms",
+    "courses",
     "tasks",
     "compliance",
     "grows",
@@ -192,6 +193,14 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Facility Reports",
           headerShown: shouldShowFacilityRouteHeader("reports"),
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="courses"
+        options={{
+          title: "Facility Courses",
+          headerShown: shouldShowFacilityRouteHeader("courses"),
           href: null
         }}
       />

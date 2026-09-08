@@ -15,7 +15,7 @@ import GrowInterestPicker from "../components/GrowInterestPicker";
 import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
 import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
 import { addLesson } from "../api/courses";
-import { uploadCourseMedia } from "@/api/uploads";
+import { deleteCourseMediaAsset, uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
@@ -36,9 +36,27 @@ function firstDocumentAsset(result) {
   return null;
 }
 
-export default function AddLessonScreen({ route, navigation }) {
+async function waitForFacilityUploadBatch(promises, facilityMode) {
+  if (!facilityMode) return Promise.all(promises);
+  const settled = await Promise.allSettled(promises);
+  const failure = settled.find((result) => result.status === "rejected");
+  if (failure) throw failure.reason;
+  return settled.map((result) => result.value);
+}
+
+export default function AddLessonScreen({ route, navigation, facilityWorkspace = null }) {
   const entitlements = useEntitlements();
-  const access = getLearningAccess(entitlements);
+  const baseAccess = getLearningAccess(entitlements);
+  const facilityMode = Boolean(facilityWorkspace);
+  const missingFacilityAdapter = entitlements.mode === "facility" && !facilityMode;
+  const access = {
+    ...baseAccess,
+    ...(facilityMode
+      ? { canCreateCourses: facilityWorkspace?.permissions?.canEditLessons === true }
+      : missingFacilityAdapter
+        ? { canCreateCourses: false }
+        : {})
+  };
   const { palette } = useAppTheme();
   const styles = createStyles(palette);
   const { courseId } = route.params;
@@ -58,12 +76,12 @@ export default function AddLessonScreen({ route, navigation }) {
   );
 
   async function pickVideo() {
+    if (facilityMode) return;
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,
         quality: 1
       });
-
       if (!result.canceled && result.assets[0]) {
         setVideoFile(result.assets[0]);
         setVideoAssetId("");
@@ -83,6 +101,13 @@ export default function AddLessonScreen({ route, navigation }) {
   }
 
   async function pickPDF() {
+    if (facilityMode) {
+      Alert.alert(
+        "Facility documents unavailable",
+        "Document uploads will be available after secure file scanning is enabled. Use protected images or audio for now."
+      );
+      return;
+    }
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: "application/pdf"
@@ -145,40 +170,91 @@ export default function AddLessonScreen({ route, navigation }) {
       return Alert.alert("Video source needs attention", previewMedia.errors.join(" "));
     }
 
-    const [imageUrls, uploadedVideo, uploadedPdf, uploadedAudio] = await Promise.all([
-      persistImageUris(images.map((image) => image.uri)),
-      videoFile ? uploadCourseMedia(videoFile) : Promise.resolve(null),
-      pdfFile ? uploadCourseMedia(pdfFile) : Promise.resolve(null),
-      audioFile ? uploadCourseMedia(audioFile) : Promise.resolve(null)
-    ]);
+    const saveLesson = facilityMode ? facilityWorkspace?.api?.addLesson : addLesson;
+    if (typeof saveLesson !== "function") {
+      return Alert.alert(
+        "Unavailable",
+        "Lesson authoring is unavailable for this Facility course."
+      );
+    }
 
-    const preparedMedia = uploadedVideo
-      ? prepareLessonMediaSubmission(
-          {
-            ...mediaDraft,
-            sourceType: "growpath_upload",
-            availabilityStatus: "available",
-            lastCheckedAt: new Date().toISOString(),
-            allowEmbed: false
-          },
-          uploadedVideo.url
-        )
-      : previewMedia;
+    const uploadOptions = facilityMode
+      ? {
+          workspaceType: "facility",
+          workspaceId: facilityWorkspace?.facilityId
+        }
+      : {};
+    const uploadedFacilityAssetIds = [];
+    let lessonSaved = false;
+    const uploadTracked = async (asset) => {
+      const uploaded = await uploadCourseMedia(asset, uploadOptions);
+      if (facilityMode && uploaded?.assetId) {
+        uploadedFacilityAssetIds.push(String(uploaded.assetId));
+      }
+      return uploaded;
+    };
+    try {
+      const [imageUrls, uploadedVideo, uploadedPdf, uploadedAudio] =
+        await waitForFacilityUploadBatch(
+          [
+            facilityMode
+              ? waitForFacilityUploadBatch(
+                  images.map(async (image) => {
+                    const uploaded = await uploadTracked(image);
+                    if (!uploaded?.url) {
+                      throw new Error("Image upload did not return a URL.");
+                    }
+                    return uploaded.url;
+                  }),
+                  true
+                )
+              : persistImageUris(images.map((image) => image.uri)),
+            videoFile && !facilityMode
+              ? uploadCourseMedia(videoFile, { purpose: "video" })
+              : Promise.resolve(null),
+            pdfFile && !facilityMode ? uploadTracked(pdfFile) : Promise.resolve(null),
+            audioFile ? uploadTracked(audioFile) : Promise.resolve(null)
+          ],
+          facilityMode
+        );
+      const preparedMedia = uploadedVideo
+        ? prepareLessonMediaSubmission(
+            {
+              ...mediaDraft,
+              sourceType: "growpath_upload",
+              availabilityStatus: "available",
+              lastCheckedAt: new Date().toISOString(),
+              allowEmbed: false
+            },
+            uploadedVideo.url
+          )
+        : previewMedia;
 
-    await addLesson(courseId, {
-      title,
-      order: order ? Number(order) : 1,
-      content,
-      videoUrl: preparedMedia?.videoUrl || "",
-      externalVideoUrl: preparedMedia?.externalVideoUrl || "",
-      mediaSource: preparedMedia?.mediaSource || undefined,
-      videoAssetId,
-      pdfUrl: uploadedPdf?.url || pdfUrl,
-      audioUrl: uploadedAudio?.url || "",
-      imageUrls,
-      growTags: flattenTierSelections(growInterestSelections)
-    });
-    navigation.goBack();
+      await saveLesson(courseId, {
+        title,
+        order: order ? Number(order) : 1,
+        content,
+        videoUrl: preparedMedia?.videoUrl || "",
+        externalVideoUrl: preparedMedia?.externalVideoUrl || "",
+        mediaSource: preparedMedia?.mediaSource || undefined,
+        videoAssetId,
+        pdfUrl: facilityMode ? "" : uploadedPdf?.url || pdfUrl,
+        audioUrl: uploadedAudio?.url || "",
+        imageUrls,
+        growTags: flattenTierSelections(growInterestSelections)
+      });
+      lessonSaved = true;
+      navigation.goBack();
+    } catch (error) {
+      if (facilityMode && !lessonSaved && uploadedFacilityAssetIds.length) {
+        await Promise.allSettled(
+          [...new Set(uploadedFacilityAssetIds)].map((assetId) =>
+            deleteCourseMediaAsset(assetId)
+          )
+        );
+      }
+      Alert.alert("Save failed", String(error?.message || error || "Unknown error"));
+    }
   }
 
   return (
@@ -186,16 +262,26 @@ export default function AddLessonScreen({ route, navigation }) {
       <Text accessibilityRole="header" aria-level={1} style={styles.header}>
         Add Lesson
       </Text>
-      <PersonalFeedPlacement placement="top" routeKey="personal_lesson_add" longContent />
+      {!facilityMode ? (
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_lesson_add"
+          longContent
+        />
+      ) : null}
       {!access.canCreateCourses ? (
         <View style={styles.lockedCard}>
           <Text style={styles.lockedTitle}>Lesson authoring unavailable</Text>
-          <Text style={styles.helpText}>This account does not have COURSES_CREATE.</Text>
+          <Text style={styles.helpText}>
+            {missingFacilityAdapter
+              ? "Open this lesson from the selected Facility course workspace."
+              : "This account does not have COURSES_CREATE."}
+          </Text>
         </View>
       ) : null}
       <Text style={styles.helpText}>
-        Course videos can be uploaded here or reused from the current workspace Video
-        Library.
+        Add external video links here, or choose protected uploads from the current
+        workspace Video Library.
       </Text>
 
       <TextInput
@@ -235,7 +321,7 @@ export default function AddLessonScreen({ route, navigation }) {
         value={mediaDraft}
         onChange={setMediaDraft}
         disabled={!access.canCreateCourses}
-        onPickUpload={pickVideo}
+        onPickUpload={facilityMode ? undefined : pickVideo}
         pendingUploadName={videoFile?.fileName || videoFile?.name || ""}
         onRemove={() => {
           setVideoFile(null);
@@ -255,27 +341,36 @@ export default function AddLessonScreen({ route, navigation }) {
         }}
       />
 
-      <Text style={styles.label}>PDF Document</Text>
-      <TouchableOpacity
-        accessibilityRole="button"
-        accessibilityLabel="Upload lesson PDF"
-        style={[styles.uploadBtn, !access.canCreateCourses && styles.disabled]}
-        onPress={pickPDF}
-        disabled={!access.canCreateCourses}
-      >
-        <Text style={styles.uploadBtnText}>
-          {pdfFile ? `${pdfFile.name || "PDF Selected"}` : "Upload PDF"}
+      {facilityMode ? (
+        <Text style={styles.helpText} accessibilityRole="text">
+          Facility document uploads are temporarily unavailable until secure file scanning
+          is enabled. You can add protected images, audio, or a Video Library video now.
         </Text>
-      </TouchableOpacity>
-      <TextInput
-        accessibilityLabel="Lesson PDF URL"
-        style={styles.input}
-        placeholderTextColor={palette.textMuted}
-        placeholder="Or paste PDF URL"
-        value={pdfUrl}
-        onChangeText={setPdfUrl}
-        editable={access.canCreateCourses}
-      />
+      ) : (
+        <>
+          <Text style={styles.label}>PDF Document</Text>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Upload lesson PDF"
+            style={[styles.uploadBtn, !access.canCreateCourses && styles.disabled]}
+            onPress={pickPDF}
+            disabled={!access.canCreateCourses}
+          >
+            <Text style={styles.uploadBtnText}>
+              {pdfFile ? `${pdfFile.name || "PDF Selected"}` : "Upload PDF"}
+            </Text>
+          </TouchableOpacity>
+          <TextInput
+            accessibilityLabel="Lesson PDF URL"
+            style={styles.input}
+            placeholderTextColor={palette.textMuted}
+            placeholder="Or paste PDF URL"
+            value={pdfUrl}
+            onChangeText={setPdfUrl}
+            editable={access.canCreateCourses}
+          />
+        </>
+      )}
 
       <Text style={styles.label}>Audio (Optional)</Text>
       <TouchableOpacity
@@ -316,11 +411,13 @@ export default function AddLessonScreen({ route, navigation }) {
         defaultExpanded={false}
       />
 
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_lesson_add"
-        longContent
-      />
+      {!facilityMode ? (
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_lesson_add"
+          longContent
+        />
+      ) : null}
 
       <TouchableOpacity
         accessibilityRole="button"
@@ -336,11 +433,13 @@ export default function AddLessonScreen({ route, navigation }) {
         Selected files upload when you save. Video page links are normalized to their
         provider and retain an external fallback; pasted embed code is rejected.
       </Text>
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_lesson_add"
-        longContent
-      />
+      {!facilityMode ? (
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_lesson_add"
+          longContent
+        />
+      ) : null}
     </ScreenContainer>
   );
 }

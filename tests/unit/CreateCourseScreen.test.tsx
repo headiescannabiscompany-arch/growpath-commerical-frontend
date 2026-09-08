@@ -1,6 +1,6 @@
 import React from "react";
 import { Alert } from "react-native";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CreateCourseScreen from "@/screens/commercial/CreateCourseScreen";
 
@@ -24,6 +24,7 @@ const mockReplace = jest.fn();
 const mockPersistImageUri = jest.fn();
 const mockPersistImageUris = jest.fn();
 const mockUploadCourseMedia = jest.fn();
+const mockDeleteCourseMediaAsset = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 const mockRequestMediaLibraryPermissionsAsync = jest.fn();
 const mockGetDocumentAsync = jest.fn();
@@ -55,8 +56,37 @@ jest.mock("@/api/commercialWorkflows", () => ({
 }));
 
 jest.mock("@/api/uploads", () => ({
+  deleteCourseMediaAsset: (...args: any[]) => mockDeleteCourseMediaAsset(...args),
   uploadCourseMedia: (...args: any[]) => mockUploadCourseMedia(...args)
 }));
+
+jest.mock("@/components/videos/VideoLibraryPicker", () => {
+  const React = require("react");
+  const { Pressable, Text } = require("react-native");
+  return ({ onSelect }: any) => (
+    <Pressable
+      accessibilityLabel="Select protected course library video"
+      accessibilityRole="button"
+      onPress={() =>
+        onSelect({
+          id: "64f000000000000000000801",
+          title: "Protected library lesson",
+          mediaSource: {
+            sourceType: "growpath_upload",
+            provider: "growpath",
+            providerLabel: "GrowPath upload",
+            originalUrl: "/api/videos/uploads/64f000000000000000000802/object",
+            canonicalUrl: "/api/videos/uploads/64f000000000000000000802/object",
+            availabilityStatus: "available",
+            embedCapability: "native"
+          }
+        })
+      }
+    >
+      <Text>Select protected course library video</Text>
+    </Pressable>
+  );
+});
 
 jest.mock("@/api/twitch", () => ({
   getTwitchConnection: (...args: any[]) => mockGetTwitchConnection(...args),
@@ -136,6 +166,7 @@ describe("CreateCourseScreen", () => {
       authorizationUrl: "https://id.twitch.tv/oauth2/authorize"
     });
     mockValidateTwitchConnection.mockResolvedValue({ ok: true });
+    mockDeleteCourseMediaAsset.mockResolvedValue({ cleanupStatus: "released" });
     mockPersistImageUri.mockImplementation(async (uri) =>
       uri ? "uploaded-cover.jpg" : null
     );
@@ -356,6 +387,286 @@ describe("CreateCourseScreen", () => {
     });
   });
 
+  it("keeps Facility drafts scoped, defaults to Facility Only, and rejects Facility-only paid drafts", async () => {
+    const facilityCreate = jest
+      .fn()
+      .mockResolvedValue({ id: "facility-course-new", title: "Facility Training" });
+    const facilityWorkspace = {
+      facilityId: "facility-1",
+      role: "OWNER",
+      permissions: { canCreateDraft: true, canSetPrice: true },
+      limits: { maxPaidCourses: 5, maxLessonsPerCourse: 100 },
+      api: { create: facilityCreate }
+    };
+    const screen = render(
+      <CreateCourseScreen
+        showBackToCourses={false}
+        facilityWorkspace={facilityWorkspace}
+      />
+    );
+
+    expect(
+      screen.getByRole("radio", { name: "Set course audience to Facility Only" }).props
+        .accessibilityState?.checked
+    ).toBe(true);
+    expect(screen.queryAllByTestId("personal-feed-placement")).toHaveLength(0);
+    expect(screen.queryByLabelText("Upload course documents")).toBeNull();
+    expect(screen.queryByLabelText("Course documents")).toBeNull();
+    expect(
+      screen.getByText(/Facility document uploads are temporarily unavailable/)
+    ).toBeTruthy();
+    expect(screen.getByText("Upload Audio")).toBeTruthy();
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Facility Training");
+    fireEvent.press(screen.getByRole("radio", { name: "Set a paid course fee" }));
+    fireEvent.changeText(screen.getByLabelText("Course price USD"), "25.00");
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    expect(Alert.alert).toHaveBeenCalledWith(
+      "Choose a paid-course audience",
+      "A paid Facility course must be Public Catalog or Unlisted Link before it can be saved."
+    );
+    expect(facilityCreate).not.toHaveBeenCalled();
+
+    fireEvent.press(
+      screen.getByRole("radio", { name: "Set course audience to Unlisted Link" })
+    );
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    await waitFor(() => expect(facilityCreate).toHaveBeenCalled());
+    expect(facilityCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Facility Training",
+        workspace: "facility",
+        visibility: "unlisted",
+        access: "paid",
+        priceCents: 2500,
+        isPublished: false
+      })
+    );
+    expect(mockCreateCourse).not.toHaveBeenCalled();
+    expect(mockCreateCommercialCourse).not.toHaveBeenCalled();
+  });
+
+  it("keeps Facility audio, images, cover, and selected videos in the exact workspace", async () => {
+    const facilityCreate = jest
+      .fn()
+      .mockResolvedValue({ id: "facility-course-media", title: "Facility Media" });
+    const facilityWorkspace = {
+      facilityId: "facility-1",
+      role: "OWNER",
+      permissions: { canCreateDraft: true, canSetPrice: true },
+      limits: { maxPaidCourses: 5, maxLessonsPerCourse: 100 },
+      api: { create: facilityCreate }
+    };
+    mockGetDocumentAsync.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///tmp/facility-audio.mp3",
+          name: "facility-audio.mp3",
+          mimeType: "audio/mpeg"
+        }
+      ]
+    });
+    mockLaunchImageLibraryAsync
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [
+          {
+            uri: "file:///tmp/facility-cover.jpg",
+            fileName: "facility-cover.jpg",
+            mimeType: "image/jpeg"
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [
+          {
+            uri: "file:///tmp/facility-gallery.jpg",
+            fileName: "facility-gallery.jpg",
+            mimeType: "image/jpeg"
+          }
+        ]
+      });
+    mockUploadCourseMedia.mockReset();
+    mockUploadCourseMedia.mockImplementation(async (asset: any) => {
+      const file = String(asset?.name || asset?.fileName || asset?.uri || asset);
+      const id = file.includes("audio")
+        ? "912"
+        : file.includes("gallery")
+          ? "913"
+          : "914";
+      return { url: `/api/course-media/64f000000000000000000${id}/file` };
+    });
+    const screen = render(
+      <CreateCourseScreen
+        showBackToCourses={false}
+        facilityWorkspace={facilityWorkspace}
+      />
+    );
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Facility Media");
+    fireEvent.press(screen.getByLabelText("Upload course cover image"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Course cover image preview")).toBeTruthy()
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Course curriculum lessons"),
+      "Protected lesson"
+    );
+    fireEvent.press(screen.getByLabelText("Edit video source for Protected lesson"));
+    expect(screen.queryByLabelText("Choose GrowPath lesson video upload")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Select protected course library video"));
+    fireEvent.press(screen.getByLabelText("Upload course media files"));
+    await waitFor(() => expect(screen.getByText("1 Media File")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Upload course image set"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Course media image 1")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    await waitFor(() => expect(facilityCreate).toHaveBeenCalled());
+    expect(mockPersistImageUri).not.toHaveBeenCalled();
+    expect(mockPersistImageUris).not.toHaveBeenCalled();
+    expect(mockUploadCourseMedia).toHaveBeenCalledTimes(3);
+    for (const call of mockUploadCourseMedia.mock.calls) {
+      expect(call[1]).toEqual({
+        workspaceType: "facility",
+        workspaceId: "facility-1"
+      });
+    }
+    expect(facilityCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        coverImageUrl: "/api/course-media/64f000000000000000000914/file",
+        lessons: [
+          expect.objectContaining({
+            videoAssetId: "64f000000000000000000801",
+            videoUrl: "/api/videos/uploads/64f000000000000000000802/object"
+          })
+        ],
+        documents: [],
+        mediaAssets: expect.arrayContaining([
+          expect.objectContaining({
+            type: "audio",
+            storageUrl: "/api/course-media/64f000000000000000000912/file"
+          }),
+          expect.objectContaining({
+            type: "image",
+            storageUrl: "/api/course-media/64f000000000000000000913/file"
+          })
+        ])
+      })
+    );
+  });
+
+  it("releases newly uploaded Facility media when draft creation fails", async () => {
+    const facilityCreate = jest.fn().mockRejectedValue(new Error("draft save failed"));
+    const facilityWorkspace = {
+      facilityId: "facility-1",
+      role: "OWNER",
+      permissions: { canCreateDraft: true, canSetPrice: true },
+      limits: { maxPaidCourses: 5, maxLessonsPerCourse: 100 },
+      api: { create: facilityCreate }
+    };
+    mockLaunchImageLibraryAsync.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///tmp/facility-image.jpg",
+          fileName: "facility-image.jpg",
+          mimeType: "image/jpeg"
+        }
+      ]
+    });
+    mockUploadCourseMedia.mockReset();
+    mockUploadCourseMedia.mockResolvedValue({
+      assetId: "64f000000000000000000899",
+      url: "/api/course-media/64f000000000000000000899/file"
+    });
+    const screen = render(
+      <CreateCourseScreen
+        showBackToCourses={false}
+        facilityWorkspace={facilityWorkspace}
+      />
+    );
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Failed Facility Draft");
+    fireEvent.press(screen.getByLabelText("Upload course image set"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Course media image 1")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    await waitFor(() =>
+      expect(mockDeleteCourseMediaAsset).toHaveBeenCalledWith("64f000000000000000000899")
+    );
+  });
+
+  it("waits for every Facility upload before cleaning a successful peer after failure", async () => {
+    const facilityCreate = jest.fn();
+    const facilityWorkspace = {
+      facilityId: "facility-1",
+      role: "OWNER",
+      permissions: { canCreateDraft: true, canSetPrice: true },
+      limits: { maxPaidCourses: 5, maxLessonsPerCourse: 100 },
+      api: { create: facilityCreate }
+    };
+    mockLaunchImageLibraryAsync.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///tmp/rejected-image.jpg",
+          fileName: "rejected-image.jpg",
+          mimeType: "image/jpeg"
+        },
+        {
+          uri: "file:///tmp/slow-image.jpg",
+          fileName: "slow-image.jpg",
+          mimeType: "image/jpeg"
+        }
+      ]
+    });
+    let resolveSlowUpload: (value: any) => void = () => {};
+    mockUploadCourseMedia.mockReset();
+    mockUploadCourseMedia.mockImplementation((asset: any) => {
+      if (String(asset?.fileName || "").includes("rejected")) {
+        return Promise.reject(new Error("one upload failed"));
+      }
+      return new Promise((resolve) => {
+        resolveSlowUpload = resolve;
+      });
+    });
+    const screen = render(
+      <CreateCourseScreen
+        showBackToCourses={false}
+        facilityWorkspace={facilityWorkspace}
+      />
+    );
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Partial upload");
+    fireEvent.press(screen.getByLabelText("Upload course image set"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Course media image 2")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByText("Create Draft"));
+    await waitFor(() => expect(mockUploadCourseMedia).toHaveBeenCalledTimes(2));
+    expect(mockDeleteCourseMediaAsset).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveSlowUpload({
+        assetId: "64f000000000000000000898",
+        url: "/api/course-media/64f000000000000000000898/file"
+      });
+    });
+
+    await waitFor(() =>
+      expect(mockDeleteCourseMediaAsset).toHaveBeenCalledWith("64f000000000000000000898")
+    );
+    expect(facilityCreate).not.toHaveBeenCalled();
+  });
+
   it("uses the shared provider-aware video workflow in the initial course builder", async () => {
     const screen = render(<CreateCourseScreen />);
 
@@ -424,7 +735,45 @@ describe("CreateCourseScreen", () => {
     expect(mockCreateCourse).not.toHaveBeenCalled();
   });
 
-  it("uploads a GrowPath lesson video from the initial course builder", async () => {
+  it("selects a protected GrowPath lesson video from Video Library", async () => {
+    const screen = render(<CreateCourseScreen />);
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Upload Lesson Course");
+    fireEvent.changeText(
+      screen.getByLabelText("Course curriculum lessons"),
+      "Uploaded lesson"
+    );
+    fireEvent.press(screen.getByLabelText("Edit video source for Uploaded lesson"));
+    fireEvent.press(screen.getByLabelText("Select protected course library video"));
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    await waitFor(() => expect(mockCreateCourse).toHaveBeenCalled());
+    expect(mockUploadCourseMedia).not.toHaveBeenCalled();
+    expect(mockCreateCourse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lessons: [
+          expect.objectContaining({
+            videoAssetId: "64f000000000000000000801",
+            videoUrl: "/api/videos/uploads/64f000000000000000000802/object",
+            mediaSource: expect.objectContaining({
+              sourceType: "growpath_upload",
+              providerLabel: "GrowPath upload",
+              canonicalUrl: "/api/videos/uploads/64f000000000000000000802/object"
+            })
+          })
+        ],
+        authoringPlan: expect.objectContaining({
+          limits: expect.objectContaining({
+            selectedMedia: 1,
+            videoStorage: "selected_from_library"
+          })
+        })
+      })
+    );
+  });
+
+  it("keeps direct lesson video upload available outside Facility workspaces", async () => {
+    mockGetDocumentAsync.mockReset();
     mockGetDocumentAsync.mockResolvedValue({
       canceled: false,
       assets: [
@@ -453,19 +802,19 @@ describe("CreateCourseScreen", () => {
     );
     fireEvent.press(screen.getByText("Create Draft"));
 
-    await waitFor(() =>
-      expect(mockUploadCourseMedia).toHaveBeenCalledWith(
-        expect.objectContaining({ uri: "file:///tmp/lesson-video.mp4" })
-      )
+    await waitFor(() => expect(mockCreateCourse).toHaveBeenCalled());
+    expect(mockUploadCourseMedia).toHaveBeenCalledWith(
+      expect.objectContaining({ uri: "file:///tmp/lesson-video.mp4" }),
+      { purpose: "video" }
     );
     expect(mockCreateCourse).toHaveBeenCalledWith(
       expect.objectContaining({
         lessons: [
           expect.objectContaining({
+            videoAssetId: "",
             videoUrl: "/uploads/lesson-video.mp4",
             mediaSource: expect.objectContaining({
               sourceType: "growpath_upload",
-              providerLabel: "GrowPath upload",
               canonicalUrl: "/uploads/lesson-video.mp4"
             })
           })
@@ -529,7 +878,7 @@ describe("CreateCourseScreen", () => {
     );
   });
 
-  it("uploads selected course documents, video/audio media, and image sets before creating the draft", async () => {
+  it("uploads selected course documents, video media, and image sets outside Facility", async () => {
     mockGetDocumentAsync
       .mockResolvedValueOnce({
         canceled: false,
@@ -553,6 +902,10 @@ describe("CreateCourseScreen", () => {
           }
         ]
       });
+    mockUploadCourseMedia.mockReset();
+    mockUploadCourseMedia
+      .mockResolvedValueOnce({ url: "/uploads/course-workbook.pdf" })
+      .mockResolvedValueOnce({ url: "/uploads/course-video.mp4" });
     mockLaunchImageLibraryAsync.mockResolvedValueOnce({
       canceled: false,
       assets: [{ uri: "file:///tmp/course-gallery.jpg", fileName: "gallery.jpg" }]
@@ -577,11 +930,13 @@ describe("CreateCourseScreen", () => {
     await waitFor(() => expect(mockCreateCourse).toHaveBeenCalled());
     expect(mockUploadCourseMedia).toHaveBeenNthCalledWith(
       1,
-      expect.objectContaining({ uri: "file:///tmp/course-workbook.pdf" })
+      expect.objectContaining({ uri: "file:///tmp/course-workbook.pdf" }),
+      {}
     );
     expect(mockUploadCourseMedia).toHaveBeenNthCalledWith(
       2,
-      expect.objectContaining({ uri: "file:///tmp/course-video.mp4" })
+      expect.objectContaining({ uri: "file:///tmp/course-video.mp4" }),
+      {}
     );
     expect(mockPersistImageUris).toHaveBeenCalledWith(["file:///tmp/course-gallery.jpg"]);
     expect(mockCreateCourse).toHaveBeenCalledWith(

@@ -119,8 +119,14 @@ requireText(
 requireText(
   "shared course creator",
   sharedCreate,
-  /entitlements\.mode === "commercial" \? createCommercialCourse : createCourse/,
+  /entitlements\.mode === "commercial"\s*\?\s*createCommercialCourse\s*:\s*createCourse/,
   "Commercial workspace course creation boundary"
+);
+requireText(
+  "shared course creator",
+  sharedCreate,
+  /facilityMode\s*\?\s*facilityWorkspace\?\.api\?\.create/,
+  "Facility-scoped course creation boundary"
 );
 requireText(
   "shared course creator",

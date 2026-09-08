@@ -6,6 +6,7 @@ const mockDiscardPreparedNativeEvidenceImage = jest.fn();
 const mockUriToBlob = jest.fn();
 
 jest.mock("@/api/apiRequest", () => ({
+  API_URL: "https://api.growpath.test",
   apiRequest: (...args: any[]) => mockApiRequest(...args),
   uploadBinaryToSignedUrl: (...args: any[]) => mockUploadBinaryToSignedUrl(...args)
 }));
@@ -61,6 +62,10 @@ describe("uploads API", () => {
 
     expect(mockApiRequest).toHaveBeenCalledWith("/api/uploads/course-media", {
       method: "POST",
+      params: {
+        workspaceType: "facility",
+        workspaceId: "facility-1"
+      },
       body: expect.any(FormData)
     });
     const formData = mockApiRequest.mock.calls[0][1].body;
@@ -73,6 +78,43 @@ describe("uploads API", () => {
       ])
     );
     expect(result).toEqual({ url: "/uploads/lesson.pdf" });
+  });
+
+  it("exchanges a protected course-media URL before opening a new browser tab", async () => {
+    const { Linking } = require("react-native");
+    const openUrl = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    mockApiRequest.mockResolvedValue({
+      url: "/api/course-media/64f000000000000000000001/file?access=signed-token"
+    });
+    const { openCourseMedia } = require("@/api/uploads");
+
+    await openCourseMedia("/api/course-media/64f000000000000000000001/file");
+
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/course-media/64f000000000000000000001/access",
+      { invalidateOn401: false }
+    );
+    expect(openUrl).toHaveBeenCalledWith(
+      "https://api.growpath.test/api/course-media/64f000000000000000000001/file?access=signed-token"
+    );
+    openUrl.mockRestore();
+  });
+
+  it("releases an abandoned Facility course-media asset through its protected lifecycle", async () => {
+    mockApiRequest.mockResolvedValue({
+      success: true,
+      assetId: "asset/course 1",
+      cleanupStatus: "released"
+    });
+    const { deleteCourseMediaAsset } = require("@/api/uploads");
+
+    await expect(deleteCourseMediaAsset("asset/course 1")).resolves.toMatchObject({
+      cleanupStatus: "released"
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/course-media/asset%2Fcourse%201/abandon",
+      { method: "DELETE" }
+    );
   });
 
   it("uploads an SOP document to the selected Facility endpoint", async () => {

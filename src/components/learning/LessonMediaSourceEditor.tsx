@@ -180,28 +180,35 @@ export default function LessonMediaSourceEditor({
 
       {value.sourceType === "growpath_upload" ? (
         <View style={styles.fieldGroup}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Choose GrowPath lesson video upload"
-            disabled={disabled || !onPickUpload}
-            onPress={onPickUpload}
-            style={[styles.primaryButton, (disabled || !onPickUpload) && styles.disabled]}
-          >
-            <Text style={styles.primaryButtonText}>
-              {pendingUploadName || value.originalUrl
-                ? "Replace GrowPath video"
-                : "Choose video to upload"}
+          {onPickUpload ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Choose GrowPath lesson video upload"
+              disabled={disabled}
+              onPress={onPickUpload}
+              style={[styles.primaryButton, disabled && styles.disabled]}
+            >
+              <Text style={styles.primaryButtonText}>
+                {pendingUploadName || value.originalUrl
+                  ? "Replace GrowPath video"
+                  : "Choose video to upload"}
+              </Text>
+            </Pressable>
+          ) : (
+            <Text style={styles.help}>
+              Choose an active video from the protected Video Library below. Upload new
+              videos in Video Studio first.
             </Text>
-          </Pressable>
+          )}
           {pendingUploadName ? (
             <Text style={styles.status}>Selected: {pendingUploadName}</Text>
           ) : value.originalUrl ? (
             <Text style={styles.status}>Saved GrowPath upload: {value.originalUrl}</Text>
-          ) : (
+          ) : onPickUpload ? (
             <Text style={styles.help}>
               The selected file uploads when the lesson is saved.
             </Text>
-          )}
+          ) : null}
         </View>
       ) : (
         <View style={styles.fieldGroup}>

@@ -1,5 +1,5 @@
-import { Platform } from "react-native";
-import { apiRequest, uploadBinaryToSignedUrl } from "./apiRequest";
+import { Linking, Platform } from "react-native";
+import { API_URL, apiRequest, uploadBinaryToSignedUrl } from "./apiRequest";
 import { endpoints } from "./endpoints";
 import { uriToBlob } from "./uriToBlob";
 import {
@@ -26,6 +26,9 @@ function guessMime(filename) {
 function guessCourseMediaMime(filename) {
   const m = (filename || "").toLowerCase().match(/\.([a-z0-9]+)$/);
   const ext = m?.[1] || "";
+  if (ext === "jpeg" || ext === "jpg") return "image/jpeg";
+  if (ext === "png") return "image/png";
+  if (ext === "webp") return "image/webp";
   if (ext === "pdf") return "application/pdf";
   if (ext === "mp4" || ext === "m4v") return "video/mp4";
   if (ext === "mov") return "video/quicktime";
@@ -124,8 +127,56 @@ export async function uploadCourseMedia(input, options = {}) {
 
   return apiRequest("/api/uploads/course-media", {
     method: "POST",
+    params: {
+      workspaceType: options.workspaceType,
+      workspaceId: options.workspaceId
+    },
     body: formData
   });
+}
+
+export async function deleteCourseMediaAsset(assetId) {
+  const id = String(assetId || "").trim();
+  if (!id) return null;
+  return apiRequest(`/api/course-media/${encodeURIComponent(id)}/abandon`, {
+    method: "DELETE"
+  });
+}
+
+function protectedCourseMediaPath(value) {
+  const raw = String(value || "").trim();
+  if (!raw || !API_URL) return "";
+  try {
+    const apiOrigin = new URL(API_URL).origin;
+    const parsed = new URL(raw, `${apiOrigin}/`);
+    if (parsed.origin !== apiOrigin) return "";
+    if (
+      !/^\/api\/(?:uploads\/)?course-media\/[0-9a-f]{24}\/file$/i.test(parsed.pathname)
+    ) {
+      return "";
+    }
+    return `${parsed.pathname}${parsed.search}`;
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Exchanges an authenticated/anonymous course entitlement check for a five-minute
+ * resource URL, then opens that URL without exposing the account bearer token.
+ */
+export async function getCourseMediaAccessUrl(url) {
+  const protectedPath = protectedCourseMediaPath(url);
+  if (!protectedPath) return String(url || "");
+  const accessPath = protectedPath.replace(/\/file(?:\?.*)?$/, "/access");
+  const result = await apiRequest(accessPath, { invalidateOn401: false });
+  const accessUrl = String(result?.url || "");
+  if (!accessUrl) throw new Error("Course media access could not be verified.");
+  return new URL(accessUrl, `${API_URL}/`).href;
+}
+
+export async function openCourseMedia(url, _options = {}) {
+  return Linking.openURL(await getCourseMediaAccessUrl(url));
 }
 
 export async function uploadEvidenceMedia(input) {

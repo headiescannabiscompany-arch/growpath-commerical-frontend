@@ -121,7 +121,7 @@ const workspaceGroups: Array<{
       },
       {
         label: "Courses",
-        href: "/courses",
+        href: "/home/facility/courses",
         description: "Open facility training courses and shared lesson resources."
       },
       {

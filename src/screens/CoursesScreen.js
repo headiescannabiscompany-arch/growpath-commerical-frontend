@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,6 +14,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "@/api/apiRequest";
 import { getCourse, unpublishCourse } from "@/api/courses";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import AuthorizedCourseImage from "@/components/learning/AuthorizedCourseImage";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "../theme/theme";
@@ -144,6 +144,13 @@ function isCommercialManagedCourse(course) {
   );
 }
 
+function isFacilityManagedCourse(course) {
+  return (
+    String(course?.sourceType || "").toLowerCase() === "facility_course" ||
+    String(course?.authoringSource || "").toLowerCase() === "facility_workspace"
+  );
+}
+
 export function viewerOwnsCourse(course, user) {
   const viewerId = entityId(user);
   const creatorId = entityId(
@@ -162,12 +169,14 @@ export function isExplicitQaCourse(course) {
  *   navigation?: any;
  *   onDetailVisibilityChange?: (visible: boolean) => void;
  *   catalogHref?: string;
+ *   facilityWorkspace?: any;
  * }} [props]
  */
 export default function CoursesScreen({
   navigation,
   onDetailVisibilityChange,
-  catalogHref = "/courses"
+  catalogHref = "/courses",
+  facilityWorkspace = null
 } = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -182,10 +191,28 @@ export default function CoursesScreen({
   const { palette } = useAppTheme();
   const styles = useMemo(() => createCoursesScreenStyles(palette), [palette]);
   const access = getLearningAccess(ent);
+  const facilityMode = Boolean(facilityWorkspace);
+  const facilityScopeId = facilityMode ? entityId(facilityWorkspace?.facilityId) : "";
+  const genericFacilityLearnerMode = ent.mode === "facility" && !facilityMode;
   const isSignedIn = Boolean(auth.isAuthed || auth.user?.id);
   const viewerId = entityId(auth.user);
-  const canCreateCourses = isSignedIn && access.canCreateCourses;
-  const canInvite = isSignedIn && !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME);
+  const [facilityPermissions, setFacilityPermissions] = useState({
+    canCreateDraft: false,
+    canSetPrice: false
+  });
+  const [facilityLimits, setFacilityLimits] = useState({
+    maxPaidCourses: null,
+    maxLessonsPerCourse: null,
+    currentPublishedPaidCourses: 0
+  });
+  const canCreateCourses = facilityMode
+    ? isSignedIn && facilityPermissions.canCreateDraft === true
+    : isSignedIn && !genericFacilityLearnerMode && access.canCreateCourses;
+  const canInvite =
+    !facilityMode &&
+    !genericFacilityLearnerMode &&
+    isSignedIn &&
+    !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME);
 
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -202,6 +229,10 @@ export default function CoursesScreen({
   const [requestedCourseError, setRequestedCourseError] = useState("");
   const [catalogReloadKey, setCatalogReloadKey] = useState(0);
   const requestedCourseId = directRequestedCourseId || recoveredCheckoutCourseId;
+  const selectedCourseMatchesScope = Boolean(
+    selectedCourse &&
+    (!facilityMode || entityId(selectedCourse?.facilityId) === facilityScopeId)
+  );
 
   useEffect(() => {
     let active = true;
@@ -223,8 +254,16 @@ export default function CoursesScreen({
   }, [checkoutResult, directRequestedCourseId]);
 
   useEffect(() => {
-    onDetailVisibilityChange?.(Boolean(selectedCourse));
-  }, [onDetailVisibilityChange, selectedCourse]);
+    onDetailVisibilityChange?.(selectedCourseMatchesScope);
+  }, [onDetailVisibilityChange, selectedCourseMatchesScope]);
+
+  useEffect(() => {
+    if (!facilityMode) return;
+    setSelectedCourse((current) => {
+      if (!current || entityId(current?.facilityId) === facilityScopeId) return current;
+      return null;
+    });
+  }, [facilityMode, facilityScopeId]);
 
   useEffect(() => {
     if (!requestedCourseId) setDismissedRequestedCourseId("");
@@ -234,6 +273,77 @@ export default function CoursesScreen({
     let alive = true;
 
     async function load() {
+      if (facilityMode) {
+        if (
+          !facilityWorkspace?.facilityId ||
+          !facilityWorkspace?.role ||
+          typeof facilityWorkspace?.api?.list !== "function" ||
+          typeof facilityWorkspace?.api?.get !== "function"
+        ) {
+          setCourses([]);
+          setFacilityPermissions({ canCreateDraft: false, canSetPrice: false });
+          setLoading(false);
+          setErr("Facility course access is unavailable for the selected workspace.");
+          return;
+        }
+        setLoading(true);
+        setErr("");
+        setCatalogWarning("");
+        setRequestedCourseError("");
+        try {
+          const result = await facilityWorkspace.api.list();
+          if (!alive) return;
+          setFacilityPermissions(
+            result?.permissions || { canCreateDraft: false, canSetPrice: false }
+          );
+          setFacilityLimits(
+            result?.limits || {
+              maxPaidCourses: null,
+              maxLessonsPerCourse: null,
+              currentPublishedPaidCourses: 0
+            }
+          );
+          let scopedCourses = normalizeList(result?.courses).map((course) => ({
+            ...course,
+            _viewerOwnsCourse: true
+          }));
+          if (
+            requestedCourseId &&
+            !scopedCourses.some(
+              (course) =>
+                String(course?._id || course?.id || "") === String(requestedCourseId)
+            )
+          ) {
+            try {
+              const requestedCourse = await facilityWorkspace.api.get(
+                String(requestedCourseId)
+              );
+              if (requestedCourse) {
+                scopedCourses = mergeCourses(scopedCourses, [
+                  { ...requestedCourse, _viewerOwnsCourse: true }
+                ]);
+              }
+            } catch (_requestedError) {
+              if (alive) {
+                setRequestedCourseError(
+                  "The requested Facility course is unavailable or you no longer have access."
+                );
+              }
+            }
+          }
+          if (alive) setCourses(scopedCourses);
+        } catch (error) {
+          if (alive) {
+            setCourses([]);
+            setFacilityPermissions({ canCreateDraft: false, canSetPrice: false });
+            setErr(String(error?.message || error || "Failed to load Facility courses"));
+          }
+        } finally {
+          if (alive) setLoading(false);
+        }
+        return;
+      }
+
       if (!access.canViewCourses) {
         setCourses([]);
         setLoading(false);
@@ -332,6 +442,8 @@ export default function CoursesScreen({
   }, [
     access.canSeePaidCourses,
     access.canViewCourses,
+    facilityMode,
+    facilityWorkspace,
     viewerId,
     canCreateCourses,
     isSignedIn,
@@ -389,7 +501,19 @@ export default function CoursesScreen({
     setCourseActionFeedback("");
     setCourseActionError("");
     try {
-      await unpublishCourse(id);
+      if (facilityMode) {
+        if (
+          course?.permissions?.canUnpublish !== true ||
+          typeof facilityWorkspace?.api?.unpublish !== "function"
+        ) {
+          throw new Error(
+            "You do not have permission to unpublish this Facility course."
+          );
+        }
+        await facilityWorkspace.api.unpublish(id);
+      } else {
+        await unpublishCourse(id);
+      }
       setCourses((current) =>
         current.map((item) =>
           String(item?._id || item?.id || "") === id
@@ -406,19 +530,31 @@ export default function CoursesScreen({
   };
 
   const hasAnalytics = useMemo(
-    () => access.canViewCourseAnalytics,
-    [access.canViewCourseAnalytics]
+    () => !facilityMode && access.canViewCourseAnalytics,
+    [access.canViewCourseAnalytics, facilityMode]
   );
-  const paidCourseCount = useMemo(() => countPaidCourses(courses), [courses]);
-  const paidLimitReached =
-    access.maxPaidCourses !== null && paidCourseCount >= access.maxPaidCourses;
+  const paidCourseCount = useMemo(
+    () =>
+      facilityMode
+        ? Number(facilityLimits.currentPublishedPaidCourses || 0)
+        : countPaidCourses(courses),
+    [courses, facilityLimits.currentPublishedPaidCourses, facilityMode]
+  );
+  const maxPaidCourses = facilityMode
+    ? facilityLimits.maxPaidCourses
+    : access.maxPaidCourses;
+  const paidLimitReached = maxPaidCourses !== null && paidCourseCount >= maxPaidCourses;
   const userInterests = useMemo(
     () => flattenGrowInterests(auth.user?.growInterests || {}),
     [auth.user?.growInterests]
   );
 
   function openCourse(course) {
-    if (course?.sourceType === "commercial_course" && course?.storefrontSlug) {
+    if (
+      !facilityMode &&
+      course?.sourceType === "commercial_course" &&
+      course?.storefrontSlug
+    ) {
       const id = String(course?._id || course?.id || "");
       router.push(
         `/store/${encodeURIComponent(course.storefrontSlug)}/courses/${encodeURIComponent(id)}`
@@ -437,10 +573,14 @@ export default function CoursesScreen({
       navigation.navigate("CreateCourse");
       return;
     }
-    router.push("/courses/create?from=/home/personal/courses");
+    router.push(
+      facilityMode
+        ? "/home/facility/courses?action=create"
+        : "/courses/create?from=/home/personal/courses"
+    );
   }
 
-  if (selectedCourse) {
+  if (selectedCourse && selectedCourseMatchesScope) {
     const selectedId = String(selectedCourse?._id || selectedCourse?.id || "");
     return (
       <View
@@ -455,6 +595,15 @@ export default function CoursesScreen({
             params: { course: selectedCourse, id: selectedId, checkout: checkoutResult }
           }}
           navigation={navigation}
+          facilityWorkspace={
+            facilityMode
+              ? {
+                  ...facilityWorkspace,
+                  permissions: facilityPermissions,
+                  limits: facilityLimits
+                }
+              : null
+          }
         />
       </View>
     );
@@ -463,11 +612,13 @@ export default function CoursesScreen({
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text accessibilityRole="header" aria-level={1} style={styles.title}>
-        Courses
+        {facilityMode ? "Facility Courses" : "Courses"}
       </Text>
-      <PersonalFeedPlacement placement="top" routeKey="personal_courses" longContent />
+      {!facilityMode ? (
+        <PersonalFeedPlacement placement="top" routeKey="personal_courses" longContent />
+      ) : null}
 
-      {!isSignedIn ? (
+      {!facilityMode && !isSignedIn ? (
         <View style={styles.publicCard}>
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             Published course catalog
@@ -497,7 +648,7 @@ export default function CoursesScreen({
         </View>
       ) : null}
 
-      {!access.canViewCourses ? (
+      {!facilityMode && !access.canViewCourses ? (
         <View style={styles.lockedCard}>
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             Courses unavailable
@@ -565,14 +716,14 @@ export default function CoursesScreen({
         <Pressable
           key={String(item?._id || item?.id || idx)}
           style={styles.card}
-          disabled={!matchesCourseInterests(item, userInterests)}
+          disabled={!facilityMode && !matchesCourseInterests(item, userInterests)}
           onPress={() => openCourse(item)}
         >
           {courseImageSource(item) ? (
-            <Image
+            <AuthorizedCourseImage
               accessibilityLabel={`${String(item?.title || item?.name || "Untitled")} cover`}
               resizeMode="cover"
-              source={courseImageSource(item)}
+              uri={courseImageSource(item).uri}
               style={styles.courseImage}
             />
           ) : null}
@@ -583,6 +734,9 @@ export default function CoursesScreen({
             {isPublishedCourse(item) ? "Published" : "Draft"}
           </Text>
           <Text style={styles.priceText}>{coursePriceLabel(item)}</Text>
+          {facilityMode && isFacilityManagedCourse(item) ? (
+            <Text style={styles.meta}>Facility workspace course</Text>
+          ) : null}
           {courseInterestTags(item).length ? (
             <Text style={styles.meta}>
               Grow interests: {courseInterestTags(item).join(" | ")}
@@ -590,7 +744,7 @@ export default function CoursesScreen({
           ) : (
             <Text style={styles.meta}>Grow interests: General</Text>
           )}
-          {!matchesCourseInterests(item, userInterests) ? (
+          {!facilityMode && !matchesCourseInterests(item, userInterests) ? (
             <Text style={styles.lockedText}>
               Hidden from your learning path until you add a matching grow interest.
             </Text>
@@ -615,9 +769,12 @@ export default function CoursesScreen({
             </Pressable>
           ) : null}
           {isSignedIn &&
-          access.canPublishCourses &&
+          (facilityMode
+            ? item?.permissions?.canUnpublish === true
+            : !genericFacilityLearnerMode && access.canPublishCourses) &&
           item?._viewerOwnsCourse &&
           !isCommercialManagedCourse(item) &&
+          (facilityMode || !isFacilityManagedCourse(item)) &&
           isPublishedCourse(item) ? (
             <Pressable
               accessibilityRole="button"
@@ -634,7 +791,7 @@ export default function CoursesScreen({
             </Pressable>
           ) : null}
           <Text style={styles.link}>
-            {matchesCourseInterests(item, userInterests)
+            {facilityMode || matchesCourseInterests(item, userInterests)
               ? "Open details"
               : "Outside your grow interests"}
           </Text>
@@ -658,9 +815,9 @@ export default function CoursesScreen({
           </View>
           <Text style={styles.meta}>
             Paid course limit:{" "}
-            {access.maxPaidCourses === null
+            {maxPaidCourses === null
               ? "unlimited"
-              : `${paidCourseCount}/${access.maxPaidCourses}`}
+              : `${paidCourseCount}/${maxPaidCourses}`}
           </Text>
           <Text style={styles.meta}>Course media: ready for uploads</Text>
           <Text style={styles.meta}>Live sessions this month: 0 scheduled</Text>
@@ -670,18 +827,27 @@ export default function CoursesScreen({
       {canCreateCourses ? (
         <Pressable
           accessibilityRole="button"
-          disabled={paidLimitReached && access.canSellPaidCourses}
+          disabled={!facilityMode && paidLimitReached && access.canSellPaidCourses}
           onPress={createCourse}
           style={[
             styles.btn,
-            paidLimitReached && access.canSellPaidCourses && styles.btnDisabled
+            !facilityMode &&
+              paidLimitReached &&
+              access.canSellPaidCourses &&
+              styles.btnDisabled
           ]}
         >
           <Text style={styles.btnText}>Create Course</Text>
         </Pressable>
       ) : null}
 
-      <PersonalFeedPlacement placement="middle" routeKey="personal_courses" longContent />
+      {!facilityMode ? (
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_courses"
+          longContent
+        />
+      ) : null}
 
       {canInvite ? (
         <View style={styles.inviteCard}>
@@ -717,7 +883,13 @@ export default function CoursesScreen({
           ) : null}
         </View>
       ) : null}
-      <PersonalFeedPlacement placement="bottom" routeKey="personal_courses" longContent />
+      {!facilityMode ? (
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_courses"
+          longContent
+        />
+      ) : null}
     </ScrollView>
   );
 }

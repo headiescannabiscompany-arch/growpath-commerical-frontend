@@ -23,12 +23,26 @@ import {
   groupTagsByTier
 } from "../utils/growInterests";
 
-export default function EditLessonScreen({ route, navigation }) {
+export default function EditLessonScreen({
+  route,
+  navigation,
+  facilityWorkspace = null
+}) {
   const entitlements = useEntitlements();
-  const access = getLearningAccess(entitlements);
+  const baseAccess = getLearningAccess(entitlements);
+  const facilityMode = Boolean(facilityWorkspace);
+  const missingFacilityAdapter = entitlements.mode === "facility" && !facilityMode;
+  const access = {
+    ...baseAccess,
+    ...(facilityMode
+      ? { canCreateCourses: facilityWorkspace?.permissions?.canEditLessons === true }
+      : missingFacilityAdapter
+        ? { canCreateCourses: false }
+        : {})
+  };
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
-  const { lessonId, lesson: routeLesson } = route.params;
+  const { courseId, lessonId, lesson: routeLesson } = route.params;
   const navigationRef = useRef(navigation);
 
   const [lesson, setLesson] = useState(null);
@@ -65,6 +79,7 @@ export default function EditLessonScreen({ route, navigation }) {
   }, [routeLesson]);
 
   async function pickVideo() {
+    if (facilityMode) return;
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,
@@ -97,7 +112,9 @@ export default function EditLessonScreen({ route, navigation }) {
     if (previewMedia?.errors.length) {
       return Alert.alert("Video source needs attention", previewMedia.errors.join(" "));
     }
-    const uploadedVideo = videoFile ? await uploadCourseMedia(videoFile) : null;
+    const uploadedVideo = videoFile
+      ? await uploadCourseMedia(videoFile, { purpose: "video" })
+      : null;
     const preparedMedia = uploadedVideo
       ? prepareLessonMediaSubmission(
           {
@@ -110,7 +127,14 @@ export default function EditLessonScreen({ route, navigation }) {
           uploadedVideo.url
         )
       : previewMedia;
-    await updateLesson(lessonId, {
+    const saveLesson = facilityMode ? facilityWorkspace?.api?.updateLesson : updateLesson;
+    if (typeof saveLesson !== "function") {
+      return Alert.alert(
+        "Unavailable",
+        "Lesson editing is unavailable for this Facility course."
+      );
+    }
+    const lessonPayload = {
       title,
       order: order ? Number(order) : 1,
       content,
@@ -118,9 +142,14 @@ export default function EditLessonScreen({ route, navigation }) {
       externalVideoUrl: preparedMedia?.externalVideoUrl || "",
       mediaSource: preparedMedia?.mediaSource || null,
       videoAssetId,
-      pdfUrl,
+      pdfUrl: facilityMode ? String(lesson?.pdfUrl || "") : pdfUrl,
       growTags: flattenTierSelections(growInterestSelections)
-    });
+    };
+    if (facilityMode) {
+      await saveLesson(courseId, lessonId, lessonPayload);
+    } else {
+      await saveLesson(lessonId, lessonPayload);
+    }
 
     navigation.goBack();
   }
@@ -128,9 +157,13 @@ export default function EditLessonScreen({ route, navigation }) {
   if (!lesson) {
     return (
       <ScreenContainer scroll>
-        <PersonalFeedPlacement placement="top" routeKey="personal_lesson_edit" />
+        {!facilityMode ? (
+          <PersonalFeedPlacement placement="top" routeKey="personal_lesson_edit" />
+        ) : null}
         <Text style={styles.helpText}>Loading...</Text>
-        <PersonalFeedPlacement placement="bottom" routeKey="personal_lesson_edit" />
+        {!facilityMode ? (
+          <PersonalFeedPlacement placement="bottom" routeKey="personal_lesson_edit" />
+        ) : null}
       </ScreenContainer>
     );
   }
@@ -138,13 +171,19 @@ export default function EditLessonScreen({ route, navigation }) {
   return (
     <ScreenContainer scroll>
       <Text style={styles.header}>Edit Lesson</Text>
-      <PersonalFeedPlacement
-        placement="top"
-        routeKey="personal_lesson_edit"
-        longContent
-      />
+      {!facilityMode ? (
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey="personal_lesson_edit"
+          longContent
+        />
+      ) : null}
       {!access.canCreateCourses ? (
-        <Text style={styles.helpText}>This account does not have COURSES_CREATE.</Text>
+        <Text style={styles.helpText}>
+          {missingFacilityAdapter
+            ? "Open this lesson from the selected Facility course workspace."
+            : "This account does not have COURSES_CREATE."}
+        </Text>
       ) : null}
       <Text style={styles.helpText}>
         Replace this lesson video, detach it, or reuse one video from the current
@@ -183,7 +222,7 @@ export default function EditLessonScreen({ route, navigation }) {
         value={mediaDraft}
         onChange={setMediaDraft}
         disabled={!access.canCreateCourses}
-        onPickUpload={pickVideo}
+        onPickUpload={facilityMode ? undefined : pickVideo}
         pendingUploadName={videoFile?.fileName || videoFile?.name || ""}
         onRemove={() => {
           setVideoFile(null);
@@ -203,13 +242,23 @@ export default function EditLessonScreen({ route, navigation }) {
         }}
       />
 
-      <Text style={styles.label}>PDF URL</Text>
-      <TextInput
-        style={styles.input}
-        value={pdfUrl}
-        onChangeText={setPdfUrl}
-        editable={access.canCreateCourses}
-      />
+      {facilityMode ? (
+        <Text style={styles.helpText} accessibilityRole="text">
+          Facility document uploads are temporarily unavailable until secure file scanning
+          is enabled. Existing documents are preserved; use protected course images,
+          audio, or a Video Library video for new media.
+        </Text>
+      ) : (
+        <>
+          <Text style={styles.label}>PDF URL</Text>
+          <TextInput
+            style={styles.input}
+            value={pdfUrl}
+            onChangeText={setPdfUrl}
+            editable={access.canCreateCourses}
+          />
+        </>
+      )}
 
       <GrowInterestPicker
         title="Lesson Grow Tags"
@@ -219,11 +268,13 @@ export default function EditLessonScreen({ route, navigation }) {
         defaultExpanded
       />
 
-      <PersonalFeedPlacement
-        placement="middle"
-        routeKey="personal_lesson_edit"
-        longContent
-      />
+      {!facilityMode ? (
+        <PersonalFeedPlacement
+          placement="middle"
+          routeKey="personal_lesson_edit"
+          longContent
+        />
+      ) : null}
 
       <TouchableOpacity
         style={[styles.btn, !access.canCreateCourses && styles.disabled]}
@@ -232,11 +283,13 @@ export default function EditLessonScreen({ route, navigation }) {
       >
         <Text style={styles.btnText}>Save Changes</Text>
       </TouchableOpacity>
-      <PersonalFeedPlacement
-        placement="bottom"
-        routeKey="personal_lesson_edit"
-        longContent
-      />
+      {!facilityMode ? (
+        <PersonalFeedPlacement
+          placement="bottom"
+          routeKey="personal_lesson_edit"
+          longContent
+        />
+      ) : null}
     </ScreenContainer>
   );
 }

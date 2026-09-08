@@ -468,7 +468,7 @@ export default function FacilityProfileRoute() {
             <ProfileAction
               label="Courses"
               accessibilityLabel="Open courses"
-              onPress={() => router.push("/courses" as any)}
+              onPress={() => router.push("/home/facility/courses" as any)}
             />
             <ProfileAction
               label="Videos"

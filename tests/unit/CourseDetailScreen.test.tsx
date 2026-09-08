@@ -32,6 +32,7 @@ const mockLearningAccess = {
   canViewCourseAnalytics: false,
   maxLessonsPerCourse: 12
 };
+const mockEntitlements = { mode: "personal" };
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: mockReplace })
@@ -40,7 +41,7 @@ jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({ user: { id: "learner-1" } })
 }));
 jest.mock("@/entitlements", () => ({
-  useEntitlements: () => ({ mode: "personal" })
+  useEntitlements: () => mockEntitlements
 }));
 jest.mock("@/features/learning/learningAccess", () => ({
   getLearningAccess: () => mockLearningAccess
@@ -56,6 +57,7 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => () => null);
 jest.mock("@/api/grows", () => ({ listPersonalGrows: jest.fn().mockResolvedValue([]) }));
 jest.mock("@/api/tasks", () => ({ createPersonalTask: jest.fn() }));
 jest.mock("@/api/apiRequest", () => ({
+  API_URL: "https://api.growpath.test",
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 jest.mock("@/api/coursePayments", () => ({
@@ -131,6 +133,7 @@ describe("CourseDetailScreen learner player", () => {
       canViewCourseAnalytics: false,
       maxLessonsPerCourse: 12
     });
+    mockEntitlements.mode = "personal";
     mockApiRequest.mockResolvedValue({ sessionIds: [] });
     mockSaveNote.mockResolvedValue({ note: "Updated note" });
     mockPublishCourse.mockResolvedValue({ published: true });
@@ -257,9 +260,83 @@ describe("CourseDetailScreen learner player", () => {
     fireEvent.press(await screen.findByLabelText("Open lesson document 1 of 2"));
     fireEvent.press(screen.getByLabelText("Open lesson document 2 of 2"));
 
+    await waitFor(() => expect(openUrl).toHaveBeenCalledTimes(2));
     expect(openUrl).toHaveBeenNthCalledWith(1, firstDocument);
     expect(openUrl).toHaveBeenNthCalledWith(2, secondDocument);
     expect(screen.queryByText("Open PDF lesson")).toBeNull();
+  });
+
+  it("exchanges a protected Facility lesson document before opening a new tab", async () => {
+    const protectedDocument = "/api/course-media/64f000000000000000000991/file";
+    const signedDocument =
+      "/api/course-media/64f000000000000000000991/file?access=signed";
+    mockGetCourse.mockResolvedValue({
+      ...freeCourse,
+      lessons: [
+        {
+          id: "lesson-1",
+          title: "Protected lesson",
+          content: "Use the protected worksheet.",
+          pdfUrl: protectedDocument
+        }
+      ]
+    });
+    mockApiRequest.mockImplementation((path: string) =>
+      path === "/api/course-media/64f000000000000000000991/access"
+        ? Promise.resolve({ url: signedDocument })
+        : Promise.resolve({ sessionIds: [] })
+    );
+    const openUrl = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+
+    await screen.findByText("Living Soil Course");
+    fireEvent.press(screen.getByLabelText("Open lesson Protected lesson"));
+    fireEvent.press(await screen.findByText("Open PDF lesson"));
+
+    await waitFor(() =>
+      expect(openUrl).toHaveBeenCalledWith(`https://api.growpath.test${signedDocument}`)
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/course-media/64f000000000000000000991/access",
+      { invalidateOn401: false }
+    );
+  });
+
+  it("renders protected Facility lesson images through an authorized URL", async () => {
+    const protectedImage = "/api/uploads/course-media/64f000000000000000000992/file";
+    const signedImage = `${protectedImage}?access=signed`;
+    mockGetCourse.mockResolvedValue({
+      ...freeCourse,
+      sourceType: "facility_course",
+      authoringSource: "facility_workspace",
+      facilityId: "facility-1",
+      lessons: [
+        {
+          id: "lesson-1",
+          title: "Protected image lesson",
+          content: "Review the image.",
+          imageUrls: [protectedImage]
+        }
+      ]
+    });
+    mockApiRequest.mockImplementation((path: string) =>
+      path === "/api/uploads/course-media/64f000000000000000000992/access"
+        ? Promise.resolve({ url: signedImage })
+        : Promise.resolve({ sessionIds: [] })
+    );
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+
+    await screen.findByText("Living Soil Course");
+    fireEvent.press(screen.getByLabelText("Open lesson Protected image lesson"));
+
+    const image = await screen.findByLabelText("Protected image lesson image 1");
+    expect(image.props.source).toEqual({
+      uri: `https://api.growpath.test${signedImage}`
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/uploads/course-media/64f000000000000000000992/access",
+      { invalidateOn401: false }
+    );
   });
 
   it("keeps the legacy single-PDF lesson link", async () => {
@@ -283,7 +360,7 @@ describe("CourseDetailScreen learner player", () => {
     fireEvent.press(screen.getByLabelText("Open lesson Build the mix"));
     fireEvent.press(await screen.findByText("Open PDF lesson"));
 
-    expect(openUrl).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(openUrl).toHaveBeenCalledTimes(1));
     expect(openUrl).toHaveBeenCalledWith(legacyPdf);
   });
 
@@ -537,6 +614,378 @@ describe("CourseDetailScreen learner player", () => {
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/courses/commercial-course");
     expect(mockUpdateCourse).not.toHaveBeenCalled();
     expect(mockUnpublishCourse).not.toHaveBeenCalled();
+  });
+
+  it("uses Facility permissions and the Facility lesson cap even when personal course access is Free-locked", async () => {
+    Object.assign(mockLearningAccess, {
+      canViewCourses: false,
+      canCreateCourses: false,
+      canSellPaidCourses: false,
+      canPublishCourses: false,
+      maxLessonsPerCourse: 1
+    });
+    const lessons = Array.from({ length: 100 }, (_value, index) => ({
+      id: `facility-lesson-${index + 1}`,
+      title: `Facility lesson ${index + 1}`,
+      content: "Ready"
+    }));
+    const facilityCourse = {
+      id: "facility-course",
+      facilityId: "facility-1",
+      authoringSource: "facility_workspace",
+      title: "Facility Training",
+      visibility: "facilityOnly",
+      isPublished: false,
+      lessons,
+      permissions: {
+        canEditCourse: true,
+        canEditLessons: true,
+        canSetPrice: true,
+        canPublish: true,
+        canUnpublish: false,
+        canArchive: true
+      }
+    };
+    const facilityApi = {
+      get: jest.fn().mockResolvedValue(facilityCourse),
+      update: jest.fn().mockResolvedValue(facilityCourse),
+      publish: jest.fn().mockResolvedValue(facilityCourse),
+      unpublish: jest.fn(),
+      archive: jest.fn()
+    };
+
+    const screen = render(
+      <CourseDetailScreen
+        route={{ params: { id: "facility-course", course: facilityCourse } }}
+        facilityWorkspace={{
+          facilityId: "facility-1",
+          role: "OWNER",
+          limits: { maxLessonsPerCourse: 100 },
+          api: facilityApi
+        }}
+      />
+    );
+
+    expect(await screen.findByText("Facility Training")).toBeTruthy();
+    expect(screen.queryByText("Course unavailable")).toBeNull();
+    expect(screen.getByText("Facility workspace course")).toBeTruthy();
+    expect(screen.getByText("100/100")).toBeTruthy();
+    const addLesson = screen.getByRole("button", { name: "Add course lesson" });
+    expect(addLesson).toBeDisabled();
+    fireEvent.press(addLesson);
+    expect(mockPush).not.toHaveBeenCalledWith(
+      expect.stringContaining("action=add-lesson")
+    );
+
+    fireEvent.press(
+      screen.getByRole("radio", { name: "Set course audience to Public Catalog" })
+    );
+    fireEvent.changeText(screen.getByLabelText("Edit course price USD"), "12.00");
+    fireEvent.press(screen.getByLabelText("Save course fee"));
+    await waitFor(() =>
+      expect(facilityApi.update).toHaveBeenCalledWith("facility-course", {
+        priceCents: 1200,
+        price: 12,
+        currency: "usd",
+        access: "paid",
+        visibility: "public"
+      })
+    );
+    expect(await screen.findByText("Course fee saved: $12.00.")).toBeTruthy();
+
+    fireEvent.press(
+      screen.getByRole("radio", { name: "Set course audience to Unlisted Link" })
+    );
+    fireEvent.press(
+      screen.getByRole("button", { name: "Save Facility course audience" })
+    );
+    await waitFor(() =>
+      expect(facilityApi.update).toHaveBeenCalledWith("facility-course", {
+        visibility: "unlisted"
+      })
+    );
+    expect(
+      await screen.findByText("Facility course audience saved: Unlisted Link.")
+    ).toBeTruthy();
+    fireEvent.press(
+      screen.getByRole("radio", { name: "Set course audience to Public Catalog" })
+    );
+    fireEvent.press(screen.getByText("Publish Course"));
+    await waitFor(() =>
+      expect(facilityApi.publish).toHaveBeenCalledWith("facility-course", {
+        visibility: "public"
+      })
+    );
+    await waitFor(() => expect(facilityApi.get).toHaveBeenCalledTimes(2));
+    expect(mockPublishCourse).not.toHaveBeenCalled();
+  });
+
+  it("uses only scoped Facility learner progress, requester notes, and canonical Live RSVP IDs", async () => {
+    const facilityCourse = {
+      id: "facility-published",
+      facilityId: "facility-1",
+      authoringSource: "facility_workspace",
+      title: "Published Facility Training",
+      visibility: "facilityOnly",
+      isPublished: true,
+      priceCents: 2500,
+      lessons: [{ id: "facility-lesson", title: "Safety lesson", content: "Ready" }],
+      liveSessions: [
+        {
+          _id: "wrong-live-alias",
+          sourceSessionId: "canonical-live-source",
+          title: "Facility Q&A",
+          scheduledStart: "2026-09-10T16:00:00.000Z"
+        }
+      ],
+      permissions: {
+        canEditCourse: false,
+        canEditLessons: false,
+        canSetPrice: false,
+        canPublish: false,
+        canUnpublish: false,
+        canArchive: false
+      }
+    };
+    const learnerState = {
+      courseId: "facility-published",
+      included: true,
+      accessSource: "facility_workspace",
+      label: "Included with Facility workspace",
+      completedLessonIds: [],
+      notes: [{ lessonId: "facility-lesson", note: "My Facility note" }],
+      activeRsvpSourceSessionIds: []
+    };
+    const facilityApi = {
+      get: jest.fn().mockResolvedValue(facilityCourse),
+      getLearnerState: jest.fn().mockResolvedValue(learnerState),
+      completeLesson: jest.fn().mockResolvedValue({
+        ...learnerState,
+        completedLessonIds: ["facility-lesson"]
+      }),
+      saveLearnerNote: jest.fn().mockResolvedValue(learnerState),
+      rsvpLive: jest.fn().mockResolvedValue({
+        ...learnerState,
+        activeRsvpSourceSessionIds: ["canonical-live-source"]
+      }),
+      cancelLiveRsvp: jest.fn()
+    };
+
+    const screen = render(
+      <CourseDetailScreen
+        route={{ params: { id: "facility-published", course: facilityCourse } }}
+        facilityWorkspace={{
+          facilityId: "facility-1",
+          role: "VIEWER",
+          limits: { maxLessonsPerCourse: 100 },
+          api: facilityApi
+        }}
+      />
+    );
+
+    expect(await screen.findByText("Included with Facility workspace")).toBeTruthy();
+    expect(mockGetEnrollmentStatus).not.toHaveBeenCalled();
+    expect(mockGetCoursePaymentStatus).not.toHaveBeenCalled();
+    expect(screen.queryByText("Start Checkout")).toBeNull();
+    expect(screen.queryByText("Enroll")).toBeNull();
+
+    fireEvent.press(screen.getByRole("button", { name: "RSVP to Facility Q&A" }));
+    await waitFor(() =>
+      expect(facilityApi.rsvpLive).toHaveBeenCalledWith(
+        "facility-published",
+        "canonical-live-source"
+      )
+    );
+
+    fireEvent.press(screen.getByRole("button", { name: "Open lesson Safety lesson" }));
+    expect(await screen.findByDisplayValue("My Facility note")).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText("Private lesson notes"), "Updated note");
+    fireEvent.press(screen.getByText("Save Note"));
+    await waitFor(() =>
+      expect(facilityApi.saveLearnerNote).toHaveBeenCalledWith(
+        "facility-published",
+        "facility-lesson",
+        "Updated note"
+      )
+    );
+    expect(await screen.findByText("Private lesson note saved.")).toBeTruthy();
+    fireEvent.press(screen.getByText("Mark Complete"));
+    await waitFor(() =>
+      expect(facilityApi.completeLesson).toHaveBeenCalledWith(
+        "facility-published",
+        "facility-lesson"
+      )
+    );
+    expect(mockCompleteLesson).not.toHaveBeenCalled();
+    expect(mockSaveNote).not.toHaveBeenCalled();
+  });
+
+  it("clears a prior Facility course when a newly requested scoped course is denied", async () => {
+    const firstCourse = {
+      id: "facility-first",
+      facilityId: "facility-1",
+      authoringSource: "facility_workspace",
+      title: "First Facility Course",
+      visibility: "facilityOnly",
+      isPublished: true,
+      lessons: [],
+      permissions: {}
+    };
+    const facilityApi = {
+      get: jest
+        .fn()
+        .mockResolvedValueOnce(firstCourse)
+        .mockRejectedValueOnce(new Error("Course unavailable.")),
+      getLearnerState: jest.fn().mockResolvedValue({
+        courseId: "facility-first",
+        included: true,
+        accessSource: "facility_workspace",
+        label: "Included with Facility workspace",
+        completedLessonIds: [],
+        notes: [],
+        activeRsvpSourceSessionIds: []
+      })
+    };
+    const facilityWorkspace = {
+      facilityId: "facility-1",
+      role: "VIEWER",
+      limits: { maxLessonsPerCourse: 100 },
+      api: facilityApi
+    };
+    const screen = render(
+      <CourseDetailScreen
+        route={{ params: { id: "facility-first" } }}
+        facilityWorkspace={facilityWorkspace}
+      />
+    );
+
+    expect(await screen.findByText("First Facility Course")).toBeTruthy();
+    screen.rerender(
+      <CourseDetailScreen
+        route={{ params: { id: "facility-denied" } }}
+        facilityWorkspace={facilityWorkspace}
+      />
+    );
+
+    expect(await screen.findByText("Course unavailable")).toBeTruthy();
+    expect(screen.getByText("Course unavailable.")).toBeTruthy();
+    expect(screen.queryByText("First Facility Course")).toBeNull();
+  });
+
+  it("hides draft learner actions and requires confirmation before deleting a Facility lesson", async () => {
+    const facilityCourse = {
+      id: "facility-draft-delete",
+      facilityId: "facility-1",
+      authoringSource: "facility_workspace",
+      title: "Facility Draft Delete",
+      visibility: "facilityOnly",
+      isPublished: false,
+      lessons: [{ id: "draft-lesson", title: "Draft lesson", content: "Preview" }],
+      liveSessions: [
+        {
+          sourceSessionId: "draft-live",
+          title: "Draft live",
+          scheduledStart: "2026-09-10T16:00:00.000Z"
+        }
+      ],
+      permissions: {
+        canEditCourse: true,
+        canEditLessons: true,
+        canSetPrice: true,
+        canPublish: true,
+        canUnpublish: false,
+        canArchive: true
+      }
+    };
+    const deleteLesson = jest.fn().mockResolvedValue({
+      ...facilityCourse,
+      lessons: []
+    });
+    const facilityApi = {
+      get: jest.fn().mockResolvedValue(facilityCourse),
+      update: jest.fn(),
+      publish: jest.fn(),
+      unpublish: jest.fn(),
+      archive: jest.fn(),
+      deleteLesson
+    };
+    const screen = render(
+      <CourseDetailScreen
+        route={{ params: { id: "facility-draft-delete", course: facilityCourse } }}
+        facilityWorkspace={{
+          facilityId: "facility-1",
+          role: "OWNER",
+          limits: { maxLessonsPerCourse: 100 },
+          api: facilityApi
+        }}
+      />
+    );
+
+    expect(await screen.findByText("Facility Draft Delete")).toBeTruthy();
+    expect(screen.queryByText("Your progress")).toBeNull();
+    expect(screen.queryByRole("button", { name: "RSVP to Draft live" })).toBeNull();
+    fireEvent.press(screen.getByRole("button", { name: "Open lesson Draft lesson" }));
+    expect(await screen.findByText("Preview")).toBeTruthy();
+    expect(screen.queryByLabelText("Private lesson notes")).toBeNull();
+    expect(screen.queryByText("Mark Complete")).toBeNull();
+
+    fireEvent.press(screen.getByRole("button", { name: "Delete lesson Draft lesson" }));
+    expect(deleteLesson).not.toHaveBeenCalled();
+    fireEvent.press(
+      screen.getByRole("button", { name: "Confirm delete lesson Draft lesson" })
+    );
+    await waitFor(() =>
+      expect(deleteLesson).toHaveBeenCalledWith("facility-draft-delete", "draft-lesson")
+    );
+  });
+
+  it("keeps a Facility-mode generic course route learner-only without a scoped adapter", async () => {
+    mockEntitlements.mode = "facility";
+    Object.assign(mockLearningAccess, {
+      canViewCourses: true,
+      canCreateCourses: true,
+      canSellPaidCourses: true,
+      canPublishCourses: true,
+      canViewCourseAnalytics: true
+    });
+    mockGetEnrollmentStatus.mockResolvedValue({ enrolled: false });
+    mockGetCoursePaymentStatus.mockResolvedValue({
+      paymentStatus: "not_started",
+      refundStatus: "none",
+      disputeStatus: "none"
+    });
+    mockGetCourse.mockResolvedValue({
+      id: "generic-owner-course",
+      title: "Generic Owner Projection",
+      creator: "learner-1",
+      _viewerOwnsCourse: true,
+      sourceType: "facility_course",
+      authoringSource: "facility_workspace",
+      facilityId: "former-facility",
+      priceCents: 500,
+      visibility: "public",
+      isPublished: true,
+      lessons: [{ id: "generic-lesson", title: "Generic lesson", content: "Ready" }]
+    });
+
+    const screen = render(
+      <CourseDetailScreen route={{ params: { id: "generic-owner-course" } }} />
+    );
+
+    expect(await screen.findByText("Generic Owner Projection")).toBeTruthy();
+    expect(screen.queryByText("Creator pricing")).toBeNull();
+    expect(screen.queryByText("Add Lesson")).toBeNull();
+    expect(screen.queryByLabelText("Edit lesson Generic lesson")).toBeNull();
+    expect(screen.queryByText("Publish Course")).toBeNull();
+    expect(screen.queryByText("Archive draft course")).toBeNull();
+    expect(screen.getByText("Start Checkout")).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: "Lesson Generic lesson locked until payment is confirmed"
+      })
+    ).toBeDisabled();
+    expect(mockUpdateCourse).not.toHaveBeenCalled();
+    expect(mockPublishCourse).not.toHaveBeenCalled();
   });
 
   it("lets an owner confirm a soft archive only while the course is a draft", async () => {

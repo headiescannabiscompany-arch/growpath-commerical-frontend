@@ -399,7 +399,7 @@ export default function FacilityDashboardTab() {
         label: "Courses",
         detail: "Open team training, facility learning, and course resources.",
         action: "Browse courses",
-        to: "/courses",
+        to: "/home/facility/courses",
         tone: "violet" as Tone
       },
       {
