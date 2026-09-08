@@ -309,6 +309,7 @@ export default function CoursesScreen({
           }));
           if (
             requestedCourseId &&
+            String(requestedCourseId) !== dismissedRequestedCourseId &&
             !scopedCourses.some(
               (course) =>
                 String(course?._id || course?.id || "") === String(requestedCourseId)
@@ -408,6 +409,7 @@ export default function CoursesScreen({
             );
         if (
           requestedCourseId &&
+          String(requestedCourseId) !== dismissedRequestedCourseId &&
           !filtered.some(
             (course) =>
               String(course?._id || course?.id || "") === String(requestedCourseId)
@@ -449,6 +451,7 @@ export default function CoursesScreen({
     isSignedIn,
     catalogReloadKey,
     requestedCourseId,
+    dismissedRequestedCourseId,
     moderationCaseId
   ]);
 
@@ -472,6 +475,11 @@ export default function CoursesScreen({
       router.replace?.(catalogHref);
     }
     setSelectedCourse(null);
+  }
+
+  function handleCourseArchived() {
+    closeSelectedCourse();
+    setCatalogReloadKey((key) => key + 1);
   }
 
   const handleInvite = async () => {
@@ -591,6 +599,7 @@ export default function CoursesScreen({
           <Text style={styles.backText}>Back to courses</Text>
         </Pressable>
         <CourseDetailScreen
+          onArchived={handleCourseArchived}
           route={{
             params: { course: selectedCourse, id: selectedId, checkout: checkoutResult }
           }}

@@ -144,12 +144,13 @@ async function openCheckoutUrl(url) {
 }
 
 /**
- * @param {{ route: any; navigation?: any; facilityWorkspace?: any }} props
+ * @param {{ route: any; navigation?: any; facilityWorkspace?: any; onArchived?: () => void }} props
  */
 export default function CourseDetailScreen({
   route,
   navigation = null,
-  facilityWorkspace = null
+  facilityWorkspace = null,
+  onArchived = null
 }) {
   const router = useRouter();
   const auth = useAuth();
@@ -800,9 +801,13 @@ export default function CourseDetailScreen({
       }
       setArchiveConfirmOpen(false);
       setFeedback("Course archived. Returning to your active courses.");
-      router.replace?.(
-        facilityMode ? "/home/facility/courses" : "/home/personal/courses"
-      );
+      if (onArchived) {
+        onArchived();
+      } else {
+        router.replace?.(
+          facilityMode ? "/home/facility/courses" : "/home/personal/courses"
+        );
+      }
     } catch (error) {
       setFeedback(error?.message || "Unable to archive course.");
     } finally {

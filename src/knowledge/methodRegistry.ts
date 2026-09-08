@@ -1022,6 +1022,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "optional catalog imagery plus one full-width course-detail hero selected from the saved banner, cover, image, or thumbnail without duplicate rendering",
       "owner-controlled publish and private-draft unpublish",
       "confirmed owner-scoped soft archive for unpublished generic course drafts with retained audit history",
+      "successful archive clears embedded detail and refreshes the same-workspace catalog without reopening a stale route selection; failed archive retains detail and error",
       "single page heading, ordered level-two builder steps, one shared back action, and checked pricing or access controls",
       "paid discovery metadata without protected lesson, assessment, document, or media content",
       "webhook-confirmed paid enrollment and idempotent course counters",

@@ -3,11 +3,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CoursesRoute from "@/app/courses";
+import CoursesScreen from "@/screens/CoursesScreen";
 import { rememberPendingBuyerCheckout } from "@/utils/buyerCheckoutRecovery";
 
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
 let mockSearchParams: Record<string, string> = { courseId: "course-2" };
+let includeOwnedCourse = true;
 const mockAuthState = {
   isAuthed: true,
   user: { id: "course-user", growInterests: {} }
@@ -64,9 +66,22 @@ jest.mock("@/components/ScreenBoundary", () => {
 
 jest.mock("@/screens/CourseDetailScreen", () => {
   const React = require("react");
-  const { Text } = require("react-native");
-  return function MockCourseDetailScreen({ route }: any) {
-    return React.createElement(Text, null, `Course detail ${route?.params?.id || ""}`);
+  const { Pressable, Text, View } = require("react-native");
+  return function MockCourseDetailScreen({ onArchived, route }: any) {
+    return React.createElement(
+      View,
+      null,
+      React.createElement(Text, null, `Course detail ${route?.params?.id || ""}`),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: "Complete embedded course archive",
+          accessibilityRole: "button",
+          onPress: onArchived
+        },
+        React.createElement(Text, null, "Complete archive")
+      )
+    );
   };
 });
 
@@ -84,20 +99,23 @@ describe("CoursesScreen route params", () => {
       storage.delete(key);
     });
     mockSearchParams = { courseId: "course-2" };
+    includeOwnedCourse = true;
     mockReplace.mockImplementation(() => {
       mockSearchParams = {};
     });
     mockApiRequest.mockImplementation(async (path: string) => {
       if (path === "/api/courses/mine") {
         return {
-          courses: [
-            {
-              id: "course-2",
-              title: "IPM Follow-up",
-              priceCents: 0,
-              status: "draft"
-            }
-          ]
+          courses: includeOwnedCourse
+            ? [
+                {
+                  id: "course-2",
+                  title: "IPM Follow-up",
+                  priceCents: 0,
+                  status: "draft"
+                }
+              ]
+            : []
         };
       }
       return {
@@ -133,6 +151,70 @@ describe("CoursesScreen route params", () => {
     expect(screen.queryByText("Course detail course-2")).toBeNull();
     expect(screen.getByText("Shared catalog Back")).toBeTruthy();
     expect(mockReplace).toHaveBeenCalledWith("/courses");
+  });
+
+  it("clears a route-selected Facility archive while stale router params remain and refreshes the catalog", async () => {
+    mockReplace.mockImplementation(() => {});
+    const facilityGet = jest.fn().mockRejectedValue(new Error("Course not found"));
+    const facilityList = jest.fn(async () => ({
+      courses: includeOwnedCourse
+        ? [
+            {
+              id: "course-2",
+              facilityId: "facility-1",
+              authoringSource: "facility_workspace",
+              title: "IPM Follow-up",
+              priceCents: 0,
+              status: "draft",
+              permissions: { canArchive: true }
+            }
+          ]
+        : [],
+      permissions: { canCreateDraft: true, canSetPrice: false },
+      limits: {
+        maxPaidCourses: 10,
+        maxLessonsPerCourse: 50,
+        currentPublishedPaidCourses: 0
+      }
+    }));
+    const facilityWorkspace = {
+      facilityId: "facility-1",
+      role: "STAFF",
+      api: { list: facilityList, get: facilityGet }
+    };
+    const screen = render(
+      <CoursesScreen
+        catalogHref="/home/facility/courses"
+        facilityWorkspace={facilityWorkspace}
+      />
+    );
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Selected course course-2")).toBeTruthy()
+    );
+    const initialListCalls = facilityList.mock.calls.length;
+    expect(initialListCalls).toBeGreaterThan(0);
+
+    includeOwnedCourse = false;
+    fireEvent.press(
+      screen.getByRole("button", { name: "Complete embedded course archive" })
+    );
+
+    await waitFor(() => expect(screen.getByText("Facility Courses")).toBeTruthy());
+    await waitFor(() =>
+      expect(facilityList.mock.calls.length).toBeGreaterThan(initialListCalls)
+    );
+    expect(screen.queryByLabelText("Selected course course-2")).toBeNull();
+    expect(screen.queryByText("Course detail course-2")).toBeNull();
+    expect(screen.queryByText("IPM Follow-up")).toBeNull();
+    expect(screen.queryByText("Requested course is unavailable")).toBeNull();
+    expect(
+      screen.queryByText(
+        "The requested Facility course is unavailable or you no longer have access."
+      )
+    ).toBeNull();
+    expect(facilityGet).not.toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith("/home/facility/courses");
   });
 
   it("accepts the Checkout course key and recovers a stored selection when omitted", async () => {

@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Linking, StyleSheet } from "react-native";
 
 import CourseDetailScreen, {
@@ -988,7 +988,111 @@ describe("CourseDetailScreen learner player", () => {
     expect(mockPublishCourse).not.toHaveBeenCalled();
   });
 
-  it("lets an owner confirm a soft archive only while the course is a draft", async () => {
+  it("invokes the embedded archive callback only after a Facility archive succeeds", async () => {
+    const facilityCourse = {
+      id: "facility-archive-success",
+      facilityId: "facility-1",
+      authoringSource: "facility_workspace",
+      title: "Facility Archive Success",
+      visibility: "facilityOnly",
+      isPublished: false,
+      lessons: [{ id: "archive-lesson", title: "Archive lesson" }],
+      permissions: {
+        canEditCourse: true,
+        canEditLessons: true,
+        canSetPrice: true,
+        canPublish: true,
+        canUnpublish: false,
+        canArchive: true
+      }
+    };
+    let resolveArchive: (value: any) => void = () => {};
+    const archive = jest.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveArchive = resolve;
+        })
+    );
+    const onArchived = jest.fn();
+    const screen = render(
+      <CourseDetailScreen
+        route={{ params: { id: facilityCourse.id, course: facilityCourse } }}
+        facilityWorkspace={{
+          facilityId: "facility-1",
+          role: "OWNER",
+          limits: { maxLessonsPerCourse: 100 },
+          api: {
+            get: jest.fn().mockResolvedValue(facilityCourse),
+            archive
+          }
+        }}
+        onArchived={onArchived}
+      />
+    );
+
+    expect(await screen.findByText("Facility Archive Success")).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Archive draft course" }));
+    fireEvent.press(screen.getByRole("button", { name: "Confirm archive course" }));
+
+    await waitFor(() => expect(archive).toHaveBeenCalledWith(facilityCourse.id));
+    expect(onArchived).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveArchive({ archived: true });
+    });
+
+    await waitFor(() => expect(onArchived).toHaveBeenCalledTimes(1));
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it("retains the Facility course and does not navigate when archive fails", async () => {
+    const facilityCourse = {
+      id: "facility-archive-failure",
+      facilityId: "facility-1",
+      authoringSource: "facility_workspace",
+      title: "Facility Archive Failure",
+      visibility: "facilityOnly",
+      isPublished: false,
+      lessons: [{ id: "archive-lesson", title: "Archive lesson" }],
+      permissions: {
+        canEditCourse: true,
+        canEditLessons: true,
+        canSetPrice: true,
+        canPublish: true,
+        canUnpublish: false,
+        canArchive: true
+      }
+    };
+    const onArchived = jest.fn();
+    const screen = render(
+      <CourseDetailScreen
+        route={{ params: { id: facilityCourse.id, course: facilityCourse } }}
+        facilityWorkspace={{
+          facilityId: "facility-1",
+          role: "OWNER",
+          limits: { maxLessonsPerCourse: 100 },
+          api: {
+            get: jest.fn().mockResolvedValue(facilityCourse),
+            archive: jest.fn().mockRejectedValue(new Error("Archive blocked"))
+          }
+        }}
+        onArchived={onArchived}
+      />
+    );
+
+    expect(await screen.findByText("Facility Archive Failure")).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Archive draft course" }));
+    fireEvent.press(screen.getByRole("button", { name: "Confirm archive course" }));
+
+    expect(await screen.findByText("Archive blocked")).toBeTruthy();
+    expect(screen.getByText("Facility Archive Failure")).toBeTruthy();
+    expect(screen.getByText("Archive this private draft course?")).toBeTruthy();
+    expect(onArchived).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it("uses the standalone catalog navigation fallback after a successful archive", async () => {
     Object.assign(mockLearningAccess, {
       canCreateCourses: true,
       canPublishCourses: true
