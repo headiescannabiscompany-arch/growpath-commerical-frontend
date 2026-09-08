@@ -56,6 +56,13 @@ function rowId(row) {
   return String(row?._id || row?.id || "");
 }
 
+export function isCommercialManagedCourse(course) {
+  return (
+    String(course?.sourceType || "").toLowerCase() === "commercial_course" ||
+    String(course?.authoringSource || "").toLowerCase() === "commercial_record"
+  );
+}
+
 function normalizeCourse(payload, fallback) {
   const next = payload?.course
     ? payload.course
@@ -210,6 +217,8 @@ export default function CourseDetailScreen({ route, navigation = null }) {
   const ownsCourse = Boolean(
     course?._viewerOwnsCourse || (viewerId && ownerId === viewerId)
   );
+  const commercialManagedCourse = isCommercialManagedCourse(course);
+  const canManageNativeCourse = ownsCourse && !commercialManagedCourse;
   const hasPaidPurchase =
     isPaidCourse &&
     (enrolled ||
@@ -796,7 +805,29 @@ export default function CourseDetailScreen({ route, navigation = null }) {
       ) : null}
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
-      {ownsCourse ? (
+      {ownsCourse && commercialManagedCourse && loadedCourseId ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Commercial course management</Text>
+          <Text style={styles.meta}>
+            Pricing, lessons, resources, publishing, and archiving for this course are
+            managed in your Commercial workspace.
+          </Text>
+          <Pressable
+            onPress={() =>
+              router.push(
+                `/home/commercial/courses/${encodeURIComponent(loadedCourseId)}`
+              )
+            }
+            style={styles.primaryBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Manage course in Commercial workspace"
+          >
+            <Text style={styles.primaryText}>Manage in Commercial Workspace</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {canManageNativeCourse ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Creator pricing</Text>
           {access.canSellPaidCourses ? (
@@ -890,7 +921,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Lessons</Text>
-          {access.canCreateCourses ? (
+          {!commercialManagedCourse && access.canCreateCourses ? (
             <Text style={styles.meta}>
               {access.maxLessonsPerCourse === null
                 ? "Unlimited"
@@ -898,7 +929,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
             </Text>
           ) : null}
         </View>
-        {access.canCreateCourses ? (
+        {!commercialManagedCourse && access.canCreateCourses ? (
           <Pressable
             disabled={
               access.maxLessonsPerCourse !== null &&
@@ -943,7 +974,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
                   {canOpenLessons ? "Open Lesson" : "Locked — Payment Required"}
                 </Text>
               </Pressable>
-              {access.canCreateCourses ? (
+              {!commercialManagedCourse && access.canCreateCourses ? (
                 <Pressable
                   accessibilityLabel={`Edit lesson ${lessonTitle(lesson, index)}`}
                   accessibilityRole="button"
@@ -1342,7 +1373,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
         </View>
       ) : null}
 
-      {ownsCourse && access.canPublishCourses ? (
+      {canManageNativeCourse && access.canPublishCourses ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Course publication</Text>
           <Text style={styles.meta}>
@@ -1369,7 +1400,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
         </View>
       ) : null}
 
-      {ownsCourse && !course?.isPublished ? (
+      {canManageNativeCourse && !course?.isPublished ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Archive draft course</Text>
           <Text style={styles.meta}>

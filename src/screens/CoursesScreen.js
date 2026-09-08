@@ -137,6 +137,13 @@ function entityId(value) {
   return String(value || "");
 }
 
+function isCommercialManagedCourse(course) {
+  return (
+    String(course?.sourceType || "").toLowerCase() === "commercial_course" ||
+    String(course?.authoringSource || "").toLowerCase() === "commercial_record"
+  );
+}
+
 export function viewerOwnsCourse(course, user) {
   const viewerId = entityId(user);
   const creatorId = entityId(
@@ -591,9 +598,26 @@ export default function CoursesScreen({
           {hasAnalytics ? (
             <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text>
           ) : null}
+          {isSignedIn && item?._viewerOwnsCourse && isCommercialManagedCourse(item) ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Manage ${String(item?.title || item?.name || "course")} in Commercial workspace`}
+              onPress={(event) => {
+                event?.stopPropagation?.();
+                const id = String(item?._id || item?.id || "");
+                if (id) {
+                  router.push(`/home/commercial/courses/${encodeURIComponent(id)}`);
+                }
+              }}
+              style={styles.smallBtn}
+            >
+              <Text style={styles.smallBtnText}>Manage in Commercial Workspace</Text>
+            </Pressable>
+          ) : null}
           {isSignedIn &&
           access.canPublishCourses &&
           item?._viewerOwnsCourse &&
+          !isCommercialManagedCourse(item) &&
           isPublishedCourse(item) ? (
             <Pressable
               accessibilityRole="button"

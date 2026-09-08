@@ -80,6 +80,51 @@ describe("CoursesScreen commercial discovery", () => {
     );
   });
 
+  it("routes an owned Commercial projection to its authoring workspace without generic unpublish", async () => {
+    mockApiRequest.mockImplementation(async (path: string) => {
+      if (path === "/api/courses/mine") {
+        return {
+          courses: [
+            {
+              id: "commercial-course-1",
+              title: "Living Soil Product School",
+              creator: "learner",
+              isPublished: true,
+              authoringSource: "commercial_record"
+            }
+          ]
+        };
+      }
+      if (path === "/api/commercial/courses/public") {
+        return {
+          courses: [
+            {
+              id: "commercial-course-1",
+              title: "Living Soil Product School",
+              price: 0,
+              status: "published",
+              sourceType: "commercial_course",
+              storefrontSlug: "soil-school"
+            }
+          ]
+        };
+      }
+      return { courses: [] };
+    });
+
+    const screen = render(<CoursesScreen />);
+
+    const manage = await screen.findByRole("button", {
+      name: "Manage Living Soil Product School in Commercial workspace"
+    });
+    expect(
+      screen.queryByRole("button", { name: "Unpublish Living Soil Product School" })
+    ).toBeNull();
+
+    fireEvent.press(manage);
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/courses/commercial-course-1");
+  });
+
   it("bounds a course source even when the transport never settles", async () => {
     jest.useFakeTimers();
     mockApiRequest.mockReturnValue(new Promise(() => undefined));
@@ -114,13 +159,17 @@ describe("CoursesScreen commercial discovery", () => {
     await waitFor(() => expect(screen.getByText("Available Public Course")).toBeTruthy());
     await waitFor(() => expect(screen.queryByText("Loading courses...")).toBeNull());
     expect(
-      screen.getByText("Some course sources could not load. Showing the available courses.")
+      screen.getByText(
+        "Some course sources could not load. Showing the available courses."
+      )
     ).toBeTruthy();
 
     fireEvent.press(screen.getByRole("button", { name: "Retry course catalog" }));
 
     await waitFor(() =>
-      expect(mockApiRequest.mock.calls.filter(([path]) => path === "/api/courses")).toHaveLength(2)
+      expect(
+        mockApiRequest.mock.calls.filter(([path]) => path === "/api/courses")
+      ).toHaveLength(2)
     );
   });
 });

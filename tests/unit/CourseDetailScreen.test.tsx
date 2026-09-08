@@ -502,6 +502,43 @@ describe("CourseDetailScreen learner player", () => {
     expect(screen.queryByText("Approve Course")).toBeNull();
   });
 
+  it("routes Commercial-projected course authoring back to the Commercial workspace", async () => {
+    Object.assign(mockLearningAccess, {
+      canCreateCourses: true,
+      canSellPaidCourses: true,
+      canPublishCourses: true
+    });
+    mockGetCourse.mockResolvedValue({
+      id: "commercial-course",
+      title: "Commercial Projection",
+      creator: "learner-1",
+      _viewerOwnsCourse: true,
+      authoringSource: "commercial_record",
+      priceCents: 2500,
+      isPublished: true,
+      lessons: [{ id: "commercial-lesson", title: "Projected lesson", content: "Ready" }]
+    });
+
+    const screen = render(
+      <CourseDetailScreen route={{ params: { id: "commercial-course" } }} />
+    );
+
+    await screen.findByText("Commercial Projection");
+    expect(screen.getByText("Commercial course management")).toBeTruthy();
+    expect(screen.queryByText("Creator pricing")).toBeNull();
+    expect(screen.queryByText("Add Lesson")).toBeNull();
+    expect(screen.queryByLabelText("Edit lesson Projected lesson")).toBeNull();
+    expect(screen.queryByText("Unpublish Course")).toBeNull();
+    expect(screen.queryByText("Archive draft course")).toBeNull();
+
+    fireEvent.press(
+      screen.getByRole("button", { name: "Manage course in Commercial workspace" })
+    );
+    expect(mockPush).toHaveBeenCalledWith("/home/commercial/courses/commercial-course");
+    expect(mockUpdateCourse).not.toHaveBeenCalled();
+    expect(mockUnpublishCourse).not.toHaveBeenCalled();
+  });
+
   it("lets an owner confirm a soft archive only while the course is a draft", async () => {
     Object.assign(mockLearningAccess, {
       canCreateCourses: true,
