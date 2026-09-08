@@ -286,6 +286,8 @@ describe("CreateCourseScreen", () => {
         status: "draft",
         isPublished: false,
         access: "free",
+        priceCents: 0,
+        price: 0,
         workspace: "personal",
         mediaPlan: "Two 20 minute videos",
         linkedProductIds: ["product-1", "product-2"],
@@ -375,6 +377,8 @@ describe("CreateCourseScreen", () => {
         workspace: "commercial",
         status: "draft",
         isPublished: false,
+        priceCents: 0,
+        price: 0,
         growInterests: [],
         growInterestSelections: expect.any(Object),
         lessons: [expect.objectContaining({ title: "Formula evidence" })]
@@ -387,14 +391,78 @@ describe("CreateCourseScreen", () => {
     });
   });
 
-  it("keeps Facility drafts scoped, defaults to Facility Only, and rejects Facility-only paid drafts", async () => {
+  it.each(["OWNER", "MANAGER"])(
+    "keeps Facility %s drafts scoped, defaults to Facility Only, and rejects Facility-only paid drafts",
+    async (role) => {
+      const facilityCreate = jest
+        .fn()
+        .mockResolvedValue({ id: "facility-course-new", title: "Facility Training" });
+      const facilityWorkspace = {
+        facilityId: "facility-1",
+        role,
+        permissions: { canCreateDraft: true, canSetPrice: true },
+        limits: { maxPaidCourses: 5, maxLessonsPerCourse: 100 },
+        api: { create: facilityCreate }
+      };
+      const screen = render(
+        <CreateCourseScreen
+          showBackToCourses={false}
+          facilityWorkspace={facilityWorkspace}
+        />
+      );
+
+      expect(
+        screen.getByRole("radio", { name: "Set course audience to Facility Only" }).props
+          .accessibilityState?.checked
+      ).toBe(true);
+      expect(screen.queryAllByTestId("personal-feed-placement")).toHaveLength(0);
+      expect(screen.queryByLabelText("Upload course documents")).toBeNull();
+      expect(screen.queryByLabelText("Course documents")).toBeNull();
+      expect(
+        screen.getByText(/Facility document uploads are temporarily unavailable/)
+      ).toBeTruthy();
+      expect(screen.getByText("Upload Audio")).toBeTruthy();
+
+      fireEvent.changeText(screen.getByLabelText("Course title"), "Facility Training");
+      fireEvent.press(screen.getByRole("radio", { name: "Set a paid course fee" }));
+      fireEvent.changeText(screen.getByLabelText("Course price USD"), "25.00");
+      fireEvent.press(screen.getByText("Create Draft"));
+
+      expect(Alert.alert).toHaveBeenCalledWith(
+        "Choose a paid-course audience",
+        "A paid Facility course must be Public Catalog or Unlisted Link before it can be saved."
+      );
+      expect(facilityCreate).not.toHaveBeenCalled();
+
+      fireEvent.press(
+        screen.getByRole("radio", { name: "Set course audience to Unlisted Link" })
+      );
+      fireEvent.press(screen.getByText("Create Draft"));
+
+      await waitFor(() => expect(facilityCreate).toHaveBeenCalled());
+      expect(facilityCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Facility Training",
+          workspace: "facility",
+          visibility: "unlisted",
+          access: "paid",
+          priceCents: 2500,
+          isPublished: false
+        })
+      );
+      expect(mockCreateCourse).not.toHaveBeenCalled();
+      expect(mockCreateCommercialCourse).not.toHaveBeenCalled();
+    }
+  );
+
+  it("creates a free Facility Staff draft without owner-only price fields", async () => {
     const facilityCreate = jest
       .fn()
-      .mockResolvedValue({ id: "facility-course-new", title: "Facility Training" });
+      .mockResolvedValue({ id: "facility-staff-course", title: "Staff Training" });
     const facilityWorkspace = {
       facilityId: "facility-1",
-      role: "OWNER",
-      permissions: { canCreateDraft: true, canSetPrice: true },
+      role: "STAFF",
+      permissions: { canCreateDraft: true, canSetPrice: false },
       limits: { maxPaidCourses: 5, maxLessonsPerCourse: 100 },
       api: { create: facilityCreate }
     };
@@ -406,44 +474,32 @@ describe("CreateCourseScreen", () => {
     );
 
     expect(
-      screen.getByRole("radio", { name: "Set course audience to Facility Only" }).props
-        .accessibilityState?.checked
+      screen.getByRole("radio", { name: "Make course free" }).props.accessibilityState
+        ?.checked
     ).toBe(true);
-    expect(screen.queryAllByTestId("personal-feed-placement")).toHaveLength(0);
-    expect(screen.queryByLabelText("Upload course documents")).toBeNull();
-    expect(screen.queryByLabelText("Course documents")).toBeNull();
-    expect(
-      screen.getByText(/Facility document uploads are temporarily unavailable/)
-    ).toBeTruthy();
-    expect(screen.getByText("Upload Audio")).toBeTruthy();
-
-    fireEvent.changeText(screen.getByLabelText("Course title"), "Facility Training");
     fireEvent.press(screen.getByRole("radio", { name: "Set a paid course fee" }));
-    fireEvent.changeText(screen.getByLabelText("Course price USD"), "25.00");
+    expect(
+      screen.getByRole("radio", { name: "Set a paid course fee" }).props
+        .accessibilityState?.checked
+    ).toBe(false);
+    expect(screen.queryByLabelText("Course price USD")).toBeNull();
+
+    fireEvent.changeText(screen.getByLabelText("Course title"), "Staff Training");
     fireEvent.press(screen.getByText("Create Draft"));
 
-    expect(Alert.alert).toHaveBeenCalledWith(
-      "Choose a paid-course audience",
-      "A paid Facility course must be Public Catalog or Unlisted Link before it can be saved."
-    );
-    expect(facilityCreate).not.toHaveBeenCalled();
-
-    fireEvent.press(
-      screen.getByRole("radio", { name: "Set course audience to Unlisted Link" })
-    );
-    fireEvent.press(screen.getByText("Create Draft"));
-
-    await waitFor(() => expect(facilityCreate).toHaveBeenCalled());
-    expect(facilityCreate).toHaveBeenCalledWith(
+    await waitFor(() => expect(facilityCreate).toHaveBeenCalledTimes(1));
+    const payload = facilityCreate.mock.calls[0][0];
+    expect(payload).toEqual(
       expect.objectContaining({
-        title: "Facility Training",
+        title: "Staff Training",
         workspace: "facility",
-        visibility: "unlisted",
-        access: "paid",
-        priceCents: 2500,
+        visibility: "facilityOnly",
+        access: "free",
         isPublished: false
       })
     );
+    expect(payload).not.toHaveProperty("priceCents");
+    expect(payload).not.toHaveProperty("price");
     expect(mockCreateCourse).not.toHaveBeenCalled();
     expect(mockCreateCommercialCourse).not.toHaveBeenCalled();
   });

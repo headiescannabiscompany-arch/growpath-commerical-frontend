@@ -738,8 +738,12 @@ export default function CreateCourseScreen({
         linkedProductIds: splitPlanLines(linkedProductIds),
         linkedGrowIds: splitPlanLines(linkedGrowIds),
         linkedForumThreadIds: splitPlanLines(linkedForumThreadIds),
-        priceCents: pricingMode === "paid" ? priceCents : 0,
-        price: pricingMode === "paid" ? (priceCents || 0) / 100 : 0,
+        ...(!facilityMode || access.canSellPaidCourses
+          ? {
+              priceCents: pricingMode === "paid" ? priceCents : 0,
+              price: pricingMode === "paid" ? (priceCents || 0) / 100 : 0
+            }
+          : {}),
         currency: "usd",
         access: pricingMode,
         status: "draft",
