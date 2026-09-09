@@ -7,6 +7,7 @@ import CourseDetailScreen, {
   createStyles
 } from "@/screens/CourseDetailScreen";
 import { getThemePalette } from "@/theme/appTheme";
+import FacilityCoursesRoute from "@/app/home/facility/(tabs)/courses";
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
@@ -32,16 +33,42 @@ const mockLearningAccess = {
   canViewCourseAnalytics: false,
   maxLessonsPerCourse: 12
 };
-const mockEntitlements = { mode: "personal" };
+const mockEntitlements = {
+  mode: "personal",
+  ready: true,
+  facilityId: "facility-1",
+  facilityRole: "MANAGER"
+};
+let mockViewerId = "learner-1";
+const mockFacility = { selectedId: "facility-1", selected: null };
+const mockFacilityList = jest.fn();
+const mockFacilityGet = jest.fn();
+const mockFacilityLearnerState = jest.fn();
+const mockFacilityUnpublish = jest.fn();
 
 jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => ({}),
   useRouter: () => ({ push: mockPush, replace: mockReplace })
 }));
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "learner-1" } })
+  useAuth: () => ({ user: { id: mockViewerId } })
 }));
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => mockEntitlements
+}));
+jest.mock("@/state/useFacility", () => ({ useFacility: () => mockFacility }));
+jest.mock("@/components/ScreenBoundary", () => ({
+  ScreenBoundary: ({ children }: any) => children
+}));
+jest.mock("@/screens/commercial/CreateCourseScreen", () => () => null);
+jest.mock("@/screens/AddLessonScreen", () => () => null);
+jest.mock("@/screens/EditLessonScreen", () => () => null);
+jest.mock("@/api/facilityCourses", () => ({
+  ...jest.requireActual("@/api/facilityCourses"),
+  listFacilityCourses: (...args: any[]) => mockFacilityList(...args),
+  getFacilityCourse: (...args: any[]) => mockFacilityGet(...args),
+  getFacilityCourseLearnerState: (...args: any[]) => mockFacilityLearnerState(...args),
+  unpublishFacilityCourse: (...args: any[]) => mockFacilityUnpublish(...args)
 }));
 jest.mock("@/features/learning/learningAccess", () => ({
   getLearningAccess: () => mockLearningAccess
@@ -134,6 +161,10 @@ describe("CourseDetailScreen learner player", () => {
       maxLessonsPerCourse: 12
     });
     mockEntitlements.mode = "personal";
+    mockEntitlements.facilityId = "facility-1";
+    mockEntitlements.facilityRole = "MANAGER";
+    mockFacility.selectedId = "facility-1";
+    mockViewerId = "learner-1";
     mockApiRequest.mockResolvedValue({ sessionIds: [] });
     mockSaveNote.mockResolvedValue({ note: "Updated note" });
     mockPublishCourse.mockResolvedValue({ published: true });
@@ -818,6 +849,123 @@ describe("CourseDetailScreen learner player", () => {
     );
     expect(mockCompleteLesson).not.toHaveBeenCalled();
     expect(mockSaveNote).not.toHaveBeenCalled();
+  });
+
+  function setupFacilityRoute(facilityId = "facility-1") {
+    mockEntitlements.mode = "facility";
+    const course = {
+      id: `training-${facilityId}`,
+      facilityId,
+      authoringSource: "facility_workspace",
+      title: `Training for ${facilityId}`,
+      visibility: "facilityOnly",
+      isPublished: true,
+      lessons: [{ id: "safety-lesson", title: "Safety lesson", content: "Ready" }],
+      permissions: { canUnpublish: true }
+    };
+    mockFacilityList.mockResolvedValue({ courses: [course], permissions: {} });
+    mockFacilityGet.mockResolvedValue(course);
+    mockFacilityLearnerState.mockResolvedValue({
+      courseId: course.id,
+      included: true,
+      accessSource: "facility_workspace",
+      label: "Included with Facility workspace",
+      completedLessonIds: [],
+      notes: [{ lessonId: "safety-lesson", note: "Current requester note" }],
+      activeRsvpSourceSessionIds: []
+    });
+    return course;
+  }
+
+  async function openFacilityRouteLesson(
+    screen: ReturnType<typeof render>,
+    title: string
+  ) {
+    fireEvent.press(await screen.findByText(title));
+    fireEvent.press(
+      await screen.findByRole("button", { name: "Open lesson Safety lesson" })
+    );
+    expect(await screen.findByDisplayValue("Current requester note")).toBeTruthy();
+    fireEvent.changeText(
+      screen.getByLabelText("Private lesson notes"),
+      "Unsaved lesson note"
+    );
+  }
+
+  it("keeps the open Facility lesson and unsaved note through unrelated context rerenders", async () => {
+    const course = setupFacilityRoute();
+    const screen = render(<FacilityCoursesRoute />);
+    await openFacilityRouteLesson(screen, course.title);
+    const listCalls = mockFacilityList.mock.calls.length;
+    const detailCalls = mockFacilityGet.mock.calls.length;
+
+    await act(async () => {
+      screen.rerender(<FacilityCoursesRoute />);
+    });
+
+    expect(screen.getByText("Close Lesson")).toBeTruthy();
+    expect(screen.getByDisplayValue("Unsaved lesson note")).toBeTruthy();
+    expect(mockFacilityList).toHaveBeenCalledTimes(listCalls);
+    expect(mockFacilityGet).toHaveBeenCalledTimes(detailCalls);
+  });
+
+  it.each(["account", "role", "facility"])(
+    "clears Facility lesson state when the actual %s changes",
+    async (change) => {
+      const course = setupFacilityRoute();
+      const screen = render(<FacilityCoursesRoute />);
+      await openFacilityRouteLesson(screen, course.title);
+
+      if (change === "account") mockViewerId = "learner-2";
+      if (change === "role") mockEntitlements.facilityRole = "VIEWER";
+      if (change === "facility") {
+        mockFacility.selectedId = "facility-2";
+        mockEntitlements.facilityId = "facility-2";
+        setupFacilityRoute("facility-2");
+      }
+      mockFacilityLearnerState.mockResolvedValue({
+        included: true,
+        accessSource: "facility_workspace",
+        label: "Included with Facility workspace",
+        completedLessonIds: [],
+        notes: [{ lessonId: "safety-lesson", note: "Rechecked requester note" }],
+        activeRsvpSourceSessionIds: []
+      });
+      await act(async () => {
+        screen.rerender(<FacilityCoursesRoute />);
+      });
+
+      expect(screen.queryByText("Close Lesson")).toBeNull();
+      expect(screen.queryByDisplayValue("Unsaved lesson note")).toBeNull();
+      if (change === "facility") {
+        expect(screen.queryByText(course.title)).toBeNull();
+        fireEvent.press(await screen.findByText("Training for facility-2"));
+      }
+      fireEvent.press(
+        await screen.findByRole("button", { name: "Open lesson Safety lesson" })
+      );
+      expect(await screen.findByDisplayValue("Rechecked requester note")).toBeTruthy();
+    }
+  );
+
+  it("refreshes the Facility detail and closes its lesson after explicit unpublish", async () => {
+    const course = setupFacilityRoute();
+    mockFacilityUnpublish.mockImplementation(async () => {
+      const draft = { ...course, isPublished: false, permissions: { canPublish: true } };
+      mockFacilityGet.mockResolvedValue(draft);
+      return draft;
+    });
+    const screen = render(<FacilityCoursesRoute />);
+    await openFacilityRouteLesson(screen, course.title);
+    const detailCalls = mockFacilityGet.mock.calls.length;
+
+    fireEvent.press(screen.getByText("Unpublish Course"));
+
+    expect(await screen.findByText("Publish Course")).toBeTruthy();
+    expect(mockFacilityUnpublish).toHaveBeenCalledWith("facility-1", course.id);
+    expect(mockFacilityGet).toHaveBeenCalledTimes(detailCalls + 1);
+    expect(screen.queryByText("Close Lesson")).toBeNull();
+    expect(screen.queryByDisplayValue("Unsaved lesson note")).toBeNull();
   });
 
   it("clears a prior Facility course when a newly requested scoped course is denied", async () => {

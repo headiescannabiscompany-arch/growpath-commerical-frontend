@@ -131,6 +131,10 @@ export default function FacilityCoursesRoute() {
       archive: (id: string) => archiveFacilityCourse(facilityId, id)
     };
   }, [scopedFacilityId, scopedRole]);
+  const workspace = useMemo(
+    () => ({ facilityId: scopedFacilityId, role: scopedRole, api }),
+    [scopedFacilityId, scopedRole, api]
+  );
 
   const returnToCourses = () => router.replace("/home/facility/courses" as any);
   const returnToCourse = (id: string) =>
@@ -157,12 +161,6 @@ export default function FacilityCoursesRoute() {
       />
     );
   }
-
-  const workspace = {
-    facilityId: scope.facilityId,
-    role: scope.role,
-    api
-  };
 
   if (action === "create") {
     return (

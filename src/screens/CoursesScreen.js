@@ -205,6 +205,17 @@ export default function CoursesScreen({
     maxLessonsPerCourse: null,
     currentPublishedPaidCourses: 0
   });
+  const facilityDetailWorkspace = useMemo(
+    () =>
+      facilityMode
+        ? {
+            ...facilityWorkspace,
+            permissions: facilityPermissions,
+            limits: facilityLimits
+          }
+        : null,
+    [facilityMode, facilityWorkspace, facilityPermissions, facilityLimits]
+  );
   const canCreateCourses = facilityMode
     ? isSignedIn && facilityPermissions.canCreateDraft === true
     : isSignedIn && !genericFacilityLearnerMode && access.canCreateCourses;
@@ -599,20 +610,17 @@ export default function CoursesScreen({
           <Text style={styles.backText}>Back to courses</Text>
         </Pressable>
         <CourseDetailScreen
+          key={
+            facilityMode
+              ? JSON.stringify([facilityScopeId, facilityWorkspace.role, viewerId])
+              : undefined
+          }
           onArchived={handleCourseArchived}
           route={{
             params: { course: selectedCourse, id: selectedId, checkout: checkoutResult }
           }}
           navigation={navigation}
-          facilityWorkspace={
-            facilityMode
-              ? {
-                  ...facilityWorkspace,
-                  permissions: facilityPermissions,
-                  limits: facilityLimits
-                }
-              : null
-          }
+          facilityWorkspace={facilityDetailWorkspace}
         />
       </View>
     );
