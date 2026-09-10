@@ -397,6 +397,7 @@ describe("CourseDetailScreen learner player", () => {
 
   it("opens the Expo lesson editor when legacy navigation is unavailable", async () => {
     Object.assign(mockLearningAccess, { canCreateCourses: true });
+    mockGetCourse.mockResolvedValue({ ...freeCourse, creatorId: mockViewerId });
     const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
 
     await waitFor(() => expect(screen.getByText("Living Soil Course")).toBeTruthy());
@@ -406,6 +407,78 @@ describe("CourseDetailScreen learner player", () => {
       "/courses/edit-lesson?lessonId=lesson-1&courseId=course-1&from=%2Fcourses%3FcourseId%3Dcourse-1"
     );
   });
+
+  it.each([false, true])(
+    "keeps native lesson authoring hidden from a capable buyer when enrolled=%p",
+    async (enrolled) => {
+      Object.assign(mockLearningAccess, { canCreateCourses: true });
+      mockGetCourse.mockResolvedValue({
+        ...freeCourse,
+        creatorId: "another-author",
+        _viewerOwnsCourse: false,
+        isPublished: true,
+        priceCents: 2500,
+        lessons: [{ id: "lesson-1", title: "Build the mix" }]
+      });
+      mockGetEnrollmentStatus.mockResolvedValue({ enrolled });
+      mockGetCoursePaymentStatus.mockResolvedValue({
+        paymentStatus: enrolled ? "paid" : "not_started"
+      });
+
+      const screen = render(
+        <CourseDetailScreen route={{ params: { id: "course-1" } }} />
+      );
+
+      await screen.findByText("Living Soil Course");
+      expect(screen.queryByRole("button", { name: "Add course lesson" })).toBeNull();
+      expect(screen.queryByLabelText("Edit lesson Build the mix")).toBeNull();
+      expect(
+        screen.getByLabelText(
+          enrolled
+            ? "Open lesson Build the mix"
+            : "Lesson Build the mix locked until payment is confirmed"
+        )
+      ).toBeTruthy();
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockStartCourseCheckout).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    ["matching creator", { creatorId: "learner-1" }, true],
+    [
+      "server-authorized owner/admin",
+      { creatorId: "another-author", _viewerOwnsCourse: true },
+      true
+    ],
+    ["owner without creation capability", { creatorId: "learner-1" }, false]
+  ] as const)(
+    "preserves native lesson authoring for %s",
+    async (_label, ownerFields, canCreateCourses) => {
+      Object.assign(mockLearningAccess, { canCreateCourses });
+      mockGetCourse.mockResolvedValue({ ...freeCourse, ...ownerFields });
+
+      const screen = render(
+        <CourseDetailScreen route={{ params: { id: "course-1" } }} />
+      );
+
+      await screen.findByText("Living Soil Course");
+      const add = screen.queryByRole("button", { name: "Add course lesson" });
+      const edit = screen.queryByLabelText("Edit lesson Build the mix");
+      if (canCreateCourses) {
+        expect(add).toBeTruthy();
+        expect(edit).toBeTruthy();
+        fireEvent.press(add!);
+        expect(mockPush).toHaveBeenCalledWith(
+          "/courses/add-lesson?courseId=course-1&from=%2Fhome%2Fpersonal%2Fcourses"
+        );
+      } else {
+        expect(add).toBeNull();
+        expect(edit).toBeNull();
+        expect(mockPush).not.toHaveBeenCalled();
+      }
+    }
+  );
 
   it("exposes an operable course report path with exact content context", async () => {
     const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);

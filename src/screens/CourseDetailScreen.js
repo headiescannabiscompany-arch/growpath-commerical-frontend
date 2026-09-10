@@ -295,10 +295,7 @@ export default function CourseDetailScreen({
     : canManageNativeCourse;
   const canManageLessons = facilityMode
     ? facilityPermissions.canEditLessons === true
-    : !genericFacilityLearnerMode &&
-      !commercialManagedCourse &&
-      !facilityManagedCourse &&
-      access.canCreateCourses;
+    : canManageNativeCourse && access.canCreateCourses;
   const canPublishManagedCourse = facilityMode
     ? course?.isPublished
       ? facilityPermissions.canUnpublish === true
