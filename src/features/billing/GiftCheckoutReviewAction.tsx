@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { useAuth } from "@/auth/AuthContext";
+import { getStoredGiftCheckoutAttempt } from "@/features/billing/giftCheckoutAttempt";
 import {
   formatGiftCheckoutAmount,
   useGiftCheckoutReview,
@@ -11,7 +12,13 @@ import {
 } from "@/features/billing/giftCheckoutReview";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { OFFERS_GIFT_RETURN_PATH, safeLoginPath } from "@/utils/authReturnPath";
+import {
+  buildAuthReturnPath,
+  GIFT_CHECKOUT_CANCEL_PATH,
+  GIFT_CHECKOUT_RECOVERY_PATH,
+  OFFERS_GIFT_RETURN_PATH,
+  safeLoginPath
+} from "@/utils/authReturnPath";
 
 type Props = {
   material: GiftCheckoutReviewMaterial;
@@ -107,6 +114,35 @@ function SignedInGiftCheckoutReviewAction({
   const amount = quote
     ? formatGiftCheckoutAmount(quote.amountCents, quote.currency)
     : null;
+  const activeRef = useRef(false);
+  const recoveryInFlightRef = useRef(false);
+
+  useEffect(() => {
+    activeRef.current = true;
+    return () => {
+      activeRef.current = false;
+    };
+  }, []);
+
+  const checkSavedCheckout = async () => {
+    if (!activeRef.current || recoveryInFlightRef.current) return;
+    recoveryInFlightRef.current = true;
+    try {
+      const attempt = await getStoredGiftCheckoutAttempt().catch(() => null);
+      if (!activeRef.current) return;
+      // Account recovery finds unfinished checkouts only. Preserve the exact
+      // saved attempt so a payment completed in another tab can still reconcile.
+      const savedReturnPath =
+        attempt?.phase === "checkout_requested"
+          ? buildAuthReturnPath(GIFT_CHECKOUT_CANCEL_PATH, {
+              checkout_attempt_id: attempt.checkoutAttemptId
+            })
+          : "";
+      router.push((savedReturnPath || GIFT_CHECKOUT_RECOVERY_PATH) as any);
+    } finally {
+      recoveryInFlightRef.current = false;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -131,9 +167,9 @@ function SignedInGiftCheckoutReviewAction({
           <Text style={styles.eyebrow}>Server-confirmed total</Text>
           <Text style={styles.amount}>{amount}</Text>
           <Text style={styles.copy}>
-            One prepaid {quote.interval === "monthly" ? "month" : "year"} of {planLabel}, quantity
-            one. It does not renew. Stripe can charge this total only after you confirm
-            below.
+            One prepaid {quote.interval === "monthly" ? "month" : "year"} of {planLabel},
+            quantity one. It does not renew. Stripe can charge this total only after you
+            confirm below.
           </Text>
           <View style={styles.boundDetails}>
             <Text style={styles.boundDetail}>
@@ -209,7 +245,7 @@ function SignedInGiftCheckoutReviewAction({
         <Pressable
           accessibilityLabel="Check saved gift checkout"
           accessibilityRole="button"
-          onPress={() => router.push("/account/gift-checkout/recover" as any)}
+          onPress={() => void checkSavedCheckout()}
           style={styles.reconcileButton}
         >
           <Text style={styles.reconcileButtonText}>Check saved checkout</Text>

@@ -8,8 +8,12 @@ import {
 } from "@/api/subscription";
 import {
   clearGiftCheckoutAttemptWhenAllowed,
-  getStoredGiftCheckoutAttempt
+  getStoredGiftCheckoutAttempt,
+  markGiftCheckoutRequested,
+  prepareGiftCheckoutQuoteAttempt,
+  type GiftCheckoutAttemptSummary
 } from "@/features/billing/giftCheckoutAttempt";
+import * as giftCheckoutAttemptStore from "@/features/billing/giftCheckoutAttempt";
 import GiftCheckoutReviewAction from "@/features/billing/GiftCheckoutReviewAction";
 
 const mockPush = jest.fn();
@@ -39,6 +43,11 @@ function checkoutResponse(request: Record<string, any>, overrides = {}) {
     expiresAt: "2099-01-01T12:30:00.000Z",
     ...overrides
   };
+}
+
+async function saveRequestedAttempt() {
+  const attempt = await prepareGiftCheckoutQuoteAttempt(material);
+  return markGiftCheckoutRequested(material, attempt.checkoutAttemptId);
 }
 
 function installStorage() {
@@ -217,9 +226,226 @@ describe("shared gift checkout review action", () => {
     expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
 
-    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/recover");
+    const checkoutAttemptId = (createCheckoutSession as jest.Mock).mock.calls[0][0]
+      .checkoutAttemptId;
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith(
+        `/account/gift-checkout/cancel?checkout_attempt_id=${checkoutAttemptId}`
+      )
+    );
+    await expect(getStoredGiftCheckoutAttempt()).resolves.toMatchObject({
+      checkoutAttemptId,
+      phase: "checkout_requested"
+    });
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);
   });
+
+  it("preserves the exact created attempt from both plan cards after remount when account recovery is empty", async () => {
+    const openCheckoutUrl = jest.fn().mockResolvedValue(undefined);
+    (createCheckoutSession as jest.Mock).mockImplementationOnce(async (request) =>
+      checkoutResponse(request)
+    );
+    const props = {
+      material,
+      recipientValid: true,
+      configured: true,
+      onFeedback: jest.fn(),
+      openCheckoutUrl
+    };
+    const first = render(<GiftCheckoutReviewAction {...props} />);
+    fireEvent.press(first.getByLabelText("Review authoritative gift price"));
+    await waitFor(() => expect(first.getByText("$12.34")).toBeTruthy());
+    fireEvent.press(first.getByLabelText("Confirm and continue - $12.34"));
+    await waitFor(() => expect(openCheckoutUrl).toHaveBeenCalledTimes(1));
+    const saved = await getStoredGiftCheckoutAttempt();
+    expect(saved?.phase).toBe("checkout_requested");
+    first.unmount();
+
+    // A webhook may already have settled the gift, so account-level recovery
+    // returns none while this browser still owns the original attempt selector.
+    const offers = render(
+      <>
+        <GiftCheckoutReviewAction {...props} />
+        <GiftCheckoutReviewAction
+          {...props}
+          material={{ ...material, plan: "commercial" }}
+        />
+      </>
+    );
+    await waitFor(() =>
+      expect(offers.getAllByLabelText("Check saved gift checkout")).toHaveLength(2)
+    );
+    const buttons = offers.getAllByLabelText("Check saved gift checkout");
+    for (const [index, button] of buttons.entries()) {
+      fireEvent.press(button);
+      await waitFor(() =>
+        expect(mockPush).toHaveBeenNthCalledWith(
+          index + 1,
+          `/account/gift-checkout/cancel?checkout_attempt_id=${saved?.checkoutAttemptId}`
+        )
+      );
+    }
+    expect(mockPush).toHaveBeenCalledTimes(2);
+    expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
+    expect(createCheckoutSession).toHaveBeenCalledTimes(1);
+    expect(openCheckoutUrl).toHaveBeenCalledTimes(1);
+    await expect(getStoredGiftCheckoutAttempt()).resolves.toEqual(saved);
+  });
+
+  it.each(["absent", "quote_only"])(
+    "uses account recovery when the saved browser attempt is %s",
+    async (phase) => {
+      if (phase === "quote_only") await prepareGiftCheckoutQuoteAttempt(material);
+      const saved = await getStoredGiftCheckoutAttempt();
+      (getGiftCheckoutRecovery as jest.Mock).mockResolvedValue({
+        state: "support_required",
+        attempt: null
+      });
+      const screen = render(
+        <GiftCheckoutReviewAction
+          material={material}
+          recipientValid
+          configured
+          onFeedback={jest.fn()}
+          openCheckoutUrl={jest.fn()}
+        />
+      );
+      await waitFor(() =>
+        expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy()
+      );
+
+      fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
+
+      await waitFor(() =>
+        expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/recover")
+      );
+      expect(mockPush).toHaveBeenCalledTimes(1);
+      expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+      expect(createCheckoutSession).not.toHaveBeenCalled();
+      await expect(getStoredGiftCheckoutAttempt()).resolves.toEqual(saved);
+    }
+  );
+
+  it("falls back to account recovery when the saved-attempt read fails without clearing it", async () => {
+    const saved = await saveRequestedAttempt();
+    const screen = render(
+      <GiftCheckoutReviewAction
+        material={material}
+        recipientValid
+        configured
+        onFeedback={jest.fn()}
+        openCheckoutUrl={jest.fn()}
+      />
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy()
+    );
+    const read = jest
+      .spyOn(giftCheckoutAttemptStore, "getStoredGiftCheckoutAttempt")
+      .mockRejectedValueOnce(new Error("Browser storage is unavailable"));
+
+    fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
+
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/recover")
+    );
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+    read.mockRestore();
+    await expect(getStoredGiftCheckoutAttempt()).resolves.toEqual(saved);
+  });
+
+  it("reads and navigates only once for repeated presses while saved recovery is in flight", async () => {
+    const saved = await saveRequestedAttempt();
+    const screen = render(
+      <GiftCheckoutReviewAction
+        material={material}
+        recipientValid
+        configured
+        onFeedback={jest.fn()}
+        openCheckoutUrl={jest.fn()}
+      />
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy()
+    );
+    let resolveRead!: (value: GiftCheckoutAttemptSummary | null) => void;
+    const read = jest
+      .spyOn(giftCheckoutAttemptStore, "getStoredGiftCheckoutAttempt")
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveRead = resolve;
+          })
+      );
+    const button = screen.getByLabelText("Check saved gift checkout");
+
+    fireEvent.press(button);
+    fireEvent.press(button);
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(mockPush).not.toHaveBeenCalled();
+    await act(async () => {
+      resolveRead(saved);
+    });
+
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith(
+      `/account/gift-checkout/cancel?checkout_attempt_id=${saved.checkoutAttemptId}`
+    );
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+    read.mockRestore();
+    await expect(getStoredGiftCheckoutAttempt()).resolves.toEqual(saved);
+  });
+
+  it.each(["unmount", "account change", "authentication loss"])(
+    "discards a saved recovery read completed after %s",
+    async (transition) => {
+      const saved = await saveRequestedAttempt();
+      const props = {
+        material,
+        recipientValid: true,
+        configured: true,
+        onFeedback: jest.fn(),
+        openCheckoutUrl: jest.fn()
+      };
+      const screen = render(<GiftCheckoutReviewAction {...props} />);
+      await waitFor(() =>
+        expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy()
+      );
+      let resolveRead!: (value: GiftCheckoutAttemptSummary | null) => void;
+      const read = jest
+        .spyOn(giftCheckoutAttemptStore, "getStoredGiftCheckoutAttempt")
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              resolveRead = resolve;
+            })
+        );
+      fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
+      expect(read).toHaveBeenCalledTimes(1);
+      expect(mockPush).not.toHaveBeenCalled();
+
+      if (transition === "unmount") {
+        screen.unmount();
+      } else {
+        mockToken = transition === "account change" ? "buyer-b-token" : null;
+        mockUser = transition === "account change" ? { id: "buyer-b" } : null;
+        screen.rerender(<GiftCheckoutReviewAction {...props} />);
+      }
+      await act(async () => {
+        resolveRead(saved);
+      });
+
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+      expect(createCheckoutSession).not.toHaveBeenCalled();
+      expect(props.openCheckoutUrl).not.toHaveBeenCalled();
+      read.mockRestore();
+      await expect(getStoredGiftCheckoutAttempt()).resolves.toEqual(saved);
+    }
+  );
 
   it("opens only the Stripe session correlated to the confirmed quote", async () => {
     const openCheckoutUrl = jest.fn().mockResolvedValue(undefined);
@@ -420,8 +646,13 @@ describe("shared gift checkout review action", () => {
       "error",
       expect.stringContaining("purchasing account")
     );
+    await expect(getStoredGiftCheckoutAttempt()).resolves.toMatchObject({
+      phase: "quote_only"
+    });
     fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
-    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/recover");
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/recover")
+    );
   });
 
   it("reuses the safely downgraded local attempt after account recovery resolves", async () => {
