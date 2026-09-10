@@ -34,6 +34,7 @@ jest.mock("@/api/me", () => ({
 }));
 
 jest.mock("@/auth/tokenStore", () => ({
+  subscribeToExternalTokenChanges: () => () => {},
   setToken: jest.fn(),
   getToken: (...args: any[]) => mockReadToken(...args)
 }));

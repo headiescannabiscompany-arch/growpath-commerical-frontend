@@ -331,14 +331,33 @@ export default function ClaimGiftScreen() {
         ) : null}
 
         {state === "terminal" ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Go to GrowPathAI sign in"
-            onPress={() => router.replace("/login")}
-            style={styles.secondaryButton}
-          >
-            <Text style={styles.secondaryText}>Go to sign in</Text>
-          </Pressable>
+          <View style={styles.actions}>
+            <Text style={styles.helper}>
+              This message is about the claim link, not your account&apos;s access. If you
+              already claimed a gift, check Billing for its status and end date.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                auth.token ? "Check account billing" : "Sign in to check account billing"
+              }
+              onPress={() =>
+                auth.token
+                  ? router.replace("/account/billing")
+                  : router.replace({
+                      pathname: "/login",
+                      params: { next: "/account/billing" }
+                    } as any)
+              }
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryText}>
+                {auth.token
+                  ? "Check account billing"
+                  : "Sign in to check account billing"}
+              </Text>
+            </Pressable>
+          </View>
         ) : null}
       </View>
     </ScrollView>

@@ -188,6 +188,72 @@ describe("ClaimGiftScreen", () => {
     await expect(readGiftClaimToken()).resolves.toBe("");
   });
 
+  it.each(["GIFT_CLAIM_INVALID", "GIFT_ALREADY_CLAIMED"])(
+    "offers signed-in billing guidance after %s without asserting access or retrying a claim",
+    async (code) => {
+      mockToken = "signed-in-token";
+      const terminal = new ApiError(code, 404);
+      terminal.message = "This gift link is invalid or expired.";
+      mockGetGiftClaim.mockRejectedValueOnce(terminal);
+      const screen = render(<ClaimGiftScreen />);
+
+      await waitFor(() =>
+        expect(screen.getByLabelText("Check account billing")).toBeTruthy()
+      );
+      expect(
+        screen.getByText(
+          "This message is about the claim link, not your account's access. If you already claimed a gift, check Billing for its status and end date."
+        )
+      ).toBeTruthy();
+      expect(screen.queryByText("Your prepaid pro access is active.")).toBeNull();
+      expect(screen.queryByText(/Recipient:/)).toBeNull();
+      expect(screen.queryByLabelText("Go to GrowPathAI sign in")).toBeNull();
+      expect(screen.queryByLabelText("Claim prepaid access gift")).toBeNull();
+      fireEvent.press(screen.getByLabelText("Check account billing"));
+      expect(mockReplace).toHaveBeenCalledWith("/account/billing");
+      expect(mockClaimGift).not.toHaveBeenCalled();
+      expect(mockRetryMe).not.toHaveBeenCalled();
+      expect(mockLogout).not.toHaveBeenCalled();
+      await expect(readGiftClaimToken()).resolves.toBe("");
+    }
+  );
+
+  it("returns a signed-out recipient to Billing after sign-in, without the expired token", async () => {
+    mockGetGiftClaim.mockRejectedValueOnce(new ApiError("GIFT_CLAIM_INVALID", 404));
+    const screen = render(<ClaimGiftScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Sign in to check account billing")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Sign in to check account billing"));
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/login",
+      params: { next: "/account/billing" }
+    });
+    expect(JSON.stringify(mockReplace.mock.calls)).not.toContain("gift-token-1");
+    expect(mockClaimGift).not.toHaveBeenCalled();
+    await expect(readGiftClaimToken()).resolves.toBe("");
+  });
+
+  it("offers billing guidance after a terminal claim response without retaining gift details", async () => {
+    mockToken = "signed-in-token";
+    mockClaimGift.mockRejectedValueOnce(new ApiError("GIFT_ALREADY_CLAIMED", 409));
+    const screen = render(<ClaimGiftScreen />);
+    await waitFor(() => expect(screen.getByText("One year of pro")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Claim prepaid access gift"));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Check account billing")).toBeTruthy()
+    );
+    expect(screen.queryByText(/Recipient:/)).toBeNull();
+    expect(screen.queryByLabelText("Claim prepaid access gift")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Check account billing"));
+    expect(mockReplace).toHaveBeenCalledWith("/account/billing");
+    expect(mockClaimGift).toHaveBeenCalledTimes(1);
+    expect(mockRetryMe).not.toHaveBeenCalled();
+    await expect(readGiftClaimToken()).resolves.toBe("");
+  });
+
   it("resets preview state when the route token changes", async () => {
     const screen = render(<ClaimGiftScreen />);
     await waitFor(() =>

@@ -17,7 +17,11 @@ import {
   type SignupBody,
   type SignupResponse
 } from "../api/auth";
-import { setToken as persistToken, getToken as readToken } from "./tokenStore";
+import {
+  setToken as persistToken,
+  getToken as readToken,
+  subscribeToExternalTokenChanges
+} from "./tokenStore";
 import { apiRequest, setOnUnauthorized } from "../api/apiRequest";
 import { apiMe } from "../api/me";
 import { PLAN_LIMITS } from "../config/planLimits";
@@ -405,6 +409,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => `${pathname || ""}?${safeStableParams(routeParams)}`,
     [pathname, routeParams]
   );
+
+  useEffect(() => {
+    if (resolveLocalPreviewSession()) return;
+    return subscribeToExternalTokenChanges(() => {
+      // A full bootstrap discards this tab's old account/workspace caches. Do not
+      // hardLogout here: that would erase the account just signed in elsewhere.
+      window.location.reload();
+    });
+  }, []);
 
   // Hard logout that prevents token from reappearing
   const hardLogout = async () => {

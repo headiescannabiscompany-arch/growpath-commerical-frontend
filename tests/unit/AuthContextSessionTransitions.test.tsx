@@ -10,6 +10,7 @@ const mockApiRequest = jest.fn();
 const mockSetOnUnauthorized = jest.fn();
 const mockApiLogin = jest.fn();
 const mockResetWorkspaceSessionState = jest.fn();
+const mockSubscribeToExternalTokenChanges = jest.fn();
 
 jest.mock("expo-router", () => ({
   useGlobalSearchParams: () => ({}),
@@ -44,7 +45,9 @@ jest.mock("@/api/me", () => ({
 
 jest.mock("@/auth/tokenStore", () => ({
   setToken: (...args: any[]) => mockPersistToken(...args),
-  getToken: (...args: any[]) => mockReadToken(...args)
+  getToken: (...args: any[]) => mockReadToken(...args),
+  subscribeToExternalTokenChanges: (...args: any[]) =>
+    mockSubscribeToExternalTokenChanges(...args)
 }));
 
 jest.mock("@/config/planLimits", () => ({
@@ -211,6 +214,40 @@ describe("AuthProvider persisted-session transitions", () => {
     );
     expect(mockPersistToken).toHaveBeenCalledWith(null);
     expect(mockResetWorkspaceSessionState).toHaveBeenCalledTimes(1);
+  });
+
+  it("reloads an old Facility session after another tab signs in without clearing shared auth", async () => {
+    const reload = jest.fn();
+    const unsubscribe = jest.fn();
+    const originalLocation = Object.getOwnPropertyDescriptor(window, "location");
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        hostname: "growpathai.com",
+        pathname: "/home/facility/profile",
+        search: "",
+        reload
+      }
+    });
+    mockSubscribeToExternalTokenChanges.mockReturnValue(unsubscribe);
+    mockApiMe.mockResolvedValue({
+      ...hydratedMe,
+      ctx: { mode: "facility", facilityId: "owner-facility", facilityRole: "OWNER" }
+    });
+    const screen = renderProvider();
+    try {
+      await waitFor(() => expect(authState(screen).ctx?.mode).toBe("facility"));
+      mockSubscribeToExternalTokenChanges.mock.calls[0][0]();
+      expect(reload).toHaveBeenCalledTimes(1);
+      expect(mockPersistToken).not.toHaveBeenCalled();
+      expect(mockResetWorkspaceSessionState).not.toHaveBeenCalled();
+      screen.unmount();
+      expect(unsubscribe).toHaveBeenCalledTimes(1);
+    } finally {
+      screen.unmount();
+      if (originalLocation) Object.defineProperty(window, "location", originalLocation);
+      else delete (window as any).location;
+    }
   });
 
   it("clears the first account workspace before applying a second account login", async () => {
