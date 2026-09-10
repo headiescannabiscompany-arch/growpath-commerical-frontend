@@ -98,11 +98,12 @@ export async function getConnectPayoutStatus() {
   return normalizeStripeConnectStatus(response);
 }
 
-export async function startConnectPayoutOnboarding() {
+export async function startConnectPayoutOnboarding(country?: string) {
   // Return and refresh destinations are server-owned. Never accept or forward a
   // browser-supplied redirect, connected-account ID, or user ID here.
   const response = await apiRequest(apiRoutes.USER.ONBOARD_CREATOR, {
-    method: "POST"
+    method: "POST",
+    ...(country ? { body: { country: country.trim().toUpperCase() } } : {})
   });
   return normalizeLinkResult(response);
 }

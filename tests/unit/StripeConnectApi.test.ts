@@ -74,4 +74,14 @@ describe("Stripe Connect payout API adapter", () => {
     });
     expect(result.url).toBe("https://connect.stripe.com/express/test");
   });
+
+  it("sends only the explicit country choice for new seller onboarding", async () => {
+    mockApiRequest.mockResolvedValue({ url: "https://accounts.stripe.com/r/test" });
+    const { startConnectPayoutOnboarding } = require("@/api/stripeConnect");
+    await startConnectPayoutOnboarding(" ca ");
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/user/creator/onboard", {
+      method: "POST",
+      body: { country: "CA" }
+    });
+  });
 });

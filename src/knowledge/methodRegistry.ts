@@ -1079,6 +1079,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "linked workflow",
       "server-returned Stripe payout links limited to exact HTTPS connect.stripe.com or accounts.stripe.com hosts without credentials or non-default ports; onboarding is not payout-readiness proof",
+      "explicit first-time seller country choice with no inferred default, provider eligibility verification, immutable unresolved creation country and existing-account resume",
       "limitations",
       "tasks",
       "single-heading campaign authoring with named stateful controls",

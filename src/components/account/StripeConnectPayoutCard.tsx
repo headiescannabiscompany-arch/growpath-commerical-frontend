@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Picker } from "@react-native-picker/picker";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -8,6 +9,7 @@ import {
   type StripeConnectPayoutStatus
 } from "@/api/stripeConnect";
 import AppCard from "@/components/layout/AppCard";
+import { SELLER_COUNTRIES } from "@/constants/sellerCountries";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { openExternalUrl } from "@/utils/openExternalUrl";
@@ -92,6 +94,7 @@ export default function StripeConnectPayoutCard({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [country, setCountry] = useState("");
 
   const loadStatus = useCallback(async () => {
     if (!enabled) return;
@@ -144,16 +147,20 @@ export default function StripeConnectPayoutCard({
 
   const ready = isPayoutReady(status);
   const remaining = remainingRequirementCount(status);
+  const needsCountry = !status?.connected;
+  const countrySelected = SELLER_COUNTRIES.some((item) => item.code === country);
+  const actionDisabled =
+    busy || loading || Boolean(error && !status) || (needsCountry && !countrySelected);
 
   async function handleProviderAction() {
-    if (busy || loading) return;
+    if (actionDisabled) return;
     setBusy(true);
     setError("");
     setFeedback("");
     try {
       const result = ready
         ? await createConnectPayoutDashboardLink()
-        : await startConnectPayoutOnboarding();
+        : await startConnectPayoutOnboarding(needsCountry ? country : undefined);
       if (!trustedStripeConnectUrl(result.url)) {
         throw new Error("Stripe returned an invalid payout-management link.");
       }
@@ -220,6 +227,27 @@ export default function StripeConnectPayoutCard({
             GrowPathAI records eligible seller earnings. Stripe is the source of truth for
             connected-account readiness, balances, and bank-payout status.
           </Text>
+          {needsCountry ? (
+            <View style={styles.countrySection}>
+              <Text style={styles.statusLabel}>Seller country</Text>
+              <Text style={styles.note}>
+                Choose where your business is based. Stripe verifies eligibility. This
+                choice is kept when retrying setup.
+              </Text>
+              <Picker
+                accessibilityLabel="Seller country"
+                enabled={!busy && !loading}
+                selectedValue={country}
+                onValueChange={(value) => setCountry(String(value))}
+                style={styles.countryPicker}
+              >
+                <Picker.Item label="Choose your country" value="" />
+                {SELLER_COUNTRIES.map((item) => (
+                  <Picker.Item key={item.code} label={item.label} value={item.code} />
+                ))}
+              </Picker>
+            </View>
+          ) : null}
           {error ? (
             <Text
               accessibilityLiveRegion="assertive"
@@ -238,15 +266,10 @@ export default function StripeConnectPayoutCard({
             <Pressable
               accessibilityLabel={actionLabel(status)}
               accessibilityRole="button"
-              accessibilityState={{
-                disabled: busy || loading || Boolean(error && !status)
-              }}
-              disabled={busy || loading || Boolean(error && !status)}
+              accessibilityState={{ disabled: actionDisabled }}
+              disabled={actionDisabled}
               onPress={() => void handleProviderAction()}
-              style={[
-                styles.primaryButton,
-                (busy || loading || (error && !status)) && styles.disabled
-              ]}
+              style={[styles.primaryButton, actionDisabled && styles.disabled]}
               testID="stripe-connect-provider-action"
             >
               <Text style={styles.primaryButtonText}>
@@ -283,6 +306,16 @@ function createStyles(palette: ThemePalette) {
       justifyContent: "space-between"
     },
     statusLabel: { color: palette.textMuted, fontSize: 13, fontWeight: "700" },
+    countrySection: { marginTop: 14 },
+    countryPicker: {
+      backgroundColor: palette.surface,
+      color: palette.text,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      marginTop: 8,
+      minHeight: 44
+    },
     statusValue: { color: palette.text, fontSize: 14, fontWeight: "900" },
     ready: { color: palette.success },
     warning: { color: palette.warning },

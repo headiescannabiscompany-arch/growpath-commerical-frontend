@@ -1,7 +1,9 @@
 import React from "react";
+import { Picker } from "@react-native-picker/picker";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import StripeConnectPayoutCard from "@/components/account/StripeConnectPayoutCard";
+import { SELLER_COUNTRIES } from "@/constants/sellerCountries";
 
 const mockGetStatus = jest.fn();
 const mockStartOnboarding = jest.fn();
@@ -57,11 +59,12 @@ describe("StripeConnectPayoutCard", () => {
 
   it("starts server-controlled onboarding for a disconnected seller", async () => {
     const screen = render(<StripeConnectPayoutCard />);
-    const action = await screen.findByText("Set up Stripe payouts");
-
-    fireEvent.press(action);
+    await screen.findByText("Set up Stripe payouts");
+    fireEvent(screen.getByLabelText("Seller country"), "valueChange", "US");
+    fireEvent.press(screen.getByText("Set up Stripe payouts"));
 
     await waitFor(() => expect(mockStartOnboarding).toHaveBeenCalledTimes(1));
+    expect(mockStartOnboarding).toHaveBeenCalledWith("US");
     expect(mockOpenExternalUrl).toHaveBeenCalledWith(
       "https://connect.stripe.com/setup/test"
     );
@@ -84,14 +87,17 @@ describe("StripeConnectPayoutCard", () => {
       });
 
       const screen = render(<StripeConnectPayoutCard />);
+      await screen.findByText(resuming ? "Resume Stripe setup" : "Set up Stripe payouts");
+      if (!resuming) {
+        fireEvent(screen.getByLabelText("Seller country"), "valueChange", "CA");
+      }
       fireEvent.press(
-        await screen.findByText(
-          resuming ? "Resume Stripe setup" : "Set up Stripe payouts"
-        )
+        screen.getByText(resuming ? "Resume Stripe setup" : "Set up Stripe payouts")
       );
 
       await waitFor(() => expect(mockOpenExternalUrl).toHaveBeenCalledWith(url));
       expect(mockStartOnboarding).toHaveBeenCalledTimes(1);
+      expect(mockStartOnboarding).toHaveBeenCalledWith(resuming ? undefined : "CA");
       expect(mockDashboardLink).not.toHaveBeenCalled();
       expect(screen.getByText("Setup in progress")).toBeTruthy();
       expect(screen.queryByText("Ready")).toBeNull();
@@ -107,6 +113,7 @@ describe("StripeConnectPayoutCard", () => {
 
     expect(await screen.findByText("Setup in progress")).toBeTruthy();
     expect(screen.getByText("Resume Stripe setup")).toBeTruthy();
+    expect(screen.queryByLabelText("Seller country")).toBeNull();
   });
 
   it("opens Stripe payout management only after provider-verified readiness", async () => {
@@ -152,7 +159,9 @@ describe("StripeConnectPayoutCard", () => {
     });
 
     const screen = render(<StripeConnectPayoutCard />);
-    fireEvent.press(await screen.findByText("Set up Stripe payouts"));
+    await screen.findByText("Set up Stripe payouts");
+    fireEvent(screen.getByLabelText("Seller country"), "valueChange", "US");
+    fireEvent.press(screen.getByText("Set up Stripe payouts"));
 
     expect(
       await screen.findByText("Stripe returned an invalid payout-management link.")
@@ -165,5 +174,50 @@ describe("StripeConnectPayoutCard", () => {
 
     expect(screen.toJSON()).toBeNull();
     expect(mockGetStatus).not.toHaveBeenCalled();
+  });
+
+  it("requires a country choice without defaulting to the United States", async () => {
+    const screen = render(<StripeConnectPayoutCard />);
+    await screen.findByText("Set up Stripe payouts");
+    expect(screen.UNSAFE_getByType(Picker).props.selectedValue).toBe("");
+    expect(
+      screen.getByTestId("stripe-connect-provider-action").props.accessibilityState
+        .disabled
+    ).toBe(true);
+    fireEvent.press(screen.getByText("Set up Stripe payouts"));
+    expect(mockStartOnboarding).not.toHaveBeenCalled();
+    fireEvent(screen.getByLabelText("Seller country"), "valueChange", "ZZ");
+    fireEvent.press(screen.getByText("Set up Stripe payouts"));
+    expect(mockStartOnboarding).not.toHaveBeenCalled();
+  });
+
+  it("keeps country selection after failed setup and locks it while opening", async () => {
+    let rejectSetup!: (error: Error) => void;
+    mockStartOnboarding.mockReturnValue(
+      new Promise((_resolve, reject) => {
+        rejectSetup = reject;
+      })
+    );
+    const screen = render(<StripeConnectPayoutCard />);
+    await screen.findByText("Set up Stripe payouts");
+    fireEvent(screen.getByLabelText("Seller country"), "valueChange", "GB");
+    fireEvent.press(screen.getByText("Set up Stripe payouts"));
+    expect(screen.UNSAFE_getByType(Picker).props.enabled).toBe(false);
+    rejectSetup(new Error("Setup verification failed"));
+    await screen.findByText("Setup verification failed");
+    expect(screen.UNSAFE_getByType(Picker).props.selectedValue).toBe("GB");
+    expect(mockStartOnboarding).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers named unique ISO country choices", () => {
+    expect(SELLER_COUNTRIES).toHaveLength(249);
+    expect(new Set(SELLER_COUNTRIES.map((item) => item.code)).size).toBe(249);
+    expect(SELLER_COUNTRIES).toEqual(
+      expect.arrayContaining([
+        { code: "US", label: "United States" },
+        { code: "GB", label: "United Kingdom" },
+        { code: "CA", label: "Canada" }
+      ])
+    );
   });
 });
