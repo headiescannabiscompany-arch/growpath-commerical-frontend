@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import React from "react";
+import { Platform } from "react-native";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import {
@@ -624,5 +625,206 @@ describe("authoritative gift checkout return", () => {
     expect(isSafeStripeCheckoutUrl("https://evil.example/c/pay/session")).toBe(false);
     expect(screen.queryByLabelText("Resume the same Stripe checkout")).toBeNull();
     expect(openExternalUrl).not.toHaveBeenCalled();
+  });
+
+  describe("web navigation commit", () => {
+    const attemptA = "123e4567-e89b-42d3-a456-426614174000";
+    const attemptB = "123e4567-e89b-42d3-a456-426614174001";
+    const cancelPath = `/account/gift-checkout/cancel?checkout_attempt_id=${attemptA}`;
+    let previousWindow: PropertyDescriptor | undefined;
+
+    function setBrowserPath(value: string) {
+      const url = new URL(value, "https://growpath.invalid");
+      Object.defineProperty(globalThis, "window", {
+        configurable: true,
+        value: {
+          location: { pathname: url.pathname, search: url.search, hash: url.hash }
+        }
+      });
+    }
+
+    async function commitBrowserPath(value: string) {
+      await act(async () => {
+        setBrowserPath(value);
+        jest.runOnlyPendingTimers();
+        await Promise.resolve();
+      });
+    }
+
+    beforeEach(() => {
+      previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+      jest.replaceProperty(Platform, "OS", "web");
+      jest.useFakeTimers();
+      setBrowserPath("/offers");
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+      if (previousWindow) Object.defineProperty(globalThis, "window", previousWindow);
+      else Reflect.deleteProperty(globalThis, "window");
+    });
+
+    it.each(["success", "cancel", "recovery"] as const)(
+      "rechecks the committed URL after %s renders before browser history updates",
+      async (expectedReturn) => {
+        mockSearchParams =
+          expectedReturn === "success"
+            ? { session_id: "cs_test_delayed_return" }
+            : expectedReturn === "cancel"
+              ? { checkout_attempt_id: attemptA }
+              : {};
+        const target =
+          expectedReturn === "success"
+            ? "/account/gift-checkout/success?session_id=cs_test_delayed_return"
+            : expectedReturn === "cancel"
+              ? cancelPath
+              : "/account/gift-checkout/recover";
+        (getGiftCheckoutRecovery as jest.Mock).mockResolvedValue({
+          state: "recoverable",
+          attempt: { checkoutAttemptId: attemptA }
+        });
+        const screen = render(<GiftCheckoutReturn expectedReturn={expectedReturn} />);
+        expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+        expect(getGiftCheckoutRecovery).not.toHaveBeenCalled();
+
+        // A real SPA navigation updates history after the destination renders.
+        // No explicit React rerender accompanies this browser-only change.
+        await commitBrowserPath(target);
+
+        expect(reconcileGiftCheckout).toHaveBeenCalledTimes(1);
+        expect(reconcileGiftCheckout).toHaveBeenCalledWith(
+          expectedReturn === "success"
+            ? { sessionId: "cs_test_delayed_return" }
+            : { checkoutAttemptId: attemptA }
+        );
+        expect(screen.getByText("Checkout request is pending")).toBeTruthy();
+        expect(screen.queryByText(/invalid or extra checkout information/i)).toBeNull();
+        expect(getStoredGiftCheckoutAttempt).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each([
+      ["extra query", `${cancelPath}&paid=true`],
+      ["duplicate query", `${cancelPath}&checkout_attempt_id=${attemptA}`],
+      ["fragment", `${cancelPath}#paid`],
+      ["encoded key", cancelPath.replace("checkout_attempt_id", "%63heckout_attempt_id")],
+      ["encoded path", cancelPath.replace("/cancel", "/%63ancel")],
+      ["wrong attempt", cancelPath.replace(attemptA, attemptB)]
+    ])(
+      "keeps a committed %s fail-closed even when decoded params look canonical",
+      async (_label, rawPath) => {
+        mockSearchParams = { checkout_attempt_id: attemptA };
+        const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+        await commitBrowserPath(rawPath);
+        expect(screen.getByText(/invalid or extra checkout information/i)).toBeTruthy();
+        expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+        expect(getStoredGiftCheckoutAttempt).not.toHaveBeenCalled();
+        expect(clearGiftCheckoutAttemptWhenAllowed).not.toHaveBeenCalled();
+      }
+    );
+
+    it("does not trust an initially canonical URL that becomes hostile before commit", async () => {
+      mockSearchParams = { checkout_attempt_id: attemptA };
+      setBrowserPath(cancelPath);
+      const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+      expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+      await commitBrowserPath(`${cancelPath}&paid=true`);
+      expect(screen.getByText(/invalid or extra checkout information/i)).toBeTruthy();
+      expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+    });
+
+    it("cancels the old scheduled identity before the next route commits", async () => {
+      mockSearchParams = { checkout_attempt_id: attemptA };
+      const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+      mockSearchParams = { checkout_attempt_id: attemptB };
+      screen.rerender(<GiftCheckoutReturn expectedReturn="cancel" />);
+      await commitBrowserPath(cancelPath.replace(attemptA, attemptB));
+      expect(reconcileGiftCheckout).toHaveBeenCalledTimes(1);
+      expect(reconcileGiftCheckout).toHaveBeenCalledWith({ checkoutAttemptId: attemptB });
+    });
+
+    it.each([false, true])(
+      "requires a fresh commit when A returns before B commits (hostile=%s)",
+      async (hostile) => {
+        mockSearchParams = { checkout_attempt_id: attemptA };
+        const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+        await commitBrowserPath(cancelPath);
+        expect(reconcileGiftCheckout).toHaveBeenCalledTimes(1);
+
+        mockSearchParams = { checkout_attempt_id: attemptB };
+        screen.rerender(<GiftCheckoutReturn expectedReturn="cancel" />);
+        // B's history may or may not have committed when the router returns to A.
+        setBrowserPath(hostile ? cancelPath : cancelPath.replace(attemptA, attemptB));
+        mockSearchParams = { checkout_attempt_id: attemptA };
+        screen.rerender(<GiftCheckoutReturn expectedReturn="cancel" />);
+        expect(reconcileGiftCheckout).toHaveBeenCalledTimes(1);
+
+        await commitBrowserPath(hostile ? `${cancelPath}&paid=true` : cancelPath);
+        expect(reconcileGiftCheckout).toHaveBeenCalledTimes(hostile ? 1 : 2);
+        if (hostile)
+          expect(screen.getByText(/invalid or extra checkout information/i)).toBeTruthy();
+        else expect(screen.getByText("Checkout request is pending")).toBeTruthy();
+      }
+    );
+
+    it("discards an old response while the next browser route has not committed", async () => {
+      let resolveFirst!: (value: unknown) => void;
+      (reconcileGiftCheckout as jest.Mock)
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              resolveFirst = resolve;
+            })
+        )
+        .mockResolvedValueOnce(
+          reconciliation({
+            checkoutAttemptId: attemptB,
+            gift: gift({ recipientName: "Second recipient" })
+          })
+        );
+      mockSearchParams = { checkout_attempt_id: attemptA };
+      const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+      await commitBrowserPath(cancelPath);
+      expect(reconcileGiftCheckout).toHaveBeenCalledTimes(1);
+
+      mockSearchParams = { checkout_attempt_id: attemptB };
+      screen.rerender(<GiftCheckoutReturn expectedReturn="cancel" />);
+      await act(async () => {
+        resolveFirst(
+          reconciliation({
+            state: "settled",
+            canStartNewAttempt: true,
+            gift: gift({ recipientName: "First recipient" })
+          })
+        );
+        await Promise.resolve();
+      });
+      expect(screen.queryByText("Name: First recipient")).toBeNull();
+      expect(getStoredGiftCheckoutAttempt).not.toHaveBeenCalled();
+      expect(clearGiftCheckoutAttemptWhenAllowed).not.toHaveBeenCalled();
+      await commitBrowserPath(cancelPath.replace(attemptA, attemptB));
+      expect(reconcileGiftCheckout).toHaveBeenCalledTimes(2);
+      expect(screen.getByText("Name: Second recipient")).toBeTruthy();
+    });
+
+    it("does not inspect an unmounted route or keep polling a mismatched URL", async () => {
+      mockSearchParams = { checkout_attempt_id: attemptA };
+      const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+      screen.unmount();
+      await commitBrowserPath(cancelPath);
+      expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+
+      setBrowserPath("/offers");
+      const nextScreen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+      await commitBrowserPath("/offers");
+      expect(nextScreen.getByText(/invalid or extra checkout information/i)).toBeTruthy();
+      expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+      await act(async () => {
+        setBrowserPath(cancelPath);
+        jest.advanceTimersByTime(5000);
+        await Promise.resolve();
+      });
+      expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+    });
   });
 });

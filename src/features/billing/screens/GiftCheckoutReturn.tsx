@@ -39,8 +39,10 @@ import {
 import { openExternalUrl } from "@/utils/openExternalUrl";
 
 type Props = { expectedReturn: "success" | "cancel" | "recovery" };
+type ReturnParams = Record<string, string | string[] | undefined>;
 
 type ResolvedReturnProps = Props & {
+  locationPending: boolean;
   validatedReturnPath: string;
   legacyCancel: boolean;
   sessionId: string;
@@ -100,11 +102,41 @@ function errorMessage(error: unknown): string {
 }
 
 export default function GiftCheckoutReturn({ expectedReturn }: Props) {
-  const params = useLocalSearchParams() as {
-    session_id?: string | string[];
-    checkout_attempt_id?: string | string[];
-    [key: string]: string | string[] | undefined;
-  };
+  const params = useLocalSearchParams() as ReturnParams;
+  const decodedRouteIdentity = JSON.stringify(
+    Object.entries(params)
+      .filter(([, value]) => value !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right))
+  );
+  const routeIdentity = `${expectedReturn}:${decodedRouteIdentity}`;
+  return (
+    <GiftCheckoutReturnForRoute
+      key={routeIdentity}
+      expectedReturn={expectedReturn}
+      params={params}
+    />
+  );
+}
+
+function GiftCheckoutReturnForRoute({
+  expectedReturn,
+  params
+}: Props & { params: ReturnParams }) {
+  const isWeb = Platform.OS === "web";
+  const [locationPending, setLocationPending] = useState(isWeb);
+  useEffect(() => {
+    if (!isWeb) return;
+    // SPA navigation can render before React Navigation commits browser history.
+    // Resample once on the next task; never reconcile a pre-commit URL snapshot.
+    let active = true;
+    const timer = setTimeout(() => {
+      if (active) setLocationPending(false);
+    }, 0);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [isWeb]);
   const fragment = String((globalThis as any)?.window?.location?.hash || "");
   const expectedPath =
     expectedReturn === "success"
@@ -143,21 +175,15 @@ export default function GiftCheckoutReturn({ expectedReturn }: Props) {
     expectedReturn === "cancel" && validatedReturnPath
       ? normalizeGiftCheckoutAttemptId(params.checkout_attempt_id)
       : "";
-  const decodedRouteIdentity = JSON.stringify(
-    Object.entries(params)
-      .filter(([, value]) => value !== undefined)
-      .sort(([left], [right]) => left.localeCompare(right))
-  );
   const returnIdentity = `${expectedReturn}:${
-    rawBrowserPath === undefined
-      ? `native:${decodedRouteIdentity}:${fragment}`
-      : `web:${String(rawBrowserPath)}`
+    rawBrowserPath === undefined ? `native:${fragment}` : `web:${String(rawBrowserPath)}`
   }`;
 
   return (
     <GiftCheckoutReturnForIdentity
       key={returnIdentity}
       expectedReturn={expectedReturn}
+      locationPending={locationPending}
       validatedReturnPath={validatedReturnPath}
       legacyCancel={legacyCancel}
       sessionId={sessionId}
@@ -168,6 +194,7 @@ export default function GiftCheckoutReturn({ expectedReturn }: Props) {
 
 function GiftCheckoutReturnForIdentity({
   expectedReturn,
+  locationPending,
   validatedReturnPath,
   legacyCancel,
   sessionId,
@@ -197,6 +224,7 @@ function GiftCheckoutReturnForIdentity({
   }, []);
 
   const checkStatus = useCallback(async () => {
+    if (locationPending) return;
     if (!activeRef.current || checkingRef.current) return;
     checkingRef.current = true;
     setLoading(true);
@@ -297,7 +325,14 @@ function GiftCheckoutReturnForIdentity({
       checkingRef.current = false;
       if (activeRef.current) setLoading(false);
     }
-  }, [expectedReturn, legacyCancel, sessionId, urlAttemptId, validatedReturnPath]);
+  }, [
+    expectedReturn,
+    legacyCancel,
+    locationPending,
+    sessionId,
+    urlAttemptId,
+    validatedReturnPath
+  ]);
 
   useEffect(() => {
     void checkStatus();
