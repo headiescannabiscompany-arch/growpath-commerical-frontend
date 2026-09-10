@@ -383,7 +383,11 @@ describe("Acceptance: User Stories", () => {
     await authApi.becomeCreator();
     expect(fetchCalls.some((c) => c.url.includes("/api/auth/become-creator"))).toBe(true);
 
-    await usersApi.onboardCreator("https://res.url", "https://ret.url");
+    await usersApi.onboardCreator("US");
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/user/creator/onboard", {
+      method: "POST",
+      body: { country: "US" }
+    });
     expect(fetchCalls.some((c) => c.url.includes("/api/user/creator/onboard"))).toBe(
       true
     );

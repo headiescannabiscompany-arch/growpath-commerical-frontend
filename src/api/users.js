@@ -99,8 +99,8 @@ export function getCertificates() {
   return apiRequest(routes.USER.CERTIFICATES, { method: "GET" });
 }
 
-export function onboardCreator() {
-  return startConnectPayoutOnboarding();
+export function onboardCreator(country) {
+  return startConnectPayoutOnboarding(country);
 }
 
 export function getUserPosts(userId, page = 1) {

@@ -84,4 +84,20 @@ describe("Stripe Connect payout API adapter", () => {
       body: { country: "CA" }
     });
   });
+
+  it.each([
+    [" ca ", { method: "POST", body: { country: "CA" } }],
+    [undefined, { method: "POST" }]
+  ])(
+    "preserves the legacy wrapper country/resume contract: %p",
+    async (country, request) => {
+      mockApiRequest.mockResolvedValue({ url: "https://accounts.stripe.com/r/test" });
+      const { onboardCreator } = require("@/api/users");
+
+      await onboardCreator(country);
+
+      expect(mockApiRequest).toHaveBeenCalledTimes(1);
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/user/creator/onboard", request);
+    }
+  );
 });
