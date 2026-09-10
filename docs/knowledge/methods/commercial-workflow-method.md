@@ -161,6 +161,8 @@ Commercial course cleanup is a soft archive, not an ordinary hard delete. Only a
 
 An unavailable or unconfigured third-party integration status must appear as clear setup guidance. Do not expose raw transport codes such as `NOT_FOUND` as workflow content, and do not describe Twitch, EventSub, Stripe, email, or another integration as connected without verified configuration state. Commercial Live authoring treats EventSub status as connection-derived, read-only state; an author cannot type a connected status. Live visibility uses a named single-choice group with readable labels and an exposed checked state.
 
+Seller payout setup opens only server-returned HTTPS links on the exact `connect.stripe.com` or `accounts.stripe.com` host, without URL credentials or a non-default port. Preserve the complete link, including an Accounts v2 fragment, and keep setup pending until provider-verified readiness; opening or returning from onboarding is not proof of payout readiness. Stripe's [Accounts v2 Account Link reference](https://docs.stripe.com/api/v2/core/account-links/create), reviewed September 10, 2026, supplies the hosted-link contract, not proof that a particular seller has completed verification.
+
 Commercial Live authoring must load readable, owner-authorized Course, Product, Feed campaign
 and accessible Forum-thread choices for related records. Empty lists provide direct creation
 or review paths. Direct record-ID entry remains available only behind an explicitly opened

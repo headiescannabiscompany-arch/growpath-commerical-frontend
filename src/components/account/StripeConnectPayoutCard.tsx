@@ -59,7 +59,13 @@ function trustedStripeConnectUrl(value: string | null) {
   if (!value) return false;
   try {
     const url = new URL(value);
-    return url.protocol === "https:" && url.hostname === "connect.stripe.com";
+    return (
+      url.protocol === "https:" &&
+      ["connect.stripe.com", "accounts.stripe.com"].includes(url.hostname) &&
+      !url.username &&
+      !url.password &&
+      !url.port
+    );
   } catch {
     return false;
   }

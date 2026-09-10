@@ -67,6 +67,37 @@ describe("StripeConnectPayoutCard", () => {
     );
   });
 
+  it.each([false, true])(
+    "opens an Accounts v2 onboarding link without claiming readiness (resuming: %s)",
+    async (resuming) => {
+      mockGetStatus.mockResolvedValue(
+        connectStatus({
+          connected: resuming,
+          onboardingStatus: resuming ? "pending" : "none"
+        })
+      );
+      const url = "https://accounts.stripe.com/r/acct_test#alu_test_example";
+      mockStartOnboarding.mockResolvedValue({
+        url,
+        status: connectStatus({ connected: true, onboardingStatus: "pending" }),
+        payoutManagement: "stripe_connect_dashboard"
+      });
+
+      const screen = render(<StripeConnectPayoutCard />);
+      fireEvent.press(
+        await screen.findByText(
+          resuming ? "Resume Stripe setup" : "Set up Stripe payouts"
+        )
+      );
+
+      await waitFor(() => expect(mockOpenExternalUrl).toHaveBeenCalledWith(url));
+      expect(mockStartOnboarding).toHaveBeenCalledTimes(1);
+      expect(mockDashboardLink).not.toHaveBeenCalled();
+      expect(screen.getByText("Setup in progress")).toBeTruthy();
+      expect(screen.queryByText("Ready")).toBeNull();
+    }
+  );
+
   it("uses a resume action when Stripe reports incomplete onboarding", async () => {
     mockGetStatus.mockResolvedValue(
       connectStatus({ connected: true, onboardingStatus: "pending" })
@@ -100,9 +131,22 @@ describe("StripeConnectPayoutCard", () => {
     );
   });
 
-  it("refuses a payout-management URL outside Stripe Connect", async () => {
+  it.each([
+    "https://example.com/not-stripe",
+    "https://accounts.stripe.com.example.com/r/test",
+    "https://connect.stripe.com.example.com/setup/test",
+    "https://accounts.stripe.com@evil.example/r/test",
+    "https://evil.example@accounts.stripe.com/r/test",
+    "https://user:password@connect.stripe.com/setup/test",
+    "https://accounts.stripe.com:444/r/test",
+    "http://accounts.stripe.com/r/test",
+    "http://connect.stripe.com/setup/test",
+    "javascript:alert(1)",
+    "/relative-link",
+    null
+  ])("refuses an untrusted payout-management URL: %s", async (url) => {
     mockStartOnboarding.mockResolvedValue({
-      url: "https://example.com/not-stripe",
+      url,
       status: connectStatus(),
       payoutManagement: "stripe_connect_dashboard"
     });
