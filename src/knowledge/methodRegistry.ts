@@ -1130,6 +1130,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "named single-flight Product save, publish, confirmed unpublish, and fully-configured batch-publish actions with exact-image canonical social sharing",
       "server-rendered, deterministically versioned social previews limited to exact published non-hidden Products with public-API normalization for legacy first-party uploads, saved image, name, price, description, storefront identity, a normal-browser redirect to the canonical Product destination, and a complete copy-post fallback",
       "single-flight Commercial order and analytics requests with retained last-good data, explicit cancellation confirmation, and truthful failure-versus-zero states",
+      "web and native Storefront Offer details reuse exact-offer server-verified purchase, download, and payment-support state in the active theme; opening details or Checkout returns never creates another payment",
       "explicit dispensary discovery by state or user-authorized distance with published linked inventory and external-site or in-store-pickup handoff",
       "composable regulated business roles kept separate from jurisdiction authorization and transaction capability",
       "versioned regulated-commerce decisions for the exact seller, authorization, product class, origin, destination, buyer eligibility, fulfillment route, and requested capability",

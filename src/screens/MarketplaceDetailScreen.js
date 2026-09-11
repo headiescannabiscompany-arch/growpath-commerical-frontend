@@ -15,6 +15,7 @@ import {
 import BuyerPaymentReviewCard from "../components/commerce/BuyerPaymentReviewCard";
 import ScreenContainer from "../components/ScreenContainer";
 import { radius } from "../theme/theme";
+import { useAppTheme } from "../theme/appTheme";
 import { openAuthorizedExternalUrl } from "../utils/openAuthorizedExternalUrl";
 import { MarketplaceDetailContent } from "./MarketplaceScreen";
 
@@ -27,6 +28,8 @@ function unwrapPurchase(response) {
 }
 
 export default function MarketplaceDetailScreen({ route, navigation }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createMarketplaceDetailStyles(palette), [palette]);
   const initialContent = route?.params?.content || null;
   const id = useMemo(
     () => itemId(initialContent, route?.params?.id || route?.params?.contentId),
@@ -182,29 +185,35 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  actions: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12
-  },
-  link: { color: "#166534", fontWeight: "800" },
-  button: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 16,
-    paddingVertical: 10
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" },
-  feedback: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    color: "#334155",
-    marginBottom: 10,
-    padding: 8
-  },
-  emptyState: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 200 },
-  emptyText: { color: "#64748B", fontSize: 16, fontWeight: "700" }
-});
+export const createMarketplaceDetailStyles = (palette) =>
+  StyleSheet.create({
+    actions: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 12
+    },
+    link: { color: palette.link, fontWeight: "800" },
+    button: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 16,
+      paddingVertical: 10
+    },
+    buttonDisabled: { opacity: 0.6 },
+    buttonText: { color: palette.accentText, fontWeight: "800" },
+    feedback: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      color: palette.textSoft,
+      marginBottom: 10,
+      padding: 8
+    },
+    emptyState: {
+      alignItems: "center",
+      gap: 8,
+      justifyContent: "center",
+      minHeight: 200
+    },
+    emptyText: { color: palette.textMuted, fontSize: 16, fontWeight: "700" }
+  });
