@@ -690,7 +690,16 @@ describe("Offers billing safety", () => {
     expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);
     fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
-    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/recover");
+    const savedAttemptId = (createCheckoutSession as jest.Mock).mock.calls[0][0]
+      .checkoutAttemptId;
+    expect(savedAttemptId).toMatch(UUID_V4);
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith(
+        `/account/gift-checkout/cancel?checkout_attempt_id=${savedAttemptId}`
+      )
+    );
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(createCheckoutSession).toHaveBeenCalledTimes(1);
     fireEvent.press(screen.getByLabelText("Buy for me mode"));
     await waitFor(() =>
       expect(screen.getByLabelText("Check saved checkout from this browser")).toBeTruthy()
