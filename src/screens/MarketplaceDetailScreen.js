@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -8,10 +8,8 @@ import {
   reportMarketplacePaymentIssue,
   requestMarketplaceRefund
 } from "../api/marketplace";
-import {
-  downloadMarketplaceContent,
-  marketplaceDownloadUrl
-} from "../api/marketplaceBuyer";
+import { useAuth } from "../auth/AuthContext";
+import { downloadAndSaveMarketplaceContent } from "../utils/marketplaceDownload";
 import BuyerPaymentReviewCard from "../components/commerce/BuyerPaymentReviewCard";
 import ScreenContainer from "../components/ScreenContainer";
 import { radius } from "../theme/theme";
@@ -28,6 +26,21 @@ function unwrapPurchase(response) {
 }
 
 export default function MarketplaceDetailScreen({ route, navigation }) {
+  const { user } = useAuth();
+  const id = itemId(
+    route?.params?.content,
+    route?.params?.id || route?.params?.contentId
+  );
+  return (
+    <MarketplaceDetailSession
+      key={`${user?._id || user?.id || "anonymous"}:${id}`}
+      route={route}
+      navigation={navigation}
+    />
+  );
+}
+
+function MarketplaceDetailSession({ route, navigation }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createMarketplaceDetailStyles(palette), [palette]);
   const initialContent = route?.params?.content || null;
@@ -35,23 +48,39 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
     () => itemId(initialContent, route?.params?.id || route?.params?.contentId),
     [initialContent, route?.params?.contentId, route?.params?.id]
   );
-  const [item, setItem] = useState(initialContent);
-  const [loading, setLoading] = useState(!initialContent && !!id);
+  const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(!!id);
   const [busy, setBusy] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [purchaseStatus, setPurchaseStatus] = useState(null);
+  const active = useRef(true);
+  const action = useRef(false);
+  const controller = useRef(null);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+      controller.current?.abort();
+    };
+  }, []);
 
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     setFeedback("");
     try {
-      setItem(await getMarketplaceContent(id));
+      const loaded = await getMarketplaceContent(id);
+      if (!active.current) return;
+      if (!loaded || itemId(loaded) !== id)
+        throw new Error("Storefront offer not found.");
+      setItem(loaded);
     } catch (error) {
+      if (!active.current) return;
+      setItem(null);
       setFeedback(error?.message || "Unable to load storefront offer content.");
     } finally {
-      setLoading(false);
+      if (active.current) setLoading(false);
     }
   }, [id]);
 
@@ -63,10 +92,11 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
     if (!id) return null;
     try {
       const status = await getPurchaseStatus(id);
+      if (!active.current) return null;
       setPurchaseStatus(status);
       return status;
     } catch {
-      setPurchaseStatus(null);
+      if (active.current) setPurchaseStatus(null);
       return null;
     }
   }, [id]);
@@ -76,14 +106,13 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
   }, [refreshPurchaseStatus]);
 
   async function handlePurchase() {
-    if (!id) {
-      setFeedback("This storefront offer is missing an id.");
-      return;
-    }
+    if (!canPurchase || action.current || !active.current) return;
+    action.current = true;
     setBusy(true);
     setFeedback("");
     try {
       const purchase = unwrapPurchase(await purchaseContent(id));
+      if (!active.current) return;
       if (purchase?.url) {
         await openAuthorizedExternalUrl(purchase.url);
         setFeedback("Checkout opened. Complete payment to unlock this item.");
@@ -93,37 +122,51 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
       await load();
       await refreshPurchaseStatus();
     } catch (error) {
-      setFeedback(error?.message || "Unable to purchase this storefront offer.");
+      if (active.current)
+        setFeedback(error?.message || "Unable to purchase this storefront offer.");
     } finally {
-      setBusy(false);
+      action.current = false;
+      if (active.current) setBusy(false);
     }
   }
 
   async function handleDownload() {
-    if (!id || downloading) return;
+    if (!id || !canDownload || loading || action.current || !active.current) return;
+    action.current = true;
+    const request = new AbortController();
+    controller.current = request;
     setDownloading(true);
     setFeedback("Preparing a server-authorized download...");
     try {
-      const url = marketplaceDownloadUrl(await downloadMarketplaceContent(id));
-      if (!url) throw new Error("The backend did not return a download URL.");
-      await openAuthorizedExternalUrl(url);
-      setFeedback("The authorized download was opened.");
+      await downloadAndSaveMarketplaceContent(id, {
+        signal: request.signal,
+        allowLegacyExternal: item?.price === 0
+      });
+      if (active.current) setFeedback("The authorized download was opened.");
     } catch (error) {
-      setFeedback(error?.message || "Unable to prepare this download.");
+      if (active.current)
+        setFeedback(error?.message || "Unable to prepare this download.");
     } finally {
-      setDownloading(false);
+      action.current = false;
+      if (active.current) setDownloading(false);
     }
   }
 
-  const canDownload = Boolean(
-    item?.canDownload ||
-    item?.entitled ||
-    item?.hasAccess ||
-    item?.isPurchased ||
-    purchaseStatus?.canDownload ||
-    purchaseStatus?.entitled ||
-    purchaseStatus?.hasAccess ||
-    purchaseStatus?.isPurchased
+  const canDownload = Boolean(item && purchaseStatus?.canDownload);
+  const deliveryUnavailable = Boolean(
+    item &&
+    (Number(item.price) > 0 || Number(item.priceCents) > 0) &&
+    item.deliveryReady !== true
+  );
+  const canPurchase = Boolean(
+    item &&
+    itemId(item) === id &&
+    !loading &&
+    !busy &&
+    !downloading &&
+    item.isPublished !== false &&
+    !deliveryUnavailable &&
+    !canDownload
   );
 
   return (
@@ -150,8 +193,8 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Start storefront offer checkout"
-            disabled={busy || loading}
-            style={[styles.button, (busy || loading) && styles.buttonDisabled]}
+            disabled={!canPurchase}
+            style={[styles.button, !canPurchase && styles.buttonDisabled]}
             onPress={handlePurchase}
           >
             <Text style={styles.buttonText}>{busy ? "Purchasing..." : "Purchase"}</Text>
@@ -160,6 +203,12 @@ export default function MarketplaceDetailScreen({ route, navigation }) {
       </View>
 
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      {deliveryUnavailable ? (
+        <Text style={styles.feedback}>
+          Protected delivery is not ready. The seller must upload a protected offer file
+          before new purchases.
+        </Text>
+      ) : null}
 
       {loading ? (
         <View style={styles.emptyState}>

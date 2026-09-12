@@ -9,11 +9,18 @@ const mockReportPaymentIssue = jest.fn();
 const mockRequestRefund = jest.fn();
 const mockDownloadMarketplaceContent = jest.fn();
 const mockOpenAuthorizedExternalUrl = jest.fn();
+const mockPurchase = jest.fn();
+let mockUser = { id: "buyer-1" };
+jest.mock("@/auth/AuthContext", () => ({ useAuth: () => ({ user: mockUser }) }));
+jest.mock("@/utils/marketplaceDownload", () => ({
+  downloadAndSaveMarketplaceContent: (...args: any[]) =>
+    mockDownloadMarketplaceContent(...args)
+}));
 
 jest.mock("@/api/marketplace", () => ({
   getMarketplaceContent: (...args: any[]) => mockGetMarketplaceContent(...args),
   getPurchaseStatus: (...args: any[]) => mockGetPurchaseStatus(...args),
-  purchaseContent: jest.fn(),
+  purchaseContent: (...args: any[]) => mockPurchase(...args),
   reportMarketplacePaymentIssue: (...args: any[]) => mockReportPaymentIssue(...args),
   requestMarketplaceRefund: (...args: any[]) => mockRequestRefund(...args)
 }));
@@ -55,9 +62,12 @@ jest.mock("@/theme/appTheme", () => {
 describe("MarketplaceDetailScreen payment support", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUser = { id: "buyer-1" };
     mockGetMarketplaceContent.mockResolvedValue({
       id: "market-1",
-      title: "Exact paid Marketplace guide"
+      title: "Exact paid Marketplace guide",
+      price: 18,
+      deliveryReady: true
     });
     mockGetPurchaseStatus.mockResolvedValue({
       recordId: "507f191e810c19729de86001",
@@ -132,10 +142,56 @@ describe("MarketplaceDetailScreen payment support", () => {
     fireEvent.press(screen.getByLabelText("Download storefront offer"));
 
     await waitFor(() =>
-      expect(mockDownloadMarketplaceContent).toHaveBeenCalledWith("market-1")
+      expect(mockDownloadMarketplaceContent).toHaveBeenCalledWith("market-1", {
+        signal: expect.any(AbortSignal),
+        allowLegacyExternal: false
+      })
     );
-    expect(mockOpenAuthorizedExternalUrl).toHaveBeenCalledWith(
-      "https://downloads.example/market-1"
+    expect(mockOpenAuthorizedExternalUrl).not.toHaveBeenCalled();
+  });
+  test.each([null, { id: "different", price: 12 }, new Error("Not found")])(
+    "missing/failed/mismatched detail cannot start checkout",
+    async (result) => {
+      if (result instanceof Error)
+        mockGetMarketplaceContent.mockRejectedValueOnce(result);
+      else mockGetMarketplaceContent.mockResolvedValueOnce(result);
+      const screen = render(
+        <MarketplaceDetailScreen route={{ params: { id: "market-1" } }} navigation={{}} />
+      );
+      await screen.findAllByText("Storefront offer not found.");
+      const purchase = screen.getByLabelText("Start storefront offer checkout");
+      expect(purchase).toBeDisabled();
+      fireEvent.press(purchase);
+      expect(mockPurchase).not.toHaveBeenCalled();
+    }
+  );
+  test("unverified paid legacy delivery blocks checkout", async () => {
+    mockGetMarketplaceContent.mockResolvedValueOnce({
+      id: "market-1",
+      title: "Legacy paid",
+      price: 12,
+      fileUrl: "https://example.test/file"
+    });
+    const screen = render(
+      <MarketplaceDetailScreen route={{ params: { id: "market-1" } }} navigation={{}} />
     );
+    await screen.findByText("Legacy paid");
+    expect(screen.getByLabelText("Start storefront offer checkout")).toBeDisabled();
+    fireEvent.press(screen.getByLabelText("Start storefront offer checkout"));
+    expect(mockPurchase).not.toHaveBeenCalled();
+  });
+  test("account switch aborts in-flight download and clears the previous buyer", async () => {
+    mockGetPurchaseStatus.mockResolvedValueOnce({ canDownload: true });
+    mockDownloadMarketplaceContent.mockImplementationOnce(() => new Promise(() => {}));
+    const props = { route: { params: { id: "market-1" } }, navigation: {} };
+    const screen = render(<MarketplaceDetailScreen {...props} />);
+    fireEvent.press(await screen.findByLabelText("Download storefront offer"));
+    const signal = mockDownloadMarketplaceContent.mock.calls[0][1].signal;
+    mockUser = { id: "buyer-2" };
+    mockGetPurchaseStatus.mockResolvedValue({ canDownload: false });
+    screen.rerender(<MarketplaceDetailScreen {...props} />);
+    await screen.findByText("Exact paid Marketplace guide");
+    expect(signal.aborted).toBe(true);
+    expect(screen.queryByLabelText("Download storefront offer")).toBeNull();
   });
 });

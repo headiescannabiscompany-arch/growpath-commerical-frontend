@@ -14,7 +14,16 @@ const mockDownload = jest.fn();
 const mockOpen = jest.fn();
 const mockBrowse = jest.fn();
 const mockDetail = jest.fn();
-const mockOffer = { _id: "offer-web-1", title: "QA paid grow guide", price: 12 };
+const mockOffer = {
+  _id: "offer-web-1",
+  title: "QA paid grow guide",
+  price: 12,
+  deliveryReady: true
+};
+jest.mock("@/auth/AuthContext", () => ({ useAuth: () => ({ user: { id: "buyer-1" } }) }));
+jest.mock("@/utils/marketplaceDownload", () => ({
+  downloadAndSaveMarketplaceContent: (...args: unknown[]) => mockDownload(...args)
+}));
 
 jest.setTimeout(15000);
 
@@ -85,8 +94,13 @@ describe("existing Marketplace web route", () => {
     expect(mockStatus).toHaveBeenCalledWith("offer-web-1");
 
     fireEvent.press(screen.getByLabelText("Download storefront offer"));
-    await waitFor(() => expect(mockDownload).toHaveBeenCalledWith("offer-web-1"));
-    expect(mockOpen).toHaveBeenCalledWith("https://downloads.example/guide");
+    await waitFor(() =>
+      expect(mockDownload).toHaveBeenCalledWith("offer-web-1", {
+        signal: expect.any(AbortSignal),
+        allowLegacyExternal: false
+      })
+    );
+    expect(mockOpen).not.toHaveBeenCalled();
     fireEvent.press(screen.getByText("Back to offers"));
     expect(mockReplace).toHaveBeenCalledWith("/marketplace");
   });

@@ -44,6 +44,58 @@ describe("uploads API", () => {
     });
   });
 
+  it("uploads a Marketplace file privately and returns only a stable asset binding", async () => {
+    const { uploadMarketplaceFile } = require("@/api/uploads");
+    const signal = new AbortController().signal;
+    mockApiRequest.mockResolvedValue({
+      assetId: "507f191e810c19729de86001",
+      deliveryType: "protected_asset",
+      filename: "offer.pdf",
+      mimeType: "application/pdf",
+      bytes: 20,
+      url: "must-not-retain"
+    });
+    const result = await uploadMarketplaceFile(
+      { uri: "file:///offer.pdf", name: "offer.pdf" },
+      { signal }
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/uploads/marketplace-file", {
+      method: "POST",
+      body: expect.any(FormData),
+      auth: true,
+      signal
+    });
+    expect(result.assetId).toBe("507f191e810c19729de86001");
+    expect(result).not.toHaveProperty("url");
+    expect(result).not.toHaveProperty("fileUrl");
+  });
+
+  it.each(["source.html", "source.svg", "source.mp4", "source.zip", "source.docx"])(
+    "rejects unsupported Marketplace %s before upload",
+    async (name) => {
+      const { uploadMarketplaceFile } = require("@/api/uploads");
+      await expect(
+        uploadMarketplaceFile({ uri: `file:///${name}`, name })
+      ).rejects.toThrow(/Choose a PDF/);
+      expect(mockApiRequest).not.toHaveBeenCalled();
+    }
+  );
+
+  it("rejects oversized, canceled, and public-URL-only Marketplace uploads", async () => {
+    const { uploadMarketplaceFile } = require("@/api/uploads");
+    const input = { uri: "file:///offer.pdf", name: "offer.pdf" };
+    await expect(
+      uploadMarketplaceFile({ ...input, size: 10 * 1024 * 1024 + 1 })
+    ).rejects.toThrow(/10 MB/);
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      uploadMarketplaceFile(input, { signal: controller.signal })
+    ).rejects.toThrow(/canceled/);
+    expect(mockApiRequest).not.toHaveBeenCalled();
+    await expect(uploadMarketplaceFile(input)).rejects.toThrow(/could not be verified/);
+  });
+
   it("uploads course media to the course media endpoint", async () => {
     const { uploadCourseMedia } = require("@/api/uploads");
 

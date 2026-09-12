@@ -6,6 +6,14 @@
 import { apiRequest } from "./apiRequest";
 
 const enc = (v) => encodeURIComponent(String(v ?? ""));
+function deliveryError(error) {
+  if (
+    [error?.code, error?.data?.code].includes("MARKETPLACE_PROTECTED_DELIVERY_REQUIRED")
+  ) {
+    return "Protected delivery is not ready. The seller must upload a protected offer file before publication or new purchases.";
+  }
+  return error?.message || "The request could not be completed.";
+}
 
 export const MARKETPLACE_ROUTES = {
   BROWSE: "/api/marketplace/browse",
@@ -157,7 +165,7 @@ export const uploadContent = async (formData) => {
     });
     return uploadRes;
   } catch (error) {
-    throw new Error(`Failed to upload content: ${error.message}`);
+    throw new Error(`Failed to upload content: ${deliveryError(error)}`);
   }
 };
 
@@ -166,11 +174,15 @@ export const setMarketplacePublication = async (contentId, isPublished) => {
   if (!String(contentId || "").trim() || typeof isPublished !== "boolean") {
     throw new Error("A saved offer and explicit publication state are required.");
   }
-  const response = await apiRequest(MARKETPLACE_ROUTES.UPDATE(contentId), {
-    method: "PUT",
-    body: { isPublished }
-  });
-  return response?.content ?? response?.data?.content ?? response?.data ?? response;
+  try {
+    const response = await apiRequest(MARKETPLACE_ROUTES.UPDATE(contentId), {
+      method: "PUT",
+      body: { isPublished }
+    });
+    return response?.content ?? response?.data?.content ?? response?.data ?? response;
+  } catch (error) {
+    throw new Error(deliveryError(error));
+  }
 };
 
 export const getMyUploads = async () => {
@@ -238,7 +250,7 @@ export const purchaseContent = async (contentId) => {
     });
     return purchaseRes;
   } catch (error) {
-    throw new Error(`Failed to purchase content: ${error.message}`);
+    throw new Error(`Failed to purchase content: ${deliveryError(error)}`);
   }
 };
 

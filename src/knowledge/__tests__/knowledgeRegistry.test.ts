@@ -793,6 +793,15 @@ describe("GrowPath knowledge registries", () => {
       "reachable existing-theme owner Storefront Offers draft, reviewed publish and unpublish actions with single-flight writes and aggregate sales clearly separated from settled transactions"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "paid Storefront Offer publication and Checkout require an active author-owned private file asset; every byte request rechecks current authentication, publication and purchase entitlement without public source URLs or bearer links"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "legacy free external-file offers remain compatible while unsafe paid delivery fails closed; unavailable offer details disable purchase and download without moving or deleting shared course media"
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never claim a wrapped public file URL is protected, let a copied download link bypass current purchase access, call file-type validation malware scanning, or promise to recall bytes already downloaded to a buyer's device."
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "fully refunded buyer payment totals retained as read-only support history without additional refund requests, restored downloads or fulfillment/subscription mutations"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(

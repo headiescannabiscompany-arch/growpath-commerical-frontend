@@ -151,10 +151,12 @@ export default function MarketplaceScreen({ navigation, route }) {
     setLoading(true);
     setFeedback("");
     try {
-      setSelected(id ? await getMarketplaceContent(id) : item);
+      const loaded = id ? await getMarketplaceContent(id) : null;
+      if (!loaded || rowId(loaded) !== id) throw new Error("Storefront offer not found.");
+      setSelected(loaded);
     } catch (error) {
       setFeedback(error?.message || "Unable to load storefront offer detail.");
-      setSelected(item);
+      setSelected(null);
     } finally {
       setLoading(false);
     }
@@ -176,7 +178,14 @@ export default function MarketplaceScreen({ navigation, route }) {
           purchasing={purchasingId === rowId(selected)}
           onPurchase={async () => {
             const id = rowId(selected);
-            if (!id) return;
+            if (
+              !id ||
+              purchasingId ||
+              selected.isPublished === false ||
+              ((Number(selected.price) > 0 || Number(selected.priceCents) > 0) &&
+                selected.deliveryReady !== true)
+            )
+              return;
             setPurchasingId(id);
             setFeedback("");
             try {
@@ -325,6 +334,8 @@ export function MarketplaceDetailContent({ item, onPurchase, purchasing }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const paid = Number(item?.priceCents || 0) > 0 || Number(item?.price || 0) > 0;
+  const unavailable =
+    !rowId(item) || item?.isPublished === false || (paid && item?.deliveryReady !== true);
   return (
     <View style={styles.detail}>
       <Text accessibilityRole="header" aria-level={1} style={styles.header}>
@@ -352,9 +363,12 @@ export function MarketplaceDetailContent({ item, onPurchase, purchasing }) {
           accessibilityLabel={
             paid ? "Start storefront offer checkout" : "Get storefront offer"
           }
-          disabled={purchasing}
+          disabled={purchasing || unavailable}
           onPress={onPurchase}
-          style={[styles.purchaseButton, purchasing && styles.purchaseButtonDisabled]}
+          style={[
+            styles.purchaseButton,
+            (purchasing || unavailable) && styles.purchaseButtonDisabled
+          ]}
         >
           {purchasing ? (
             <ActivityIndicator color={palette.accentText} />

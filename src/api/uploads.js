@@ -3,6 +3,10 @@ import { API_URL, apiRequest, uploadBinaryToSignedUrl } from "./apiRequest";
 import { endpoints } from "./endpoints";
 import { uriToBlob } from "./uriToBlob";
 import {
+  MARKETPLACE_FILE_MAX_BYTES,
+  MARKETPLACE_FILE_MIMES
+} from "../utils/marketplaceDownload";
+import {
   discardPreparedNativeEvidenceImage,
   prepareEvidenceImageForUpload,
   prepareNativeEvidenceImageForUpload
@@ -98,6 +102,61 @@ export async function uploadImage(uri) {
     method: "POST",
     body: formData
   });
+}
+
+export async function uploadMarketplaceFile(input, options = {}) {
+  const file = normalizeUploadInput(input, "offer-file");
+  const extension = String(file.name).split(".").pop().toLowerCase();
+  const types = {
+    pdf: "application/pdf",
+    txt: "text/plain",
+    csv: "text/csv",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    mp3: "audio/mpeg",
+    m4a: "audio/mp4",
+    wav: "audio/wav"
+  };
+  const type = types[extension];
+  if (!file.uri || !MARKETPLACE_FILE_MIMES.includes(type)) {
+    throw new Error(
+      "Choose a PDF, UTF-8 TXT/CSV, JPG, PNG, WebP, MP3, M4A, or WAV file (maximum 10 MB)."
+    );
+  }
+  if (Number(input?.size || 0) > MARKETPLACE_FILE_MAX_BYTES)
+    throw new Error("Offer files must be 10 MB or smaller.");
+  const data = new FormData();
+  if (Platform.OS === "web") {
+    const blob = input?.file instanceof Blob ? input.file : await uriToBlob(file.uri);
+    if (blob.size > MARKETPLACE_FILE_MAX_BYTES)
+      throw new Error("Offer files must be 10 MB or smaller.");
+    data.append("media", blob, file.name);
+  } else {
+    data.append("media", { uri: file.uri, name: file.name, type });
+  }
+  if (options.signal?.aborted) throw new Error("Offer upload canceled.");
+  const response = await apiRequest("/api/uploads/marketplace-file", {
+    method: "POST",
+    body: data,
+    auth: true,
+    signal: options.signal
+  });
+  const asset = response?.data || response;
+  if (
+    asset?.deliveryType !== "protected_asset" ||
+    !/^[a-f0-9]{24}$/i.test(String(asset?.assetId || ""))
+  ) {
+    throw new Error("The protected file upload could not be verified. Please retry.");
+  }
+  return {
+    assetId: asset.assetId,
+    filename: asset.filename,
+    mimeType: asset.mimeType,
+    bytes: asset.bytes,
+    deliveryType: "protected_asset"
+  };
 }
 
 export async function uploadCourseMedia(input, options = {}) {

@@ -13,6 +13,10 @@ const mockDownloadMarketplaceContent = jest.fn();
 const mockGetPurchaseStatus = jest.fn();
 const mockGetMarketplacePurchases = jest.fn();
 const mockOpenAuthorizedExternalUrl = jest.fn();
+jest.mock("@/auth/AuthContext", () => ({ useAuth: () => ({ user: { id: "buyer-1" } }) }));
+jest.mock("@/utils/marketplaceDownload", () => ({
+  downloadAndSaveMarketplaceContent: (...args) => mockDownloadMarketplaceContent(...args)
+}));
 
 jest.mock("@/api/marketplace", () => ({
   browseMarketplace: (...args) => mockBrowseMarketplace(...args),
@@ -150,11 +154,12 @@ describe("Marketplace compatibility screen copy", () => {
     expect(screen.getByText(/confirmed purchases/i)).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Download Owned grow worksheet"));
     await waitFor(() =>
-      expect(mockDownloadMarketplaceContent).toHaveBeenCalledWith("offer-owned")
+      expect(mockDownloadMarketplaceContent).toHaveBeenCalledWith("offer-owned", {
+        signal: expect.any(AbortSignal),
+        allowLegacyExternal: false
+      })
     );
-    expect(mockOpenAuthorizedExternalUrl).toHaveBeenCalledWith(
-      "https://downloads.example/offer-owned"
-    );
+    expect(mockOpenAuthorizedExternalUrl).not.toHaveBeenCalled();
   });
 
   it("keeps compatibility sales summary fallback copy storefront-oriented", () => {

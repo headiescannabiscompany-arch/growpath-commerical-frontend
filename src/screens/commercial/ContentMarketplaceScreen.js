@@ -18,7 +18,7 @@ import {
   setMarketplacePublication,
   uploadContent
 } from "../../api/marketplace.js";
-import { uploadCourseMedia, uploadImage } from "../../api/uploads.js";
+import { uploadMarketplaceFile, uploadImage } from "../../api/uploads.js";
 import Card from "../../components/Card.js";
 import EmptyState from "../../components/EmptyState.js";
 import ErrorBoundary from "../../components/ErrorBoundary.js";
@@ -131,12 +131,16 @@ export default function ContentMarketplaceScreen({
   const actionRef = useRef(false);
   const loadRef = useRef(false);
   const mountedRef = useRef(true);
+  const uploadController = useRef(null);
+  const uploadedFileRef = useRef(null);
+  const uploadedThumbnailRef = useRef(null);
   const busy = uploading || writingPublication;
 
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      uploadController.current?.abort();
     };
   }, []);
 
@@ -202,16 +206,30 @@ export default function ContentMarketplaceScreen({
     });
     setSelectedFile(null);
     setSelectedThumbnail(null);
+    uploadedFileRef.current = null;
+    uploadedThumbnailRef.current = null;
     setUploadError("");
   }
 
   async function pickContentFile() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["application/pdf", "video/*", "audio/*"]
+        type: [
+          "application/pdf",
+          "text/plain",
+          "text/csv",
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "audio/mpeg",
+          "audio/mp4",
+          "audio/wav"
+        ]
       });
       const asset = firstDocumentAsset(result);
       if (asset) {
+        if (!mountedRef.current) return;
+        uploadedFileRef.current = null;
         setSelectedFile(asset);
         setField("fileUrl", "");
       }
@@ -232,6 +250,8 @@ export default function ContentMarketplaceScreen({
         quality: 0.8
       });
       if (!result.canceled && result.assets?.[0]) {
+        if (!mountedRef.current) return;
+        uploadedThumbnailRef.current = null;
         setSelectedThumbnail(result.assets[0]);
         setField("thumbnailUrl", "");
       }
@@ -255,25 +275,50 @@ export default function ContentMarketplaceScreen({
       setUploadError("Price must be a valid non-negative number.");
       return;
     }
+    if (price > 0 && !selectedFile) {
+      setUploadError(
+        "Paid offers require a protected file upload. File URLs are only available for free offers."
+      );
+      return;
+    }
     actionRef.current = true;
     setUploading(true);
     setUploadError("");
     setNotice("");
+    const controller = new AbortController();
+    uploadController.current = controller;
     try {
       const [uploadedFile, uploadedThumbnail] = await Promise.all([
-        selectedFile ? uploadCourseMedia(selectedFile) : Promise.resolve(null),
-        selectedThumbnail ? uploadImage(selectedThumbnail.uri) : Promise.resolve(null)
+        selectedFile
+          ? uploadedFileRef.current ||
+            uploadMarketplaceFile(selectedFile, { signal: controller.signal }).then(
+              (asset) => {
+                if (mountedRef.current && !controller.signal.aborted)
+                  uploadedFileRef.current = asset;
+                return asset;
+              }
+            )
+          : Promise.resolve(null),
+        selectedThumbnail
+          ? uploadedThumbnailRef.current ||
+            uploadImage(selectedThumbnail.uri).then((asset) => {
+              if (mountedRef.current && !controller.signal.aborted)
+                uploadedThumbnailRef.current = asset;
+              return asset;
+            })
+          : Promise.resolve(null)
       ]);
       // A route/account switch must not create the previous owner's draft under a new session.
-      if (!mountedRef.current) return;
+      if (!mountedRef.current || controller.signal.aborted) return;
       const response = await uploadContent({
         title,
         description,
         category: form.category,
         price,
-        fileUrl: uploadedFile?.url || fileUrl,
+        ...(uploadedFile?.assetId ? { fileAssetId: uploadedFile.assetId } : { fileUrl }),
         thumbnailUrl: uploadedThumbnail?.url || thumbnailUrl
       });
+      if (!mountedRef.current || controller.signal.aborted) return;
       const saved = response?.data ?? response;
       if (!saved?._id && !saved?.id)
         throw new Error(
@@ -290,10 +335,13 @@ export default function ContentMarketplaceScreen({
         `“${titleOf(saved) === "Storefront offer" ? title : titleOf(saved)}” saved as a draft. Review it before publishing.`
       );
     } catch (err) {
-      setUploadError(err?.message || "Failed to save storefront offer.");
+      // Invalidate any still-pending sibling upload before edits/retry are unlocked.
+      controller.abort();
+      if (mountedRef.current)
+        setUploadError(err?.message || "Failed to save storefront offer.");
     } finally {
       actionRef.current = false;
-      setUploading(false);
+      if (mountedRef.current) setUploading(false);
     }
   }
 
@@ -305,7 +353,7 @@ export default function ContentMarketplaceScreen({
       !item.isPublished &&
       (!item.title?.trim() ||
         !item.description?.trim() ||
-        !item.fileUrl ||
+        !(item.fileAssetId || (Number(item.price) === 0 && item.fileUrl)) ||
         !Number.isFinite(Number(item.price)) ||
         Number(item.price) < 0)
     ) {
@@ -793,7 +841,7 @@ function UploadModal({
             onChangeText={(value) => setField("category", value)}
           />
           <LabelInput
-            label="File URL"
+            label="File URL (free offers only)"
             editable={!uploading}
             value={form.fileUrl}
             onChangeText={(value) => setField("fileUrl", value)}
@@ -813,6 +861,10 @@ function UploadModal({
               {selectedFile?.name || selectedFile?.fileName || "Select Offer File"}
             </Text>
           </TouchableOpacity>
+          <Text style={{ color: palette.textMuted }}>
+            Protected offer files: PDF, UTF-8 TXT/CSV, JPG, PNG, WebP, MP3, M4A, or WAV.
+            Maximum 10 MB.
+          </Text>
           <LabelInput
             label="Thumbnail URL"
             editable={!uploading}

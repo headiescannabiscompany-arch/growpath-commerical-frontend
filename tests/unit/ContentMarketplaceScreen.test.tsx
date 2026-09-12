@@ -28,7 +28,7 @@ jest.mock("@/api/marketplace.js", () => ({
 }));
 
 jest.mock("@/api/uploads.js", () => ({
-  uploadCourseMedia: (...args: any[]) => mockUploadCourseMedia(...args),
+  uploadMarketplaceFile: (...args: any[]) => mockUploadCourseMedia(...args),
   uploadImage: (...args: any[]) => mockUploadImage(...args)
 }));
 
@@ -58,7 +58,10 @@ describe("ContentMarketplaceScreen storefront offers", () => {
       data: { summary: {}, monthly: [], recentSales: [] }
     });
     mockUploadContent.mockResolvedValue({ _id: "upload-1" });
-    mockUploadCourseMedia.mockResolvedValue({ url: "/uploads/guide.pdf" });
+    mockUploadCourseMedia.mockResolvedValue({
+      assetId: "507f191e810c19729de86001",
+      deliveryType: "protected_asset"
+    });
     mockUploadImage.mockResolvedValue({ url: "/uploads/thumb.jpg" });
     mockAttachPhotos.mockResolvedValue({ prompted: true, attached: false });
     mockGetDocumentAsync.mockResolvedValue({
@@ -105,7 +108,8 @@ describe("ContentMarketplaceScreen storefront offers", () => {
 
     await waitFor(() => expect(mockUploadContent).toHaveBeenCalled());
     expect(mockUploadCourseMedia).toHaveBeenCalledWith(
-      expect.objectContaining({ uri: "file:///tmp/guide.pdf" })
+      expect.objectContaining({ uri: "file:///tmp/guide.pdf" }),
+      { signal: expect.any(AbortSignal) }
     );
     expect(mockUploadImage).toHaveBeenCalledWith("file:///tmp/thumb.jpg");
     expect(mockAttachPhotos).not.toHaveBeenCalled();
@@ -114,10 +118,11 @@ describe("ContentMarketplaceScreen storefront offers", () => {
         title: "IPM Guide",
         description: "A useful guide",
         price: 12,
-        fileUrl: "/uploads/guide.pdf",
+        fileAssetId: "507f191e810c19729de86001",
         thumbnailUrl: "/uploads/thumb.jpg"
       })
     );
+    expect(mockUploadContent.mock.calls[0][0]).not.toHaveProperty("fileUrl");
     await waitFor(() => expect(screen.getByText(/saved as a draft/)).toBeTruthy());
     expect(mockSetMarketplacePublication).not.toHaveBeenCalled();
   });
@@ -126,7 +131,7 @@ describe("ContentMarketplaceScreen storefront offers", () => {
     _id: "offer-1",
     title: "Saved guide",
     description: "Downloadable guide",
-    fileUrl: "/uploads/guide.pdf",
+    fileAssetId: "507f191e810c19729de86001",
     price: 10,
     isPublished: false
   };
@@ -206,7 +211,7 @@ describe("ContentMarketplaceScreen storefront offers", () => {
 
   it("does not publish after keeping current visibility or for incomplete saved drafts", async () => {
     mockGetMyUploads.mockResolvedValue({
-      data: [draft, { ...draft, _id: "missing", title: "Incomplete", fileUrl: "" }]
+      data: [draft, { ...draft, _id: "missing", title: "Incomplete", fileAssetId: "" }]
     });
     const Screen = require("@/screens/commercial/ContentMarketplaceScreen").default;
     const screen = render(<Screen initialTab="uploads" />);
@@ -234,7 +239,8 @@ describe("ContentMarketplaceScreen storefront offers", () => {
     fireEvent.changeText(screen.getByPlaceholderText("Title"), "Retained guide");
     fireEvent.changeText(screen.getByPlaceholderText("Description"), "Retained draft");
     fireEvent.changeText(screen.getByPlaceholderText("Price"), "10");
-    fireEvent.changeText(screen.getByPlaceholderText("File URL"), "/uploads/guide.pdf");
+    fireEvent.press(screen.getByText("Select Offer File"));
+    await screen.findByText("guide.pdf");
     fireEvent.press(screen.getByText("Save Draft"));
     await waitFor(() => expect(mockUploadContent).toHaveBeenCalledTimes(1));
     fireEvent.press(screen.getByText("Saving..."));
@@ -248,6 +254,11 @@ describe("ContentMarketplaceScreen storefront offers", () => {
     expect(screen.getByPlaceholderText("Title").props.value).toBe("Retained guide");
     expect(mockUploadContent).toHaveBeenCalledTimes(1);
     expect(mockSetMarketplacePublication).not.toHaveBeenCalled();
+    mockUploadContent.mockResolvedValueOnce({ ...draft, title: "Retained guide" });
+    fireEvent.press(screen.getByText("Save Draft"));
+    await screen.findByText(/saved as a draft/);
+    expect(mockUploadCourseMedia).toHaveBeenCalledTimes(1);
+    expect(mockUploadContent).toHaveBeenCalledTimes(2);
   });
 
   it("retains saved offers when refresh fails", async () => {
@@ -259,6 +270,55 @@ describe("ContentMarketplaceScreen storefront offers", () => {
     fireEvent.press(screen.getByText("Refresh offers"));
     await waitFor(() => expect(screen.getByText("Refresh unavailable")).toBeTruthy());
     expect(screen.getByText("Saved guide")).toBeTruthy();
+  });
+
+  it("does not cache an old file after a sibling failure and a new file choice", async () => {
+    let resolveOldFile: (value: any) => void = () => {};
+    mockUploadCourseMedia.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOldFile = resolve;
+        })
+    );
+    mockUploadImage.mockRejectedValueOnce(new Error("Thumbnail failed"));
+    const Screen = require("@/screens/commercial/ContentMarketplaceScreen").default;
+    const screen = render(<Screen initialTab="uploads" />);
+    await waitFor(() => expect(screen.queryByText("Refreshing offers...")).toBeNull());
+    fireEvent.press(screen.getAllByText("Create Offer")[0]);
+    fireEvent.changeText(screen.getByPlaceholderText("Title"), "Correct file guide");
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Description"),
+      "Correct file draft"
+    );
+    fireEvent.changeText(screen.getByPlaceholderText("Price"), "10");
+    fireEvent.press(screen.getByText("Select Offer File"));
+    await screen.findByText("guide.pdf");
+    fireEvent.press(screen.getByText("Select Thumbnail Image"));
+    await screen.findByText("Thumbnail Selected");
+    fireEvent.press(screen.getByText("Save Draft"));
+    await screen.findByText("Thumbnail failed");
+    expect(mockUploadCourseMedia.mock.calls[0][1].signal.aborted).toBe(true);
+    mockGetDocumentAsync.mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: "file:///new.pdf", name: "new.pdf" }]
+    });
+    fireEvent.press(screen.getByText("guide.pdf"));
+    await screen.findByText("new.pdf");
+    await act(async () => {
+      resolveOldFile({
+        assetId: "507f191e810c19729de86002",
+        deliveryType: "protected_asset"
+      });
+    });
+    fireEvent.press(screen.getByText("Save Draft"));
+    await screen.findByText(/saved as a draft/);
+    expect(mockUploadCourseMedia).toHaveBeenCalledTimes(2);
+    expect(mockUploadContent).toHaveBeenCalledWith(
+      expect.objectContaining({ fileAssetId: "507f191e810c19729de86001" })
+    );
+    expect(mockUploadContent).not.toHaveBeenCalledWith(
+      expect.objectContaining({ fileAssetId: "507f191e810c19729de86002" })
+    );
   });
 
   it("dismisses a stale publication review before refreshing saved title and price", async () => {

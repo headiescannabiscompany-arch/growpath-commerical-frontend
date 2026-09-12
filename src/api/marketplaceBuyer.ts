@@ -13,8 +13,20 @@ export type MarketplacePurchaseLibrary = {
   purchases: MarketplacePurchase[];
 };
 
-export type MarketplaceDownloadResponse = {
-  data?: { delivery?: { fileUrl?: string }; downloadUrl?: string; url?: string };
+type MarketplaceDelivery = {
+  downloadPath?: string;
+  deliveryType?: string;
+  expectedAssetId?: string;
+  filename?: string;
+  mimeType?: string;
+};
+
+export type MarketplaceDownloadResponse = MarketplaceDelivery & {
+  data?: MarketplaceDelivery & {
+    delivery?: { fileUrl?: string };
+    downloadUrl?: string;
+    url?: string;
+  };
   delivery?: { fileUrl?: string };
   download?: { url?: string };
   downloadUrl?: string;
@@ -25,14 +37,18 @@ const enc = (value: unknown) => encodeURIComponent(String(value ?? ""));
 
 export const MARKETPLACE_BUYER_ROUTES = {
   DOWNLOAD: (contentId: string) => `/api/marketplace/${enc(contentId)}/download`,
+  FILE: (contentId: string) => `/api/marketplace/${enc(contentId)}/file`,
   PURCHASES: "/api/marketplace/user/purchases"
 };
 
 export async function downloadMarketplaceContent(
-  contentId: string
+  contentId: string,
+  options: { signal?: AbortSignal } = {}
 ): Promise<MarketplaceDownloadResponse> {
   return apiRequest(MARKETPLACE_BUYER_ROUTES.DOWNLOAD(contentId), {
-    method: "POST"
+    method: "POST",
+    auth: true,
+    signal: options.signal
   });
 }
 
@@ -52,6 +68,13 @@ export async function getMarketplacePurchases(
 }
 
 export function marketplaceDownloadUrl(response: MarketplaceDownloadResponse): string {
+  if (
+    response?.deliveryType === "protected_asset" ||
+    response?.downloadPath ||
+    response?.data?.deliveryType === "protected_asset" ||
+    response?.data?.downloadPath
+  )
+    return "";
   return String(
     response?.url ||
       response?.downloadUrl ||

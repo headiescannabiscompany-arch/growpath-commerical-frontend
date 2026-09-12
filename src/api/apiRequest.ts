@@ -9,6 +9,7 @@ export type ApiRequestOptions = {
   data?: any;
   params?: Record<string, any>;
   responseType?: "auto" | "json" | "text" | "blob" | "arrayBuffer";
+  redirect?: RequestRedirect;
   signal?: AbortSignal;
   timeoutMs?: number;
   timeout?: number;
@@ -389,6 +390,7 @@ export async function apiRequest<T = any>(
         headers,
         body,
         cache: opts.cache,
+        redirect: opts.redirect,
         signal: controller?.signal || signal
       } as any);
 

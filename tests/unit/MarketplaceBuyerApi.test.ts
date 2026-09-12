@@ -23,7 +23,9 @@ describe("marketplace buyer API", () => {
     const response = await downloadMarketplaceContent("offer 1");
 
     expect(mockApiRequest).toHaveBeenCalledWith("/api/marketplace/offer%201/download", {
-      method: "POST"
+      method: "POST",
+      auth: true,
+      signal: undefined
     });
     expect(marketplaceDownloadUrl(response)).toBe("https://downloads.example/offer-1");
   });

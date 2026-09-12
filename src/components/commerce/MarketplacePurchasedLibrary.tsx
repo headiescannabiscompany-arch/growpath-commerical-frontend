@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -10,15 +10,14 @@ import {
 } from "react-native";
 
 import {
-  downloadMarketplaceContent,
   getMarketplacePurchases,
-  marketplaceDownloadUrl,
   type MarketplacePurchase
 } from "@/api/marketplaceBuyer";
 import ScreenContainer from "@/components/ScreenContainer";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { openAuthorizedExternalUrl } from "@/utils/openAuthorizedExternalUrl";
+import { downloadAndSaveMarketplaceContent } from "@/utils/marketplaceDownload";
+import { useAuth } from "@/auth/AuthContext";
 
 const PAGE_SIZE = 20;
 
@@ -43,6 +42,16 @@ function hasNextPage(
 }
 
 export default function MarketplacePurchasedLibrary({ onBack }: { onBack: () => void }) {
+  const { user } = useAuth();
+  return (
+    <MarketplacePurchasedSession
+      key={String(user?._id || user?.id || "anonymous")}
+      onBack={onBack}
+    />
+  );
+}
+
+function MarketplacePurchasedSession({ onBack }: { onBack: () => void }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [purchases, setPurchases] = useState<MarketplacePurchase[]>([]);
@@ -52,6 +61,16 @@ export default function MarketplacePurchasedLibrary({ onBack }: { onBack: () => 
   const [refreshing, setRefreshing] = useState(false);
   const [downloadingId, setDownloadingId] = useState("");
   const [feedback, setFeedback] = useState("");
+  const active = useRef(true);
+  const controller = useRef<AbortController | null>(null);
+  const action = useRef(false);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+      controller.current?.abort();
+    };
+  }, []);
 
   const load = useCallback(async (nextPage = 1, refresh = false) => {
     if (refresh) setRefreshing(true);
@@ -59,19 +78,23 @@ export default function MarketplacePurchasedLibrary({ onBack }: { onBack: () => 
     setFeedback("");
     try {
       const response = await getMarketplacePurchases(nextPage, PAGE_SIZE);
+      if (!active.current) return;
       setPurchases((current) =>
         nextPage === 1 ? response.purchases : [...current, ...response.purchases]
       );
       setMore(hasNextPage(response.pagination, nextPage, response.purchases.length));
       setPage(nextPage);
     } catch (error) {
+      if (!active.current) return;
       if (nextPage === 1) setPurchases([]);
       setFeedback(
         error instanceof Error ? error.message : "Unable to load purchased offers."
       );
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (active.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   }, []);
 
@@ -81,18 +104,26 @@ export default function MarketplacePurchasedLibrary({ onBack }: { onBack: () => 
 
   async function download(purchase: MarketplacePurchase) {
     const id = uploadId(purchase);
-    if (!id || downloadingId) return;
+    if (!id || action.current || !active.current) return;
+    action.current = true;
+    const request = new AbortController();
+    controller.current = request;
     setDownloadingId(id);
     setFeedback("Preparing a server-authorized download...");
     try {
-      const url = marketplaceDownloadUrl(await downloadMarketplaceContent(id));
-      if (!url) throw new Error("The backend did not return a download URL.");
-      await openAuthorizedExternalUrl(url);
-      setFeedback("The authorized download was opened.");
+      await downloadAndSaveMarketplaceContent(id, {
+        signal: request.signal,
+        allowLegacyExternal: purchase.upload?.price === 0
+      });
+      if (active.current) setFeedback("The authorized download was opened.");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to prepare download.");
+      if (active.current)
+        setFeedback(
+          error instanceof Error ? error.message : "Unable to prepare download."
+        );
     } finally {
-      setDownloadingId("");
+      action.current = false;
+      if (active.current) setDownloadingId("");
     }
   }
 
@@ -162,7 +193,7 @@ export default function MarketplacePurchasedLibrary({ onBack }: { onBack: () => 
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Download ${purchaseTitle(item)}`}
-                  disabled={!id || downloading}
+                  disabled={!id || Boolean(downloadingId)}
                   onPress={() => void download(item)}
                   style={[styles.downloadButton, (!id || downloading) && styles.disabled]}
                 >
