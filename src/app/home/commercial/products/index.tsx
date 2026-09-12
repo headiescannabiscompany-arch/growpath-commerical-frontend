@@ -28,6 +28,7 @@ import { useEntitlements } from "@/entitlements";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
+import { hasSavedStorefrontCheckoutAmount } from "@/utils/regulatedCommerce";
 
 type ProductForm = {
   name: string;
@@ -118,7 +119,8 @@ function productPrice(product: Product) {
 function productCheckoutReady(product: Product) {
   return (
     hasText((product as any).externalPurchaseUrl) ||
-    hasText((product as any).stripePriceId)
+    hasText((product as any).stripePriceId) ||
+    hasSavedStorefrontCheckoutAmount(product)
   );
 }
 
@@ -176,7 +178,8 @@ function formPublishBlockers(form: ProductForm) {
   if (
     !form.regulatedCannabis &&
     !hasText(form.externalPurchaseUrl) &&
-    !hasText(form.stripePriceId)
+    !hasText(form.stripePriceId) &&
+    !hasSavedStorefrontCheckoutAmount(form)
   ) {
     blockers.push("add checkout link or Stripe price");
   }

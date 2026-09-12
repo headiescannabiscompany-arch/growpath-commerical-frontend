@@ -27,6 +27,7 @@ import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { requestCurrentCoordinates } from "@/utils/locationSearch";
+import { hasSavedStorefrontCheckoutAmount } from "@/utils/regulatedCommerce";
 
 type AnyRec = Record<string, any>;
 
@@ -143,7 +144,11 @@ function productCheckoutReady(product: AnyRec, dispensary = false) {
   if (dispensary) {
     return hasText(product.externalPurchaseUrl) || product.pickupAvailable === true;
   }
-  return hasText(product.externalPurchaseUrl) || hasText(product.stripePriceId);
+  return (
+    hasText(product.externalPurchaseUrl) ||
+    hasText(product.stripePriceId) ||
+    hasSavedStorefrontCheckoutAmount(product)
+  );
 }
 
 function storefrontStripeReady(storefront: AnyRec | null) {
@@ -612,7 +617,7 @@ export default function Storefront({
         complete: products.some((product) => productCheckoutReady(product, isDispensary)),
         helper: isDispensary
           ? "At least one inventory listing links to the dispensary website or offers in-store pickup."
-          : "At least one product has an external checkout or Stripe price."
+          : "At least one product has an external checkout or a saved price for GrowPath checkout. Seller and payment readiness are verified before payment."
       },
       ...(!isDispensary
         ? [

@@ -803,6 +803,81 @@ describe("Storefront route", () => {
     ).toHaveLength(0);
   });
 
+  it("publishes a complete ordinary product from its saved amount without copied Stripe IDs", async () => {
+    const screen = render(<Storefront />);
+    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Product name"), "Garden consultation");
+    fireEvent.changeText(screen.getByLabelText("Product size or weight"), "One session");
+    fireEvent.changeText(screen.getByLabelText("Product grow interests"), "vegetables");
+    fireEvent.changeText(
+      screen.getByLabelText("Product description"),
+      "A garden planning session."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product image URL"),
+      "https://example.com/garden.jpg"
+    );
+    fireEvent.changeText(screen.getByLabelText("Product price dollars"), "10.00");
+    fireEvent.press(screen.getByLabelText("Publish product listing"));
+    fireEvent.press(screen.getByLabelText("Create storefront product"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/products",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            name: "Garden consultation",
+            status: "published",
+            price: 10,
+            stripePriceId: undefined,
+            stripeProductId: undefined,
+            externalPurchaseUrl: undefined,
+            inventoryItemId: undefined
+          })
+        })
+      )
+    );
+    expect(
+      mockApiRequest.mock.calls.filter(
+        ([path, options]) =>
+          path === "/api/commercial/products" && options?.method === "POST"
+      )
+    ).toHaveLength(1);
+    expect(
+      mockApiRequest.mock.calls.some(([path]) => String(path).includes("/checkout"))
+    ).toBe(false);
+  });
+
+  it("does not turn a dispensary price into a GrowPath checkout path", async () => {
+    const screen = render(<Storefront />);
+    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Storefront type Dispensary"));
+    fireEvent.changeText(screen.getByLabelText("Product name"), "Informational listing");
+    fireEvent.changeText(screen.getByLabelText("Product size or weight"), "One unit");
+    fireEvent.changeText(screen.getByLabelText("Product grow interests"), "gardening");
+    fireEvent.changeText(
+      screen.getByLabelText("Product description"),
+      "Informational only."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Product image URL"),
+      "https://example.com/item.jpg"
+    );
+    fireEvent.changeText(screen.getByLabelText("Product price dollars"), "10.00");
+    fireEvent.press(screen.getByLabelText("Publish product listing"));
+    fireEvent.press(screen.getByLabelText("Create storefront product"));
+    expect(
+      screen.getByText(/Published product still needs: website or pickup handoff/)
+    ).toBeTruthy();
+    expect(
+      mockApiRequest.mock.calls.filter(
+        ([path, options]) =>
+          path === "/api/commercial/products" && options?.method === "POST"
+      )
+    ).toHaveLength(0);
+  });
+
   it("saves storefront settings once and locks conflicting controls", async () => {
     let resolveSave: ((value: any) => void) | undefined;
     mockApiRequest.mockImplementation((path: string, options?: any) => {

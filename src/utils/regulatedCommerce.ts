@@ -21,6 +21,26 @@ function publicWebUrl(value: unknown) {
   return /^https?:\/\/[^\s]+$/i.test(candidate) ? candidate : "";
 }
 
+// Configuration only. The server must still verify the exact seller, product,
+// inventory rollout and payment readiness before creating any Checkout Session.
+export function hasSavedStorefrontCheckoutAmount(product: any, storefront?: any) {
+  if (
+    !product ||
+    product.purchaseIntentEnabled === true ||
+    isRegulatedCannabisProduct(product) ||
+    isDispensaryStorefront(storefront) ||
+    isDispensaryStorefront(product) ||
+    product.transactionAccess === "requires_exact_route_review" ||
+    product.transactionAccess === "purchase_intent_only"
+  )
+    return false;
+  const cents =
+    product.priceCents !== undefined && product.priceCents !== null
+      ? Number(product.priceCents)
+      : Math.round(Number(product.price) * 100);
+  return Number.isSafeInteger(cents) && cents > 0;
+}
+
 export function publicProductCanCheckout(product: any, storefront?: any) {
   if (product?.purchaseIntentEnabled === true) return false;
   if (
@@ -31,7 +51,12 @@ export function publicProductCanCheckout(product: any, storefront?: any) {
     return false;
   }
   return Boolean(
-    product?.stripePriceId || product?.checkoutEnabled || product?.checkoutUrl
+    product?.stripePriceId ||
+    product?.checkoutEnabled ||
+    product?.checkoutUrl ||
+    (product?.status === "published" &&
+      product?.checkoutEnabled !== false &&
+      hasSavedStorefrontCheckoutAmount(product, storefront))
   );
 }
 

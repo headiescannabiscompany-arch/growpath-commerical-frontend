@@ -1,4 +1,5 @@
 import {
+  hasSavedStorefrontCheckoutAmount,
   isDispensaryStorefront,
   isRegulatedCannabisProduct,
   publicInventorySummary,
@@ -8,6 +9,41 @@ import {
 } from "../../src/utils/regulatedCommerce";
 
 describe("regulated storefront commerce", () => {
+  test.each([
+    [{ priceCents: 1000 }, true],
+    [{ price: "10.00" }, true],
+    [{ price: "19.99" }, true],
+    [{ price: "" }, false],
+    [{ price: "not a price" }, false],
+    [{ price: -1 }, false],
+    [{ priceCents: 0, price: 10 }, false],
+    [{ priceCents: 0.5 }, false],
+    [{ price: Infinity }, false],
+    [{ priceCents: Number.MAX_SAFE_INTEGER + 1 }, false],
+    [{ priceCents: 1000, purchaseIntentEnabled: true }, false],
+    [{ priceCents: 1000, regulatedCannabis: true }, false],
+    [{ priceCents: 1000, isCannabis: true }, false],
+    [{ priceCents: 1000, productType: "cannabis" }, false],
+    [{ priceCents: 1000, category: "Cannabis" }, false],
+    [{ priceCents: 1000, storefrontType: "dispensary" }, false],
+    [{ priceCents: 1000, transactionAccess: "requires_exact_route_review" }, false]
+  ])("recognizes only ordinary valid saved amounts: %j", (product, expected) => {
+    expect(hasSavedStorefrontCheckoutAmount(product)).toBe(expected);
+  });
+
+  test("offers saved-price public checkout only for a published eligible product", () => {
+    const product = { priceCents: 1000, status: "published" };
+    expect(publicProductCanCheckout(product)).toBe(true);
+    expect(publicProductCanCheckout({ ...product, status: "draft" })).toBe(false);
+    expect(publicProductCanCheckout({ ...product, checkoutEnabled: false })).toBe(false);
+    expect(publicProductCanCheckout(product, { storefrontType: "dispensary" })).toBe(
+      false
+    );
+    expect(publicProductCanCheckout({ ...product, purchaseIntentEnabled: true })).toBe(
+      false
+    );
+  });
+
   test.each([
     { regulatedCannabis: true },
     { isCannabis: true },

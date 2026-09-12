@@ -2493,6 +2493,63 @@ describe("commercial workflow pages", () => {
     );
   });
 
+  it("publishes saved-price product detail without an external link or Stripe ID", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/products/product-1" && !options) {
+        return Promise.resolve({
+          product: {
+            id: "product-1",
+            name: "Saved-price service",
+            status: "draft",
+            shortDescription: "One garden planning session",
+            imageUrl: "https://example.com/service.jpg",
+            priceCents: 1000,
+            unitSize: "One session",
+            growInterests: ["vegetables"]
+          }
+        });
+      }
+      if (path === "/api/commercial/products/product-1/effectiveness") {
+        return Promise.resolve({ summary: {}, linked: {} });
+      }
+      if (path === "/api/commercial/products/product-1" && options?.method === "PATCH") {
+        return Promise.resolve({ product: { id: "product-1", ...options.body } });
+      }
+      return Promise.resolve({});
+    });
+    const screen = render(<CommercialProductDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Saved-price service")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Commercial product detail price"), "0");
+    fireEvent.press(screen.getByLabelText("Publish commercial product"));
+    expect(screen.getByText(/Product publish blocked: missing price/)).toBeTruthy();
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([path, options]) =>
+          path === "/api/commercial/products/product-1" && options?.method === "PATCH"
+      )
+    ).toBe(false);
+    fireEvent.changeText(screen.getByLabelText("Commercial product detail price"), "10");
+    fireEvent.press(screen.getByLabelText("Publish commercial product"));
+    const publicationCalls = () =>
+      mockApiRequest.mock.calls.filter(
+        ([path, options]) =>
+          path === "/api/commercial/products/product-1" && options?.method === "PATCH"
+      );
+    await waitFor(() => expect(publicationCalls()).toHaveLength(1));
+    expect(publicationCalls()[0][1].body).toEqual(
+      expect.objectContaining({
+        status: "published",
+        price: 10,
+        stripePriceId: undefined,
+        stripeProductId: undefined,
+        externalPurchaseUrl: ""
+      })
+    );
+    expect(
+      mockApiRequest.mock.calls.some(([path]) => String(path).includes("/checkout"))
+    ).toBe(false);
+  });
+
   it("blocks incomplete commercial product detail publish transitions", async () => {
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/products/product-1" && !options) {

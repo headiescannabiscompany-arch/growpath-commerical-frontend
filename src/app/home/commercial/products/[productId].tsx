@@ -25,6 +25,7 @@ import AppPage from "@/components/layout/AppPage";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
+import { hasSavedStorefrontCheckoutAmount } from "@/utils/regulatedCommerce";
 
 function TextInput(props: TextInputProps) {
   const { palette } = useAppTheme();
@@ -107,7 +108,8 @@ function productMissingSetup(product: Product | null) {
   if (!product?.growInterests?.length) missing.push("grow interests");
   if (
     !hasText((product as any)?.externalPurchaseUrl) &&
-    !hasText((product as any)?.stripePriceId)
+    !hasText((product as any)?.stripePriceId) &&
+    !hasSavedStorefrontCheckoutAmount(product)
   ) {
     missing.push("checkout path");
   }
@@ -262,6 +264,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
       imageUrl: persistedImageUrl || "",
       productLineId: productLineId.trim(),
       price: parsePrice(price),
+      priceCents: undefined,
       unitSize: unitSize.trim(),
       npk: npk.trim(),
       labelNpk: npk.trim(),
@@ -678,6 +681,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
                 ...(product || {}),
                 imageUrl: imageUrl.trim(),
                 price: parsePrice(price),
+                priceCents: undefined,
                 unitSize: unitSize.trim(),
                 growInterests: splitList(growInterests),
                 shortDescription: shortDescription.trim(),
@@ -694,6 +698,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
                     ...(product || {}),
                     imageUrl: imageUrl.trim(),
                     price: parsePrice(price),
+                    priceCents: undefined,
                     unitSize: unitSize.trim(),
                     growInterests: splitList(growInterests),
                     shortDescription: shortDescription.trim(),
