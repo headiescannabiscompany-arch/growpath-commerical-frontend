@@ -13,7 +13,9 @@ export default function CommercialStorefrontOffersRoute() {
   const { palette } = useAppTheme();
   if (!ent.ready) return <ActivityIndicator color={palette.accent} />;
   const ownerId = String(user?._id || user?.id || "");
-  if (!ownerId || !ent.can(CAPABILITY_KEYS.STORE_FRONT_WRITE)) {
+  // Match StorefrontOwnerScreen's existing author gate. Ordinary active plans
+  // derive STORE_FRONT_VIEW; STORE_FRONT_WRITE is only supplied by admin contexts.
+  if (!ownerId || !ent.can(CAPABILITY_KEYS.STORE_FRONT_VIEW)) {
     return <Redirect href="/home" />;
   }
   return (
