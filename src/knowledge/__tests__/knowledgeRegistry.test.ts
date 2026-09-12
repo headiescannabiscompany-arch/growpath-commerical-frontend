@@ -786,6 +786,18 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "single-flight Commercial order and analytics requests with retained last-good data, explicit cancellation confirmation, and truthful failure-versus-zero states"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "canonical provider-verified Storefront Stripe readiness with isolated unverified/checking states, refresh and stale-account response rejection instead of legacy identifier heuristics"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "reachable existing-theme owner Storefront Offers draft, reviewed publish and unpublish actions with single-flight writes and aggregate sales clearly separated from settled transactions"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "fully refunded buyer payment totals retained as read-only support history without additional refund requests, restored downloads or fulfillment/subscription mutations"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "Commercial Orders net sales before fees calculated from recorded settled amounts less cumulative refunds, separated by actual currency without inferring payouts or changing fulfillment"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never present a failed Commercial Orders or Analytics request as real zero activity, discard the last good snapshot after refresh failure, submit overlapping fulfillment writes, or cancel an order without explicit confirmation."
     );

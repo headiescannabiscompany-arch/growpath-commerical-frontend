@@ -86,6 +86,11 @@ const workspaceGroups: Array<{
     title: "Sales and measurement",
     destinations: [
       {
+        label: "My Storefront Offers",
+        href: "/home/commercial/storefront/offers",
+        description: "Create downloadable offer drafts and review their publication."
+      },
+      {
         label: "Orders",
         href: "/home/commercial/orders",
         description: "Review paid internal orders and fulfillment status."

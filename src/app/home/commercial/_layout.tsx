@@ -249,6 +249,10 @@ export default function CommercialTabsLayout() {
           headerShown: false
         }}
       />
+      <Tabs.Screen
+        name="storefront/offers"
+        options={{ title: "My Storefront Offers", href: null, headerShown: false }}
+      />
       <Tabs.Screen name="tools/library" options={{ title: "Tool Library", href: null }} />
       <Tabs.Screen
         name="batch-planner"

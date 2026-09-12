@@ -72,10 +72,15 @@ export default function BuyerPaymentReviewCard({
     setFeedback("");
   }, [status?.recordId]);
 
-  if (!status?.recordId || !["paid", "disputed"].includes(status.paymentStatus)) {
+  if (
+    !status?.recordId ||
+    !["paid", "disputed", "refunded"].includes(status.paymentStatus)
+  ) {
     return null;
   }
   const exactStatus = status;
+  // Refunded records remain visible history, not authorization for new review writes.
+  const canSubmitReview = ["paid", "disputed"].includes(status.paymentStatus);
 
   const refundLifecycle = String(
     status.refundLifecycleStatus || status.refundStatus || "none"
@@ -90,15 +95,22 @@ export default function BuyerPaymentReviewCard({
     Number(status.amountCents || 0) - Number(status.refundedAmountCents || 0)
   );
   const canRequestRefund =
+    canSubmitReview &&
     remaining > 0 &&
     refundLifecycle !== "full" &&
     !["requested", "refunded"].includes(refundRequest);
   const canReportIssue =
+    canSubmitReview &&
     !["reported", "resolved", "declined", "closed"].includes(disputeReport) &&
     !["open", "lost"].includes(providerDispute);
 
   async function submit(kind: "refund" | "issue") {
-    if (busy || !exactStatus.recordId) return;
+    if (
+      busy ||
+      !exactStatus.recordId ||
+      (kind === "refund" ? !canRequestRefund : !canReportIssue)
+    )
+      return;
     const reason = (kind === "refund" ? refundReason : issueReason).trim();
     if (reason.length < 8) return;
     setBusy(kind);
@@ -146,7 +158,11 @@ export default function BuyerPaymentReviewCard({
         style={styles.toggle}
       >
         <Text style={styles.toggleText}>
-          {expanded ? "Hide support" : "Request support"}
+          {expanded
+            ? "Hide support"
+            : canSubmitReview
+              ? "Request support"
+              : "View payment history"}
         </Text>
       </Pressable>
       {expanded ? (
@@ -157,6 +173,13 @@ export default function BuyerPaymentReviewCard({
           <Text style={styles.meta}>
             Support report: {disputeReport} · provider dispute: {providerDispute}
           </Text>
+          {!canSubmitReview ? (
+            <Text style={styles.notice}>
+              This payment is fully refunded. Its payment and refund history remain
+              available here; no new payment review request can be submitted for this
+              purchase.
+            </Text>
+          ) : null}
           {status.connectRecoveryStatus === "policy_pending" ? (
             <Text style={styles.warning}>
               A provider refund is awaiting signed webhook reconciliation.
@@ -164,6 +187,7 @@ export default function BuyerPaymentReviewCard({
           ) : null}
           <TextInput
             accessibilityLabel="Refund request reason"
+            editable={canSubmitReview}
             multiline
             onChangeText={setRefundReason}
             placeholder="Why are you requesting a refund?"
@@ -202,6 +226,7 @@ export default function BuyerPaymentReviewCard({
           </Text>
           <TextInput
             accessibilityLabel="Payment issue reason"
+            editable={canSubmitReview}
             multiline
             onChangeText={setIssueReason}
             placeholder="Describe the payment issue"

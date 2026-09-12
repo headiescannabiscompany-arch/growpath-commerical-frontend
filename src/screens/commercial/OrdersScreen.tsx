@@ -31,6 +31,7 @@ type CommercialOrder = {
   quantity?: number;
   total?: number;
   amountCents?: number;
+  refundedAmountCents?: number;
   currency?: string;
   status?: string;
   fulfillmentStatus?: FulfillmentStatus | string;
@@ -78,12 +79,47 @@ function statusLabel(value?: string) {
   return String(value || "pending").replace(/_/g, " ");
 }
 
-function getTotal(order: CommercialOrder) {
-  const total =
-    order.total !== undefined && order.total !== null
-      ? Number(order.total)
-      : Number(order.amountCents || 0) / 100;
-  return Number.isFinite(total) ? total : 0;
+export function summarizeCommercialOrderSales(orders: CommercialOrder[]) {
+  const byCurrency: Record<string, number> = {};
+  let incomplete = 0;
+  for (const order of orders) {
+    if (!["paid", "disputed", "refunded"].includes(String(order.status))) continue;
+    const currency = String(order.currency || "")
+      .trim()
+      .toUpperCase();
+    // The canonical orders API supplies original gross minor units and cumulative
+    // successful refunds separately. Neither fulfillment nor fees changes these sums.
+    const gross = order.amountCents;
+    const refunded = order.refundedAmountCents;
+    if (
+      !/^[A-Z]{3}$/.test(currency) ||
+      typeof gross !== "number" ||
+      !Number.isSafeInteger(gross) ||
+      gross < 0 ||
+      typeof refunded !== "number" ||
+      !Number.isSafeInteger(refunded) ||
+      refunded < 0 ||
+      refunded > gross
+    ) {
+      incomplete += 1;
+      continue;
+    }
+    const next = (byCurrency[currency] || 0) + gross - refunded;
+    if (!Number.isSafeInteger(next)) {
+      incomplete += 1;
+      continue;
+    }
+    byCurrency[currency] = next;
+  }
+  return { byCurrency, incomplete };
+}
+
+function formatSalesTotal(currency: string, amountCents: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    currencyDisplay: "code"
+  }).format(amountCents / 100);
 }
 
 export function createCommercialOrdersStyles(palette: ThemePalette) {
@@ -328,13 +364,13 @@ export default function Orders() {
     const fulfilled = orders.filter(
       (order) => order.fulfillmentStatus === "fulfilled"
     ).length;
-    const revenue = orders.reduce((sum, order) => sum + getTotal(order), 0);
+    const sales = summarizeCommercialOrderSales(orders);
     return {
       count: orders.length,
       paid,
       unfulfilled,
       fulfilled,
-      revenue
+      sales
     };
   }, [orders]);
   const interactionBusy = loading || refreshing || Boolean(savingId);
@@ -452,8 +488,25 @@ export default function Orders() {
                 <Text style={styles.summaryLabel}>Needs Fulfillment</Text>
               </View>
               <View style={styles.summaryCard}>
-                <Text style={styles.summaryValue}>${summary.revenue.toFixed(2)}</Text>
-                <Text style={styles.summaryLabel}>Revenue</Text>
+                {Object.entries(summary.sales.byCurrency)
+                  .sort(([left], [right]) => left.localeCompare(right))
+                  .map(([currency, amountCents]) => (
+                    <Text key={currency} style={styles.summaryValue}>
+                      {formatSalesTotal(currency, amountCents)}
+                    </Text>
+                  ))}
+                {Object.keys(summary.sales.byCurrency).length === 0 ? (
+                  <Text style={styles.summaryValue}>
+                    {summary.sales.incomplete ? "Not available" : "No settled sales"}
+                  </Text>
+                ) : null}
+                <Text style={styles.summaryLabel}>Net sales (before fees)</Text>
+                {summary.sales.incomplete ? (
+                  <Text style={styles.muted}>
+                    {summary.sales.incomplete} order(s) need payment data review and are
+                    excluded.
+                  </Text>
+                ) : null}
               </View>
             </View>
             <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>

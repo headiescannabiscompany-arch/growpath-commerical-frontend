@@ -7,6 +7,8 @@ import StorefrontPreview from "@/app/home/commercial/storefront/preview";
 import LegacyStorefrontRoute from "@/app/storefront";
 
 const mockApiRequest = jest.fn();
+const mockGetConnectStatus = jest.fn();
+const mockUseAuth = jest.fn();
 const mockPersistImageUri = jest.fn();
 const mockAttachPhotos = jest.fn();
 const mockRequestPermissions = jest.fn();
@@ -62,6 +64,12 @@ jest.mock("@/hooks/useApiErrorHandler", () => ({
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
+
+jest.mock("@/api/stripeConnect", () => ({
+  getConnectPayoutStatus: (...args: any[]) => mockGetConnectStatus(...args)
+}));
+
+jest.mock("@/auth/AuthContext", () => ({ useAuth: () => mockUseAuth() }));
 
 jest.mock("@/utils/photoUploads", () => ({
   persistImageUri: (...args: any[]) => mockPersistImageUri(...args),
@@ -228,6 +236,11 @@ function apiResponseFor(path: string, options?: any) {
 describe("Storefront route", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockUseAuth.mockReturnValue({ user: { id: "seller-1" } });
+    mockGetConnectStatus.mockResolvedValue({
+      connected: false,
+      onboardingStatus: "none"
+    });
     mockApiRequest.mockImplementation(apiResponseFor);
     mockRequestPermissions.mockResolvedValue({ granted: true });
     mockAttachPhotos.mockResolvedValue({ prompted: true, attached: false });
@@ -243,6 +256,114 @@ describe("Storefront route", () => {
     mockPersistImageUri
       .mockResolvedValueOnce("/uploads/logo.jpg")
       .mockResolvedValueOnce("/uploads/product.jpg");
+  });
+
+  it("uses verified seller readiness without copied storefront Stripe fields", async () => {
+    mockGetConnectStatus.mockResolvedValue({
+      connected: true,
+      onboardingStatus: "complete",
+      transfersEnabled: true,
+      payoutsEnabled: true,
+      detailsSubmitted: true
+    });
+    const screen = render(<Storefront />);
+    expect(await screen.findByText(/Stripe has verified this seller/)).toBeTruthy();
+    expect(mockGetConnectStatus).toHaveBeenCalledTimes(1);
+    expect(
+      mockApiRequest.mock.calls.some(([path]) => String(path).includes("/checkout"))
+    ).toBe(false);
+  });
+
+  it("does not accept legacy Stripe identifiers or labels as seller readiness", async () => {
+    mockApiRequest.mockImplementation(async (path: string, options?: any) => {
+      const result: any = await apiResponseFor(path, options);
+      return path === "/api/commercial/storefront" && !options
+        ? {
+            storefront: {
+              ...result.storefront,
+              stripeAccountId: "acct_legacy",
+              stripeCustomerId: "cus_legacy",
+              stripeConnected: true,
+              stripeStatus: "ready"
+            }
+          }
+        : result;
+    });
+    mockGetConnectStatus.mockResolvedValue({
+      connected: true,
+      onboardingStatus: "restricted",
+      transfersEnabled: false
+    });
+    const screen = render(<Storefront />);
+    expect(await screen.findByText(/Connect Stripe from Profile & Billing/)).toBeTruthy();
+    expect(screen.queryByText(/Stripe has verified this seller/)).toBeNull();
+  });
+
+  it("isolates failed Stripe verification and recovers through a single-flight refresh", async () => {
+    mockGetConnectStatus.mockRejectedValueOnce(new Error("private provider diagnostic"));
+    const screen = render(<Storefront />);
+    expect(await screen.findByText("Unverified")).toBeTruthy();
+    expect(await screen.findByText("Living Soil Base")).toBeTruthy();
+    expect(screen.queryByText("private provider diagnostic")).toBeNull();
+    expect(screen.queryByLabelText("Retry commercial storefront workspace")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Create storefront setup tasks"));
+    await screen.findByText(/Created \d+ storefront setup tasks/);
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([path, options]) =>
+          path === "/api/tasks" &&
+          options?.body?.title === "Complete storefront setup: Stripe connection"
+      )
+    ).toBe(false);
+    let resolveStatus!: (value: any) => void;
+    mockGetConnectStatus.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveStatus = resolve;
+      })
+    );
+    fireEvent.press(screen.getByLabelText("Refresh storefront Stripe status"));
+    fireEvent.press(screen.getByLabelText("Refresh storefront Stripe status"));
+    expect(mockGetConnectStatus).toHaveBeenCalledTimes(2);
+    expect(screen.getByText("Checking")).toBeTruthy();
+    await act(async () =>
+      resolveStatus({
+        connected: true,
+        onboardingStatus: "complete",
+        transfersEnabled: true,
+        payoutsEnabled: true,
+        detailsSubmitted: true
+      })
+    );
+    expect(await screen.findByText(/Stripe has verified this seller/)).toBeTruthy();
+    mockGetConnectStatus.mockRejectedValueOnce(new Error("temporary failure"));
+    fireEvent.press(screen.getByLabelText("Refresh storefront Stripe status"));
+    expect(await screen.findByText("Unverified")).toBeTruthy();
+    expect(screen.queryByText(/Stripe has verified this seller/)).toBeNull();
+  });
+
+  it("ignores a previous seller's late Stripe status after an account switch", async () => {
+    let resolveFirst!: (value: any) => void;
+    mockGetConnectStatus.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveFirst = resolve;
+      })
+    );
+    const screen = render(<Storefront />);
+    await screen.findByText("Living Soil Base");
+    mockUseAuth.mockReturnValue({ user: { id: "seller-2" } });
+    screen.rerender(<Storefront />);
+    expect(await screen.findByText(/Connect Stripe from Profile & Billing/)).toBeTruthy();
+    await act(async () =>
+      resolveFirst({
+        connected: true,
+        onboardingStatus: "complete",
+        transfersEnabled: true,
+        payoutsEnabled: true,
+        detailsSubmitted: true
+      })
+    );
+    expect(mockGetConnectStatus).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText(/Stripe has verified this seller/)).toBeNull();
   });
 
   it("uploads storefront and product images before save", async () => {

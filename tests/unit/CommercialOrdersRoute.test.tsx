@@ -1,7 +1,9 @@
 import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import CommercialOrdersRoute from "@/screens/commercial/OrdersScreen";
+import CommercialOrdersRoute, {
+  summarizeCommercialOrderSales
+} from "@/screens/commercial/OrdersScreen";
 
 const mockApiRequest = jest.fn();
 const mockToInlineError = jest.fn((error: unknown) => ({
@@ -95,6 +97,7 @@ describe("Commercial Orders route", () => {
               customerEmail: "customer@example.com",
               quantity: 2,
               amountCents: 12998,
+              refundedAmountCents: 0,
               currency: "usd",
               status: "paid",
               fulfillmentStatus: "unfulfilled",
@@ -112,6 +115,7 @@ describe("Commercial Orders route", () => {
             customerEmail: "customer@example.com",
             quantity: 2,
             amountCents: 12998,
+            refundedAmountCents: 0,
             currency: "usd",
             status: "paid",
             fulfillmentStatus: options.body.fulfillmentStatus,
@@ -135,7 +139,9 @@ describe("Commercial Orders route", () => {
     expect(
       screen.getByRole("header", { name: "Current Orders" }).props["aria-level"]
     ).toBe(2);
-    expect(screen.getAllByText("$129.98")).toHaveLength(2);
+    expect(screen.getByText("$129.98")).toBeTruthy();
+    expect(screen.getByText(/USD\s+129\.98/)).toBeTruthy();
+    expect(screen.getByText("Net sales (before fees)")).toBeTruthy();
     expect(screen.getByText("Qty 2")).toBeTruthy();
     expect(screen.getByText("paid")).toBeTruthy();
 
@@ -200,6 +206,86 @@ describe("Commercial Orders route", () => {
       })
     );
     expect(await screen.findByText("Living Soil Tote marked unfulfilled.")).toBeTruthy();
+  });
+
+  it("shows refunded net sales by currency without changing historical orders or fulfillment", async () => {
+    mockApiRequest.mockResolvedValue({
+      orders: [
+        {
+          id: "refunded-usd",
+          productName: "Refunded QA item",
+          amountCents: 1000,
+          refundedAmountCents: 1000,
+          currency: "usd",
+          status: "refunded",
+          fulfillmentStatus: "unfulfilled"
+        },
+        {
+          id: "partial-usd",
+          productName: "Partial QA item",
+          amountCents: 1000,
+          refundedAmountCents: 100,
+          currency: "usd",
+          status: "paid",
+          fulfillmentStatus: "fulfilled"
+        },
+        {
+          id: "paid-eur",
+          productName: "EUR QA item",
+          amountCents: 2000,
+          refundedAmountCents: 0,
+          currency: "eur",
+          status: "paid",
+          fulfillmentStatus: "unfulfilled"
+        },
+        {
+          id: "pending-usd",
+          productName: "Unpaid QA item",
+          amountCents: 9900,
+          refundedAmountCents: 0,
+          currency: "usd",
+          status: "pending",
+          fulfillmentStatus: "unfulfilled"
+        }
+      ]
+    });
+    const screen = render(<CommercialOrdersRoute />);
+
+    expect(await screen.findByText(/USD\s+9\.00/)).toBeTruthy();
+    expect(screen.getByText(/EUR\s+20\.00/)).toBeTruthy();
+    expect(screen.getByText("Net sales (before fees)")).toBeTruthy();
+    expect(screen.queryByText("Revenue")).toBeNull();
+    expect(screen.getByText("Refunded QA item")).toBeTruthy();
+    expect(screen.getByText("Unpaid QA item")).toBeTruthy();
+    expect(screen.getByText("refunded")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Mark order Refunded QA item fulfilled" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Reopen order Partial QA item" })
+    ).toBeTruthy();
+    expect(
+      mockApiRequest.mock.calls.some(([, options]) => options?.method === "PATCH")
+    ).toBe(false);
+  });
+
+  it("does not display missing payment data as zero sales", async () => {
+    mockApiRequest.mockResolvedValue({
+      orders: [
+        {
+          id: "unknown-refund",
+          productName: "Incomplete payment record",
+          amountCents: 1000,
+          currency: "usd",
+          status: "paid",
+          fulfillmentStatus: "unfulfilled"
+        }
+      ]
+    });
+    const screen = render(<CommercialOrdersRoute />);
+    expect(await screen.findByText("Not available")).toBeTruthy();
+    expect(screen.getByText(/1 order\(s\) need payment data review/)).toBeTruthy();
+    expect(screen.queryByText(/USD\s+0\.00/)).toBeNull();
   });
 
   it("keeps a failed initial load distinct from an empty order history and retries", async () => {
@@ -292,5 +378,73 @@ describe("Commercial Orders route", () => {
     ).toBeTruthy();
     expect(screen.getByText("Living Soil Tote")).toBeTruthy();
     expect(screen.getByText("unfulfilled")).toBeTruthy();
+  });
+});
+
+describe("Commercial order net-sales calculation", () => {
+  it("retains fully refunded zero, partial refunds, and actual currency groups", () => {
+    const result = summarizeCommercialOrderSales([
+      {
+        id: "full",
+        status: "refunded",
+        amountCents: 1000,
+        refundedAmountCents: 1000,
+        currency: "usd"
+      },
+      {
+        id: "partial",
+        status: "paid",
+        amountCents: 1000,
+        refundedAmountCents: 100,
+        currency: "eur"
+      },
+      {
+        id: "disputed",
+        status: "disputed",
+        amountCents: 500,
+        refundedAmountCents: 0,
+        currency: "eur"
+      },
+      {
+        id: "failed",
+        status: "failed",
+        amountCents: 99900,
+        refundedAmountCents: 0,
+        currency: "usd"
+      },
+      {
+        id: "pending",
+        status: "pending",
+        amountCents: 99900,
+        refundedAmountCents: 0,
+        currency: "usd"
+      }
+    ]);
+    expect(result).toEqual({ byCurrency: { USD: 0, EUR: 1400 }, incomplete: 0 });
+  });
+
+  it("does not guess missing or invalid amounts, refunds, or currency", () => {
+    const baseline = {
+      id: "invalid",
+      status: "paid",
+      amountCents: 1000,
+      refundedAmountCents: 0,
+      currency: "usd"
+    };
+    const invalid = [
+      { ...baseline, amountCents: undefined, total: 10 },
+      { ...baseline, amountCents: NaN },
+      { ...baseline, amountCents: -1 },
+      { ...baseline, amountCents: 10.5 },
+      { ...baseline, refundedAmountCents: undefined },
+      { ...baseline, refundedAmountCents: 1001 },
+      { ...baseline, refundedAmountCents: -1 },
+      { ...baseline, currency: undefined },
+      { ...baseline, currency: "not-a-currency" }
+    ];
+    expect(summarizeCommercialOrderSales(invalid)).toEqual({
+      byCurrency: {},
+      incomplete: invalid.length
+    });
   });
 });

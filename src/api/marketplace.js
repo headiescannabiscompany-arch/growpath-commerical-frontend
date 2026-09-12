@@ -11,6 +11,7 @@ export const MARKETPLACE_ROUTES = {
   BROWSE: "/api/marketplace/browse",
   SEARCH: "/api/marketplace/browse",
   DETAIL: (contentId) => `/api/marketplace/${enc(contentId)}`,
+  UPDATE: (contentId) => `/api/marketplace/${enc(contentId)}`,
   UPLOAD: "/api/marketplace/create",
   MY_UPLOADS: "/api/marketplace/user/my-uploads",
   GET_SALES: "/api/marketplace/user/my-uploads",
@@ -158,6 +159,18 @@ export const uploadContent = async (formData) => {
   } catch (error) {
     throw new Error(`Failed to upload content: ${error.message}`);
   }
+};
+
+// Owner-only visibility update. Do not create a purchase or change a saved price here.
+export const setMarketplacePublication = async (contentId, isPublished) => {
+  if (!String(contentId || "").trim() || typeof isPublished !== "boolean") {
+    throw new Error("A saved offer and explicit publication state are required.");
+  }
+  const response = await apiRequest(MARKETPLACE_ROUTES.UPDATE(contentId), {
+    method: "PUT",
+    body: { isPublished }
+  });
+  return response?.content ?? response?.data?.content ?? response?.data ?? response;
 };
 
 export const getMyUploads = async () => {

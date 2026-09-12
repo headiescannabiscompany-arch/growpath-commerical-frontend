@@ -734,6 +734,27 @@ describe("public commercial routes", () => {
     );
   });
 
+  it("retains the buyer's fully refunded order history on a plain product link", async () => {
+    mockGetProductPurchaseStatus.mockResolvedValue({
+      ...paidProductPurchaseStatus,
+      paymentStatus: "refunded",
+      refundedAmountCents: 2500,
+      refundStatus: "full",
+      refundLifecycleStatus: "full"
+    });
+    const screen = render(<PublicProductRoute />);
+
+    fireEvent.press(await screen.findByLabelText("Open payment support"));
+    expect(screen.getByText(/provider refund: full/)).toBeTruthy();
+    expect(screen.getByText(/This payment is fully refunded/)).toBeTruthy();
+    expect(screen.getByLabelText("Submit refund review request")).toBeDisabled();
+    expect(screen.getByLabelText("Submit payment issue report")).toBeDisabled();
+    expect(mockGetProductPurchaseStatus).toHaveBeenCalledWith("product-1");
+    expect(mockRequestProductRefund).not.toHaveBeenCalled();
+    expect(mockReportProductPaymentIssue).not.toHaveBeenCalled();
+    expect(jest.requireMock("@/api/products").checkoutProduct).not.toHaveBeenCalled();
+  });
+
   it("keeps a semantic product heading and shared recovery path on load failure", async () => {
     mockFetchPublicStorefront.mockRejectedValueOnce(
       new Error("Product service unavailable")

@@ -9,6 +9,7 @@ import {
   type StripeConnectPayoutStatus
 } from "@/api/stripeConnect";
 import AppCard from "@/components/layout/AppCard";
+import { isStripeConnectPayoutReady as isPayoutReady } from "@/features/billing/stripeConnectReadiness";
 import { SELLER_COUNTRIES } from "@/constants/sellerCountries";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -19,16 +20,6 @@ type StripeConnectPayoutCardProps = {
   title?: string;
   titleLevel?: 1 | 2 | 3;
 };
-
-function isPayoutReady(status: StripeConnectPayoutStatus | null) {
-  return Boolean(
-    status?.connected &&
-    status.onboardingStatus === "complete" &&
-    status.transfersEnabled &&
-    status.payoutsEnabled &&
-    status.detailsSubmitted
-  );
-}
 
 function statusLabel(status: StripeConnectPayoutStatus | null) {
   if (!status?.connected) return "Not connected";

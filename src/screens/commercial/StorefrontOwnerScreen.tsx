@@ -18,6 +18,12 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { InlineError } from "@/components/InlineError";
 import { apiRequest } from "@/api/apiRequest";
+import {
+  getConnectPayoutStatus,
+  type StripeConnectPayoutStatus
+} from "@/api/stripeConnect";
+import { useAuth } from "@/auth/AuthContext";
+import { isStripeConnectPayoutReady } from "@/features/billing/stripeConnectReadiness";
 import { endpoints } from "@/api/endpoints";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
@@ -30,6 +36,13 @@ import { requestCurrentCoordinates } from "@/utils/locationSearch";
 import { hasSavedStorefrontCheckoutAmount } from "@/utils/regulatedCommerce";
 
 type AnyRec = Record<string, any>;
+type SetupChecklistItem = {
+  label: string;
+  complete: boolean;
+  helper: string;
+  statusLabel?: string;
+  actionable?: boolean;
+};
 
 const regulatedProductClasses = [
   ["hemp_seed", "Hemp seed"],
@@ -148,21 +161,6 @@ function productCheckoutReady(product: AnyRec, dispensary = false) {
     hasText(product.externalPurchaseUrl) ||
     hasText(product.stripePriceId) ||
     hasSavedStorefrontCheckoutAmount(product)
-  );
-}
-
-function storefrontStripeReady(storefront: AnyRec | null) {
-  if (!storefront) return false;
-  return (
-    hasText(storefront.stripeAccountId) ||
-    hasText(storefront.stripeConnectAccountId) ||
-    hasText(storefront.stripeCustomerId) ||
-    Boolean(storefront.stripeConnected) ||
-    ["connected", "active", "enabled", "ready"].includes(
-      String(
-        storefront.stripeStatus || storefront.stripeConnectionStatus || ""
-      ).toLowerCase()
-    )
   );
 }
 
@@ -344,10 +342,67 @@ export default function Storefront({
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStorefrontOwnerStyles(palette), [palette]);
   const ent = useEntitlements();
+  const { user } = useAuth();
+  const sellerIdentity = String(user?.id || user?._id || "");
   const canEdit = Boolean(ent?.can?.(CAPABILITY_KEYS.STORE_FRONT_VIEW));
   const mapApiError = useApiErrorHandler();
 
   const [storefront, setStorefront] = useState<AnyRec | null>(null);
+  const [stripeSnapshot, setStripeSnapshot] = useState<{
+    ownerId: string;
+    status: StripeConnectPayoutStatus | null;
+    loading: boolean;
+    failed: boolean;
+  } | null>(null);
+  const stripeRequestRef = useRef(0);
+  const stripeInFlightRef = useRef<{ ownerId: string; request: number } | null>(null);
+  const loadStripeStatus = useCallback(async () => {
+    if (!sellerIdentity || !canEdit) return;
+    if (stripeInFlightRef.current?.ownerId === sellerIdentity) return;
+    const request = ++stripeRequestRef.current;
+    stripeInFlightRef.current = { ownerId: sellerIdentity, request };
+    setStripeSnapshot({
+      ownerId: sellerIdentity,
+      status: null,
+      loading: true,
+      failed: false
+    });
+    try {
+      const status = await getConnectPayoutStatus();
+      if (request === stripeRequestRef.current) {
+        setStripeSnapshot({
+          ownerId: sellerIdentity,
+          status,
+          loading: false,
+          failed: false
+        });
+      }
+    } catch {
+      if (request === stripeRequestRef.current) {
+        setStripeSnapshot({
+          ownerId: sellerIdentity,
+          status: null,
+          loading: false,
+          failed: true
+        });
+      }
+    } finally {
+      if (stripeInFlightRef.current?.request === request)
+        stripeInFlightRef.current = null;
+    }
+  }, [sellerIdentity, canEdit]);
+  useEffect(() => {
+    void loadStripeStatus();
+    return () => {
+      stripeRequestRef.current += 1;
+      stripeInFlightRef.current = null;
+    };
+  }, [loadStripeStatus]);
+  const currentStripe =
+    canEdit && stripeSnapshot?.ownerId === sellerIdentity ? stripeSnapshot : null;
+  const stripeChecking = Boolean(currentStripe?.loading);
+  const stripeUnverified = !currentStripe || currentStripe.failed;
+  const stripeReady = isStripeConnectPayoutReady(currentStripe?.status ?? null);
   const [products, setProducts] = useState<AnyRec[]>([]);
   const [productLines, setProductLines] = useState<AnyRec[]>([]);
   const [courses, setCourses] = useState<AnyRec[]>([]);
@@ -543,7 +598,7 @@ export default function Storefront({
     (sum, item) => sum + item.missing.length,
     0
   );
-  const setupChecklist = useMemo(
+  const setupChecklist = useMemo<SetupChecklistItem[]>(
     () => [
       {
         label: "Brand name",
@@ -623,9 +678,20 @@ export default function Storefront({
         ? [
             {
               label: "Stripe connection",
-              complete: storefrontStripeReady(storefront),
-              helper:
-                "Connect Stripe from Profile & Billing before relying on in-app checkout, paid courses, or storefront payouts."
+              complete: stripeReady,
+              statusLabel: stripeChecking
+                ? "Checking"
+                : stripeUnverified
+                  ? "Unverified"
+                  : undefined,
+              actionable: !stripeChecking && !stripeUnverified,
+              helper: stripeChecking
+                ? "Checking the signed-in seller's Stripe payout status."
+                : stripeUnverified
+                  ? "Stripe status could not be verified. Refresh status or review Profile & Billing. No setting was changed."
+                  : stripeReady
+                    ? "Stripe has verified this seller for transfers and payouts. Checkout still verifies payment readiness."
+                    : "Connect Stripe from Profile & Billing before relying on in-app checkout, paid courses, or storefront payouts."
             }
           ]
         : []),
@@ -649,7 +715,9 @@ export default function Storefront({
       products,
       publishedProducts.length,
       isDispensary,
-      storefront,
+      stripeReady,
+      stripeChecking,
+      stripeUnverified,
       storeDraft,
       storefrontCampaigns.length,
       storefrontCourses.length,
@@ -657,7 +725,9 @@ export default function Storefront({
     ]
   );
   const completedSetupCount = setupChecklist.filter((item) => item.complete).length;
-  const incompleteSetup = setupChecklist.filter((item) => !item.complete);
+  const incompleteSetup = setupChecklist.filter(
+    (item) => !item.complete && item.actionable !== false
+  );
   const publishBlockers = storefrontPublishBlockers({
     draft: storeDraft,
     publishedProducts,
@@ -1154,7 +1224,10 @@ export default function Storefront({
           <RefreshControl
             enabled={!interactionBusy}
             refreshing={refreshing}
-            onRefresh={() => void load({ refresh: true })}
+            onRefresh={() => {
+              void load({ refresh: true });
+              void loadStripeStatus();
+            }}
             colors={[palette.accent]}
             progressBackgroundColor={palette.surface}
             tintColor={palette.accent}
@@ -1231,11 +1304,22 @@ export default function Storefront({
                 style={[styles.checkItem, item.complete && styles.checkItemComplete]}
               >
                 <Text style={styles.checkIcon}>
-                  {item.complete ? "Ready" : "Needs work"}
+                  {item.statusLabel ?? (item.complete ? "Ready" : "Needs work")}
                 </Text>
                 <View style={styles.checkCopy}>
                   <Text style={styles.checkLabel}>{item.label}</Text>
                   <Text style={styles.checkHelper}>{item.helper}</Text>
+                  {item.label === "Stripe connection" ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Refresh storefront Stripe status"
+                      accessibilityState={{ disabled: stripeChecking }}
+                      disabled={stripeChecking}
+                      onPress={() => void loadStripeStatus()}
+                    >
+                      <Text style={styles.checkHelper}>Refresh Stripe status</Text>
+                    </Pressable>
+                  ) : null}
                 </View>
               </View>
             ))}

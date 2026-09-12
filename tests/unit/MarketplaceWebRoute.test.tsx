@@ -142,7 +142,10 @@ describe("existing Marketplace web route", () => {
     const screen = render(<MarketplaceRoute />);
     await screen.findByText("QA paid grow guide");
     expect(screen.queryByLabelText("Download storefront offer")).toBeNull();
-    expect(screen.queryByLabelText("Open payment support")).toBeNull();
+    fireEvent.press(await screen.findByLabelText("Open payment support"));
+    expect(screen.getByText(/This payment is fully refunded/)).toBeTruthy();
+    expect(screen.getByLabelText("Submit refund review request")).toBeDisabled();
+    expect(screen.getByLabelText("Submit payment issue report")).toBeDisabled();
     expect(mockDownload).not.toHaveBeenCalled();
     expect(mockPurchase).not.toHaveBeenCalled();
   });
