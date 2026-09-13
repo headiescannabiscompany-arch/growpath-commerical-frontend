@@ -109,6 +109,7 @@ jest.mock("@/auth/AuthContext", () => ({
     user:
       mockToken && mockUserAvailable
         ? {
+            id: "buyer",
             subscriptionStatus: mockSubscriptionStatus,
             trialUsed: mockTrialUsed,
             trialPlansUsed: mockTrialPlansUsed
@@ -206,6 +207,31 @@ describe("Offers billing safety", () => {
       delete originalWindow.sessionStorage;
     }
     (globalThis as any).window = originalWindow;
+  });
+
+  it("shows saved self-checkout recovery without opening or starting another purchase", async () => {
+    (getSubscription as jest.Mock).mockResolvedValue({
+      plan: "free",
+      subscriptionStatus: "canceled",
+      source: "stripe",
+      active: false,
+      paymentState: "nonpaid",
+      consistency: "consistent",
+      canStartCheckout: false,
+      checkoutInProgress: true,
+      canResumeCheckout: true,
+      checkoutRecovery: {
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        plan: "pro",
+        interval: "monthly"
+      }
+    });
+    const screen = render(<Offers />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Resume saved subscription checkout")).toBeTruthy()
+    );
+    expect(screen.getByText(/saved monthly Pro checkout/)).toBeTruthy();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 
   it("accepts only the exact raw web gift continuation", () => {

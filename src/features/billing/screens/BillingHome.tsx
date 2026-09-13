@@ -16,6 +16,7 @@ import {
 import { openExternalUrl } from "../../../utils/openExternalUrl";
 import { resolveSubscriptionSafety } from "../subscriptionSafety";
 import StripeConnectPayoutCard from "../../../components/account/StripeConnectPayoutCard";
+import SubscriptionCheckoutRecoveryAction from "../SubscriptionCheckoutRecoveryAction";
 
 function subscriptionStatus(plan: any) {
   return String(plan?.subscriptionStatus || plan?.status || "").toLowerCase();
@@ -490,6 +491,9 @@ export default function BillingHome({
               {loading ? "Refreshing..." : "Refresh Status"}
             </Text>
           </Pressable>
+          <SubscriptionCheckoutRecoveryAction
+            pending={planLoaded && plan?.checkoutInProgress === true}
+          />
           {!loading && canCancel ? (
             <>
               <Pressable

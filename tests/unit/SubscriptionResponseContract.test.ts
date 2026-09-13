@@ -1,4 +1,5 @@
 import {
+  createCheckoutSession,
   getSubscription,
   getSubscriptionSetupStatus,
   getVerifiedRecurringPriceQuote,
@@ -49,6 +50,47 @@ function recurringCatalog() {
 describe("subscription billing response contract", () => {
   beforeEach(() => {
     mockApiRequest.mockReset();
+  });
+
+  it("forwards exact-attempt-only recovery without changing ordinary checkout requests", async () => {
+    const checkoutAttemptId = "123e4567-e89b-42d3-a456-426614174000";
+    mockApiRequest.mockResolvedValue({});
+    await createCheckoutSession({
+      plan: "pro",
+      interval: "yearly",
+      checkoutAttemptId,
+      recoveryOnly: true
+    });
+    expect(mockApiRequest).toHaveBeenLastCalledWith(
+      "/api/subscription/create-checkout-session",
+      {
+        method: "POST",
+        body: expect.objectContaining({
+          plan: "pro",
+          interval: "yearly",
+          checkoutAttemptId,
+          recoveryOnly: true
+        })
+      }
+    );
+    await createCheckoutSession({
+      plan: "commercial",
+      interval: "monthly",
+      checkoutAttemptId
+    });
+    const ordinary = mockApiRequest.mock.calls[1][1].body;
+    expect(ordinary).toMatchObject({ plan: "commercial", interval: "monthly" });
+    expect(ordinary).not.toHaveProperty("checkoutAttemptId");
+    expect(ordinary).not.toHaveProperty("recoveryOnly");
+    await createCheckoutSession({
+      plan: "pro",
+      interval: "monthly",
+      giftMode: true,
+      checkoutAttemptId
+    });
+    const gift = mockApiRequest.mock.calls[2][1].body;
+    expect(gift).toMatchObject({ giftMode: true, checkoutAttemptId });
+    expect(gift).not.toHaveProperty("recoveryOnly");
   });
 
   it.each(["paid", "nonpaid"])("accepts paymentState %s", async (paymentState) => {

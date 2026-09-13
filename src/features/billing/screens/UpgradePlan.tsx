@@ -23,6 +23,7 @@ import { PLAN_PRICING } from "../../../constants/pricing";
 import { BILLING_PLANS, GIFTABLE_BILLING_PLANS, type BillingPlanKey } from "../planCopy";
 import GiftCheckoutReviewAction from "../GiftCheckoutReviewAction";
 import GiftCheckoutRecoveryAction from "../GiftCheckoutRecoveryAction";
+import SubscriptionCheckoutRecoveryAction from "../SubscriptionCheckoutRecoveryAction";
 import { openExternalUrl } from "../../../utils/openExternalUrl";
 import { useAppTheme, type ThemePalette } from "../../../theme/appTheme";
 import { resolveSubscriptionSafety } from "../subscriptionSafety";
@@ -370,6 +371,11 @@ export default function UpgradePlan() {
       </AppCard>
 
       <GiftCheckoutRecoveryAction visible={!giftMode} />
+      <SubscriptionCheckoutRecoveryAction
+        pending={
+          !giftMode && subscriptionLoaded && subscription?.checkoutInProgress === true
+        }
+      />
 
       {feedback ? (
         <View

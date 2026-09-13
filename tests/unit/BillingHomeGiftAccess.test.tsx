@@ -18,7 +18,11 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ token: "billing-test-token" })
+  useAuth: () => ({
+    token: "billing-test-token",
+    user: { id: "billing-owner" },
+    isHydrating: false
+  })
 }));
 
 jest.mock("@/api/subscription", () => ({
@@ -61,6 +65,31 @@ describe("BillingHome prepaid gift access", () => {
     (openSubscriptionPortal as jest.Mock).mockResolvedValue(
       "https://billing.stripe.com/p/session/test_portal"
     );
+  });
+
+  it("offers exact saved checkout recovery on the existing Billing page", async () => {
+    (getSubscription as jest.Mock).mockResolvedValue({
+      plan: "free",
+      subscriptionStatus: "canceled",
+      source: "stripe",
+      active: false,
+      paymentState: "nonpaid",
+      consistency: "consistent",
+      canStartCheckout: false,
+      checkoutInProgress: true,
+      canResumeCheckout: true,
+      checkoutRecovery: {
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        plan: "pro",
+        interval: "monthly"
+      }
+    });
+    const screen = render(<BillingHome />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Resume saved subscription checkout")).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Compare subscription plans")).toBeNull();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 
   it("shows authoritative prepaid end semantics without cancellation controls", async () => {

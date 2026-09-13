@@ -815,6 +815,7 @@ export async function createCheckoutSession(
     giftRecipientName?: string;
     giftMessage?: string;
     checkoutAttemptId?: string;
+    recoveryOnly?: boolean;
     giftQuoteToken?: string;
     giftOriginType?: "live_chat";
     giftLiveSessionId?: string;
@@ -842,7 +843,10 @@ export async function createCheckoutSession(
       ? { giftRecipientName: data.giftRecipientName.trim() }
       : {}),
     ...(data.giftMessage ? { giftMessage: data.giftMessage.trim() } : {}),
-    ...(data.giftMode && checkoutAttemptId ? { checkoutAttemptId } : {}),
+    ...((data.giftMode || data.recoveryOnly === true) && checkoutAttemptId
+      ? { checkoutAttemptId }
+      : {}),
+    ...(data.recoveryOnly === true ? { recoveryOnly: true } : {}),
     ...(data.giftMode && giftQuoteToken ? { giftQuoteToken } : {}),
     ...(data.giftMode &&
     data.giftOriginType === "live_chat" &&

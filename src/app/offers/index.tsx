@@ -29,6 +29,7 @@ import {
 } from "@/features/billing/planCopy";
 import GiftCheckoutReviewAction from "@/features/billing/GiftCheckoutReviewAction";
 import GiftCheckoutRecoveryAction from "@/features/billing/GiftCheckoutRecoveryAction";
+import SubscriptionCheckoutRecoveryAction from "@/features/billing/SubscriptionCheckoutRecoveryAction";
 import {
   formatVerifiedRecurringBillingNote,
   formatVerifiedRecurringPrice,
@@ -564,6 +565,11 @@ export default function Offers() {
       </AppCard>
 
       <GiftCheckoutRecoveryAction visible={!giftMode} />
+      <SubscriptionCheckoutRecoveryAction
+        pending={
+          !giftMode && subscriptionLoaded && subscription?.checkoutInProgress === true
+        }
+      />
 
       <Pressable
         accessibilityLabel="View gifts purchased by this account"
