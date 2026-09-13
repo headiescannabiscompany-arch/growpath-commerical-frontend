@@ -241,9 +241,11 @@ export default function BillingHome({
       const next = await getSubscription();
       setPlan(next?.data ?? next ?? null);
       setPlanLoaded(true);
+      return next?.data ?? next ?? null;
     } catch {
       setPlan(null);
       setPlanLoaded(false);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -323,11 +325,18 @@ export default function BillingHome({
     try {
       await cancelSubscription(token);
       setCancelConfirmationOpen(false);
+      const refreshedPlan = await loadPlan();
+      const refreshedAccess = resolveSubscriptionSafety(refreshedPlan, {
+        loaded: Boolean(refreshedPlan)
+      });
       setBillingFeedback({
         kind: "success",
-        text: "Renewal was canceled. Your paid access remains active through the end of the current billing period."
+        text: !refreshedPlan
+          ? "Renewal was canceled. Refresh status to confirm current access."
+          : refreshedAccess.active
+            ? "Renewal was canceled. Your paid access remains active through the end of the current billing period."
+            : "Renewal was canceled. Paid access is not active. Manage any outstanding invoice in Stripe."
       });
-      await loadPlan();
     } catch (error: any) {
       setBillingFeedback({
         kind: "error",
@@ -453,7 +462,10 @@ export default function BillingHome({
               <Text style={styles.meta}>Payment: None · Renewal: None</Text>
             </>
           ) : null}
-          {!giftEntitlement && !complimentaryEntitlement && cancellationScheduled ? (
+          {!giftEntitlement &&
+          !complimentaryEntitlement &&
+          cancellationScheduled &&
+          paid ? (
             <Text style={styles.meta}>Access through: {paidThrough}</Text>
           ) : null}
           <Text style={styles.note}>
@@ -465,7 +477,7 @@ export default function BillingHome({
                 ? paid
                   ? "Your prepaid access does not renew. Billing belongs to the gift purchaser, so there is no subscription to cancel from this account."
                   : "This prepaid gift has ended. You can choose a personal subscription if you want to continue Pro access."
-                : cancellationScheduled
+                : cancellationScheduled && paid
                   ? `Renewal is canceled. Your paid access remains available through ${paidThrough}.`
                   : access.message}
           </Text>
@@ -502,7 +514,9 @@ export default function BillingHome({
                   </Text>
                   <Text style={styles.note}>
                     Cancellation is scheduled for the end of the current billing period.
-                    Your paid access remains active through that date.
+                    {paid
+                      ? " Your paid access remains active through that date."
+                      : " Canceling renewal does not restore paid access or resolve outstanding invoices."}
                   </Text>
                   <View style={styles.confirmationActions}>
                     <Pressable

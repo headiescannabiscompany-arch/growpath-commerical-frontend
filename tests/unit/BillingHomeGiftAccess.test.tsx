@@ -39,6 +39,22 @@ jest.mock("@/utils/openExternalUrl", () => ({
 }));
 
 describe("BillingHome prepaid gift access", () => {
+  const pastDue = {
+    plan: "free",
+    effectivePlan: "free",
+    subscriptionStatus: "past_due",
+    source: "stripe",
+    active: false,
+    isPro: false,
+    hasActiveSubscription: false,
+    currentPeriodEnd: "2030-05-15T18:30:00.000Z",
+    paidThrough: null,
+    endsAt: null,
+    billingOwner: "account",
+    canManageBilling: true,
+    canCancelSubscription: true,
+    canStartCheckout: false
+  };
   beforeEach(() => {
     jest.clearAllMocks();
     (cancelSubscription as jest.Mock).mockResolvedValue({ ok: true });
@@ -114,6 +130,97 @@ describe("BillingHome prepaid gift access", () => {
     );
     expect(screen.getByLabelText("Manage subscription in Stripe")).toBeTruthy();
     expect(screen.queryByText("Access type: Prepaid gift")).toBeNull();
+  });
+
+  it("keeps past-due Free account management and cancellation available without offering a new checkout", async () => {
+    const { openExternalUrl } = require("@/utils/openExternalUrl");
+    (getSubscription as jest.Mock).mockResolvedValue(pastDue);
+    const screen = render(<BillingHome />);
+    await screen.findByText("Status: past_due");
+    expect(screen.getByText("Plan: free")).toBeTruthy();
+    expect(screen.getByLabelText("Cancel subscription")).toBeTruthy();
+    expect(screen.queryByLabelText("Compare subscription plans")).toBeNull();
+    expect(screen.queryByText(/Access through:/)).toBeNull();
+    fireEvent.press(screen.getByLabelText("Manage subscription in Stripe"));
+    await waitFor(() =>
+      expect(openExternalUrl).toHaveBeenCalledWith(
+        "https://billing.stripe.com/p/session/test_portal"
+      )
+    );
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("never promises active paid access when canceling a past-due subscription", async () => {
+    (getSubscription as jest.Mock).mockResolvedValueOnce(pastDue).mockResolvedValue({
+      ...pastDue,
+      cancelAtPeriodEnd: true,
+      canCancelSubscription: false
+    });
+    const screen = render(<BillingHome />);
+    fireEvent.press(await screen.findByLabelText("Cancel subscription"));
+    expect(
+      screen.getByText(/Canceling renewal does not restore paid access/)
+    ).toBeTruthy();
+    expect(screen.queryByText(/paid access remains active/i)).toBeNull();
+    expect(cancelSubscription).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Confirm cancel subscription renewal"));
+    await waitFor(() =>
+      expect(cancelSubscription).toHaveBeenCalledWith("billing-test-token")
+    );
+    await screen.findByText(
+      "Renewal was canceled. Paid access is not active. Manage any outstanding invoice in Stripe."
+    );
+    expect(screen.queryByText(/Access through:/)).toBeNull();
+    expect(screen.queryByText(/paid access remains/i)).toBeNull();
+    expect(screen.queryByLabelText("Compare subscription plans")).toBeNull();
+    expect(screen.queryByLabelText("Cancel subscription")).toBeNull();
+    expect(screen.getByLabelText("Manage subscription in Stripe")).toBeTruthy();
+  });
+
+  it("keeps a previously scheduled past-due subscription inactive", async () => {
+    (getSubscription as jest.Mock).mockResolvedValue({
+      ...pastDue,
+      cancelAtPeriodEnd: true,
+      canCancelSubscription: false
+    });
+    const screen = render(<BillingHome />);
+    await screen.findByText("Status: past_due");
+    expect(screen.queryByText(/paid access remains/i)).toBeNull();
+    expect(screen.queryByText(/Access through:/)).toBeNull();
+    expect(screen.queryByLabelText("Cancel subscription")).toBeNull();
+    expect(screen.queryByLabelText("Compare subscription plans")).toBeNull();
+  });
+
+  it("uses refreshed access rather than the pre-cancellation status for success copy", async () => {
+    (getSubscription as jest.Mock)
+      .mockResolvedValueOnce({ ...pastDue, plan: "pro", subscriptionStatus: "active" })
+      .mockResolvedValue({
+        ...pastDue,
+        cancelAtPeriodEnd: true,
+        canCancelSubscription: false
+      });
+    const screen = render(<BillingHome />);
+    fireEvent.press(await screen.findByLabelText("Cancel subscription"));
+    fireEvent.press(screen.getByLabelText("Confirm cancel subscription renewal"));
+    await screen.findByText(
+      "Renewal was canceled. Paid access is not active. Manage any outstanding invoice in Stripe."
+    );
+    expect(screen.queryByText(/paid access remains/i)).toBeNull();
+  });
+
+  it("does not claim paid access if the post-cancellation refresh fails", async () => {
+    (getSubscription as jest.Mock)
+      .mockResolvedValueOnce(pastDue)
+      .mockRejectedValueOnce(new Error("Refresh unavailable"));
+    const screen = render(<BillingHome />);
+    fireEvent.press(await screen.findByLabelText("Cancel subscription"));
+    fireEvent.press(screen.getByLabelText("Confirm cancel subscription renewal"));
+    await screen.findByText(
+      "Renewal was canceled. Refresh status to confirm current access."
+    );
+    expect(screen.queryByText(/paid access remains/i)).toBeNull();
+    expect(screen.queryByLabelText("Compare subscription plans")).toBeNull();
   });
 
   it("opens Stripe billing management only for a confirmed Stripe-owned subscription", async () => {

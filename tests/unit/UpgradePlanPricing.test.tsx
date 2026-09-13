@@ -357,6 +357,11 @@ describe("UpgradePlan pricing", () => {
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);
     expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
     fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
-    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/recover");
+    const { checkoutAttemptId } = (createCheckoutSession as jest.Mock).mock.calls[0][0];
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith(
+        `/account/gift-checkout/cancel?checkout_attempt_id=${checkoutAttemptId}`
+      )
+    );
   });
 });

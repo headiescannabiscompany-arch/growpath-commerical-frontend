@@ -1,6 +1,59 @@
 import { resolveSubscriptionSafety } from "@/features/billing/subscriptionSafety";
 
 describe("subscription safety", () => {
+  const pastDue = {
+    plan: "free",
+    effectivePlan: "free",
+    subscriptionStatus: "past_due",
+    source: "stripe",
+    active: false,
+    isPro: false,
+    hasActiveSubscription: false,
+    currentPeriodEnd: "2030-05-15T18:30:00.000Z",
+    paidThrough: null,
+    endsAt: null,
+    canManageBilling: true,
+    canCancelSubscription: true,
+    canStartCheckout: false
+  };
+
+  it("allows server-authorized past-due billing cancellation without granting paid access or checkout", () => {
+    const result = resolveSubscriptionSafety(pastDue, {
+      effectivePlan: "free",
+      hasPaidCapability: false
+    });
+    expect(result.active).toBe(false);
+    expect(result.plan).toBe("free");
+    expect(result.canCancel).toBe(true);
+    expect(result.canOpenCheckout).toBe(false);
+    expect(result.paidThrough).toBeNull();
+    expect(result.message).toContain("No active paid access");
+  });
+
+  it("does not manufacture paid access when a past-due subscription has scheduled cancellation", () => {
+    const result = resolveSubscriptionSafety({ ...pastDue, cancelAtPeriodEnd: true });
+    expect(result.active).toBe(false);
+    expect(result.cancelScheduled).toBe(true);
+    expect(result.canCancel).toBe(false);
+    expect(result.canOpenCheckout).toBe(false);
+    expect(result.paidThrough).toBeNull();
+    expect(result.message).not.toMatch(/access remains available/);
+  });
+
+  it.each([
+    [{ canManageBilling: false }, {}],
+    [{ canCancelSubscription: false }, {}],
+    [{ source: "gift" }, {}],
+    [{}, { loaded: false }]
+  ])(
+    "retains cancellation authorization boundaries for inactive access",
+    (overrides, context) => {
+      expect(
+        resolveSubscriptionSafety({ ...pastDue, ...overrides }, context).canCancel
+      ).toBe(false);
+    }
+  );
+
   it("keeps an unverified trial non-cancellable", () => {
     const result = resolveSubscriptionSafety({ status: "trialing", plan: "pro" });
 

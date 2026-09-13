@@ -228,6 +228,9 @@ describe("FacilityBillingHome", () => {
 
   it("cancels only after the inline confirmation in the web-safe interaction flow", async () => {
     mockEntitlements.facilityRole = "OWNER";
+    mockRefetch.mockResolvedValueOnce({
+      data: { status: "active", billingSource: "stripe", cancelAtPeriodEnd: true }
+    });
     const screen = render(<FacilityBillingHome />);
 
     fireEvent.press(screen.getByLabelText("Cancel Facility renewal"));
@@ -245,6 +248,56 @@ describe("FacilityBillingHome", () => {
         )
       ).toBeTruthy();
     });
+  });
+
+  it("keeps past-due Facility cancellation separate from inactive access and blocked checkout", async () => {
+    mockEntitlements.facilityRole = "OWNER";
+    const current = mockUseFacilityBilling();
+    const pastDue = {
+      ...current.billing,
+      plan: "free",
+      status: "past_due",
+      isPro: false,
+      hasActiveSubscription: false,
+      canStartCheckout: false
+    };
+    mockUseFacilityBilling.mockReturnValue({ ...current, billing: pastDue });
+    mockRefetch.mockResolvedValueOnce({
+      data: { ...pastDue, cancelAtPeriodEnd: true, canCancelSubscription: false }
+    });
+    const screen = render(<FacilityBillingHome />);
+    expect(screen.queryByLabelText("Start Facility plan checkout")).toBeNull();
+    expect(screen.getByLabelText("Manage Facility billing in Stripe")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Cancel Facility renewal"));
+    expect(
+      screen.getByText(/Canceling renewal does not restore paid Facility access/)
+    ).toBeTruthy();
+    expect(screen.queryByText(/access remains active/i)).toBeNull();
+    expect(mockCancelPlan).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Confirm cancel Facility renewal"));
+    await screen.findByText(
+      "Facility renewal was canceled. Paid Facility access is not active. Manage any outstanding invoice in Stripe."
+    );
+    expect(mockStartCheckout).not.toHaveBeenCalled();
+    expect(screen.queryByText(/access remains active/i)).toBeNull();
+  });
+
+  it("does not label a past-due cancellation's financial period as active access", () => {
+    const current = mockUseFacilityBilling();
+    mockUseFacilityBilling.mockReturnValue({
+      ...current,
+      billing: {
+        ...current.billing,
+        status: "past_due",
+        cancelAtPeriodEnd: true,
+        canCancelSubscription: false,
+        canStartCheckout: false
+      }
+    });
+    const screen = render(<FacilityBillingHome />);
+    expect(screen.queryByText("Access ends")).toBeNull();
+    expect(screen.getByText("Current billing period through")).toBeTruthy();
+    expect(screen.queryByText(/access remains active/i)).toBeNull();
   });
 
   it("shows an inline error when Facility cancellation fails", async () => {

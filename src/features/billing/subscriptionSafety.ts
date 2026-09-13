@@ -104,6 +104,9 @@ function accessMessage(
   paidThrough: string | null
 ) {
   if (!active) {
+    if (source === "stripe" && cancelScheduled) {
+      return "Renewal is canceled. No active paid access is confirmed. Manage any outstanding invoice in Stripe.";
+    }
     return canOpenCheckout
       ? "No active paid access is confirmed. Checkout remains available."
       : "No active paid access is confirmed. Checkout is unavailable until billing status authorizes a new session.";
@@ -150,7 +153,8 @@ export function resolveSubscriptionSafety(
     record.hasActiveSubscription === true;
   const capabilityAccess =
     context.hasPaidCapability === true || paidPlan(context.effectivePlan);
-  const active = cancelScheduled || explicitAccess || capabilityAccess;
+  // Scheduled cancellation describes renewal, not whether paid access is active.
+  const active = explicitAccess || capabilityAccess;
   const source = sourceKind(record, trialing);
   const paidThroughValue =
     record.currentPeriodEnd ||
@@ -161,7 +165,9 @@ export function resolveSubscriptionSafety(
     record.complimentaryExpiresAt ||
     null;
   const paidThrough =
-    typeof paidThroughValue === "string" && paidThroughValue.trim()
+    !(source === "stripe" && !active) &&
+    typeof paidThroughValue === "string" &&
+    paidThroughValue.trim()
       ? paidThroughValue.trim()
       : null;
   const managementUrl = validManagementUrl(
@@ -170,7 +176,6 @@ export function resolveSubscriptionSafety(
   const loaded = context.loaded !== false;
   const canCancel = Boolean(
     loaded &&
-    active &&
     !cancelScheduled &&
     source === "stripe" &&
     record.canManageBilling === true &&

@@ -133,12 +133,20 @@ export default function FacilityBillingHome() {
     try {
       await cancelPlan(FACILITY_CANCELLATION_CONFIRMATION);
       setCancelConfirmationOpen(false);
-      setBillingFeedback({
-        kind: "success",
-        text: "Facility renewal was canceled. Access remains active through the current billing period."
-      });
       try {
-        await refetch();
+        const refreshed = await refetch();
+        const refreshedBilling = refreshed?.isError ? null : refreshed?.data;
+        const refreshedAccess = resolveSubscriptionSafety(refreshedBilling, {
+          loaded: Boolean(refreshedBilling)
+        });
+        setBillingFeedback({
+          kind: "success",
+          text: !refreshedBilling
+            ? "Facility renewal was canceled. Refresh status to confirm current access."
+            : refreshedAccess.active
+              ? "Facility renewal was canceled. Access remains active through the current billing period."
+              : "Facility renewal was canceled. Paid Facility access is not active. Manage any outstanding invoice in Stripe."
+        });
       } catch {
         setBillingFeedback({
           kind: "success",
@@ -201,7 +209,7 @@ export default function FacilityBillingHome() {
             {periodEnd ? (
               <View style={styles.row}>
                 <Text style={styles.label}>
-                  {billing?.cancelAtPeriodEnd
+                  {billing?.cancelAtPeriodEnd && access.active
                     ? "Access ends"
                     : "Current billing period through"}
                 </Text>
@@ -316,7 +324,9 @@ export default function FacilityBillingHome() {
                   <Text style={styles.confirmationTitle}>Cancel Facility renewal?</Text>
                   <Text style={styles.note}>
                     Cancellation is scheduled for the end of the current billing period.
-                    Facility access remains active through the paid-through date.
+                    {access.active
+                      ? " Facility access remains active through the paid-through date."
+                      : " Canceling renewal does not restore paid Facility access or resolve outstanding invoices."}
                   </Text>
                   <View style={styles.confirmationActions}>
                     <Pressable
