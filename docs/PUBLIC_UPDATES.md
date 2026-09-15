@@ -17,3 +17,8 @@ Before publishing: run UpdatesPage, SupportPage, and publicRouteMetadata tests;
 verify export metadata and public navigation; check desktop/mobile day/night on
 staging, then deploy the same frontend revision and verify production. No backend
 deployment or payment-verification setting changes are required for this page.
+
+Hosting: keep the exact `/updates` rewrite to `/updates/index.html` before the
+existing catch-all rewrite in both Render services. This serves the generated
+page metadata to direct requests, not just after client-side navigation. Verify
+an unauthenticated HTTP request as well as the browser title after hydration.
