@@ -1,4 +1,4 @@
-import { isSafeStripeCheckoutUrl } from "@/api/subscription";
+import { isStripeCheckoutUrlForSession } from "@/api/subscription";
 
 export type GiftCheckoutCreateResult = {
   url: string;
@@ -49,19 +49,12 @@ export function requireMatchingGiftCheckoutCreateResult(
   const sessionId = typeof result.sessionId === "string" ? result.sessionId : "";
   const url = typeof result.url === "string" ? result.url : "";
   const expectedCurrency = expected.currency.trim().toLowerCase();
-  let exactSessionPath = false;
-  try {
-    exactSessionPath = new URL(url).pathname === `/c/pay/${sessionId}`;
-  } catch {
-    exactSessionPath = false;
-  }
 
   if (
     !CHECKOUT_ATTEMPT_ID_PATTERN.test(expected.checkoutAttemptId) ||
     result.checkoutAttemptId !== expected.checkoutAttemptId ||
     !SESSION_ID_PATTERN.test(sessionId) ||
-    !isSafeStripeCheckoutUrl(url) ||
-    !exactSessionPath ||
+    !isStripeCheckoutUrlForSession(url, sessionId) ||
     result.trialDays !== 0 ||
     typeof result.giftId !== "string" ||
     !GIFT_ID_PATTERN.test(result.giftId) ||

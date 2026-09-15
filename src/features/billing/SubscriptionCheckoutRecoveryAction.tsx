@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   createCheckoutSession,
   getSubscription,
-  isSafeStripeCheckoutUrl
+  isStripeCheckoutUrlForSession
 } from "@/api/subscription";
 import { useAuth } from "@/auth/AuthContext";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -128,8 +128,7 @@ export default function SubscriptionCheckoutRecoveryAction({
       if (!stillCurrent()) return;
       if (
         response?.checkoutAttemptId !== expected.checkoutAttemptId ||
-        !isSafeStripeCheckoutUrl(response?.url) ||
-        new URL(response.url).pathname !== `/c/pay/${response?.sessionId}`
+        !isStripeCheckoutUrlForSession(response?.url, response?.sessionId)
       ) {
         throw new Error(
           "The saved checkout link could not be verified. No link was opened."

@@ -69,11 +69,10 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("@/api/subscription", () => ({
+  ...jest.requireActual("@/api/subscription"),
   createCheckoutSession: jest.fn(),
   createGiftCheckoutQuote: jest.fn(),
-  getGiftCheckoutRecovery: jest.fn(),
-  isSafeStripeCheckoutUrl: (value: unknown) =>
-    typeof value === "string" && value.startsWith("https://checkout.stripe.com/c/pay/")
+  getGiftCheckoutRecovery: jest.fn()
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
@@ -447,30 +446,30 @@ describe("shared gift checkout review action", () => {
     }
   );
 
-  it("opens only the Stripe session correlated to the confirmed quote", async () => {
-    const openCheckoutUrl = jest.fn().mockResolvedValue(undefined);
-    (createCheckoutSession as jest.Mock).mockImplementationOnce(async (request) =>
-      checkoutResponse(request)
-    );
-    const screen = render(
-      <GiftCheckoutReviewAction
-        material={material}
-        recipientValid
-        configured
-        onFeedback={jest.fn()}
-        openCheckoutUrl={openCheckoutUrl}
-      />
-    );
-    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
-    await waitFor(() => expect(screen.getByText("$12.34")).toBeTruthy());
-    fireEvent.press(screen.getByLabelText("Confirm and continue - $12.34"));
+  it.each(["c", "f"])(
+    "opens only the /%s/pay/ session correlated to the confirmed quote",
+    async (variant) => {
+      const url = `https://checkout.stripe.com/${variant}/pay/cs_test_matching_session?locale=en#required_fragment`;
+      const openCheckoutUrl = jest.fn().mockResolvedValue(undefined);
+      (createCheckoutSession as jest.Mock).mockImplementationOnce(async (request) =>
+        checkoutResponse(request, { url })
+      );
+      const screen = render(
+        <GiftCheckoutReviewAction
+          material={material}
+          recipientValid
+          configured
+          onFeedback={jest.fn()}
+          openCheckoutUrl={openCheckoutUrl}
+        />
+      );
+      fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+      await waitFor(() => expect(screen.getByText("$12.34")).toBeTruthy());
+      fireEvent.press(screen.getByLabelText("Confirm and continue - $12.34"));
 
-    await waitFor(() =>
-      expect(openCheckoutUrl).toHaveBeenCalledWith(
-        "https://checkout.stripe.com/c/pay/cs_test_matching_session"
-      )
-    );
-  });
+      await waitFor(() => expect(openCheckoutUrl).toHaveBeenCalledWith(url));
+    }
+  );
 
   it("does not open a late Stripe response after authentication loss", async () => {
     const openCheckoutUrl = jest.fn().mockResolvedValue(undefined);

@@ -106,6 +106,18 @@ describe("saved self-subscription checkout recovery", () => {
     expect(screen.queryByText(/\$/)).toBeNull();
   });
 
+  it.each(["c", "f"])(
+    "preserves Stripe's /%s/pay/ URL and exact session",
+    async (variant) => {
+      const url = `https://checkout.stripe.com/${variant}/pay/${result.sessionId}?locale=en#required_provider_fragment`;
+      (createCheckoutSession as jest.Mock).mockResolvedValue({ ...result, url });
+      const screen = await ready();
+      fireEvent.press(screen.getByLabelText(buttonLabel));
+      await waitFor(() => expect(openExternalUrl).toHaveBeenCalledWith(url));
+      expect(createCheckoutSession).toHaveBeenCalledTimes(1);
+    }
+  );
+
   it("guards repeated presses synchronously while revalidation is pending", async () => {
     const screen = await ready();
     const pending = deferred<typeof billing>();
@@ -146,6 +158,10 @@ describe("saved self-subscription checkout recovery", () => {
   it.each([
     ["wrong attempt", { ...result, checkoutAttemptId: otherAttemptId }],
     ["wrong session", { ...result, sessionId: "cs_test_other" }],
+    [
+      "wrong f/pay session",
+      { ...result, url: "https://checkout.stripe.com/f/pay/cs_test_other" }
+    ],
     [
       "non-Stripe host",
       { ...result, url: "https://attacker.example/c/pay/cs_test_saved" }

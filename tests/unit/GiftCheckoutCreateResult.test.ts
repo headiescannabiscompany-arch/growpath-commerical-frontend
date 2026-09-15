@@ -31,11 +31,22 @@ describe("gift checkout create response correlation", () => {
     );
   });
 
+  it.each(["c", "f"])("preserves the exact /%s/pay/ provider URL", (variant) => {
+    const result = validResult({
+      url: `https://checkout.stripe.com/${variant}/pay/${SESSION_ID}?locale=en#required_fragment`
+    });
+    expect(requireMatchingGiftCheckoutCreateResult(result, expected)).toEqual(result);
+  });
+
   it.each([
     ["a nested wrapper", { data: validResult() }],
     ["a mismatched attempt", validResult({ checkoutAttemptId: OTHER_ATTEMPT_ID })],
     ["a missing session", validResult({ sessionId: undefined })],
     ["a malformed session", validResult({ sessionId: "not_a_session" })],
+    [
+      "a mismatched f/pay session",
+      validResult({ url: "https://checkout.stripe.com/f/pay/cs_test_other_session" })
+    ],
     [
       "a URL for another session",
       validResult({ url: "https://checkout.stripe.com/c/pay/cs_test_other_session" })

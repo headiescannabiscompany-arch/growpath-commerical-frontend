@@ -648,11 +648,24 @@ export function isSafeStripeCheckoutUrl(value: unknown): value is string {
       !parsed.port &&
       !parsed.username &&
       !parsed.password &&
-      /^\/c\/pay\/cs_[A-Za-z0-9_]+$/.test(parsed.pathname)
+      /^\/[cf]\/pay\/cs_[A-Za-z0-9_]+$/.test(parsed.pathname)
     );
   } catch {
     return false;
   }
+}
+
+export function isStripeCheckoutUrlForSession(
+  value: unknown,
+  sessionId: unknown
+): value is string {
+  // Stripe can return either hosted layout. Match its exact session without
+  // reconstructing the URL: the query and fragment belong to the provider.
+  return (
+    typeof sessionId === "string" &&
+    isSafeStripeCheckoutUrl(value) &&
+    new URL(value).pathname.split("/").pop() === sessionId
+  );
 }
 
 function isGiftCheckoutReconcileResult(

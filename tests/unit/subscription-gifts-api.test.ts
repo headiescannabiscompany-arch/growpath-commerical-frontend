@@ -345,6 +345,31 @@ describe("purchaser gift subscription API", () => {
     ).toBe(false);
   });
 
+  it.each(["c", "f"])("accepts only exact Stripe /%s/pay/ session paths", (variant) => {
+    const { isSafeStripeCheckoutUrl } = require("@/api/subscription");
+    const path = `/${variant}/pay/cs_test_safe`;
+    expect(
+      isSafeStripeCheckoutUrl(
+        `https://checkout.stripe.com${path}?locale=en#required_fragment`
+      )
+    ).toBe(true);
+    for (const url of [
+      `http://checkout.stripe.com${path}`,
+      `https://checkout.stripe.com.evil.example${path}`,
+      `https://user:password@checkout.stripe.com${path}`,
+      `https://checkout.stripe.com:444${path}`,
+      `https://checkout.stripe.com${path}/extra`,
+      `https://checkout.stripe.com${path}/`,
+      `https://checkout.stripe.com/${variant}/pay/not_a_session`,
+      `https://checkout.stripe.com/${variant}/pay/cs_test_safe%2Fextra`,
+      `https://checkout.stripe.com/${variant}/pay/`
+    ])
+      expect(isSafeStripeCheckoutUrl(url)).toBe(false);
+    expect(
+      isSafeStripeCheckoutUrl("https://checkout.stripe.com/x/pay/cs_test_safe")
+    ).toBe(false);
+  });
+
   it("rejects an attempt reconciliation response correlated to a different id", async () => {
     mockApiRequest.mockResolvedValue({
       state: "pending",
