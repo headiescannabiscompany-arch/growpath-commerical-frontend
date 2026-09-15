@@ -53,7 +53,12 @@ describe("public Updates page", () => {
       "course-gifting"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[1].entries[0].id).toBe("timeline-photo-editing");
-    expect(PUBLIC_UPDATE_SECTIONS[0].entries).toHaveLength(2);
+    expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "subscription-checkout",
+      "facility-billing",
+      "commerce-checkout",
+      "commerce-refunds-sellers"
+    ]);
   });
 
   it.each(["day", "night"] as const)(

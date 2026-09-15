@@ -23,6 +23,22 @@ export const PUBLIC_UPDATE_SECTIONS = [
         dateLabel: "Released",
         summary:
           "Facility checkout is tied to the selected workspace, with its owner, staff, and viewers covered by that workspace subscription."
+      },
+      {
+        id: "commerce-checkout",
+        title: "Course, storefront, and marketplace checkout",
+        date: "September 15, 2026",
+        dateLabel: "Released",
+        summary:
+          "Purchase checkout includes interrupted-checkout recovery and duplicate-payment protection. Digital purchases use verified access and download delivery."
+      },
+      {
+        id: "commerce-refunds-sellers",
+        title: "Purchase refunds and seller payments",
+        date: "September 15, 2026",
+        dateLabel: "Released",
+        summary:
+          "Refund handling and Stripe seller allocation have been updated. Purchase, partial/full refund, and seller-allocation flows passed Sandbox checks; those checks did not move real money or verify a bank payout."
       }
     ]
   },
