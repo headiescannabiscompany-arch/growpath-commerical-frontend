@@ -181,7 +181,9 @@ export function resolveSubscriptionSafety(
     record.canManageBilling === true &&
     record.canCancelSubscription === true
   );
-  const canOpenCheckout = loaded && !active && record.canStartCheckout === true;
+  const personalCheckoutProtected = record.checkoutBlockedReason === "protected_identity";
+  const canOpenCheckout =
+    loaded && !active && !personalCheckoutProtected && record.canStartCheckout === true;
 
   return {
     active,
@@ -191,7 +193,9 @@ export function resolveSubscriptionSafety(
     loaded,
     managementUrl,
     message: loaded
-      ? accessMessage(source, active, canOpenCheckout, cancelScheduled, paidThrough)
+      ? personalCheckoutProtected
+        ? "Personal subscription checkout is disabled for protected Admin accounts. Admin tools, complimentary grants, and gifts for others remain available."
+        : accessMessage(source, active, canOpenCheckout, cancelScheduled, paidThrough)
       : "Current subscription access could not be confirmed. Refresh status before starting another checkout.",
     paidThrough,
     plan,

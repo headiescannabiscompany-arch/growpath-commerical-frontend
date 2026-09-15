@@ -1,6 +1,38 @@
 import { resolveSubscriptionSafety } from "@/features/billing/subscriptionSafety";
 
 describe("subscription safety", () => {
+  it.each([false, true])(
+    "honors protected personal checkout even when canStartCheckout is %s",
+    (canStartCheckout) => {
+      const result = resolveSubscriptionSafety({
+        plan: "free",
+        subscriptionStatus: "expired",
+        source: "platform",
+        canStartCheckout,
+        checkoutBlockedReason: "protected_identity"
+      });
+      expect(result.canOpenCheckout).toBe(false);
+      expect(result.message).toContain("Personal subscription checkout is disabled");
+      expect(result.message).toContain("Admin tools");
+      expect(result.message).toContain("gifts for others");
+      expect(result.message).not.toContain("until billing status");
+    }
+  );
+
+  it("retains server-authorized management of an existing Admin subscription", () => {
+    const result = resolveSubscriptionSafety({
+      plan: "pro",
+      subscriptionStatus: "active",
+      source: "stripe",
+      canStartCheckout: false,
+      checkoutBlockedReason: "protected_identity",
+      canManageBilling: true,
+      canCancelSubscription: true
+    });
+    expect(result.canOpenCheckout).toBe(false);
+    expect(result.canCancel).toBe(true);
+    expect(result.source).toBe("stripe");
+  });
   const pastDue = {
     plan: "free",
     effectivePlan: "free",

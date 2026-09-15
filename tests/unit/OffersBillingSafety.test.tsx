@@ -234,6 +234,84 @@ describe("Offers billing safety", () => {
     expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 
+  it("blocks protected Admin personal checkout but leaves the existing gift controls available", async () => {
+    mockTrialUsed = false;
+    mockTrialPlansUsed = [];
+    (getSubscription as jest.Mock).mockResolvedValueOnce({
+      plan: "free",
+      subscriptionStatus: "free",
+      source: "platform",
+      canStartCheckout: false,
+      canResumeCheckout: false,
+      checkoutBlockedReason: "protected_identity",
+      trialUsed: false,
+      trialPlansUsed: [],
+      trialEligibility: {
+        enabled: true,
+        eligible: false,
+        days: 30,
+        policy: "one_per_account"
+      }
+    });
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "live",
+      giftCheckoutConfigured: true,
+      trial: { enabled: true, days: 30 },
+      catalogReady: true,
+      quotes: recurringQuotes()
+    });
+    const screen = render(<Offers />);
+    await waitFor(() =>
+      expect(
+        screen.getAllByText(/Personal subscription checkout is disabled/).length
+      ).toBeGreaterThan(0)
+    );
+    expect(screen.queryByText("Start 30-day trial")).toBeNull();
+    expect(screen.queryByText("Review paid checkout")).toBeNull();
+    expect(screen.queryByLabelText("Resume saved subscription checkout")).toBeNull();
+    expect(screen.queryByText(/already used its one introductory trial/)).toBeNull();
+    expect(screen.getByLabelText("Gift subscription mode")).toBeEnabled();
+    fireEvent.press(screen.getByLabelText("Gift subscription mode"));
+    expect(screen.getByLabelText("Gift recipient email")).toBeTruthy();
+    fireEvent.changeText(
+      screen.getByLabelText("Gift recipient email"),
+      "recipient@example.com"
+    );
+    const review = screen.getByLabelText("Review Pro Grower authoritative gift price");
+    expect(review).toBeEnabled();
+    fireEvent.press(review);
+    await waitFor(() => expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1));
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("does not advertise personal checkout for protected Admin while gifts are disabled", async () => {
+    (getSubscription as jest.Mock).mockResolvedValueOnce({
+      plan: "free",
+      subscriptionStatus: "free",
+      source: "platform",
+      canStartCheckout: false,
+      checkoutBlockedReason: "protected_identity",
+      trialUsed: false,
+      trialPlansUsed: [],
+      trialEligibility: {
+        enabled: true,
+        eligible: false,
+        days: 30,
+        policy: "one_per_account"
+      }
+    });
+    const screen = render(<Offers />);
+    await waitFor(() =>
+      expect(
+        screen.getAllByText(/Personal subscription checkout is disabled/).length
+      ).toBeGreaterThan(0)
+    );
+    expect(screen.queryByText(/Buy for me remains available/)).toBeNull();
+    expect(screen.queryByText(/already used its one introductory trial/)).toBeNull();
+    expect(screen.getByLabelText("Gift subscriptions unavailable")).toBeDisabled();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+  });
+
   it("accepts only the exact raw web gift continuation", () => {
     expect(isExactOffersGiftContinuation({ gift: "1" }, "", "/offers?gift=1")).toBe(true);
     expect(isExactOffersGiftContinuation({ gift: "1" }, "", "/offers?gift=%31")).toBe(

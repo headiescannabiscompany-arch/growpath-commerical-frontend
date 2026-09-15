@@ -341,11 +341,13 @@ export default function Offers() {
             Choose your GrowPath plan
           </Text>
           <Text style={styles.headerSubtitle}>
-            {eligibleTrialPlanTitles.length > 0
-              ? `This account has one ${trialDays}-day introductory trial. Choose which plan to try; using it consumes the account's only trial. Stripe requires a payment method and paid billing begins after the trial unless canceled.`
-              : trialEnabled
-                ? `This account has already used its one introductory trial. Starting a paid plan will bill the shown price when Stripe checkout completes.`
-                : "New trials have ended. Stripe checkout begins paid billing immediately."}
+            {subscription?.checkoutBlockedReason === "protected_identity"
+              ? access.message
+              : eligibleTrialPlanTitles.length > 0
+                ? `This account has one ${trialDays}-day introductory trial. Choose which plan to try; using it consumes the account's only trial. Stripe requires a payment method and paid billing begins after the trial unless canceled.`
+                : trialEnabled
+                  ? `This account has already used its one introductory trial. Starting a paid plan will bill the shown price when Stripe checkout completes.`
+                  : "New trials have ended. Stripe checkout begins paid billing immediately."}
           </Text>
           <View style={styles.segment}>
             {(["monthly", "yearly"] as const).map((item) => {
@@ -544,7 +546,9 @@ export default function Offers() {
               ? authenticated
                 ? "Switch to gift mode when you want the checkout tied to another email address."
                 : "Sign in with the purchasing account before requesting a gift price or opening Stripe."
-              : "Buy for me remains available. Gift controls will open only after the recipient handoff is ready."}
+              : subscription?.checkoutBlockedReason === "protected_identity"
+                ? "Gift controls will open only after the recipient handoff is ready."
+                : "Buy for me remains available. Gift controls will open only after the recipient handoff is ready."}
           </Text>
         )}
         {!giftMode && giftCheckoutConfigured && !authenticated ? (
