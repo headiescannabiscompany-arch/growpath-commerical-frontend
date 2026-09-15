@@ -102,6 +102,10 @@
       "title": "Terms of Service | GrowPath",
       "description": "Read the GrowPath terms of service for accounts, subscriptions, user content, commerce, courses, and app usage."
     },
+    "updates": {
+      "title": "Updates | GrowPathAI",
+      "description": "See recent GrowPathAI releases, updates in testing, and planned improvements."
+    },
     "support": {
       "title": "Support | GrowPath",
       "description": "Get GrowPath support for accounts, billing, subscriptions, privacy, grows, courses, commercial profiles, and facilities."

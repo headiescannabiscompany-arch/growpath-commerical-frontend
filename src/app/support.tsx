@@ -8,7 +8,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 
 import { sendSupportContact, type SupportContactTopic } from "@/api/support";
 import BackButton from "@/components/nav/BackButton";
@@ -175,6 +175,17 @@ export default function SupportPage() {
         </Text>
       </View>
 
+      <Link
+        href="/updates"
+        style={{
+          color: palette.link,
+          paddingVertical: 12,
+          marginBottom: 12,
+          textDecorationLine: "underline"
+        }}
+      >
+        Recent and planned updates
+      </Link>
       <View style={styles.form}>
         <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Send a Support Email

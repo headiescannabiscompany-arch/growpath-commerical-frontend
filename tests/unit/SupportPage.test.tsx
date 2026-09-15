@@ -7,6 +7,14 @@ import { getThemePalette } from "@/theme/appTheme";
 let mockParams: Record<string, string> = {};
 
 jest.mock("expo-router", () => ({
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => {
+    const { Text } = require("react-native");
+    return (
+      <Text accessibilityRole="link" accessibilityHint={href}>
+        {children}
+      </Text>
+    );
+  },
   useLocalSearchParams: () => mockParams,
   useRouter: () => ({ back: jest.fn(), canGoBack: () => true, replace: jest.fn() })
 }));
@@ -20,6 +28,10 @@ describe("SupportPage", () => {
     const screen = render(<SupportPage />);
 
     expect(screen.getByText("Support")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Recent and planned updates" }).props
+        .accessibilityHint
+    ).toBe("/updates");
     expect(screen.getByRole("header", { name: "Support" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Back" })).toBeTruthy();
     expect(screen.getByRole("header", { name: "Send a Support Email" })).toBeTruthy();

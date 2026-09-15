@@ -239,6 +239,7 @@ const fallbackRoutes = [
   "privacy",
   "terms",
   "support",
+  "updates",
   "account/delete",
   "account/billing",
   "account/gift-checkout/cancel",
@@ -626,6 +627,10 @@ const routeSeo = new Map(
       }
     ],
     [
+      "updates",
+      publicRouteMetadata.routes.updates
+    ],
+    [
       "account/delete",
       {
         title: "Delete Account | GrowPath",
@@ -661,7 +666,8 @@ const sitemapRoutes = [
   { route: "communities", priority: "0.5", changefreq: "weekly" },
   { route: "privacy", priority: "0.3", changefreq: "monthly" },
   { route: "terms", priority: "0.3", changefreq: "monthly" },
-  { route: "support", priority: "0.5", changefreq: "monthly" }
+  { route: "support", priority: "0.5", changefreq: "monthly" },
+  { route: "updates", priority: "0.5", changefreq: "weekly" }
 ];
 
 function escapeHtml(value) {
