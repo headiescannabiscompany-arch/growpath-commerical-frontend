@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -22,7 +23,7 @@ import {
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { fmtDate } from "@/features/grows/routeUtils";
-import { resolveImageUri } from "@/utils/photoUploads";
+import { persistImageUris, resolveImageUri } from "@/utils/photoUploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -63,6 +64,7 @@ export default function LogDetailScreen() {
   const [deleting, setDeleting] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [brokenPhotos, setBrokenPhotos] = useState<Record<string, true>>({});
+  const [addedPhotos, setAddedPhotos] = useState<ImagePicker.ImagePickerAsset[]>([]);
   const [form, setForm] = useState({
     title: "",
     date: "",
@@ -82,6 +84,7 @@ export default function LogDetailScreen() {
     const row = await getPersonalLog(logId);
     setLog(row);
     setBrokenPhotos({});
+    setAddedPhotos([]);
     if (row) {
       setForm({
         title: row.title || "",
@@ -102,28 +105,92 @@ export default function LogDetailScreen() {
     }, [load])
   );
 
+  async function pickPhotos() {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        setFeedback("Photo-library permission is required to attach images.");
+        return;
+      }
+      const picked = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        allowsEditing: false,
+        quality: 0.8
+      });
+      if (!picked.canceled) {
+        setAddedPhotos((current) => [
+          ...current,
+          ...picked.assets.filter((photo) => photo.uri)
+        ]);
+        setFeedback("");
+      }
+    } catch {
+      setFeedback("Unable to open photos. Please try again.");
+    }
+  }
+
   async function save() {
+    if (saving) return;
     if (!logId || !form.title.trim() || !form.date.trim()) {
       setFeedback("Title and date are required.");
       return;
     }
     setSaving(true);
     setFeedback("");
-    const updated = await updatePersonalLog(logId, {
-      title: form.title.trim(),
-      date: form.date.trim(),
-      type: form.type.trim() || "other",
-      notes: form.notes.trim(),
-      tags: splitTags(form.tags)
-    });
-    setSaving(false);
-    if (!updated) {
-      setFeedback("Unable to save journal entry.");
-      return;
+    try {
+      const uploaded = await persistImageUris(addedPhotos.map((photo) => photo.uri));
+      // Keep successful uploads on a failed PATCH so retrying does not upload them again.
+      setAddedPhotos((current) =>
+        current.map((photo, index) => ({ ...photo, uri: uploaded[index] }))
+      );
+      const photoPatch = uploaded.length
+        ? {
+            photos: [...(log?.photos || []), ...uploaded],
+            photoMetadata: [
+              ...(log?.photos || []).map((url) => ({
+                ...log?.photoMetadata?.find((metadata) => metadata.url === url),
+                url
+              })),
+              ...uploaded.map((url, index) => ({
+                url,
+                growId: log?.growId,
+                plantId: log?.plantId || null,
+                logId,
+                mimeType: addedPhotos[index]?.mimeType || null,
+                width: addedPhotos[index]?.width || null,
+                height: addedPhotos[index]?.height || null,
+                sizeBytes: addedPhotos[index]?.fileSize || null,
+                consentForAI: false,
+                consentForTraining: false
+              }))
+            ]
+          }
+        : {};
+      const updated = await updatePersonalLog(logId, {
+        title: form.title.trim(),
+        date: form.date.trim() === dateOnly(log?.date) ? log?.date : form.date.trim(),
+        type: form.type.trim() || "other",
+        notes: form.notes.trim(),
+        tags: splitTags(form.tags),
+        ...photoPatch
+      });
+      if (!updated) {
+        setFeedback("Unable to save journal entry.");
+        return;
+      }
+      setLog(updated);
+      setAddedPhotos([]);
+      setBrokenPhotos({});
+      setEditing(false);
+      setFeedback("Journal entry saved.");
+    } catch {
+      setFeedback(
+        "Unable to upload photos or save this entry. Your changes are still here; please try again."
+      );
+    } finally {
+      setSaving(false);
     }
-    setLog(updated);
-    setEditing(false);
-    setFeedback("Journal entry saved.");
   }
 
   async function remove() {
@@ -252,6 +319,41 @@ export default function LogDetailScreen() {
               selectionColor={palette.accent}
               accessibilityLabel="Edit log tags"
             />
+            <Text style={styles.label}>Photos</Text>
+            <Text style={styles.cardText}>
+              {log.photos?.length || 0} saved photos. New photos are added when you save.
+              Published timeline copies stay unchanged until you review and publish again.
+            </Text>
+            <Pressable
+              style={styles.secondaryButton}
+              onPress={pickPhotos}
+              disabled={saving}
+              accessibilityRole="button"
+              accessibilityLabel="Add photos to journal entry"
+            >
+              <Text style={styles.secondaryButtonText}>Add Photos</Text>
+            </Pressable>
+            <View style={styles.photoGrid}>
+              {addedPhotos.map((photo, index) => (
+                <View key={`${photo.uri}-${index}`} style={styles.photoTile}>
+                  <Image
+                    source={{ uri: resolveImageUri(photo.uri) }}
+                    style={[styles.photoThumb, { width: photoTileWidth }]}
+                    accessibilityLabel={`New journal photo ${index + 1}`}
+                  />
+                  <Pressable
+                    onPress={() =>
+                      setAddedPhotos((current) => current.filter((_, i) => i !== index))
+                    }
+                    disabled={saving}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove new photo ${index + 1}`}
+                  >
+                    <Text style={styles.secondaryButtonText}>Remove</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
             <View style={styles.row}>
               <Pressable
                 style={[styles.primaryButton, saving && styles.disabled]}
@@ -266,7 +368,11 @@ export default function LogDetailScreen() {
               </Pressable>
               <Pressable
                 style={styles.secondaryButton}
-                onPress={() => setEditing(false)}
+                disabled={saving}
+                onPress={() => {
+                  setAddedPhotos([]);
+                  setEditing(false);
+                }}
                 accessibilityRole="button"
                 accessibilityLabel="Cancel log editing"
               >

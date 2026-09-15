@@ -10,6 +10,20 @@ import { getThemePalette } from "@/theme/appTheme";
 const mockGetPersonalLog = jest.fn();
 const mockUpdatePersonalLog = jest.fn();
 const mockDeletePersonalLog = jest.fn();
+const mockPickPhotos = jest.fn();
+const mockPhotoPermission = jest.fn();
+const mockPersistPhotos = jest.fn();
+
+jest.mock("expo-image-picker", () => ({
+  MediaTypeOptions: { Images: "Images" },
+  requestMediaLibraryPermissionsAsync: () => mockPhotoPermission(),
+  launchImageLibraryAsync: (...args: any[]) => mockPickPhotos(...args)
+}));
+
+jest.mock("@/utils/photoUploads", () => ({
+  ...jest.requireActual("@/utils/photoUploads"),
+  persistImageUris: (...args: any[]) => mockPersistPhotos(...args)
+}));
 
 jest.mock("@/api/logs", () => ({
   getPersonalLog: (...args: any[]) => mockGetPersonalLog(...args),
@@ -58,6 +72,12 @@ jest.mock("@/components/nav/BackButton", () => {
 describe("LogDetailScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockPhotoPermission.mockResolvedValue({ granted: true });
+    mockPickPhotos.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: "blob:new-photo", width: 800, height: 600, mimeType: "image/jpeg" }]
+    });
+    mockPersistPhotos.mockResolvedValue(["/uploads/new-photo.jpg"]);
     mockGetPersonalLog.mockResolvedValue({
       id: "log-1",
       growId: "grow-1",
@@ -145,5 +165,101 @@ describe("LogDetailScreen", () => {
         expect(field.props.selectionColor).toBe(palette.accent);
       }
     );
+  });
+
+  it("adds photos to an older entry without replacing existing photos or granting AI consent", async () => {
+    mockUpdatePersonalLog.mockImplementation(async (_id, patch) => ({
+      ...(await mockGetPersonalLog()),
+      ...patch
+    }));
+    const screen = render(<LogDetailScreen />);
+    await waitFor(() => expect(screen.getByText("Leaf photo")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Edit log entry"));
+    fireEvent.press(screen.getByLabelText("Add photos to journal entry"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("New journal photo 1")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Save log changes"));
+    await waitFor(() => expect(screen.getByText("Journal entry saved.")).toBeTruthy());
+    expect(mockPersistPhotos).toHaveBeenCalledWith(["blob:new-photo"]);
+    expect(mockUpdatePersonalLog).toHaveBeenCalledWith(
+      "log-1",
+      expect.objectContaining({
+        date: "2026-06-30T12:00:00.000Z",
+        photos: ["/uploads/log-photo.jpg", "/uploads/new-photo.jpg"],
+        photoMetadata: [
+          expect.objectContaining({ url: "/uploads/log-photo.jpg", width: 1600 }),
+          expect.objectContaining({
+            url: "/uploads/new-photo.jpg",
+            consentForAI: false,
+            consentForTraining: false
+          })
+        ]
+      })
+    );
+    expect(screen.getByLabelText("Journal photo 2")).toBeTruthy();
+  });
+
+  it("keeps the draft on upload failure and does not save partial changes", async () => {
+    mockPersistPhotos.mockRejectedValue(new Error("Upload unavailable"));
+    const screen = render(<LogDetailScreen />);
+    await waitFor(() => expect(screen.getByText("Leaf photo")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Edit log entry"));
+    fireEvent.press(screen.getByLabelText("Add photos to journal entry"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("New journal photo 1")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Save log changes"));
+    await waitFor(() =>
+      expect(screen.getByText(/Your changes are still here/)).toBeTruthy()
+    );
+    expect(mockUpdatePersonalLog).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("New journal photo 1")).toBeTruthy();
+  });
+
+  it("does not attach canceled draft photos when editing again", async () => {
+    const screen = render(<LogDetailScreen />);
+    await waitFor(() => expect(screen.getByText("Leaf photo")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Edit log entry"));
+    fireEvent.press(screen.getByLabelText("Add photos to journal entry"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("New journal photo 1")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Cancel log editing"));
+    fireEvent.press(screen.getByLabelText("Edit log entry"));
+    expect(screen.queryByLabelText("New journal photo 1")).toBeNull();
+    expect(mockUpdatePersonalLog).not.toHaveBeenCalled();
+    expect(mockPersistPhotos).not.toHaveBeenCalled();
+  });
+
+  it("leaves existing photos untouched when library permission is denied", async () => {
+    mockPhotoPermission.mockResolvedValue({ granted: false });
+    const screen = render(<LogDetailScreen />);
+    await waitFor(() => expect(screen.getByText("Leaf photo")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Edit log entry"));
+    fireEvent.press(screen.getByLabelText("Add photos to journal entry"));
+    await waitFor(() =>
+      expect(screen.getByText(/Photo-library permission is required/)).toBeTruthy()
+    );
+    expect(mockPickPhotos).not.toHaveBeenCalled();
+    expect(mockUpdatePersonalLog).not.toHaveBeenCalled();
+  });
+
+  it("reuses an uploaded photo after a failed save instead of uploading its local URI again", async () => {
+    mockUpdatePersonalLog.mockResolvedValue(null);
+    const screen = render(<LogDetailScreen />);
+    await waitFor(() => expect(screen.getByText("Leaf photo")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Edit log entry"));
+    fireEvent.press(screen.getByLabelText("Add photos to journal entry"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("New journal photo 1")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Save log changes"));
+    await waitFor(() =>
+      expect(screen.getByText("Unable to save journal entry.")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Save log changes"));
+    await waitFor(() => expect(mockPersistPhotos).toHaveBeenCalledTimes(2));
+    expect(mockPersistPhotos.mock.calls[1][0]).toEqual(["/uploads/new-photo.jpg"]);
   });
 });
