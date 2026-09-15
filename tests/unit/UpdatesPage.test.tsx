@@ -26,9 +26,7 @@ describe("public Updates page", () => {
       expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
     }
     expect(screen.getByText("Last updated September 15, 2026")).toBeTruthy();
-    expect(
-      screen.getByText(/No additional updates are currently listed as in testing/)
-    ).toBeTruthy();
+    expect(screen.getByText("Add photos to older journal entries")).toBeTruthy();
     expect(screen.getByText(/not a promise of a release date/)).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Contact Support" }).props.accessibilityHint
@@ -44,6 +42,18 @@ describe("public Updates page", () => {
       title: "Updates | GrowPathAI",
       index: true
     });
+  });
+
+  it("includes the remaining public work without presenting it as released", () => {
+    expect(PUBLIC_UPDATE_SECTIONS[2].entries.map((entry) => entry.id)).toEqual([
+      "timeline-improvements",
+      "account-admin-controls",
+      "complimentary-access-live-gifts",
+      "admin-safety-review",
+      "course-gifting"
+    ]);
+    expect(PUBLIC_UPDATE_SECTIONS[1].entries[0].id).toBe("timeline-photo-editing");
+    expect(PUBLIC_UPDATE_SECTIONS[0].entries).toHaveLength(2);
   });
 
   it.each(["day", "night"] as const)(

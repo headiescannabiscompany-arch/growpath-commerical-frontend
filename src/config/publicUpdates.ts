@@ -31,7 +31,16 @@ export const PUBLIC_UPDATE_SECTIONS = [
     title: "Pending updates · In testing",
     description: "Not yet released. Items appear here when testing is underway.",
     emptyMessage: "No additional updates are currently listed as in testing.",
-    entries: []
+    entries: [
+      {
+        id: "timeline-photo-editing",
+        title: "Add photos to older journal entries",
+        date: "September 15, 2026",
+        dateLabel: "Testing started",
+        summary:
+          "Photo attachments in the existing entry editor are being tested. This change is not live yet; saved photos and entry dates must remain intact."
+      }
+    ]
   },
   {
     id: "planned",
@@ -46,6 +55,30 @@ export const PUBLIC_UPDATE_SECTIONS = [
         dateLabel: "Plan reviewed",
         summary:
           "Add photos to existing entries, improve calendar-date accuracy, and make shared visual timelines show multiple milestones and photos."
+      },
+      {
+        id: "account-admin-controls",
+        title: "Account and Admin controls",
+        date: "September 15, 2026",
+        dateLabel: "Plan reviewed",
+        summary:
+          "Finish verification of account-management and removal controls, with safeguards for protected accounts and existing user content."
+      },
+      {
+        id: "complimentary-access-live-gifts",
+        title: "Complimentary access and gifts during Lives",
+        date: "September 15, 2026",
+        dateLabel: "Plan reviewed",
+        summary:
+          "Complete remaining release checks for Admin-issued complimentary access and the connection between Live chat and subscription gifting."
+      },
+      {
+        id: "admin-safety-review",
+        title: "Private Admin evidence and reporting tools",
+        date: "September 15, 2026",
+        dateLabel: "Plan reviewed",
+        summary:
+          "Complete privacy, access-control, retention, and reporting review before wider availability of sensitive Admin tools."
       },
       {
         id: "course-gifting",
