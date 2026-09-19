@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -61,6 +61,8 @@ export default function LogDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [pickingPhotos, setPickingPhotos] = useState(false);
+  const photoOperationInProgress = useRef(false);
   const [deleting, setDeleting] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [brokenPhotos, setBrokenPhotos] = useState<Record<string, true>>({});
@@ -106,6 +108,9 @@ export default function LogDetailScreen() {
   );
 
   async function pickPhotos() {
+    if (photoOperationInProgress.current) return;
+    photoOperationInProgress.current = true;
+    setPickingPhotos(true);
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
@@ -127,23 +132,36 @@ export default function LogDetailScreen() {
       }
     } catch {
       setFeedback("Unable to open photos. Please try again.");
+    } finally {
+      photoOperationInProgress.current = false;
+      setPickingPhotos(false);
     }
   }
 
   async function save() {
-    if (saving) return;
+    if (photoOperationInProgress.current) return;
     if (!logId || !form.title.trim() || !form.date.trim()) {
       setFeedback("Title and date are required.");
       return;
     }
+    photoOperationInProgress.current = true;
     setSaving(true);
     setFeedback("");
     try {
-      const uploaded = await persistImageUris(addedPhotos.map((photo) => photo.uri));
-      // Keep successful uploads on a failed PATCH so retrying does not upload them again.
-      setAddedPhotos((current) =>
-        current.map((photo, index) => ({ ...photo, uri: uploaded[index] }))
-      );
+      const uploaded: string[] = [];
+      for (const [index, photo] of addedPhotos.entries()) {
+        const [url] = await persistImageUris([photo.uri]);
+        if (!url) throw new Error("Image upload did not return a URL.");
+        uploaded.push(url);
+        // Retain each upload even if a later photo or the journal PATCH fails.
+        setAddedPhotos((current) =>
+          current.map((candidate, candidateIndex) =>
+            candidateIndex === index && candidate.uri === photo.uri
+              ? { ...candidate, uri: url }
+              : candidate
+          )
+        );
+      }
       const photoPatch = uploaded.length
         ? {
             photos: [...(log?.photos || []), ...uploaded],
@@ -189,6 +207,7 @@ export default function LogDetailScreen() {
         "Unable to upload photos or save this entry. Your changes are still here; please try again."
       );
     } finally {
+      photoOperationInProgress.current = false;
       setSaving(false);
     }
   }
@@ -277,6 +296,7 @@ export default function LogDetailScreen() {
             <TextInput
               style={styles.input}
               value={form.title}
+              editable={!saving}
               onChangeText={(title) => setForm((current) => ({ ...current, title }))}
               placeholderTextColor={palette.textMuted}
               selectionColor={palette.accent}
@@ -289,11 +309,13 @@ export default function LogDetailScreen() {
               placeholder="Choose log date"
               accessibilityLabel="Edit log date"
               optional={false}
+              disabled={saving}
             />
             <Text style={styles.label}>Type</Text>
             <TextInput
               style={styles.input}
               value={form.type}
+              editable={!saving}
               onChangeText={(type) => setForm((current) => ({ ...current, type }))}
               placeholderTextColor={palette.textMuted}
               selectionColor={palette.accent}
@@ -303,6 +325,7 @@ export default function LogDetailScreen() {
             <TextInput
               style={styles.notesInput}
               value={form.notes}
+              editable={!saving}
               onChangeText={(notes) => setForm((current) => ({ ...current, notes }))}
               multiline
               placeholderTextColor={palette.textMuted}
@@ -313,6 +336,7 @@ export default function LogDetailScreen() {
             <TextInput
               style={styles.input}
               value={form.tags}
+              editable={!saving}
               onChangeText={(tags) => setForm((current) => ({ ...current, tags }))}
               placeholder="watering, deficiency, follow-up"
               placeholderTextColor={palette.textMuted}
@@ -327,11 +351,13 @@ export default function LogDetailScreen() {
             <Pressable
               style={styles.secondaryButton}
               onPress={pickPhotos}
-              disabled={saving}
+              disabled={saving || pickingPhotos}
               accessibilityRole="button"
               accessibilityLabel="Add photos to journal entry"
             >
-              <Text style={styles.secondaryButtonText}>Add Photos</Text>
+              <Text style={styles.secondaryButtonText}>
+                {pickingPhotos ? "Opening photos..." : "Add Photos"}
+              </Text>
             </Pressable>
             <View style={styles.photoGrid}>
               {addedPhotos.map((photo, index) => (
@@ -345,7 +371,7 @@ export default function LogDetailScreen() {
                     onPress={() =>
                       setAddedPhotos((current) => current.filter((_, i) => i !== index))
                     }
-                    disabled={saving}
+                    disabled={saving || pickingPhotos}
                     accessibilityRole="button"
                     accessibilityLabel={`Remove new photo ${index + 1}`}
                   >
@@ -356,8 +382,11 @@ export default function LogDetailScreen() {
             </View>
             <View style={styles.row}>
               <Pressable
-                style={[styles.primaryButton, saving && styles.disabled]}
-                disabled={saving}
+                style={[
+                  styles.primaryButton,
+                  (saving || pickingPhotos) && styles.disabled
+                ]}
+                disabled={saving || pickingPhotos}
                 onPress={save}
                 accessibilityRole="button"
                 accessibilityLabel="Save log changes"
@@ -368,8 +397,9 @@ export default function LogDetailScreen() {
               </Pressable>
               <Pressable
                 style={styles.secondaryButton}
-                disabled={saving}
+                disabled={saving || pickingPhotos}
                 onPress={() => {
+                  if (photoOperationInProgress.current) return;
                   setAddedPhotos([]);
                   setEditing(false);
                 }}

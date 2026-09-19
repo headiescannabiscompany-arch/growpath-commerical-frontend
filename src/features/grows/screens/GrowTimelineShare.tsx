@@ -64,6 +64,9 @@ export default function GrowTimelineShare({
   );
   const [current, setCurrent] = useState<GrowTimelinePublicCopy | null>(null);
   const [preview, setPreview] = useState<GrowTimelinePublicPreview | null>(null);
+  const [reviewedInput, setReviewedInput] = useState<GrowTimelinePublicCopyInput | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sharingToCommunity, setSharingToCommunity] = useState(false);
@@ -120,11 +123,12 @@ export default function GrowTimelineShare({
             .filter((event) => selectedEventIds.has(String(event.id)))
             .flatMap((event) => timelineEventPhotos(event as any))
         )
-      ).slice(0, 12),
+      ),
     [events, selectedEventIds]
   );
 
   const toggleEvent = (event: any) => {
+    if (saving) return;
     setPreview(null);
     const id = String(event.id);
     const photos = timelineEventPhotos(event as any);
@@ -152,11 +156,12 @@ export default function GrowTimelineShare({
   };
 
   const togglePhoto = (url: string) => {
+    if (saving) return;
     setPreview(null);
     setSelectedPhotoUrls((previous) => {
       const next = new Set(previous);
       if (next.has(url)) next.delete(url);
-      else next.add(url);
+      else if (next.size < 12) next.add(url);
       return next;
     });
   };
@@ -197,12 +202,14 @@ export default function GrowTimelineShare({
   }, [events, preview, selectedPhotoUrls]);
 
   const review = async () => {
-    if (!growId || !title.trim() || !selectedEventIds.size) return;
+    if (saving || !growId || !title.trim() || !selectedEventIds.size) return;
+    const request = input();
     setSaving(true);
     setError("");
     setFeedback("");
     try {
-      const reviewed = await previewGrowTimelineCopy(workspace, growId, input());
+      const reviewed = await previewGrowTimelineCopy(workspace, growId, request);
+      setReviewedInput(request);
       setPreview(reviewed);
       setFeedback(
         "Review the exact public fields below, then publish when they are right."
@@ -216,12 +223,12 @@ export default function GrowTimelineShare({
   };
 
   const publish = async () => {
-    if (!growId || !preview) return;
+    if (saving || !growId || !preview || !reviewedInput) return;
     setSaving(true);
     setError("");
     setFeedback("");
     try {
-      const copy = await publishGrowTimelineCopy(workspace, growId, input());
+      const copy = await publishGrowTimelineCopy(workspace, growId, reviewedInput);
       setCurrent(copy);
       setPreview(null);
       setFeedback(
@@ -256,6 +263,13 @@ export default function GrowTimelineShare({
     presentation === "list" ? "Grow Timeline List" : "Visual Grow Story";
   const currentStoryLabel =
     current?.presentation === "list" ? "Grow Timeline List" : "Visual Grow Story";
+  const publishedPointCount = useMemo(
+    () =>
+      current?.presentation === "list"
+        ? current.events.length
+        : visualTimelineEvents(current?.events || []).length,
+    [current]
+  );
 
   const shareInCommunity = async () => {
     if (!current || !publicPath) return;
@@ -306,6 +320,31 @@ export default function GrowTimelineShare({
       {current ? (
         <View style={styles.currentCard}>
           <Text style={styles.sectionTitle}>Published version {current.version}</Text>
+          <Text style={styles.help}>
+            {publishedPointCount} published{" "}
+            {current.presentation === "list"
+              ? publishedPointCount === 1
+                ? "list entry"
+                : "list entries"
+              : publishedPointCount === 1
+                ? "timeline point"
+                : "timeline points"}
+            {" · "}
+            {current.photos.length} {current.photos.length === 1 ? "photo" : "photos"}.{" "}
+            Sharing uses this published version, not the selections below. To include more
+            entries or photos, preview your selection and publish a new version.
+          </Text>
+          {current.socialPreviewImageUrl ? (
+            <>
+              <Text style={styles.help}>Published social preview</Text>
+              <Image
+                accessibilityLabel="Published timeline social preview"
+                source={{ uri: current.socialPreviewImageUrl }}
+                style={styles.socialPreview}
+                resizeMode="contain"
+              />
+            </>
+          ) : null}
           <Text style={styles.help}>This link stays active until you withdraw it.</Text>
           <View style={styles.actions}>
             <Pressable
@@ -367,6 +406,7 @@ export default function GrowTimelineShare({
             accessibilityLabel="Public timeline title"
             style={styles.input}
             value={title}
+            editable={!saving}
             maxLength={160}
             onChangeText={(value) => {
               setTitle(value);
@@ -378,6 +418,7 @@ export default function GrowTimelineShare({
             accessibilityLabel="Public timeline description"
             style={[styles.input, styles.multiline]}
             value={description}
+            editable={!saving}
             maxLength={1000}
             multiline
             onChangeText={(value) => {
@@ -397,6 +438,7 @@ export default function GrowTimelineShare({
                 key={option}
                 accessibilityRole="button"
                 accessibilityState={{ selected: presentation === option }}
+                disabled={saving}
                 style={[
                   styles.secondaryButton,
                   presentation === option && styles.selected
@@ -421,8 +463,9 @@ export default function GrowTimelineShare({
             <>
               <Text style={styles.help}>
                 {selectedPhotoUrls.size} of {availablePhotos.length} available photos are
-                included. Each photo appears with its matching timeline entry in the{" "}
-                {selectedStoryLabel}. Tap a photo only if you want to keep it private.
+                included (up to 12). Each photo appears with its matching timeline entry
+                in the {selectedStoryLabel}. Uncheck a photo to keep it private or make
+                room for another.
               </Text>
               <View style={styles.photoGrid}>
                 {availablePhotos.map((url) => {
@@ -432,6 +475,7 @@ export default function GrowTimelineShare({
                       key={url}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: selected }}
+                      disabled={saving || (!selected && selectedPhotoUrls.size >= 12)}
                       accessibilityLabel={`${selected ? "Remove" : "Include"} timeline photo`}
                       style={[styles.photoCard, selected && styles.selected]}
                       onPress={() => togglePhoto(url)}
@@ -526,6 +570,7 @@ export default function GrowTimelineShare({
                     key={String(event.id)}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: selected }}
+                    disabled={saving}
                     accessibilityLabel={`${selected ? "Remove" : "Include"} ${event.title}`}
                     style={[styles.event, selected && styles.selected]}
                     onPress={() => toggleEvent(event)}
@@ -624,6 +669,12 @@ const createStyles = (palette: ThemePalette) =>
       padding: 4
     },
     photo: { width: 150, height: 110, borderRadius: radius.card },
+    socialPreview: {
+      width: "100%",
+      aspectRatio: 1200 / 630,
+      marginTop: 10,
+      borderRadius: radius.card
+    },
     photoLabel: {
       color: palette.text,
       fontSize: 12,

@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import LogDetailScreen, {
   createLogDetailStyles
@@ -13,6 +13,14 @@ const mockDeletePersonalLog = jest.fn();
 const mockPickPhotos = jest.fn();
 const mockPhotoPermission = jest.fn();
 const mockPersistPhotos = jest.fn();
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((complete) => {
+    resolve = complete;
+  });
+  return { promise, resolve };
+}
 
 jest.mock("expo-image-picker", () => ({
   MediaTypeOptions: { Images: "Images" },
@@ -261,5 +269,170 @@ describe("LogDetailScreen", () => {
     fireEvent.press(screen.getByLabelText("Save log changes"));
     await waitFor(() => expect(mockPersistPhotos).toHaveBeenCalledTimes(2));
     expect(mockPersistPhotos.mock.calls[1][0]).toEqual(["/uploads/new-photo.jpg"]);
+  });
+
+  it("retains completed uploads when a later photo fails and retries only its local URI", async () => {
+    mockPickPhotos.mockResolvedValue({
+      canceled: false,
+      assets: [
+        { uri: "blob:first", width: 800, height: 600, mimeType: "image/jpeg" },
+        { uri: "blob:second", width: 1200, height: 900, mimeType: "image/png" }
+      ]
+    });
+    mockPersistPhotos
+      .mockResolvedValueOnce(["/uploads/first.jpg"])
+      .mockRejectedValueOnce(new Error("Second photo upload failed"))
+      .mockImplementation(async ([uri]) => [
+        uri === "blob:second" ? "/uploads/second.png" : uri
+      ]);
+    mockUpdatePersonalLog.mockImplementation(async (_id, patch) => ({
+      ...(await mockGetPersonalLog()),
+      ...patch
+    }));
+    const screen = render(<LogDetailScreen />);
+    await waitFor(() => expect(screen.getByText("Leaf photo")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Edit log entry"));
+    fireEvent.press(screen.getByLabelText("Add photos to journal entry"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("New journal photo 2")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Save log changes"));
+    await waitFor(() =>
+      expect(screen.getByText(/Your changes are still here/)).toBeTruthy()
+    );
+    expect(mockUpdatePersonalLog).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("New journal photo 1").props.source).toEqual({
+      uri: `${API_URL}/uploads/first.jpg`
+    });
+    expect(screen.getByLabelText("New journal photo 2").props.source).toEqual({
+      uri: "blob:second"
+    });
+
+    fireEvent.press(screen.getByLabelText("Save log changes"));
+    await waitFor(() => expect(screen.getByText("Journal entry saved.")).toBeTruthy());
+    expect(mockPersistPhotos.mock.calls.map(([uris]) => uris)).toEqual([
+      ["blob:first"],
+      ["blob:second"],
+      ["/uploads/first.jpg"],
+      ["blob:second"]
+    ]);
+    expect(mockUpdatePersonalLog).toHaveBeenCalledWith(
+      "log-1",
+      expect.objectContaining({
+        date: "2026-06-30T12:00:00.000Z",
+        photos: ["/uploads/log-photo.jpg", "/uploads/first.jpg", "/uploads/second.png"],
+        photoMetadata: [
+          expect.objectContaining({ url: "/uploads/log-photo.jpg", width: 1600 }),
+          expect.objectContaining({ url: "/uploads/first.jpg", width: 800 }),
+          expect.objectContaining({ url: "/uploads/second.png", width: 1200 })
+        ]
+      })
+    );
+  });
+
+  it("waits for the pending picker before allowing save, cancel, removal, or another picker", async () => {
+    const pendingPicker = deferred<any>();
+    mockPickPhotos
+      .mockResolvedValueOnce({
+        canceled: false,
+        assets: [{ uri: "blob:first", width: 800, height: 600 }]
+      })
+      .mockReturnValueOnce(pendingPicker.promise);
+    mockPersistPhotos.mockImplementation(async ([uri]) => [
+      uri === "blob:first" ? "/uploads/first.jpg" : "/uploads/second.jpg"
+    ]);
+    mockUpdatePersonalLog.mockImplementation(async (_id, patch) => ({
+      ...(await mockGetPersonalLog()),
+      ...patch
+    }));
+    const screen = render(<LogDetailScreen />);
+    await waitFor(() => expect(screen.getByText("Leaf photo")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Edit log entry"));
+    fireEvent.press(screen.getByLabelText("Add photos to journal entry"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("New journal photo 1")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Add photos to journal entry"));
+    await waitFor(() => expect(mockPickPhotos).toHaveBeenCalledTimes(2));
+
+    for (const label of [
+      "Save log changes",
+      "Cancel log editing",
+      "Remove new photo 1",
+      "Add photos to journal entry"
+    ]) {
+      expect(screen.getByLabelText(label)).toBeDisabled();
+      fireEvent.press(screen.getByLabelText(label));
+    }
+    expect(mockPickPhotos).toHaveBeenCalledTimes(2);
+    expect(mockPersistPhotos).not.toHaveBeenCalled();
+    expect(mockUpdatePersonalLog).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("New journal photo 1").props.source).toEqual({
+      uri: "blob:first"
+    });
+
+    await act(async () => {
+      pendingPicker.resolve({
+        canceled: false,
+        assets: [{ uri: "blob:second", width: 1200, height: 900 }]
+      });
+    });
+    expect(screen.getByLabelText("New journal photo 2").props.source).toEqual({
+      uri: "blob:second"
+    });
+    expect(screen.getByLabelText("Save log changes")).not.toBeDisabled();
+    fireEvent.press(screen.getByLabelText("Save log changes"));
+    await waitFor(() => expect(screen.getByText("Journal entry saved.")).toBeTruthy());
+    expect(mockUpdatePersonalLog).toHaveBeenCalledWith(
+      "log-1",
+      expect.objectContaining({
+        photos: ["/uploads/log-photo.jpg", "/uploads/first.jpg", "/uploads/second.jpg"]
+      })
+    );
+  });
+
+  it("keeps the photo draft locked while its upload is pending", async () => {
+    const pendingUpload = deferred<string[]>();
+    mockPersistPhotos.mockReturnValueOnce(pendingUpload.promise);
+    mockUpdatePersonalLog.mockResolvedValue(null);
+    const screen = render(<LogDetailScreen />);
+    await waitFor(() => expect(screen.getByText("Leaf photo")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Edit log entry"));
+    fireEvent.press(screen.getByLabelText("Add photos to journal entry"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("New journal photo 1")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Save log changes"));
+    for (const label of [
+      "Save log changes",
+      "Cancel log editing",
+      "Remove new photo 1",
+      "Add photos to journal entry"
+    ]) {
+      expect(screen.getByLabelText(label)).toBeDisabled();
+      fireEvent.press(screen.getByLabelText(label));
+    }
+    expect(mockPersistPhotos).toHaveBeenCalledTimes(1);
+    expect(mockPickPhotos).toHaveBeenCalledTimes(1);
+    for (const label of [
+      "Edit log title",
+      "Edit log type",
+      "Edit log notes",
+      "Edit log tags"
+    ]) {
+      expect(screen.getByLabelText(label).props.editable).toBe(false);
+    }
+    expect(screen.getByLabelText("Edit log date")).toBeDisabled();
+
+    await act(async () => pendingUpload.resolve(["/uploads/new-photo.jpg"]));
+    await waitFor(() =>
+      expect(screen.getByText("Unable to save journal entry.")).toBeTruthy()
+    );
+    expect(screen.getByLabelText("New journal photo 1").props.source).toEqual({
+      uri: `${API_URL}/uploads/new-photo.jpg`
+    });
+    expect(screen.getByLabelText("Save log changes")).not.toBeDisabled();
+    expect(screen.getByLabelText("Edit log title").props.editable).toBe(true);
+    expect(screen.getByLabelText("Edit log date")).not.toBeDisabled();
   });
 });

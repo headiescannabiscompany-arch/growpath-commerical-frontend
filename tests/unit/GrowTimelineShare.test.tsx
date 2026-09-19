@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import GrowTimelineShare from "@/features/grows/screens/GrowTimelineShare";
 
@@ -252,7 +252,7 @@ describe("GrowTimelineShare", () => {
     expect(screen.queryByLabelText("Photo 2 for Paired journal entry")).toBeNull();
   });
 
-  it("selects twelve unique photos when parent and audit events repeat URLs", async () => {
+  it("lets the owner choose later photos without exceeding twelve selected photos", async () => {
     const repeatedPhotoEvents = Array.from({ length: 13 }, (_, index) => {
       const photoUrl = `/uploads/journal-photo-${index + 1}.jpg`;
       return [
@@ -280,9 +280,102 @@ describe("GrowTimelineShare", () => {
     const screen = render(<GrowTimelineShare workspace="personal" />);
 
     await waitFor(() =>
-      expect(screen.getByText(/12 of 12 available photos/)).toBeTruthy()
+      expect(screen.getByText(/12 of 13 available photos/)).toBeTruthy()
     );
     expect(screen.getAllByLabelText("Remove timeline photo")).toHaveLength(12);
+    fireEvent.press(screen.getByLabelText("Include timeline photo"));
+    expect(screen.getAllByLabelText("Remove timeline photo")).toHaveLength(12);
+
+    fireEvent.press(screen.getAllByLabelText("Remove timeline photo")[0]);
+    fireEvent.press(screen.getAllByLabelText("Include timeline photo")[1]);
+    fireEvent.press(screen.getByLabelText("Review public grow timeline preview"));
+    await waitFor(() => expect(mockPreview).toHaveBeenCalledTimes(1));
+    const selected = mockPreview.mock.calls[0][2].photoUrls;
+    expect(selected).toHaveLength(12);
+    expect(selected).toContain("/uploads/journal-photo-13.jpg");
+    expect(selected).not.toContain("/uploads/journal-photo-1.jpg");
+  });
+
+  it("keeps review controls locked while preparing and publishes the reviewed selection", async () => {
+    let finishReview!: (value: any) => void;
+    mockPreview.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finishReview = resolve;
+      })
+    );
+    const screen = render(<GrowTimelineShare workspace="personal" />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Review public grow timeline preview")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Review public grow timeline preview"));
+
+    expect(screen.getByLabelText("Public timeline title").props.editable).toBe(false);
+    expect(screen.getByLabelText("Public timeline description").props.editable).toBe(
+      false
+    );
+    fireEvent.press(screen.getByText("Vertical Detailed List"));
+    fireEvent.press(screen.getByLabelText("Remove timeline photo"));
+    await act(async () => {
+      finishReview(previewResult("visual"));
+    });
+    fireEvent.press(screen.getByLabelText("Publish reviewed grow timeline"));
+    await waitFor(() => expect(mockPublish).toHaveBeenCalledTimes(1));
+    expect(mockPublish.mock.calls[0][2]).toEqual(mockPreview.mock.calls[0][2]);
+    expect(mockPublish.mock.calls[0][2].presentation).toBe("visual");
+    expect(mockPublish.mock.calls[0][2].photoUrls).toHaveLength(1);
+  });
+
+  it("previews seven actual milestones and photos without publishing them automatically", async () => {
+    const milestones = Array.from({ length: 7 }, (_, index) => ({
+      id: `GrowLog:week-${index + 1}`,
+      type: "log_created",
+      title: `Week ${index + 1}`,
+      summary: `Saved observation ${index + 1}`,
+      timestamp: `2026-08-${String(index + 1).padStart(2, "0")}T00:00:00.000Z`,
+      payload: { photos: [`/uploads/week-${index + 1}.jpg`] }
+    }));
+    mockGetTimeline.mockResolvedValueOnce(milestones);
+    mockPreview.mockResolvedValueOnce({
+      ...previewResult("visual"),
+      events: milestones.map(({ payload: _payload, ...event }) => ({
+        ...event,
+        tags: []
+      })),
+      photoCount: 7
+    });
+    const screen = render(<GrowTimelineShare workspace="personal" />);
+    await waitFor(() =>
+      expect(screen.getAllByLabelText("Remove timeline photo")).toHaveLength(7)
+    );
+    fireEvent.press(screen.getByLabelText("Review public grow timeline preview"));
+    await waitFor(() => expect(screen.getByText("7 points")).toBeTruthy());
+    expect(screen.getByText("7 events · 7 safe public photos")).toBeTruthy();
+    expect(mockPreview.mock.calls[0][2].eventIds).toHaveLength(7);
+    expect(mockPreview.mock.calls[0][2].photoUrls).toHaveLength(7);
+    expect(screen.getByLabelText("Photo 1 for Week 1")).toBeTruthy();
+    expect(mockPublish).not.toHaveBeenCalled();
+  });
+
+  it("distinguishes a one-point published copy from a larger unpublished selection", async () => {
+    const socialPreviewImageUrl =
+      "https://api.growpathai.com/api/public/grow-timelines/preview-token/share-image?v=old";
+    mockGetCurrent.mockResolvedValueOnce({
+      ...publishedResult("visual"),
+      events: [previewResult("visual").events[0]],
+      socialPreviewImageUrl
+    });
+    const screen = render(<GrowTimelineShare workspace="personal" />);
+    await waitFor(() =>
+      expect(screen.getByText(/1 published timeline point · 0 photos/)).toBeTruthy()
+    );
+    expect(
+      screen.getByText(/Sharing uses this published version, not the selections below/)
+    ).toBeTruthy();
+    expect(screen.getByText(/2 of 2 saved events selected/)).toBeTruthy();
+    expect(
+      screen.getByLabelText("Published timeline social preview").props.source
+    ).toEqual({ uri: socialPreviewImageUrl });
+    expect(mockPublish).not.toHaveBeenCalled();
   });
 
   it("shares the visual story in Forum / Q&A with its canonical preview image", async () => {
@@ -323,6 +416,10 @@ describe("GrowTimelineShare", () => {
     const firstPhotoUrl = "https://api.growpathai.com/uploads/list-first-photo.jpg";
     mockGetCurrent.mockResolvedValue({
       ...publishedResult("list"),
+      events: [
+        { ...previewResult("list").events[0], id: "GrowLog:log-2", type: "log_created" },
+        previewResult("list").events[0]
+      ],
       photos: [{ url: firstPhotoUrl }],
       cannabisSpecific: false
     });
@@ -330,6 +427,7 @@ describe("GrowTimelineShare", () => {
 
     await waitFor(() => expect(screen.getByText("Published version 1")).toBeTruthy());
     expect(screen.getByText("✓ Vertical Detailed List")).toBeTruthy();
+    expect(screen.getByText(/2 published list entries · 1 photo/)).toBeTruthy();
     expect(screen.getByText("Preview Grow Timeline List")).toBeTruthy();
     expect(mockPublicShareActions).toHaveBeenCalledWith(
       expect.objectContaining({ heading: "Share Grow Timeline List" })
