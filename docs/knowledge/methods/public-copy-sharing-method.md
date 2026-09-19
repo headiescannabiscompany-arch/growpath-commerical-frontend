@@ -46,6 +46,13 @@ target in the Admin queue. Cannabis-specific copies follow the shared cannabis-i
 gate: signed-out and ineligible viewers receive the same unavailable response as a missing,
 withdrawn or moderated copy.
 
+Owning a cannabis-specific timeline does not override the public viewer's content
+controls. A legacy owner whose age information is missing may complete the
+one-time self-attestation in Profile, then separately opt into cannabis visibility
+if eligible. This must not alter or republish the private grow or frozen snapshot.
+Do not label self-attestation as verified identity, expose birth dates, or replace
+known age/provider records to make a shared link readable.
+
 Viewer-friendly downloads follow the same disclosure boundary even when the file remains
 private. They render short human-readable event summaries, not embedded model JSON, provider
 payloads, internal evidence fingerprints, receipts or record identifiers. When a saved note

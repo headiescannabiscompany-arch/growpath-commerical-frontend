@@ -208,6 +208,9 @@ describe("GrowPath knowledge registries", () => {
     expect(sharing?.warnings).toContain(
       "Withdrawal or moderation must delete unreferenced public derivatives; restore must safely rebuild them from the protected owned source before visibility returns."
     );
+    expect(sharing?.warnings).toContain(
+      "Legacy Profile age completion is one-time self-attestation, not verified identity; it must never overwrite known age records, expose birth dates, enable cannabis visibility, remove parental locks, or republish a grow."
+    );
   });
 
   it("limits context-specific sources to supported decisions", () => {

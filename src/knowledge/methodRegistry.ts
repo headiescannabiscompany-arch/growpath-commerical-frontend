@@ -65,7 +65,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Viewer-friendly downloads must replace raw JSON, provider payloads, evidence fingerprints, private IDs and oversized machine notes with a bounded readable summary and private-record handoff.",
       "Later private edits must not silently change an already-published snapshot.",
       "Withdrawal or moderation must delete unreferenced public derivatives; restore must safely rebuild them from the protected owned source before visibility returns.",
-      "Cannabis-specific public copies require the cannabis visibility and reporting gates before public release."
+      "Cannabis-specific public copies require the cannabis visibility and reporting gates before public release.",
+      "Legacy Profile age completion is one-time self-attestation, not verified identity; it must never overwrite known age records, expose birth dates, enable cannabis visibility, remove parental locks, or republish a grow."
     ],
     ["grow-timeline", "public-share-review"]
   ),

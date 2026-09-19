@@ -59,6 +59,7 @@ const CACHE_WINDOW_MS = 2000;
 type ApiMeOptions = {
   silent?: boolean;
   force?: boolean;
+  invalidateOn401?: boolean;
 };
 
 /** Fetch current user profile. Returns MeResponse or throws ApiError. */

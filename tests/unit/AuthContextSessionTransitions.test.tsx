@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, Text } from "react-native";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 const mockUsePushRegistration = jest.fn();
 const mockReadToken = jest.fn();
@@ -148,6 +148,7 @@ describe("AuthProvider persisted-session transitions", () => {
     expect(mockPersistToken).toHaveBeenCalledTimes(1);
     expect(mockPersistToken).toHaveBeenCalledWith(null);
     expect(mockResetWorkspaceSessionState).toHaveBeenCalledTimes(1);
+    expect(mockApiMe).toHaveBeenCalledWith({ invalidateOn401: false });
 
     fireEvent.press(screen.getByLabelText("Retry session"));
     expect(mockApiMe).toHaveBeenCalledTimes(1);
@@ -187,7 +188,10 @@ describe("AuthProvider persisted-session transitions", () => {
         isAuthed: true
       })
     );
-    expect(mockApiMe).toHaveBeenNthCalledWith(2, { force: true });
+    expect(mockApiMe).toHaveBeenNthCalledWith(2, {
+      force: true,
+      invalidateOn401: false
+    });
     expect(mockPersistToken).not.toHaveBeenCalled();
   });
 
@@ -290,4 +294,98 @@ describe("AuthProvider persisted-session transitions", () => {
       mockPersistToken.mock.invocationCallOrder[1]
     );
   });
+
+  it.each(["success", "401", "outage"])(
+    "ignores the former account's delayed refresh %s after a second login",
+    async (outcome) => {
+      let resolveOld!: (value: any) => void;
+      let rejectOld!: (reason: any) => void;
+      const oldRefresh = new Promise((resolve, reject) => {
+        resolveOld = resolve;
+        rejectOld = reject;
+      });
+      const secondUser = {
+        ...hydratedMe.user,
+        id: "user-2",
+        email: "second@example.com"
+      };
+      const secondContext = { mode: "commercial", plan: "commercial" };
+      mockApiMe
+        .mockResolvedValueOnce(hydratedMe)
+        .mockReturnValueOnce(oldRefresh)
+        .mockResolvedValueOnce({ user: secondUser, ctx: secondContext });
+      mockApiLogin.mockResolvedValue({ token: "second-session-token", user: secondUser });
+      const screen = renderProvider();
+      await waitFor(() => expect(authState(screen).meStatus).toBe("ready"));
+      fireEvent.press(screen.getByLabelText("Retry session"));
+      expect(mockApiMe).toHaveBeenNthCalledWith(2, {
+        force: true,
+        invalidateOn401: false
+      });
+      fireEvent.press(screen.getByLabelText("Log in second account"));
+      await waitFor(() =>
+        expect(authState(screen)).toMatchObject({
+          token: "second-session-token",
+          user: secondUser,
+          ctx: secondContext,
+          meStatus: "ready"
+        })
+      );
+      const persistedWrites = mockPersistToken.mock.calls.length;
+      await act(async () => {
+        if (outcome === "success") {
+          resolveOld({ ...hydratedMe, user: { ...hydratedMe.user, ageBand: "21_plus" } });
+        } else {
+          rejectOld(
+            Object.assign(new Error("Old request failed"), {
+              status: outcome === "401" ? 401 : 503
+            })
+          );
+        }
+      });
+      expect(authState(screen)).toMatchObject({
+        token: "second-session-token",
+        user: secondUser,
+        ctx: secondContext,
+        meStatus: "ready",
+        meError: null,
+        isAuthed: true
+      });
+      expect(authState(screen).user.ageBand).toBeUndefined();
+      expect(mockPersistToken).toHaveBeenCalledTimes(persistedWrites);
+      expect(mockResetWorkspaceSessionState).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it.each(["success", "401"])(
+    "does not resurrect or invalidate a signed-out account on delayed refresh %s",
+    async (outcome) => {
+      let resolveOld!: (value: any) => void;
+      let rejectOld!: (reason: any) => void;
+      const oldRefresh = new Promise((resolve, reject) => {
+        resolveOld = resolve;
+        rejectOld = reject;
+      });
+      mockApiMe.mockResolvedValueOnce(hydratedMe).mockReturnValueOnce(oldRefresh);
+      const screen = renderProvider();
+      await waitFor(() => expect(authState(screen).meStatus).toBe("ready"));
+      fireEvent.press(screen.getByLabelText("Retry session"));
+      fireEvent.press(screen.getByLabelText("Log out session"));
+      await waitFor(() => expect(authState(screen).isAuthed).toBe(false));
+      await act(async () => {
+        if (outcome === "success") resolveOld(hydratedMe);
+        else rejectOld(Object.assign(new Error("Old request expired"), { status: 401 }));
+      });
+      expect(authState(screen)).toMatchObject({
+        token: null,
+        user: null,
+        ctx: null,
+        meStatus: "idle",
+        meError: null,
+        isAuthed: false
+      });
+      expect(mockPersistToken).toHaveBeenCalledTimes(1);
+      expect(mockResetWorkspaceSessionState).toHaveBeenCalledTimes(1);
+    }
+  );
 });

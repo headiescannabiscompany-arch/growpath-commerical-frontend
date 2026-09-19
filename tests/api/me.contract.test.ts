@@ -60,6 +60,17 @@ describe("apiMe contract normalization", () => {
     expect(me.ctx.facilityId).toBe("f1");
   });
 
+  it("lets the AuthProvider own session-bound 401 invalidation", async () => {
+    mockApiRequest.mockRejectedValue({ status: 401, code: "UNAUTHENTICATED" });
+    await expect(apiMe({ force: true, invalidateOn401: false })).rejects.toMatchObject({
+      status: 401
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ invalidateOn401: false })
+    );
+  });
+
   it("bypasses the short session cache when a canonical refresh is forced", async () => {
     mockApiRequest
       .mockResolvedValueOnce({

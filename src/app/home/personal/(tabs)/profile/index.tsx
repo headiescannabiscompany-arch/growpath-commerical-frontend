@@ -28,6 +28,7 @@ import {
   NotificationPreferenceState
 } from "@/notifications/notificationPreferences";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import LegacyAgeCompletion from "@/components/account/LegacyAgeCompletion";
 import BackButton from "@/components/nav/BackButton";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
@@ -795,6 +796,7 @@ export default function ProfileScreen() {
           Age eligibility: {auth.user?.ageBand || "verification needed"} - Parental lock:{" "}
           {auth.user?.parentalLockEnabled ? "On" : "Off"}
         </Text>
+        <LegacyAgeCompletion />
         <TextInput
           accessibilityLabel="Parental content control PIN"
           style={styles.input}

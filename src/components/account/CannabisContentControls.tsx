@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { updateContentControls } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
+import LegacyAgeCompletion from "@/components/account/LegacyAgeCompletion";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -63,6 +64,7 @@ export default function CannabisContentControls() {
         Age eligibility: {auth.user?.ageBand || "verification needed"} · Parental lock:{" "}
         {auth.user?.parentalLockEnabled ? "On" : "Off"}
       </Text>
+      <LegacyAgeCompletion />
       <TextInput
         accessibilityLabel="Parental content control PIN"
         style={styles.input}

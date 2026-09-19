@@ -405,6 +405,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const didHydrateRef = useRef(false);
   // Prevent multiple logout operations in flight
   const isLoggingOutRef = useRef(false);
+  const sessionRef = useRef({ token: null as string | null, version: 0 });
+  function applySessionToken(nextToken: string | null) {
+    sessionRef.current = { token: nextToken, version: sessionRef.current.version + 1 };
+    setToken(nextToken);
+  }
   const routePreviewKey = useMemo(
     () => `${pathname || ""}?${safeStableParams(routeParams)}`,
     [pathname, routeParams]
@@ -425,7 +430,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoggingOutRef.current = true;
 
     try {
-      setToken(null);
+      applySessionToken(null);
       setUser(null);
       setCtx(null);
       setMeStatus("idle");
@@ -436,16 +441,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  async function loadMeForToken(options: { force?: boolean } = {}) {
+  async function loadMeForToken(
+    options: { force?: boolean } = {},
+    expectedToken = sessionRef.current.token
+  ) {
+    if (!expectedToken || expectedToken !== sessionRef.current.token) return;
+    const expectedVersion = sessionRef.current.version;
+    const isCurrentSession = () =>
+      expectedToken === sessionRef.current.token &&
+      expectedVersion === sessionRef.current.version;
     setMeStatus("loading");
     setMeError(null);
     try {
-      const me = await apiMe(options);
+      // This provider owns invalidation so an old request's 401 cannot erase a
+      // later login through the global transport handler before this guard runs.
+      const me = await apiMe({ ...options, invalidateOn401: false });
+      if (!isCurrentSession()) return;
       setUser((current) => mergeAuthUser(current, me.user));
       setCtx(me.ctx ?? null);
       setMeStatus("ready");
       setMeError(null);
     } catch (e: any) {
+      if (!isCurrentSession()) return;
       if (e?.status === 401) {
         console.log("[AUTH] Token rejected by server (401), clearing");
         await hardLogout();
@@ -481,7 +498,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const localPreview = resolveLocalPreviewSession();
         if (localPreview) {
-          setToken(localPreview.token);
+          applySessionToken(localPreview.token);
           setUser(localPreview.user);
           setCtx(localPreview.ctx);
           setMeStatus("ready");
@@ -493,9 +510,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!mounted) return;
 
         if (t) {
-          setToken(t);
+          applySessionToken(t);
           if (mounted) {
-            await loadMeForToken();
+            await loadMeForToken({}, t);
           }
         } else {
           setMeStatus("idle");
@@ -530,7 +547,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    setToken(localPreview.token);
+    applySessionToken(localPreview.token);
     setUser(localPreview.user);
     setCtx(localPreview.ctx);
     setMeStatus("ready");
@@ -566,7 +583,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(email: string, password: string) {
     try {
       const loginRes = await apiLogin({ email, password });
-      setToken(null);
+      applySessionToken(null);
       setUser(null);
       setCtx(null);
       setMeStatus("idle");
@@ -574,9 +591,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await persistToken(null);
       await resetWorkspaceSessionState();
       await persistToken(loginRes.token);
-      setToken(loginRes.token);
+      applySessionToken(loginRes.token);
       setUser(loginRes.user);
-      await loadMeForToken({ force: true });
+      await loadMeForToken({ force: true }, loginRes.token);
     } catch (err: any) {
       // Pass through normalized errors so UI can branch on code/status
       throw err;
@@ -589,7 +606,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const signupRes = await apiSignup(body);
       if (signupRes.token) {
-        setToken(null);
+        applySessionToken(null);
         setUser(null);
         setCtx(null);
         setMeStatus("idle");
@@ -597,13 +614,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await persistToken(null);
         await resetWorkspaceSessionState();
         await persistToken(signupRes.token);
-        setToken(signupRes.token);
+        applySessionToken(signupRes.token);
         setUser(signupRes.user ?? null);
-        await loadMeForToken();
+        await loadMeForToken({}, signupRes.token);
       } else {
         await resetWorkspaceSessionState();
         await persistToken(null);
-        setToken(null);
+        applySessionToken(null);
         setUser(null);
         setCtx(null);
         setMeStatus("idle");
@@ -623,7 +640,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function retryMe() {
     if (!token) return;
-    await loadMeForToken({ force: true });
+    await loadMeForToken({ force: true }, token);
   }
 
   const value = useMemo<AuthState>(

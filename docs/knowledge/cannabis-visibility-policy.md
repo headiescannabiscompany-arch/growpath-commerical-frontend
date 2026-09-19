@@ -8,6 +8,18 @@ Cannabis-specific surfaces include flower-day/flip language, trichome harvest re
 
 General users receive crop-neutral identification, plant care, watering, soil/fertility, IPM, logs, courses and community language. A crop-neutral question about visible plant sex or reproductive stage is general botany guidance and must not unlock cannabis-only tools or wording. Visibility controls presentation and discovery; it must not weaken data access control. Private cannabis media and records remain scoped to their owner/workspace.
 
+An existing account with genuinely missing age information may complete the same
+self-attested age step used at signup from its existing Profile content-controls
+section. This is not verified identity or proof of legal transaction eligibility.
+The server requires an authenticated, email-verified user, a valid calendar birth
+date and explicit confirmation. It records age information once and must not
+overwrite an existing age declaration, a known minor record or provider verification.
+An account below the signup minimum is not accepted through this standard flow.
+Birth date remains a protected account field, never public timeline data or an API
+response field. Completing this step never enables cannabis visibility, removes a
+parental lock, changes a plan/role, or publishes a grow. Eligible users must still
+choose Show cannabis separately under the existing parental-control rules.
+
 Public regulated-cannabis discovery is an explicit cannabis-commerce context. Do not include regulated cannabis products in default horticulture storefront results; surface them only after the visitor deliberately chooses regulated discovery or follows a direct lawful-business link. A business may hold more than one reviewed role, including nursery, cultivator, breeder or seed bank, distributor, dispensary, and retailer. Do not infer transaction authority from its name, plan, or role alone.
 
 A published regulated business may show its profile, verified public website, and informational inventory when those records satisfy publication and cannabis-visibility rules. Transaction capabilities are separate, progressively granted permissions: catalog display, external product handoff, inquiry, reservation, GrowPath checkout, payment, pickup, delivery, domestic shipping, export, and import. Grant each capability only for a versioned, reviewed seller + business authorization + product class + origin + destination + buyer eligibility + fulfillment route. An applicable license or authorization must be current where required. Unknown, expired, conflicting, or unsupported evidence defaults to informational inventory with the transaction action withheld. A warning, seller attestation, or age checkbox does not make an unlawful transaction lawful.

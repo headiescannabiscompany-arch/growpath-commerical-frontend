@@ -1,6 +1,7 @@
 // src/api/auth.ts
 // Contract-locked: every function returns canonical response type or throws ApiError with code/status.
-import { apiRequest } from "./apiRequest";
+import { ApiError, apiRequest } from "./apiRequest";
+import { getToken } from "../auth/tokenStore";
 import { parseSafeLoginReturnPath } from "../utils/authReturnPath";
 // import type { ApiError } from "./errors"; // Removed as unused
 
@@ -66,6 +67,7 @@ export type AuthUser = {
   emailVerified?: boolean;
   growInterests?: Record<string, string[]>;
   ageBand?: "13_17" | "18_20" | "21_plus" | "unknown";
+  ageConfirmationRequired?: boolean;
   cannabisEligible?: boolean;
   cannabisVisibility?: "show" | "hide";
   parentalLockEnabled?: boolean;
@@ -268,6 +270,30 @@ export function updateContentControls(body: {
       cannabisEligible: boolean;
     };
   }>("/api/me/content-controls", { method: "PATCH", body });
+}
+
+export async function completeAgeAssurance(
+  body: { dateOfBirth: string; confirmed: true },
+  sessionToken: string
+) {
+  // Bind this private submission to the account whose form was reviewed, even if
+  // another tab replaces the active session while the request is starting.
+  if (!sessionToken || (await getToken()) !== sessionToken) {
+    throw new ApiError("ACCOUNT_SESSION_CHANGED", null);
+  }
+  return apiRequest<{
+    ok: true;
+    ageAssurance: {
+      ageBand: "13_17" | "18_20" | "21_plus";
+      cannabisEligible: boolean;
+      method: string;
+    };
+  }>("/api/me/age-assurance", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${sessionToken}` },
+    body,
+    retries: 0
+  });
 }
 
 /** Upgrade account to creator. Returns { ok, role } or throws ApiError. */

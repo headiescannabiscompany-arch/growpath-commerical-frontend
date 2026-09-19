@@ -4,6 +4,7 @@ import { render, waitFor } from "@testing-library/react-native";
 const mockUsePushRegistration = jest.fn();
 const mockReadToken = jest.fn();
 const mockApiMe = jest.fn();
+const mockApiRequest = jest.fn();
 const mockSetOnUnauthorized = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -25,7 +26,7 @@ jest.mock("@/api/auth", () => ({
 }));
 
 jest.mock("@/api/apiRequest", () => ({
-  apiRequest: jest.fn(),
+  apiRequest: (...args: any[]) => mockApiRequest(...args),
   setOnUnauthorized: (...args: any[]) => mockSetOnUnauthorized(...args)
 }));
 
@@ -54,6 +55,7 @@ describe("AuthProvider push registration handoff", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockReadToken.mockResolvedValue("session-token");
+    mockApiRequest.mockResolvedValue({});
     mockApiMe.mockResolvedValue({
       user: {
         id: "user-1",

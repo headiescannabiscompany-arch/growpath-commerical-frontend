@@ -46,6 +46,7 @@ jest.mock("@/api/videos", () => ({
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
     user: mockUser,
+    token: "profile-test-session",
     logout: (...args: any[]) => mockLogout(...args),
     retryMe: (...args: any[]) => mockRetryMe(...args)
   })
@@ -121,6 +122,9 @@ describe("Profile privacy controls", () => {
     mockGetVideoQuota.mockReset();
     mockEntitlementsPlan = "free";
     delete mockUser.billing;
+    mockUser.ageBand = "21_plus";
+    mockUser.cannabisEligible = true;
+    delete mockUser.ageConfirmationRequired;
     mockDeleteAccount.mockResolvedValue({ ok: true, deleted: true });
     mockLogout.mockResolvedValue(undefined);
     mockUpdateContentControls.mockResolvedValue({
@@ -330,5 +334,18 @@ describe("Profile privacy controls", () => {
       })
     );
     expect(mockRetryMe).toHaveBeenCalled();
+  });
+
+  it("adds age completion inside the existing content controls for a legacy account", () => {
+    mockUser.ageBand = "unknown";
+    mockUser.cannabisEligible = false;
+    mockUser.ageConfirmationRequired = true;
+    const screen = render(<Profile />);
+    expect(screen.getByText("Cannabis content and parental lock")).toBeTruthy();
+    expect(screen.getByLabelText("Complete age eligibility")).toBeTruthy();
+    expect(screen.getByLabelText("Profile date of birth")).toBeTruthy();
+    expect(screen.getByLabelText("Save date of birth")).toBeDisabled();
+    expect(screen.getByLabelText("Parental content control PIN")).toBeTruthy();
+    expect(screen.getByLabelText("Show cannabis content")).toBeDisabled();
   });
 });
