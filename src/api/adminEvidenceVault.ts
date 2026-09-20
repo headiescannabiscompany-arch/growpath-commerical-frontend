@@ -1,4 +1,5 @@
-import { ApiError, apiRequest } from "@/api/apiRequest";
+import { ApiError } from "@/api/apiRequest";
+import { adminVaultRequest as apiRequest } from "@/api/adminPasskeys";
 
 const BASE = "/api/admin/evidence-vault";
 

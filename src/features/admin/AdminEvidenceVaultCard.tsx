@@ -31,6 +31,8 @@ import {
 } from "@/api/adminEvidenceVault";
 import AppCard from "@/components/layout/AppCard";
 import { AdminEvidenceApprovalWorkspace } from "@/features/admin/AdminEvidenceApprovalPanel";
+import AdminPasskeySecurity from "@/features/admin/AdminPasskeySecurity";
+import { useAdminSecurityEpoch } from "@/features/admin/useAdminSecurity";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -125,6 +127,22 @@ export default function AdminEvidenceVaultCard({
   const [reportSubmittedAt, setReportSubmittedAt] = useState("");
   const [reportSummary, setReportSummary] = useState("");
   const [reportConfirmation, setReportConfirmation] = useState("");
+  const securityEpoch = useAdminSecurityEpoch();
+
+  useEffect(() => {
+    removalReviewGeneration.current += 1;
+    restoreReviewGeneration.current += 1;
+    setRemovalReview(null);
+    setRestoreReview(null);
+    setRemovalConfirmation("");
+    setRestoreConfirmation("");
+    setSelectedCaseId("");
+    setCaseRecords([]);
+    setCaseNote("");
+    setCaseNoteConfirmation("");
+    setReportSummary("");
+    setReportConfirmation("");
+  }, [securityEpoch]);
 
   const removalInput: AccountRemovalInput = {
     expectedEmail: expectedEmail.trim().toLowerCase(),
@@ -432,7 +450,8 @@ export default function AdminEvidenceVaultCard({
             </Text>
           ) : null}
 
-          <AdminEvidenceApprovalWorkspace />
+          <AdminPasskeySecurity />
+          <AdminEvidenceApprovalWorkspace key={securityEpoch} />
 
           {capabilities?.accountRemovalOwner ? (
             <View style={styles.section}>

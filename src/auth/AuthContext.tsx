@@ -24,6 +24,7 @@ import {
 } from "./tokenStore";
 import { apiRequest, setOnUnauthorized } from "../api/apiRequest";
 import { apiMe } from "../api/me";
+import { clearAdminStepUp, clearAdminSecurityForLogout } from "../api/adminPasskeys";
 import { PLAN_LIMITS } from "../config/planLimits";
 import { resetWorkspaceSessionState } from "./workspaceSessionReset";
 
@@ -407,6 +408,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isLoggingOutRef = useRef(false);
   const sessionRef = useRef({ token: null as string | null, version: 0 });
   function applySessionToken(nextToken: string | null) {
+    if (nextToken !== sessionRef.current.token)
+      clearAdminStepUp({ accountChanged: true });
     sessionRef.current = { token: nextToken, version: sessionRef.current.version + 1 };
     setToken(nextToken);
   }
@@ -430,6 +433,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoggingOutRef.current = true;
 
     try {
+      // Revoke only the departing bearer; never wait before clearing local auth.
+      // A delayed lock response must not sign out a later account.
+      void clearAdminSecurityForLogout(sessionRef.current.token).catch(() => undefined);
       applySessionToken(null);
       setUser(null);
       setCtx(null);

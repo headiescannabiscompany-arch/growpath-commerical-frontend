@@ -128,7 +128,14 @@ describe("Admin Evidence Vault API", () => {
 
     expect(mockApiRequest).toHaveBeenCalledWith(
       `/api/admin/evidence-requests/${REQUEST_ID}`,
-      { method: "PATCH", body: input, cache: "no-store" }
+      {
+        method: "PATCH",
+        body: input,
+        cache: "no-store",
+        retries: 0,
+        invalidateOn401: false,
+        headers: {}
+      }
     );
     expect(mockApiRequest.mock.calls[0][1].body).not.toHaveProperty("legalReview");
     expect(mockApiRequest.mock.calls[0][1].body).not.toHaveProperty("approved");
@@ -158,7 +165,10 @@ describe("Admin Evidence Vault API", () => {
       })
     ]);
     expect(mockApiRequest).toHaveBeenCalledWith("/api/admin/evidence-requests", {
-      cache: "no-store"
+      cache: "no-store",
+      retries: 0,
+      invalidateOn401: false,
+      headers: {}
     });
   });
 
@@ -200,7 +210,14 @@ describe("Admin Evidence Vault API", () => {
     expect(mockApiRequest).toHaveBeenNthCalledWith(
       1,
       `/api/admin/evidence-vault/evidence-requests/${REQUEST_ID}/approval-review`,
-      { method: "POST", body: proposal, cache: "no-store" }
+      {
+        method: "POST",
+        body: proposal,
+        cache: "no-store",
+        retries: 0,
+        invalidateOn401: false,
+        headers: {}
+      }
     );
     expect(mockApiRequest).toHaveBeenNthCalledWith(
       2,
@@ -208,7 +225,10 @@ describe("Admin Evidence Vault API", () => {
       {
         method: "POST",
         body: { ...proposal, reviewToken: "single-use-token", confirmation },
-        cache: "no-store"
+        cache: "no-store",
+        retries: 0,
+        invalidateOn401: false,
+        headers: {}
       }
     );
   });
