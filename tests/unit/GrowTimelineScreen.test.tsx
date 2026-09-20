@@ -62,6 +62,7 @@ describe("GrowTimelineScreen", () => {
         sourceId: "log-1",
         title: "Photo attached",
         summary: "/uploads/leaf.jpg",
+        payload: { linkedLogId: "log-1", url: "/uploads/leaf.jpg" },
         timestamp: "2026-06-30T11:30:00.000Z",
         tags: ["photo"]
       },
@@ -189,7 +190,7 @@ describe("GrowTimelineScreen", () => {
     expect(screen.getByText("Confirmed issue: Heat stress")).toBeTruthy();
     expect(screen.getByText("Actions: Raised light, Increased airflow")).toBeTruthy();
     expect(screen.getByText("Provider: OpenAI, gpt-test")).toBeTruthy();
-    expect(screen.getAllByText("Open Journal Source")).toHaveLength(2);
+    expect(screen.getAllByText("Open Journal Source")).toHaveLength(1);
     expect(screen.getAllByText("Open Diagnosis Source")).toHaveLength(2);
     expect(screen.getByText("Open Tool Source")).toBeTruthy();
     expect(screen.getByText("Batch follow-up saved")).toBeTruthy();
@@ -197,7 +198,7 @@ describe("GrowTimelineScreen", () => {
     expect(screen.getByText("Open Automation Source")).toBeTruthy();
     expect(
       screen.getAllByLabelText("Timeline source link /home/personal/logs/log-1")
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(
       screen.getAllByLabelText(
         "Timeline source link /home/personal/diagnose?growId=grow-1"
@@ -232,7 +233,11 @@ describe("GrowTimelineScreen", () => {
 
     fireEvent.press(screen.getByText("Journal"));
     expect(screen.getByText("Watered blueberry")).toBeTruthy();
-    expect(screen.getByText("Photo attached")).toBeTruthy();
+    expect(screen.queryByText("Photo attached")).toBeNull();
+    expect(
+      screen.getByLabelText("Timeline photo for Watered blueberry").props.source.uri
+    ).toEqual(expect.stringContaining("/uploads/leaf.jpg"));
+    expect(screen.getByText("1 saved event")).toBeTruthy();
     expect(screen.queryByText("VPD result saved")).toBeNull();
 
     fireEvent.press(screen.getByText("Tools"));
@@ -243,4 +248,144 @@ describe("GrowTimelineScreen", () => {
     expect(screen.getByText("Review irrigation")).toBeTruthy();
     expect(screen.queryByText("VPD result saved")).toBeNull();
   });
+
+  it.each(["personal", "commercial"] as const)(
+    "consolidates photo audit rows without merging distinct same-date journals in %s",
+    async (workspace) => {
+      const timestamp = "2026-09-19T12:00:00.000Z";
+      mockGetWorkspaceGrowTimeline.mockResolvedValue([
+        ...["first", "second"].flatMap((identity) => [
+          {
+            id: `GrowLog:log-${identity}`,
+            sourceId: `log-${identity}`,
+            sourceModel: "GrowLog",
+            type: "log_created",
+            title: "Same-day journal",
+            summary: `${identity} distinct journal notes`,
+            timestamp,
+            tags: ["journal"]
+          },
+          {
+            id: `GrowLog:log-${identity}:photo:0`,
+            sourceId: `log-${identity}`,
+            sourceModel: "GrowLog",
+            type: "photo_added",
+            title: `Photo added: ${identity} journal`,
+            summary: `Photo audit for ${identity} journal`,
+            timestamp,
+            payload: {
+              linkedLogId: `log-${identity}`,
+              url: `/uploads/${identity}-journal.jpg`
+            },
+            tags: ["photo"]
+          }
+        ]),
+        {
+          id: "Task:unrelated-task",
+          sourceId: "unrelated-task",
+          sourceModel: "Task",
+          type: "task_created",
+          title: "Unrelated task",
+          timestamp,
+          tags: ["task"]
+        }
+      ]);
+      const screen = render(<GrowTimelineScreen workspace={workspace} />);
+      await screen.findByText("3 points");
+      expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith(workspace, "grow-1");
+      fireEvent.press(screen.getByText("Journal"));
+
+      expect(screen.getByText("2 points")).toBeTruthy();
+      expect(screen.queryByText("Unrelated task")).toBeNull();
+      expect(
+        screen.getAllByLabelText(/^Open timeline entry \d+: Same-day journal$/)
+      ).toHaveLength(2);
+      expect(screen.queryByText("Photo added: first journal")).toBeNull();
+      expect(screen.queryByText("Photo added: second journal")).toBeNull();
+      expect(screen.getByText("first distinct journal notes")).toBeTruthy();
+      expect(
+        screen.getByLabelText("Photo 1 for Same-day journal").props.source.uri
+      ).toEqual(expect.stringContaining("/uploads/first-journal.jpg"));
+      fireEvent.press(screen.getByLabelText("Open timeline entry 2: Same-day journal"));
+      expect(screen.getByText("second distinct journal notes")).toBeTruthy();
+      expect(screen.queryByText("first distinct journal notes")).toBeNull();
+      expect(
+        screen.getByLabelText("Photo 1 for Same-day journal").props.source.uri
+      ).toEqual(expect.stringContaining("/uploads/second-journal.jpg"));
+
+      fireEvent.press(screen.getByText("Detailed List"));
+      for (const zoom of ["Lifecycle", "Day"]) {
+        fireEvent.press(screen.getByLabelText(`Show timeline by ${zoom}`));
+        expect(screen.getByText("2 saved events")).toBeTruthy();
+        expect(screen.getAllByText("Same-day journal")).toHaveLength(2);
+        expect(screen.getByText("first distinct journal notes")).toBeTruthy();
+        expect(screen.getByText("second distinct journal notes")).toBeTruthy();
+        expect(screen.queryByText("Photo added: first journal")).toBeNull();
+        expect(screen.queryByText("Photo added: second journal")).toBeNull();
+        const photoUris = screen
+          .getAllByLabelText("Timeline photo for Same-day journal")
+          .map((image) => image.props.source.uri);
+        expect(photoUris).toHaveLength(2);
+        expect(photoUris).toEqual(
+          expect.arrayContaining([
+            expect.stringContaining("/uploads/first-journal.jpg"),
+            expect.stringContaining("/uploads/second-journal.jpg")
+          ])
+        );
+        for (const identity of ["first", "second"]) {
+          const href =
+            workspace === "commercial"
+              ? `/home/commercial/grows/grow-1/journal?logId=log-${identity}`
+              : `/home/personal/logs/log-${identity}`;
+          expect(screen.getAllByLabelText(`Timeline source link ${href}`)).toHaveLength(
+            1
+          );
+        }
+      }
+      fireEvent.press(screen.getByText("Visual Flow"));
+      expect(screen.getByText("2 points")).toBeTruthy();
+    }
+  );
+
+  it.each(["personal", "commercial"] as const)(
+    "retains a standalone photo whose journal is absent in both %s timeline views",
+    async (workspace) => {
+      mockGetWorkspaceGrowTimeline.mockResolvedValue([
+        {
+          id: "GrowLog:standalone-log:photo:0",
+          sourceId: "standalone-log",
+          sourceModel: "GrowLog",
+          type: "photo_added",
+          title: "Standalone evidence photo",
+          summary: "Its journal milestone is not in this timeline selection.",
+          timestamp: "2026-09-19T12:00:00.000Z",
+          payload: { linkedLogId: "standalone-log", url: "/uploads/standalone.jpg" },
+          tags: ["photo"]
+        }
+      ]);
+      const screen = render(<GrowTimelineScreen workspace={workspace} />);
+      await screen.findByText("1 points");
+      fireEvent.press(screen.getByText("Journal"));
+      expect(
+        screen.getByLabelText("Open timeline entry 1: Standalone evidence photo")
+      ).toBeTruthy();
+      expect(
+        screen.getByLabelText("Photo 1 for Standalone evidence photo").props.source.uri
+      ).toEqual(expect.stringContaining("/uploads/standalone.jpg"));
+
+      fireEvent.press(screen.getByText("Detailed List"));
+      fireEvent.press(screen.getByLabelText("Show timeline by Day"));
+      expect(screen.getByText("1 saved event")).toBeTruthy();
+      expect(screen.getByText("Standalone evidence photo")).toBeTruthy();
+      expect(
+        screen.getByLabelText("Timeline photo for Standalone evidence photo").props.source
+          .uri
+      ).toEqual(expect.stringContaining("/uploads/standalone.jpg"));
+      const href =
+        workspace === "commercial"
+          ? "/home/commercial/grows/grow-1/journal?logId=standalone-log"
+          : "/home/personal/logs/standalone-log";
+      expect(screen.getByLabelText(`Timeline source link ${href}`)).toBeTruthy();
+    }
+  );
 });

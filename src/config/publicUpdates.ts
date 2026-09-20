@@ -22,7 +22,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "September 19, 2026",
         dateLabel: "Released",
         summary:
-          "Add photos to older journal entries and share a reviewed horizontal grow story with clickable milestones and photos. The Facebook preview was verified live with multiple dated points and selected photos. Sharing uses your published snapshot; later private edits need a new reviewed publication."
+          "Add photos to older journal entries and share a reviewed horizontal grow story with clickable milestones and photos. Share Timeline opens the existing sharing review. Visual Flow and Detailed List keep each journal entry with its photos instead of repeating separate photo-added rows. The Facebook preview was verified live with multiple dated points and selected photos. Sharing uses your published snapshot; later private edits need a new reviewed publication."
       },
       {
         id: "profile-age-confirmation",

@@ -61,6 +61,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Never publish private data merely because Share was pressed.",
+      "Private Visual Flow and Detailed List attach photo events to the matching selected journal by source identity; preserve standalone photos and distinct same-date/title journals without changing stored activity or frozen snapshots.",
       "Never expose protected upload URLs, exact locations, operational payloads, AI receipts, credentials, or evidence permissions.",
       "Viewer-friendly downloads must replace raw JSON, provider payloads, evidence fingerprints, private IDs and oversized machine notes with a bounded readable summary and private-record handoff.",
       "Later private edits must not silently change an already-published snapshot.",

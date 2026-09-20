@@ -11,6 +11,13 @@ description and public preview, then explicitly publishes. Cancel publishes noth
 Commercial publication uses the authorized Commercial workspace; Personal publication uses
 the individual owner. Facility-internal records are not eligible for this public-copy path.
 
+The private Visual Flow and Detailed List consolidate photo-added events onto their
+matching selected journal entry by source identity. Display its notes and photos once;
+do not merge distinct journals because they share a title or date. Retain standalone
+photo events when their parent journal is absent from the selection. This presentation
+rule never deletes or rewrites stored journal/photo activity and does not republish or
+alter an existing frozen public snapshot.
+
 The server accepts only bounded plain-text event title, summary and timestamp fields. It
 does not accept arbitrary HTML, event payloads, telemetry values, task internals, identifiers,
 exact locations, private notes, AI receipts, provider credentials or evidence permissions.

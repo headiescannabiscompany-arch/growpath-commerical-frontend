@@ -360,13 +360,17 @@ export default function GrowTimelineScreen({
     () => events.filter((event) => eventMatchesFilter(event, filter)),
     [events, filter]
   );
+  const consolidatedEvents = useMemo(
+    () => visualTimelineEvents(visibleEvents),
+    [visibleEvents]
+  );
   const groupedEvents = useMemo(
-    () => groupTimelineEvents(visibleEvents, zoom),
-    [visibleEvents, zoom]
+    () => groupTimelineEvents(consolidatedEvents, zoom),
+    [consolidatedEvents, zoom]
   );
   const flowEvents = useMemo(
     () =>
-      visualTimelineEvents(visibleEvents as any[]).map((event) => ({
+      consolidatedEvents.map((event) => ({
         id: String(event.id),
         title: event.title,
         summary: event.summary,
@@ -378,7 +382,7 @@ export default function GrowTimelineScreen({
           ...(Array.isArray(event.tags) ? event.tags : [])
         ].slice(0, 4)
       })),
-    [visibleEvents]
+    [consolidatedEvents]
   );
   const shareHref = `${basePath}/grows/${encodeURIComponent(growId)}/share?presentation=${view}`;
 
