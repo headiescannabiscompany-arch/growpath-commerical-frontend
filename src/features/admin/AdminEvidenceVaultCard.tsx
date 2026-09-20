@@ -106,6 +106,7 @@ export default function AdminEvidenceVaultCard({
   const [removalConfirmation, setRemovalConfirmation] = useState("");
 
   const [restoreArchiveId, setRestoreArchiveId] = useState("");
+  const restoreReviewGeneration = useRef(0);
   const [restoreReview, setRestoreReview] = useState<RestoreReview | null>(null);
   const [restoreConfirmation, setRestoreConfirmation] = useState("");
 
@@ -246,15 +247,18 @@ export default function AdminEvidenceVaultCard({
 
   async function runRestoreReview() {
     if (busy || !restoreArchiveId.trim()) return;
+    const generation = restoreReviewGeneration.current;
     setBusy("restore-review");
     setFeedback("");
     setRestoreReview(null);
     setRestoreConfirmation("");
     try {
       const review = await reviewAccountRestore(restoreArchiveId.trim());
+      if (generation !== restoreReviewGeneration.current) return;
       setRestoreReview(review);
       setFeedback("Restore review passed. Type the exact phrase to restore the account.");
     } catch (error) {
+      if (generation !== restoreReviewGeneration.current) return;
       setFeedback(errorLabel(error, "Restore review failed closed."));
     } finally {
       setBusy("");
@@ -619,6 +623,8 @@ export default function AdminEvidenceVaultCard({
                     <Pressable
                       accessibilityRole="button"
                       onPress={() => {
+                        restoreReviewGeneration.current += 1;
+                        setFeedback("");
                         setRestoreArchiveId(archive.archiveId);
                         setRestoreReview(null);
                         setRestoreConfirmation("");

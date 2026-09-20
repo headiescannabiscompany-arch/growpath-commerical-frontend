@@ -49,6 +49,7 @@ jest.mock("@/theme/appTheme", () => ({
 
 const TARGET_ID = "64b000000000000000000005";
 const ARCHIVE_ID = "64b000000000000000000006";
+const SECOND_ARCHIVE_ID = "64b000000000000000000008";
 const FIRST_USER = { id: TARGET_ID, email: "member@example.com" };
 const SECOND_USER = { id: "64b000000000000000000007", email: "second@example.com" };
 const USERS = [FIRST_USER, SECOND_USER];
@@ -56,6 +57,8 @@ const PASSED_FEEDBACK =
   "Safety review passed. No billing action occurred. Type the exact phrase to quarantine.";
 const BLOCKED_FEEDBACK =
   "Removal is blocked. No account, Stripe, gift, payout, or invoice state changed.";
+const RESTORE_FEEDBACK =
+  "Restore review passed. Type the exact phrase to restore the account.";
 const mockCapabilities = getEvidenceVaultCapabilities as jest.MockedFunction<
   typeof getEvidenceVaultCapabilities
 >;
@@ -153,6 +156,43 @@ function changeRemovalContext(
       "Updated owner safety acceptance"
     );
   }
+}
+
+function restoreReviewFor(archiveId = ARCHIVE_ID, target = FIRST_USER) {
+  return {
+    target,
+    archiveId,
+    nextConfirmation: `RESTORE ${archiveId} ${target.id}`,
+    reviewToken: `restore-review-${archiveId}`,
+    reviewExpiresAt: "2030-01-01T00:05:00.000Z"
+  };
+}
+
+async function twoArchiveRestoreScreen() {
+  mockRemoved.mockResolvedValue({
+    accounts: [ARCHIVE_ID, SECOND_ARCHIVE_ID].map((archiveId) => ({
+      archiveId,
+      anonymousAccountLabel: `removed-account-${archiveId}`,
+      status: "ready",
+      removalStatus: "completed",
+      quarantineStatus: "quarantined",
+      archivedAt: "2030-01-01T00:00:00.000Z",
+      quarantinedAt: "2030-01-01T00:00:00.000Z",
+      restoredAt: null,
+      purgeAfter: "2030-04-01T00:00:00.000Z",
+      legalHold: false,
+      legalHoldAuthority: "none",
+      legalHoldExpiresAt: null,
+      purgedAt: null,
+      operationalIssue: false
+    })),
+    nextCursor: null
+  });
+  const screen = render(<AdminEvidenceVaultCard users={USERS} />);
+  fireEvent.press(screen.getByLabelText("Open evidence vault controls"));
+  await screen.findByText(`removed-account-${SECOND_ARCHIVE_ID}`);
+  fireEvent.press(screen.getAllByText("Start reviewed restore")[0]);
+  return screen;
 }
 
 describe("AdminEvidenceVaultCard", () => {
@@ -559,5 +599,105 @@ describe("AdminEvidenceVaultCard", () => {
         confirmation: `RESTORE ${ARCHIVE_ID} ${TARGET_ID}`
       })
     );
+    expect(
+      await screen.findByText(
+        "The quarantined account was restored. The action remains audited."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText(`Restore ${ARCHIVE_ID}`)).toBeNull();
+    expect(screen.queryByLabelText("Exact account restore confirmation")).toBeNull();
   });
+
+  test.each(["success", "error"] as const)(
+    "clears a completed restore review %s when selecting another archive",
+    async (result) => {
+      if (result === "success")
+        mockRestoreReview.mockResolvedValueOnce(restoreReviewFor());
+      else
+        mockRestoreReview.mockRejectedValueOnce(new Error("First archive review failed"));
+      const screen = await twoArchiveRestoreScreen();
+      fireEvent.press(screen.getByLabelText("Review selected account restore"));
+      await screen.findByText(
+        result === "success" ? RESTORE_FEEDBACK : "First archive review failed"
+      );
+      if (result === "success") {
+        fireEvent.changeText(
+          screen.getByLabelText("Exact account restore confirmation"),
+          restoreReviewFor().nextConfirmation
+        );
+      }
+
+      fireEvent.press(screen.getAllByText("Start reviewed restore")[1]);
+
+      expect(screen.getByText(`Restore ${SECOND_ARCHIVE_ID}`)).toBeTruthy();
+      expect(screen.queryByText(`Restore ${ARCHIVE_ID}`)).toBeNull();
+      expect(screen.queryByText(RESTORE_FEEDBACK)).toBeNull();
+      expect(screen.queryByText("First archive review failed")).toBeNull();
+      expect(screen.queryByLabelText("Exact account restore confirmation")).toBeNull();
+      expect(screen.queryByText("Restore reviewed account")).toBeNull();
+      expect(mockRestoreReview).toHaveBeenCalledTimes(1);
+      expect(mockRestore).not.toHaveBeenCalled();
+    }
+  );
+
+  test.each(["success", "error"] as const)(
+    "ignores a late restore review %s for the previous archive and restores only the new reviewed target",
+    async (result) => {
+      let resolveReview!: (value: ReturnType<typeof restoreReviewFor>) => void;
+      let rejectReview!: (error: Error) => void;
+      mockRestoreReview.mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolveReview = resolve;
+          rejectReview = reject;
+        })
+      );
+      const screen = await twoArchiveRestoreScreen();
+      fireEvent.press(screen.getByLabelText("Review selected account restore"));
+      expect(mockRestoreReview).toHaveBeenCalledWith(ARCHIVE_ID);
+      fireEvent.press(screen.getAllByText("Start reviewed restore")[1]);
+
+      await act(async () => {
+        if (result === "success") resolveReview(restoreReviewFor());
+        else rejectReview(new Error("Obsolete restore review failure"));
+      });
+
+      expect(screen.getByText(`Restore ${SECOND_ARCHIVE_ID}`)).toBeTruthy();
+      expect(screen.queryByText(`Restore ${ARCHIVE_ID}`)).toBeNull();
+      expect(screen.queryByText(RESTORE_FEEDBACK)).toBeNull();
+      expect(screen.queryByText("Obsolete restore review failure")).toBeNull();
+      expect(screen.queryByLabelText("Exact account restore confirmation")).toBeNull();
+      expect(screen.queryByText("Restore reviewed account")).toBeNull();
+      expect(mockRestore).not.toHaveBeenCalled();
+
+      const currentReview = restoreReviewFor(SECOND_ARCHIVE_ID, SECOND_USER);
+      mockRestoreReview.mockResolvedValueOnce(currentReview);
+      mockRestore.mockResolvedValueOnce({
+        archiveId: SECOND_ARCHIVE_ID,
+        targetUserId: SECOND_USER.id,
+        quarantineStatus: "restored"
+      });
+      fireEvent.press(screen.getByLabelText("Review selected account restore"));
+      expect(await screen.findByText(RESTORE_FEEDBACK)).toBeTruthy();
+      expect(mockRestoreReview).toHaveBeenLastCalledWith(SECOND_ARCHIVE_ID);
+      expect(mockRestoreReview).toHaveBeenCalledTimes(2);
+      fireEvent.changeText(
+        screen.getByLabelText("Exact account restore confirmation"),
+        currentReview.nextConfirmation
+      );
+      fireEvent.press(screen.getByText("Restore reviewed account"));
+
+      await waitFor(() =>
+        expect(mockRestore).toHaveBeenCalledWith(SECOND_ARCHIVE_ID, {
+          reviewToken: currentReview.reviewToken,
+          confirmation: currentReview.nextConfirmation
+        })
+      );
+      expect(mockRestore).toHaveBeenCalledTimes(1);
+      expect(
+        await screen.findByText(
+          "The quarantined account was restored. The action remains audited."
+        )
+      ).toBeTruthy();
+    }
+  );
 });
