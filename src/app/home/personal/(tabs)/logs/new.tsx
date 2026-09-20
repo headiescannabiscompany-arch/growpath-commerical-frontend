@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -83,6 +83,8 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
   const [rejectedTags, setRejectedTags] = useState<string[]>([]);
   const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
   const [photoUrl, setPhotoUrl] = useState("");
+  const draftGeneration = useRef(0);
+  const saveInFlight = useRef(false);
   const logTypes = useMemo(
     () => ["watering", "feed", "training", "environment", "issues", "harvest", "other"],
     []
@@ -113,33 +115,43 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
   const canSave = Boolean(growId && title.trim() && date.trim());
 
   const pickPhotos = useCallback(async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setError("Photo-library permission is required to attach images.");
-      return;
+    if (saveInFlight.current) return;
+    const generation = draftGeneration.current;
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (generation !== draftGeneration.current) return;
+      if (!permission.granted) {
+        setError("Photo-library permission is required to attach images.");
+        return;
+      }
+      const picked = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        allowsEditing: false,
+        quality: 0.8
+      });
+      if (generation !== draftGeneration.current || picked.canceled) return;
+      setPhotos((current) => [
+        ...current,
+        ...picked.assets
+          .filter((asset) => asset.uri)
+          .map((asset) => ({
+            uri: asset.uri,
+            width: asset.width ?? null,
+            height: asset.height ?? null,
+            mimeType: asset.mimeType ?? null,
+            sizeBytes: asset.fileSize ?? null
+          }))
+      ]);
+    } catch (failure: any) {
+      if (generation === draftGeneration.current) {
+        setError(failure?.message || "Unable to attach photos.");
+      }
     }
-    const picked = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      allowsEditing: false,
-      quality: 0.8
-    });
-    if (picked.canceled) return;
-    setPhotos((current) => [
-      ...current,
-      ...picked.assets
-        .filter((asset) => asset.uri)
-        .map((asset) => ({
-          uri: asset.uri,
-          width: asset.width ?? null,
-          height: asset.height ?? null,
-          mimeType: asset.mimeType ?? null,
-          sizeBytes: asset.fileSize ?? null
-        }))
-    ]);
   }, []);
 
   const addPhotoUrl = useCallback(() => {
+    if (saveInFlight.current) return;
     const uri = photoUrl.trim();
     if (!uri) return;
     if (!isPersistedImageUri(uri)) {
@@ -161,7 +173,8 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
   }, [photoUrl]);
 
   const analyzeDraft = useCallback(async () => {
-    if (!growId || analyzing || !notes.trim()) return;
+    if (saveInFlight.current || !growId || analyzing || !notes.trim()) return;
+    const generation = draftGeneration.current;
     setAnalyzing(true);
     setError("");
     try {
@@ -174,6 +187,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           workspaceType: workspace
         })
       );
+      if (generation !== draftGeneration.current) return;
       setSuggestions(normalized);
       setAcceptedTags([]);
       setRejectedTags([]);
@@ -181,17 +195,21 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
         setError("The analysis provider returned no usable log suggestions.");
       }
     } catch (failure: any) {
-      setError(failure?.message || "Unable to analyze this draft log.");
+      if (generation === draftGeneration.current) {
+        setError(failure?.message || "Unable to analyze this draft log.");
+      }
     } finally {
-      setAnalyzing(false);
+      if (generation === draftGeneration.current) setAnalyzing(false);
     }
   }, [analyzing, growId, logType, notes, title, workspace]);
 
   const save = useCallback(async () => {
+    if (saveInFlight.current) return;
     if (!canSave) {
       setError("A grow, title, and date are required.");
       return;
     }
+    saveInFlight.current = true;
     setSaving(true);
     setError("");
     try {
@@ -231,10 +249,30 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           : undefined
       });
       if (!created) throw new Error("Failed to create log.");
-      router.replace(`${basePath}/grows/${growId}/journal`);
+      // A retained screen must not reuse a saved draft, even if navigation fails.
+      // Invalidate outstanding photo/AI work before clearing its completed state.
+      draftGeneration.current += 1;
+      setTitle("");
+      setDate(localCalendarDate());
+      setNotes("");
+      setLogType("other");
+      setPhotos([]);
+      setPhotoUrl("");
+      setSuggestions(null);
+      setAcceptedTags([]);
+      setRejectedTags([]);
+      setSelectedToolRunId("");
+      setAnalyzing(false);
+      setError("");
+      try {
+        router.replace(`${basePath}/grows/${growId}/journal`);
+      } catch {
+        setError("Journal entry saved. Open the grow journal to view it.");
+      }
     } catch (failure: any) {
       setError(failure?.message || "Failed to create log.");
     } finally {
+      saveInFlight.current = false;
       setSaving(false);
     }
   }, [
@@ -256,6 +294,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
   ]);
 
   function reviewTag(tag: string, decision: "accept" | "reject") {
+    if (saveInFlight.current) return;
     if (decision === "accept") {
       setAcceptedTags((current) =>
         current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag]
@@ -312,7 +351,9 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           plants={plants}
           plantId={plantId}
           selectedPlant={selectedPlant}
-          onSelect={setPlantId}
+          onSelect={(value) => {
+            if (!saveInFlight.current) setPlantId(value);
+          }}
           description="Journal entries and attached photos save the selected plant, crop, cultivar, size, pheno, and timing context when available."
         />
 
@@ -320,7 +361,9 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
         <TextInput
           style={styles.input}
           value={title}
+          editable={!saving}
           onChangeText={(value) => {
+            if (saveInFlight.current) return;
             setTitle(value);
             invalidateSuggestions();
           }}
@@ -331,7 +374,10 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
         <CalendarDateField
           label="Date"
           value={date}
-          onChange={setDate}
+          disabled={saving}
+          onChange={(value) => {
+            if (!saveInFlight.current) setDate(value);
+          }}
           placeholder="Choose log date"
           accessibilityLabel="Log date"
           optional={false}
@@ -341,7 +387,9 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           {logTypes.map((type) => (
             <Pressable
               key={type}
+              disabled={saving}
               onPress={() => {
+                if (saveInFlight.current) return;
                 setLogType(type);
                 invalidateSuggestions();
               }}
@@ -359,7 +407,9 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
         <TextInput
           style={styles.notes}
           value={notes}
+          editable={!saving}
           onChangeText={(value) => {
+            if (saveInFlight.current) return;
             setNotes(value);
             invalidateSuggestions();
           }}
@@ -373,6 +423,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           <Text style={styles.label}>Photos</Text>
           <Pressable
             style={styles.secondaryButton}
+            disabled={saving}
             onPress={pickPhotos}
             accessibilityRole="button"
             accessibilityLabel="Attach log photos"
@@ -389,11 +440,13 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
                 <Image source={{ uri: photo.uri }} style={styles.photoThumb} />
                 <Pressable
                   style={styles.removePhoto}
-                  onPress={() =>
+                  disabled={saving}
+                  onPress={() => {
+                    if (saveInFlight.current) return;
                     setPhotos((current) =>
                       current.filter((_, itemIndex) => itemIndex !== index)
-                    )
-                  }
+                    );
+                  }}
                   accessibilityRole="button"
                   accessibilityLabel={`Remove attached photo ${index + 1}`}
                 >
@@ -407,14 +460,17 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           <TextInput
             style={styles.urlInput}
             value={photoUrl}
-            onChangeText={setPhotoUrl}
+            editable={!saving}
+            onChangeText={(value) => {
+              if (!saveInFlight.current) setPhotoUrl(value);
+            }}
             placeholder="/uploads/grow-photo.jpg or https://..."
             placeholderTextColor={palette.textMuted}
             accessibilityLabel="Photo URL"
           />
           <Pressable
             style={[styles.secondaryButton, !photoUrl.trim() && styles.disabled]}
-            disabled={!photoUrl.trim()}
+            disabled={saving || !photoUrl.trim()}
             onPress={addPhotoUrl}
             accessibilityRole="button"
             accessibilityLabel="Add photo URL"
@@ -429,7 +485,10 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
             (!notes.trim() || analyzing) && styles.disabled
           ]}
           disabled={
-            !notes.trim() || analyzing || !entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI)
+            saving ||
+            !notes.trim() ||
+            analyzing ||
+            !entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI)
           }
           onPress={analyzeDraft}
           accessibilityRole="button"
@@ -469,6 +528,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
                       acceptedTags.includes(tag) && styles.accepted
                     ]}
                     onPress={() => reviewTag(tag, "accept")}
+                    disabled={saving}
                     accessibilityRole="button"
                     accessibilityLabel={`Accept tag ${tag}`}
                   >
@@ -480,6 +540,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
                       rejectedTags.includes(tag) && styles.rejected
                     ]}
                     onPress={() => reviewTag(tag, "reject")}
+                    disabled={saving}
                     accessibilityRole="button"
                     accessibilityLabel={`Reject tag ${tag}`}
                   >
@@ -501,7 +562,10 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
             <Text style={styles.label}>Attach recent tool result</Text>
             <View style={styles.row}>
               <Pressable
-                onPress={() => setSelectedToolRunId("")}
+                disabled={saving}
+                onPress={() => {
+                  if (!saveInFlight.current) setSelectedToolRunId("");
+                }}
                 accessibilityRole="button"
                 accessibilityLabel="Attach no tool result"
                 style={[styles.chip, !selectedToolRunId && styles.chipOn]}
@@ -515,7 +579,10 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
                 return (
                   <Pressable
                     key={id}
-                    onPress={() => setSelectedToolRunId(id)}
+                    disabled={saving}
+                    onPress={() => {
+                      if (!saveInFlight.current) setSelectedToolRunId(id);
+                    }}
                     accessibilityRole="button"
                     accessibilityLabel={`Attach tool result ${run?.toolType || run?.toolName || "tool"}`}
                     style={[styles.chip, selectedToolRunId === id && styles.chipOn]}

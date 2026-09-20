@@ -25,7 +25,8 @@ describe("public Updates page", () => {
     for (const section of PUBLIC_UPDATE_SECTIONS) {
       expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
     }
-    expect(screen.getByText("Last updated September 19, 2026")).toBeTruthy();
+    expect(screen.getByText("Last updated September 20, 2026")).toBeTruthy();
+    expect(screen.getByText("Cleaner grow and journal creation")).toBeTruthy();
     expect(screen.getByText("Visual grow stories and journal photos")).toBeTruthy();
     expect(screen.getByText("Complete missing age information in Profile")).toBeTruthy();
     expect(
@@ -58,6 +59,7 @@ describe("public Updates page", () => {
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[1].entries).toEqual([]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "grow-journal-completion",
       "timeline-photos-sharing",
       "profile-age-confirmation",
       "subscription-checkout",

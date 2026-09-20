@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "September 19, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "September 20, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Available on GrowPathAI now.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "grow-journal-completion",
+        title: "Cleaner grow and journal creation",
+        date: "September 20, 2026",
+        dateLabel: "Released",
+        summary:
+          "The new-grow success popup closes when you choose your next step. After a journal entry saves successfully, its completed draft and photo selections clear so they are not reused in the next entry. Failed saves keep the draft available to retry."
+      },
       {
         id: "timeline-photos-sharing",
         title: "Visual grow stories and journal photos",
@@ -74,10 +82,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "timeline-improvements",
         title: "Timeline and journal follow-up checks",
-        date: "September 19, 2026",
+        date: "September 20, 2026",
         dateLabel: "Plan reviewed",
         summary:
-          "Investigate reported calendar-date mismatches, finish checks for longer timelines and additional sharing destinations, and tidy up completed grow and journal creation screens. These follow-up checks are separate from the released visual-story and photo updates."
+          "Investigate reported calendar-date mismatches and finish checks for longer timelines and additional sharing destinations. These follow-up checks are separate from the released visual-story, photo, and creation-screen updates."
       },
       {
         id: "account-admin-controls",
