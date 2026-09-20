@@ -30,8 +30,11 @@ describe("public Updates page", () => {
     expect(screen.getByText("Visual grow stories and journal photos")).toBeTruthy();
     expect(screen.getByText("Complete missing age information in Profile")).toBeTruthy();
     expect(
-      screen.getByText("No additional updates are currently listed as in testing.")
+      screen.getByText("Updates in progress · Development and testing")
     ).toBeTruthy();
+    expect(
+      screen.queryByText("No additional updates are currently listed as in testing.")
+    ).toBeNull();
     expect(screen.getByText(/not a promise of a release date/)).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Contact Support" }).props.accessibilityHint
@@ -52,12 +55,14 @@ describe("public Updates page", () => {
   it("includes the remaining public work without presenting it as released", () => {
     expect(PUBLIC_UPDATE_SECTIONS[2].entries.map((entry) => entry.id)).toEqual([
       "timeline-improvements",
-      "account-admin-controls",
-      "complimentary-access-live-gifts",
-      "admin-safety-review",
       "course-gifting"
     ]);
-    expect(PUBLIC_UPDATE_SECTIONS[1].entries).toEqual([]);
+    expect(PUBLIC_UPDATE_SECTIONS[1].entries.map((entry) => entry.id)).toEqual([
+      "account-admin-controls",
+      "complimentary-access-live-gifts",
+      "admin-passkey-protection",
+      "admin-safety-review"
+    ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
       "grow-journal-completion",
       "timeline-photos-sharing",
@@ -67,6 +72,22 @@ describe("public Updates page", () => {
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
+  });
+
+  it("identifies the next task without claiming unfinished security work is live", () => {
+    const underway = PUBLIC_UPDATE_SECTIONS[1].entries;
+    expect(underway[0].summary).toMatch(/next check verifies/);
+    expect(underway[0].summary).toMatch(/synthetic accounts/);
+    expect(
+      underway.find((entry) => entry.id === "admin-passkey-protection")?.summary
+    ).toMatch(/remain before production activation/);
+    expect(underway.find((entry) => entry.id === "admin-safety-review")?.summary).toMatch(
+      /operational and legal review/
+    );
+    const ids = PUBLIC_UPDATE_SECTIONS.flatMap((section) =>
+      section.entries.map((entry) => entry.id)
+    );
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it("keeps unverified date and sharing follow-ups separate from live fixes", () => {
@@ -98,7 +119,7 @@ describe("public Updates page", () => {
 
   it("contains no private account, provider, credential, or audit identifiers", () => {
     expect(JSON.stringify(PUBLIC_UPDATE_SECTIONS)).not.toMatch(
-      /@|qa\.invalid|cs_live_|cs_test_|acct_|cus_|whsec_|sk_live_|srv-|mongodb|vault|audit record/i
+      /@|qa\.invalid|cs_live_|cs_test_|acct_|cus_|whsec_|sk_live_|srv-|mongodb|vault|audit record|\b[a-f0-9]{24}\b/i
     );
   });
 });
