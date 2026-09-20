@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "September 15, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "September 19, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,22 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Available on GrowPathAI now.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "timeline-photos-sharing",
+        title: "Visual grow stories and journal photos",
+        date: "September 19, 2026",
+        dateLabel: "Released",
+        summary:
+          "Add photos to older journal entries and share a reviewed horizontal grow story with clickable milestones and photos. The Facebook preview was verified live with multiple dated points and selected photos. Sharing uses your published snapshot; later private edits need a new reviewed publication."
+      },
+      {
+        id: "profile-age-confirmation",
+        title: "Complete missing age information in Profile",
+        date: "September 19, 2026",
+        dateLabel: "Released",
+        summary:
+          "Older accounts missing age information can now complete the age-confirmation step in Profile. Content visibility remains a separate choice; this does not change existing age records or publish anything."
+      },
       {
         id: "subscription-checkout",
         title: "Subscription checkout and recovery",
@@ -47,16 +63,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
     title: "Pending updates · In testing",
     description: "Not yet released. Items appear here when testing is underway.",
     emptyMessage: "No additional updates are currently listed as in testing.",
-    entries: [
-      {
-        id: "timeline-photo-editing",
-        title: "Add photos to older journal entries",
-        date: "September 15, 2026",
-        dateLabel: "Testing started",
-        summary:
-          "Photo attachments in the existing entry editor are being tested. This change is not live yet; saved photos and entry dates must remain intact."
-      }
-    ]
+    entries: []
   },
   {
     id: "planned",
@@ -66,11 +73,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
     entries: [
       {
         id: "timeline-improvements",
-        title: "Grow timeline improvements",
-        date: "September 15, 2026",
+        title: "Timeline and journal follow-up checks",
+        date: "September 19, 2026",
         dateLabel: "Plan reviewed",
         summary:
-          "Add photos to existing entries, improve calendar-date accuracy, and make shared visual timelines show multiple milestones and photos."
+          "Investigate reported calendar-date mismatches, finish checks for longer timelines and additional sharing destinations, and tidy up completed grow and journal creation screens. These follow-up checks are separate from the released visual-story and photo updates."
       },
       {
         id: "account-admin-controls",

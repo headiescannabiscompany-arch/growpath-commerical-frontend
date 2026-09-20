@@ -25,8 +25,12 @@ describe("public Updates page", () => {
     for (const section of PUBLIC_UPDATE_SECTIONS) {
       expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
     }
-    expect(screen.getByText("Last updated September 15, 2026")).toBeTruthy();
-    expect(screen.getByText("Add photos to older journal entries")).toBeTruthy();
+    expect(screen.getByText("Last updated September 19, 2026")).toBeTruthy();
+    expect(screen.getByText("Visual grow stories and journal photos")).toBeTruthy();
+    expect(screen.getByText("Complete missing age information in Profile")).toBeTruthy();
+    expect(
+      screen.getByText("No additional updates are currently listed as in testing.")
+    ).toBeTruthy();
     expect(screen.getByText(/not a promise of a release date/)).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Contact Support" }).props.accessibilityHint
@@ -52,13 +56,27 @@ describe("public Updates page", () => {
       "admin-safety-review",
       "course-gifting"
     ]);
-    expect(PUBLIC_UPDATE_SECTIONS[1].entries[0].id).toBe("timeline-photo-editing");
+    expect(PUBLIC_UPDATE_SECTIONS[1].entries).toEqual([]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "timeline-photos-sharing",
+      "profile-age-confirmation",
       "subscription-checkout",
       "facility-billing",
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
+  });
+
+  it("keeps unverified date and sharing follow-ups separate from live fixes", () => {
+    const live = JSON.stringify(PUBLIC_UPDATE_SECTIONS[0].entries);
+    const planned = PUBLIC_UPDATE_SECTIONS[2].entries.find(
+      (entry) => entry.id === "timeline-improvements"
+    );
+    expect(live).toMatch(/Facebook preview was verified live/);
+    expect(live).toMatch(/published snapshot/);
+    expect(live).not.toMatch(/calendar-date|all platforms|identity verified/i);
+    expect(planned?.summary).toMatch(/Investigate reported calendar-date mismatches/);
+    expect(planned?.summary).toMatch(/separate from the released/);
   });
 
   it.each(["day", "night"] as const)(
