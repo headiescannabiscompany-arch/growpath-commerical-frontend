@@ -68,10 +68,44 @@ export const PUBLIC_UPDATE_SECTIONS = [
   },
   {
     id: "testing",
-    title: "Pending updates · In testing",
-    description: "Not yet released. Items appear here when testing is underway.",
+    title: "Updates in progress · Development and testing",
+    description:
+      "Work already underway. Existing features may be live; the improvements and checks below are not yet complete.",
     emptyMessage: "No additional updates are currently listed as in testing.",
-    entries: []
+    entries: [
+      {
+        id: "account-admin-controls",
+        title: "Account removal and restoration checks",
+        date: "September 20, 2026",
+        dateLabel: "Progress reviewed",
+        summary:
+          "Admin account-management controls are already available. The next check verifies that quarantined accounts cannot sign in or expose public content, and that reviewed restoration preserves their data. Testing uses synthetic accounts before any real-account cleanup."
+      },
+      {
+        id: "complimentary-access-live-gifts",
+        title: "Complimentary access and Live gift follow-up",
+        date: "September 20, 2026",
+        dateLabel: "Progress reviewed",
+        summary:
+          "Complimentary access and subscription gifting already have working flows. Invitation-resend and replacement-link improvements are in staging, with remaining claim, expiry, and Live-chat checks tracked separately. This does not announce course gifting."
+      },
+      {
+        id: "admin-passkey-protection",
+        title: "Passkeys for sensitive Admin actions",
+        date: "September 20, 2026",
+        dateLabel: "Progress reviewed",
+        summary:
+          "Passkey setup, verification, and locking have been tested in staging. Additional administrator setup and access checks remain before production activation. Ordinary sign-in and the existing page layout stay the same."
+      },
+      {
+        id: "admin-safety-review",
+        title: "Private Admin evidence and reporting tools",
+        date: "September 20, 2026",
+        dateLabel: "Progress reviewed",
+        summary:
+          "Private evidence controls are implemented, with access, independent approval, retention, and reporting checks still in progress. Wider use remains subject to operational and legal review; this is not an announcement of public evidence access or automatic reporting."
+      }
+    ]
   },
   {
     id: "planned",
@@ -88,30 +122,6 @@ export const PUBLIC_UPDATE_SECTIONS = [
           "Investigate reported calendar-date mismatches and finish checks for longer timelines and additional sharing destinations. These follow-up checks are separate from the released visual-story, photo, and creation-screen updates."
       },
       {
-        id: "account-admin-controls",
-        title: "Account and Admin controls",
-        date: "September 15, 2026",
-        dateLabel: "Plan reviewed",
-        summary:
-          "Finish verification of account-management and removal controls, with safeguards for protected accounts and existing user content."
-      },
-      {
-        id: "complimentary-access-live-gifts",
-        title: "Complimentary access and gifts during Lives",
-        date: "September 15, 2026",
-        dateLabel: "Plan reviewed",
-        summary:
-          "Complete remaining release checks for Admin-issued complimentary access and the connection between Live chat and subscription gifting."
-      },
-      {
-        id: "admin-safety-review",
-        title: "Private Admin evidence and reporting tools",
-        date: "September 15, 2026",
-        dateLabel: "Plan reviewed",
-        summary:
-          "Complete privacy, access-control, retention, and reporting review before wider availability of sensitive Admin tools."
-      },
-      {
         id: "course-gifting",
         title: "Gift a course",
         date: "September 15, 2026",
@@ -121,4 +131,4 @@ export const PUBLIC_UPDATE_SECTIONS = [
       }
     ]
   }
-] as const;
+];
