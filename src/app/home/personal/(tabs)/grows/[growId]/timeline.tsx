@@ -441,9 +441,9 @@ export default function GrowTimelineScreen({
             <Pressable
               style={styles.sourceAction}
               accessibilityRole="link"
-              accessibilityLabel="Review and share grow timeline"
+              accessibilityLabel="Share Timeline"
             >
-              <Text style={styles.sourceActionText}>Review & Share Copy</Text>
+              <Text style={styles.sourceActionText}>Share Timeline</Text>
             </Pressable>
           </Link>
         </View>

@@ -142,6 +142,35 @@ describe("GrowTimelineScreen", () => {
     ]);
   });
 
+  it.each(["personal", "commercial"] as const)(
+    "keeps the clearly named Share Timeline link and selected presentation in %s",
+    async (workspace) => {
+      const screen = render(<GrowTimelineScreen workspace={workspace} />);
+
+      await waitFor(() =>
+        expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith(workspace, "grow-1")
+      );
+
+      expect(screen.getByRole("link", { name: "Share Timeline" })).toBeTruthy();
+      expect(screen.getByText("Share Timeline")).toBeTruthy();
+      expect(screen.queryByText("Review & Share Copy")).toBeNull();
+      expect(screen.getByText("Export Visual Timeline")).toBeTruthy();
+      expect(
+        screen.getByLabelText(
+          `Timeline source link /home/${workspace}/grows/grow-1/share?presentation=visual`
+        )
+      ).toBeTruthy();
+
+      fireEvent.press(screen.getByText("Detailed List"));
+      expect(screen.getByRole("link", { name: "Share Timeline" })).toBeTruthy();
+      expect(
+        screen.getByLabelText(
+          `Timeline source link /home/${workspace}/grows/grow-1/share?presentation=list`
+        )
+      ).toBeTruthy();
+    }
+  );
+
   it("renders diagnosis feedback outcome details on the grow timeline", async () => {
     const screen = render(<GrowTimelineScreen />);
 
