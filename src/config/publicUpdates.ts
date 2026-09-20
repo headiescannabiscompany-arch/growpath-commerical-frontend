@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "admin-review-safeguards",
+        title: "Admin account-review safeguards",
+        date: "September 20, 2026",
+        dateLabel: "Released",
+        summary:
+          "Platform owners can search accounts and open a separate, guarded removal review. Live checks confirmed protected-account removal is blocked. Switching accounts or editing the review clears outdated results and messages; opening a review does not remove an account or cancel its billing."
+      },
+      {
         id: "grow-journal-completion",
         title: "Cleaner grow and journal creation",
         date: "September 20, 2026",
@@ -90,10 +98,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "account-admin-controls",
         title: "Account and Admin controls",
-        date: "September 15, 2026",
+        date: "September 20, 2026",
         dateLabel: "Plan reviewed",
         summary:
-          "Finish verification of account-management and removal controls, with safeguards for protected accounts and existing user content."
+          "Complete the remaining second-Admin sign-in and end-to-end removal/restore checks. Basic account lookup and protected-account review are available; wider evidence, privacy, and retention checks remain separate."
       },
       {
         id: "complimentary-access-live-gifts",

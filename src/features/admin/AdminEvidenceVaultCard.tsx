@@ -101,6 +101,7 @@ export default function AdminEvidenceVaultCard({
   const [category, setCategory] = useState<AccountRemovalCategory>("test_cleanup");
   const [reason, setReason] = useState("");
   const [caseReference, setCaseReference] = useState("");
+  const removalReviewGeneration = useRef(0);
   const [removalReview, setRemovalReview] = useState<AccountRemovalReview | null>(null);
   const [removalConfirmation, setRemovalConfirmation] = useState("");
 
@@ -130,6 +131,8 @@ export default function AdminEvidenceVaultCard({
   };
 
   function invalidateRemovalReview() {
+    removalReviewGeneration.current += 1;
+    setFeedback("");
     setRemovalReview(null);
     setRemovalConfirmation("");
   }
@@ -159,6 +162,8 @@ export default function AdminEvidenceVaultCard({
 
   useEffect(() => {
     if (!requestedUser) return;
+    removalReviewGeneration.current += 1;
+    setFeedback("");
     capabilityLoadAttempted.current = false;
     setExpanded(true);
     setTargetUserId(requestedUser.id);
@@ -187,12 +192,14 @@ export default function AdminEvidenceVaultCard({
 
   async function runRemovalReview() {
     if (busy || !targetUserId) return;
+    const generation = removalReviewGeneration.current;
     setBusy("removal-review");
     setFeedback("");
     setRemovalReview(null);
     setRemovalConfirmation("");
     try {
       const review = await reviewAccountRemoval(targetUserId, removalInput);
+      if (generation !== removalReviewGeneration.current) return;
       setRemovalReview(review);
       setFeedback(
         review.allowed
@@ -200,6 +207,7 @@ export default function AdminEvidenceVaultCard({
           : "Removal is blocked. No account, Stripe, gift, payout, or invoice state changed."
       );
     } catch (error) {
+      if (generation !== removalReviewGeneration.current) return;
       setFeedback(errorLabel(error, "Account-removal review failed closed."));
     } finally {
       setBusy("");
