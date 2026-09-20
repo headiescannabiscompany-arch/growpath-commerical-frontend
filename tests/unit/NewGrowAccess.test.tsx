@@ -226,6 +226,89 @@ describe("NewGrowScreen access", () => {
     );
     fireEvent.press(screen.getByText("Open Grow Dashboard"));
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows/grow-bruce-banner");
+    expect(screen.queryByText("Grow created: Bruce Banner Auto")).toBeNull();
+  });
+
+  it.each(
+    (["personal", "commercial"] as const).flatMap((workspace) =>
+      [
+        ["Add Plants", `/home/${workspace}/grows/grow-bruce-banner/plants`],
+        [
+          "Create First Journal Entry",
+          `/home/${workspace}/logs/new?growId=grow-bruce-banner`
+        ],
+        ["Create Grow Calendar", `/home/${workspace}/tools/auto-grow-calendar`],
+        [
+          "Run Diagnosis / Ask AI",
+          `/home/${workspace}/${workspace === "commercial" ? "tools/diagnose" : "diagnose"}?growId=grow-bruce-banner`
+        ],
+        ["Open Grow Dashboard", `/home/${workspace}/grows/grow-bruce-banner`]
+      ].map(([action, destination]) => ({ workspace, action, destination }))
+    )
+  )(
+    "dismisses the retained $workspace success popup when choosing $action",
+    async ({ workspace, action, destination }) => {
+      render(<NewGrowScreen workspace={workspace} />);
+
+      await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
+      fireEvent.changeText(screen.getByLabelText("Grow name"), "Journal handoff grow");
+      chooseDate(screen, "Anchor date", "2026-01-01");
+      fireEvent.press(screen.getByLabelText("Create grow"));
+
+      await waitFor(() =>
+        expect(screen.getByText("Grow created: Journal handoff grow")).toBeTruthy()
+      );
+      fireEvent.press(screen.getByRole("button", { name: action }));
+
+      if (action === "Create Grow Calendar") {
+        const target = new URL(mockReplace.mock.calls[0][0], "https://growpathai.com");
+        expect(target.pathname).toBe(destination);
+        expect(target.searchParams.get("growId")).toBe("grow-bruce-banner");
+        expect(target.searchParams.get("source")).toBe("start_grow");
+        expect(target.searchParams.get("startDate")).toBe("2026-01-01");
+      } else {
+        expect(mockReplace).toHaveBeenCalledWith(destination);
+      }
+      expect(mockReplace).toHaveBeenCalledTimes(1);
+      // The mocked router deliberately leaves the old screen mounted.
+      expect(screen.queryByText("Grow created: Journal handoff grow")).toBeNull();
+      expect(screen.queryByRole("button", { name: "Add Plants" })).toBeNull();
+      expect(
+        mockApiRequest.mock.calls.filter(
+          ([path, options]) =>
+            path === `/api/${workspace}/grows` && options?.method === "POST"
+        )
+      ).toHaveLength(1);
+    }
+  );
+
+  it("keeps the created-grow popup available when navigation fails immediately", async () => {
+    render(<NewGrowScreen />);
+    await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Grow name"), "Retry navigation grow");
+    chooseDate(screen, "Anchor date", "2026-01-01");
+    fireEvent.press(screen.getByLabelText("Create grow"));
+    await waitFor(() =>
+      expect(screen.getByText("Grow created: Retry navigation grow")).toBeTruthy()
+    );
+    mockReplace.mockImplementationOnce(() => {
+      throw new Error("Navigation unavailable");
+    });
+
+    expect(() => fireEvent.press(screen.getByText("Create First Journal Entry"))).toThrow(
+      "Navigation unavailable"
+    );
+    expect(screen.getByText("Grow created: Retry navigation grow")).toBeTruthy();
+    fireEvent.press(screen.getByText("Create First Journal Entry"));
+    expect(mockReplace).toHaveBeenLastCalledWith(
+      "/home/personal/logs/new?growId=grow-bruce-banner"
+    );
+    expect(screen.queryByText("Grow created: Retry navigation grow")).toBeNull();
+    expect(
+      mockApiRequest.mock.calls.filter(
+        ([path, options]) => path === "/api/personal/grows" && options?.method === "POST"
+      )
+    ).toHaveLength(1);
   });
 
   it("keeps an ordinary crop grow neutral until reviewed crop guidance is chosen", async () => {

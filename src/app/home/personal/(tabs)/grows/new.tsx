@@ -615,6 +615,7 @@ export default function NewGrowScreen({
   function openCreated(path: string) {
     if (!createdGrowId) return;
     router.replace(path as any);
+    setCreatedGrowId("");
   }
 
   function DateInput({
