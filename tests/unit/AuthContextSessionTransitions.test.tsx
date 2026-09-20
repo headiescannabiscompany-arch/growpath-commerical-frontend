@@ -11,6 +11,13 @@ const mockSetOnUnauthorized = jest.fn();
 const mockApiLogin = jest.fn();
 const mockResetWorkspaceSessionState = jest.fn();
 const mockSubscribeToExternalTokenChanges = jest.fn();
+const mockClearAdminSecurityForLogout = jest.fn();
+
+jest.mock("@/api/adminPasskeys", () => ({
+  clearAdminStepUp: jest.fn(),
+  clearAdminSecurityForLogout: (...args: any[]) =>
+    mockClearAdminSecurityForLogout(...args)
+}));
 
 jest.mock("expo-router", () => ({
   useGlobalSearchParams: () => ({}),
@@ -122,6 +129,7 @@ describe("AuthProvider persisted-session transitions", () => {
     mockPersistToken.mockResolvedValue(undefined);
     mockResetWorkspaceSessionState.mockResolvedValue(undefined);
     mockApiRequest.mockResolvedValue({});
+    mockClearAdminSecurityForLogout.mockResolvedValue(undefined);
     jest.spyOn(console, "error").mockImplementation(() => undefined);
     jest.spyOn(console, "log").mockImplementation(() => undefined);
   });
@@ -294,6 +302,48 @@ describe("AuthProvider persisted-session transitions", () => {
       mockPersistToken.mock.invocationCallOrder[1]
     );
   });
+
+  it.each(["success", "failure"])(
+    "a delayed departing Admin lock %s cannot sign out a newer login",
+    async (outcome) => {
+      let resolveLock!: () => void;
+      let rejectLock!: (error: Error) => void;
+      mockClearAdminSecurityForLogout.mockReturnValueOnce(
+        new Promise<void>((resolve, reject) => {
+          resolveLock = resolve;
+          rejectLock = reject;
+        })
+      );
+      const secondUser = {
+        ...hydratedMe.user,
+        id: "user-2",
+        email: "second@example.com"
+      };
+      mockApiMe.mockResolvedValueOnce(hydratedMe).mockResolvedValueOnce({
+        user: secondUser,
+        ctx: { mode: "personal", plan: "free" }
+      });
+      mockApiLogin.mockResolvedValue({ token: "second-session-token", user: secondUser });
+      const screen = renderProvider();
+      await waitFor(() => expect(authState(screen).meStatus).toBe("ready"));
+      fireEvent.press(screen.getByLabelText("Log out session"));
+      await waitFor(() => expect(authState(screen).isAuthed).toBe(false));
+      expect(mockClearAdminSecurityForLogout).toHaveBeenCalledWith("session-token");
+      fireEvent.press(screen.getByLabelText("Log in second account"));
+      await waitFor(() => expect(authState(screen).token).toBe("second-session-token"));
+      const persistedWrites = mockPersistToken.mock.calls.length;
+      await act(async () => {
+        if (outcome === "success") resolveLock();
+        else rejectLock(new Error("Synthetic offline lock"));
+      });
+      expect(authState(screen)).toMatchObject({
+        token: "second-session-token",
+        user: secondUser,
+        isAuthed: true
+      });
+      expect(mockPersistToken).toHaveBeenCalledTimes(persistedWrites);
+    }
+  );
 
   it.each(["success", "401", "outage"])(
     "ignores the former account's delayed refresh %s after a second login",

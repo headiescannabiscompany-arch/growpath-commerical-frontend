@@ -4,8 +4,7 @@ const { spawnSync } = require("node:child_process");
 const path = require("node:path");
 
 const BASE_SHA = String(
-  process.env.GROWPATH_INTERFACE_BASE_SHA ||
-    "302f5029ff824eee9ebf1627e249b25b6107fe29"
+  process.env.GROWPATH_INTERFACE_BASE_SHA || "302f5029ff824eee9ebf1627e249b25b6107fe29"
 ).trim();
 const REJECTED_REDESIGN_SHA = "df50bf581bedf22c9cea0095d1d9d23ac7f68281";
 const EXACT_REVERT_SHA = "5958ca6bc7d22abc73569db38ec7b104c7ae1b14";
@@ -22,7 +21,9 @@ const PROTECTED_PATHS = [
 
 const PAGE_CHANGE_BUDGETS = new Map([
   ["src/app/account/billing.tsx", 80],
-  ["src/app/admin/index.tsx", 100],
+  // Owner-approved 2026-09-20 passkey wiring adds 37 lines for restricted API
+  // calls and lock/expiry data clearing; no page structure/styles are changed.
+  ["src/app/admin/index.tsx", 140],
   ["src/app/home/commercial/profile.tsx", 80],
   ["src/app/offers/index.tsx", 160],
   ["src/app/profile/index.tsx", 80],

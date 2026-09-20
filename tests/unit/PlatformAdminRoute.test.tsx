@@ -1309,6 +1309,10 @@ describe("PlatformAdminRoute", () => {
       expect(mockApiRequest).toHaveBeenCalledWith(
         "/api/admin/evidence-requests/legal-1",
         {
+          cache: "no-store",
+          retries: 0,
+          invalidateOn401: false,
+          headers: {},
           method: "PATCH",
           body: {
             preservationHold: true,
@@ -1386,6 +1390,10 @@ describe("PlatformAdminRoute", () => {
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/admin/evidence-requests", {
+        cache: "no-store",
+        retries: 0,
+        invalidateOn401: false,
+        headers: {},
         method: "POST",
         body: {
           requestType: "preservation",
@@ -1426,7 +1434,10 @@ describe("PlatformAdminRoute", () => {
       createdBy: "admin-1"
     };
     mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/admin/evidence-requests" && !options) {
+      if (
+        path === "/api/admin/evidence-requests" &&
+        (!options?.method || options.method === "GET")
+      ) {
         return Promise.resolve({ requests: [evidenceRequest] });
       }
       return defaultAdminApi(path);
@@ -1446,6 +1457,10 @@ describe("PlatformAdminRoute", () => {
       expect(mockApiRequest).toHaveBeenCalledWith(
         "/api/admin/evidence-requests/legal-held-1",
         {
+          cache: "no-store",
+          retries: 0,
+          invalidateOn401: false,
+          headers: {},
           method: "PATCH",
           body: {
             status: "rejected",

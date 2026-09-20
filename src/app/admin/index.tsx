@@ -13,6 +13,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError, apiRequest } from "@/api/apiRequest";
 import { normalizeAdminEvidenceRequests } from "@/api/adminEvidenceVault";
+import {
+  adminVaultRequest,
+  getAdminSecurityEpoch,
+  subscribeAdminSecurity
+} from "@/api/adminPasskeys";
 import type { AccountBillingReadModel, AccountBillingSource } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
@@ -902,6 +907,7 @@ export default function PlatformAdminRoute() {
 
   const load = useCallback(async () => {
     if (!isAdmin) return;
+    const securityEpoch = getAdminSecurityEpoch();
     setLoading(true);
     setError("");
     try {
@@ -927,7 +933,7 @@ export default function PlatformAdminRoute() {
         apiRequest("/api/admin/regulated-commerce"),
         apiRequest(`/api/admin/users${suffix}`),
         apiRequest("/api/admin/moderation-cases"),
-        apiRequest("/api/admin/evidence-requests"),
+        adminVaultRequest("/api/admin/evidence-requests"),
         apiRequest("/api/admin/support-requests"),
         apiRequest("/api/admin/knowledge-registry"),
         apiRequest("/api/admin/method-review-proposals"),
@@ -992,7 +998,7 @@ export default function PlatformAdminRoute() {
         setModerationCases(
           Array.isArray(moderationResponse.cases) ? moderationResponse.cases : []
         );
-      if (evidenceResponse)
+      if (evidenceResponse && securityEpoch === getAdminSecurityEpoch())
         setEvidenceRequests(normalizeAdminEvidenceRequests(evidenceResponse.requests));
       if (supportResponse)
         setSupportRequests(
@@ -1031,6 +1037,25 @@ export default function PlatformAdminRoute() {
       setLoading(false);
     }
   }, [isAdmin, query]);
+
+  useEffect(
+    () =>
+      subscribeAdminSecurity(() => {
+        // Never leave protected details on screen after verification expires/locks.
+        const epoch = getAdminSecurityEpoch();
+        setEvidenceRequests([]);
+        setEvidenceAudit({});
+        if (!isAdmin) return;
+        void adminVaultRequest("/api/admin/evidence-requests")
+          .then((response) => {
+            if (epoch === getAdminSecurityEpoch()) {
+              setEvidenceRequests(normalizeAdminEvidenceRequests(response.requests));
+            }
+          })
+          .catch(() => undefined);
+      }),
+    [isAdmin]
+  );
 
   async function reconcileHarvestOperation(item: HarvestReconciliationOperation) {
     const action = harvestReconciliationActions[item.operationId] || "refund";
@@ -1426,7 +1451,7 @@ export default function PlatformAdminRoute() {
     setBusyId(item._id);
     setError("");
     try {
-      await apiRequest(`/api/admin/evidence-requests/${item._id}`, {
+      await adminVaultRequest(`/api/admin/evidence-requests/${item._id}`, {
         method: "PATCH",
         body: {
           preservationHold: true,
@@ -1511,7 +1536,7 @@ export default function PlatformAdminRoute() {
     try {
       const releasesPreservationHold =
         item.preservationHold && ["rejected", "closed"].includes(status);
-      await apiRequest(`/api/admin/evidence-requests/${item._id}`, {
+      await adminVaultRequest(`/api/admin/evidence-requests/${item._id}`, {
         method: "PATCH",
         body: {
           status,
@@ -1563,7 +1588,7 @@ export default function PlatformAdminRoute() {
     setBusyId("evidence-new");
     setError("");
     try {
-      await apiRequest(
+      await adminVaultRequest(
         sourceModerationCaseId
           ? `/api/admin/moderation-cases/${sourceModerationCaseId}/escalate-legal`
           : "/api/admin/evidence-requests",
@@ -1611,7 +1636,7 @@ export default function PlatformAdminRoute() {
       [item._id]: { loading: true, error: "", events: current[item._id]?.events || [] }
     }));
     try {
-      const response = await apiRequest(
+      const response = await adminVaultRequest(
         `/api/admin/audit?targetType=legalEvidenceRequest&targetId=${encodeURIComponent(
           item._id
         )}`
