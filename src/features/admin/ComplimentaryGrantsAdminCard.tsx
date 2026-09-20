@@ -128,6 +128,13 @@ export default function ComplimentaryGrantsAdminCard() {
         );
       }
     } catch (error) {
+      if (
+        generation !== facilityLookupGeneration.current ||
+        currentPlan.current !== "facility" ||
+        currentRecipientEmail.current.trim().toLowerCase() !== email
+      ) {
+        return;
+      }
       setFeedback(
         error instanceof Error
           ? error.message

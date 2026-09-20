@@ -8,6 +8,7 @@ import PlatformAdminRoute, {
   supportsModerationActions
 } from "@/app/admin";
 import { getThemePalette } from "@/theme/appTheme";
+import AdminEvidenceVaultCard from "@/features/admin/AdminEvidenceVaultCard";
 
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
@@ -792,6 +793,167 @@ describe("PlatformAdminRoute", () => {
         String(path).includes("anonymize-synthetic-account")
       )
     ).toBe(false);
+  });
+
+  it("refreshes the current account search and Vault picker after quarantine and restore without Search", async () => {
+    const archiveId = "64b000000000000000000006";
+    let quarantined = false;
+    const quarantinePhrase = `QUARANTINE ${member._id} ${member.email}`;
+    const restorePhrase = `RESTORE ${archiveId} ${member._id}`;
+    const userSearchPath = `/api/admin/users?q=${encodeURIComponent(member.email)}`;
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path.startsWith("/api/admin/users")) {
+        return Promise.resolve({ users: quarantined ? [] : [member] });
+      }
+      if (path === "/api/admin/evidence-vault/capabilities") {
+        return Promise.resolve({
+          ok: true,
+          configured: true,
+          capabilities: {
+            accountRemovalOwner: true,
+            evidenceAccess: false,
+            evidenceApproval: false,
+            severeHarmReview: false
+          }
+        });
+      }
+      if (path === `/api/admin/evidence-vault/users/${member._id}/removal-review`) {
+        return Promise.resolve({
+          ok: true,
+          review: {
+            allowed: true,
+            target: { id: member._id, email: member.email },
+            blockers: [],
+            advisories: {
+              facilityOwnership: 0,
+              courseOwnership: 0,
+              storefrontOwnership: 0
+            },
+            stripe: {
+              verified: true,
+              customerCount: 0,
+              subscriptionCount: 0,
+              unsettledInvoiceCount: 0
+            },
+            billingEffect: { requiredAction: "none" },
+            nextConfirmation: quarantinePhrase,
+            reviewToken: "quarantine-review-token"
+          }
+        });
+      }
+      if (path === `/api/admin/evidence-vault/users/${member._id}/quarantine`) {
+        quarantined = true;
+        return Promise.resolve({
+          ok: true,
+          quarantine: {
+            archiveId,
+            targetUserId: member._id,
+            quarantineStatus: "quarantined"
+          }
+        });
+      }
+      if (path === "/api/admin/evidence-vault/removed-accounts") {
+        return Promise.resolve({
+          ok: true,
+          accounts: quarantined
+            ? [
+                {
+                  archiveId,
+                  anonymousAccountLabel: `removed-account-${archiveId}`,
+                  quarantineStatus: "quarantined",
+                  legalHold: false
+                }
+              ]
+            : [],
+          nextCursor: null
+        });
+      }
+      if (
+        path === `/api/admin/evidence-vault/removed-accounts/${archiveId}/restore-review`
+      ) {
+        return Promise.resolve({
+          ok: true,
+          review: {
+            archiveId,
+            target: { id: member._id, email: member.email },
+            nextConfirmation: restorePhrase,
+            reviewToken: "restore-review-token"
+          }
+        });
+      }
+      if (path === `/api/admin/evidence-vault/removed-accounts/${archiveId}/restore`) {
+        quarantined = false;
+        return Promise.resolve({
+          ok: true,
+          restore: { archiveId, targetUserId: member._id, quarantineStatus: "restored" }
+        });
+      }
+      return defaultAdminApi(path);
+    });
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByLabelText(`Admin account ${member.email}`);
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Email or display name"),
+      member.email
+    );
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalledWith(userSearchPath));
+    fireEvent.press(
+      screen.getByRole("button", { name: `Review ${member.email} in Evidence Vault` })
+    );
+    await screen.findByLabelText("Type the reviewed account email");
+    fireEvent.changeText(
+      screen.getByLabelText("Type the reviewed account email"),
+      member.email
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Account removal reason"),
+      "Approved synthetic acceptance"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Account removal case reference"),
+      "ADMIN-205"
+    );
+    fireEvent.press(screen.getByText("Review account removal"));
+    await screen.findByText("Review passed");
+    fireEvent.changeText(
+      screen.getByLabelText("Exact account quarantine confirmation"),
+      quarantinePhrase
+    );
+    fireEvent.press(screen.getByText("Quarantine reviewed account"));
+
+    await waitFor(() =>
+      expect(screen.queryByLabelText(`Admin account ${member.email}`)).toBeNull()
+    );
+    expect(screen.UNSAFE_getByType(AdminEvidenceVaultCard).props.users).toEqual([]);
+    expect(
+      mockApiRequest.mock.calls.filter(([path]) => path === userSearchPath)
+    ).toHaveLength(2);
+    expect(
+      screen.getByText(
+        `Account quarantined in private archive ${archiveId}. It remains reversible until retention permits verified finalization.`
+      )
+    ).toBeTruthy();
+    fireEvent.press(await screen.findByText("Start reviewed restore"));
+    fireEvent.press(screen.getByLabelText("Review selected account restore"));
+    await screen.findByLabelText("Exact account restore confirmation");
+    fireEvent.changeText(
+      screen.getByLabelText("Exact account restore confirmation"),
+      restorePhrase
+    );
+    fireEvent.press(screen.getByText("Restore reviewed account"));
+
+    expect(await screen.findByLabelText(`Admin account ${member.email}`)).toBeTruthy();
+    expect(screen.UNSAFE_getByType(AdminEvidenceVaultCard).props.users).toEqual([
+      expect.objectContaining({ id: member._id, email: member.email })
+    ]);
+    expect(
+      mockApiRequest.mock.calls.filter(([path]) => path === userSearchPath)
+    ).toHaveLength(3);
+    expect(
+      screen.getByText(
+        "The quarantined account was restored. The action remains audited."
+      )
+    ).toBeTruthy();
   });
 
   it.each(["day", "night"] as const)(

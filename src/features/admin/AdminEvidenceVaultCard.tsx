@@ -79,10 +79,12 @@ function errorLabel(error: unknown, fallback: string) {
 
 export default function AdminEvidenceVaultCard({
   users,
-  requestedUser = null
+  requestedUser = null,
+  onAccountsChanged
 }: {
   users: AdminEvidenceVaultUser[];
   requestedUser?: AdminEvidenceVaultUser | null;
+  onAccountsChanged?: () => void | Promise<void>;
 }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -225,23 +227,40 @@ export default function AdminEvidenceVaultCard({
         reviewToken: removalReview.reviewToken,
         confirmation: removalConfirmation
       });
-      setFeedback(
-        `Account quarantined in private archive ${receipt.archiveId}. It remains reversible until retention permits verified finalization.`
-      );
+      const successMessage = `Account quarantined in private archive ${receipt.archiveId}. It remains reversible until retention permits verified finalization.`;
+      setFeedback(successMessage);
       setTargetUserId("");
       setExpectedEmail("");
       setReason("");
       setCaseReference("");
       setRemovalReview(null);
       setRemovalConfirmation("");
-      const page = await listRemovedAccounts();
-      setRemoved(page.accounts);
+      await refreshAccountLists(successMessage);
     } catch (error) {
       setFeedback(
         `${errorLabel(error, "Account quarantine failed.")} No automatic cancellation or refund was attempted.`
       );
     } finally {
       setBusy("");
+    }
+  }
+
+  async function refreshAccountLists(successMessage: string) {
+    const [archivesResult, accountsResult] = await Promise.allSettled([
+      Promise.resolve().then(() => listRemovedAccounts()),
+      Promise.resolve().then(() => onAccountsChanged?.())
+    ]);
+    const failedLists: string[] = [];
+    if (archivesResult.status === "fulfilled") {
+      setRemoved(archivesResult.value.accounts);
+    } else {
+      failedLists.push("removed-account archive list");
+    }
+    if (accountsResult.status === "rejected") failedLists.push("active-account list");
+    if (failedLists.length) {
+      setFeedback(
+        `${successMessage}\nList refresh failed (${failedLists.join(", ")}). The account change succeeded; refresh the lists before another action.`
+      );
     }
   }
 
@@ -274,12 +293,13 @@ export default function AdminEvidenceVaultCard({
         reviewToken: restoreReview.reviewToken,
         confirmation: restoreConfirmation
       });
-      setFeedback("The quarantined account was restored. The action remains audited.");
+      const successMessage =
+        "The quarantined account was restored. The action remains audited.";
+      setFeedback(successMessage);
       setRestoreArchiveId("");
       setRestoreReview(null);
       setRestoreConfirmation("");
-      const page = await listRemovedAccounts();
-      setRemoved(page.accounts);
+      await refreshAccountLists(successMessage);
     } catch (error) {
       setFeedback(errorLabel(error, "Account restore failed closed."));
     } finally {

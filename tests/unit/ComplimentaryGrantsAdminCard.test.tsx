@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import ComplimentaryGrantsAdminCard from "@/features/admin/ComplimentaryGrantsAdminCard";
 
@@ -259,6 +259,83 @@ describe("ComplimentaryGrantsAdminCard", () => {
     await waitFor(() => expect(mockListFacilityWorkspaces).toHaveBeenCalledTimes(1));
     expect(screen.queryByLabelText("Complimentary Facility workspace")).toBeNull();
     expect(screen.getByText("Issue complimentary access")).toBeDisabled();
+  });
+
+  it.each(["recipient", "plan"] as const)(
+    "ignores a stale workspace lookup rejection after the %s changes",
+    async (change) => {
+      let rejectLookup!: (error: Error) => void;
+      mockListFacilityWorkspaces.mockReturnValueOnce(
+        new Promise((_resolve, reject) => {
+          rejectLookup = reject;
+        })
+      );
+      const screen = render(<ComplimentaryGrantsAdminCard />);
+      await waitFor(() => expect(mockList).toHaveBeenCalled());
+      fireEvent.changeText(
+        screen.getByLabelText("Complimentary recipient email"),
+        "first@example.com"
+      );
+      fireEvent(screen.getByLabelText("Complimentary plan"), "valueChange", "facility");
+      fireEvent.press(
+        screen.getByLabelText("Find complimentary recipient Facility workspaces")
+      );
+      expect(mockListFacilityWorkspaces).toHaveBeenCalledWith("first@example.com");
+
+      if (change === "recipient") {
+        fireEvent.changeText(
+          screen.getByLabelText("Complimentary recipient email"),
+          "second@example.com"
+        );
+      } else {
+        fireEvent(screen.getByLabelText("Complimentary plan"), "valueChange", "pro");
+      }
+      await act(async () => rejectLookup(new Error("Previous recipient lookup failed")));
+
+      expect(screen.queryByText("Previous recipient lookup failed")).toBeNull();
+      expect(screen.queryByLabelText("Complimentary Facility workspace")).toBeNull();
+      expect(mockListFacilityWorkspaces).toHaveBeenCalledTimes(1);
+      expect(mockIssue).not.toHaveBeenCalled();
+    }
+  );
+
+  it("shows a current workspace lookup failure and permits a successful retry", async () => {
+    mockListFacilityWorkspaces
+      .mockRejectedValueOnce(new Error("Current recipient lookup failed"))
+      .mockResolvedValueOnce({
+        recipientEmail: "recipient@example.com",
+        workspaces: [
+          {
+            facilityId: "507f191e810c19729de86001",
+            name: "Recipient Greenhouse",
+            workspaceReference: "FAC-101"
+          }
+        ]
+      });
+    const screen = render(<ComplimentaryGrantsAdminCard />);
+    await waitFor(() => expect(mockList).toHaveBeenCalled());
+    fireEvent.changeText(
+      screen.getByLabelText("Complimentary recipient email"),
+      "recipient@example.com"
+    );
+    fireEvent(screen.getByLabelText("Complimentary plan"), "valueChange", "facility");
+    fireEvent.press(
+      screen.getByLabelText("Find complimentary recipient Facility workspaces")
+    );
+
+    expect(await screen.findByText("Current recipient lookup failed")).toBeTruthy();
+    expect(screen.queryByLabelText("Complimentary Facility workspace")).toBeNull();
+    fireEvent.press(
+      screen.getByLabelText("Find complimentary recipient Facility workspaces")
+    );
+
+    expect(await screen.findByLabelText("Complimentary Facility workspace")).toBeTruthy();
+    expect(screen.queryByText("Current recipient lookup failed")).toBeNull();
+    expect(mockListFacilityWorkspaces).toHaveBeenNthCalledWith(
+      2,
+      "recipient@example.com"
+    );
+    expect(mockIssue).not.toHaveBeenCalled();
   });
 
   it("passes an audited reason through resend and revoke actions", async () => {

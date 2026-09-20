@@ -195,6 +195,53 @@ async function twoArchiveRestoreScreen() {
   return screen;
 }
 
+async function readyAccountAction(
+  action: "quarantine" | "restore",
+  onAccountsChanged: () => void | Promise<void>
+) {
+  mockReview.mockResolvedValue(removalReview());
+  mockRestoreReview.mockResolvedValue(restoreReviewFor());
+  mockQuarantine.mockResolvedValue({
+    archiveId: ARCHIVE_ID,
+    targetUserId: TARGET_ID,
+    quarantineStatus: "quarantined",
+    quarantinedAt: "2030-01-01T00:00:00.000Z",
+    purgeAfter: "2030-04-01T00:00:00.000Z",
+    reversible: true
+  });
+  mockRestore.mockResolvedValue({
+    archiveId: ARCHIVE_ID,
+    targetUserId: TARGET_ID,
+    quarantineStatus: "restored"
+  });
+  const screen = render(
+    <AdminEvidenceVaultCard
+      users={USERS}
+      requestedUser={FIRST_USER}
+      onAccountsChanged={onAccountsChanged}
+    />
+  );
+  await screen.findByText(`removed-account-${ARCHIVE_ID}`);
+  if (action === "quarantine") {
+    fillRemovalInputs(screen);
+    fireEvent.press(screen.getByText("Review account removal"));
+    await screen.findByText(PASSED_FEEDBACK);
+    fireEvent.changeText(
+      screen.getByLabelText("Exact account quarantine confirmation"),
+      removalReview().nextConfirmation
+    );
+  } else {
+    fireEvent.press(screen.getByText("Start reviewed restore"));
+    fireEvent.press(screen.getByLabelText("Review selected account restore"));
+    await screen.findByText(RESTORE_FEEDBACK);
+    fireEvent.changeText(
+      screen.getByLabelText("Exact account restore confirmation"),
+      restoreReviewFor().nextConfirmation
+    );
+  }
+  return screen;
+}
+
 describe("AdminEvidenceVaultCard", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -698,6 +745,95 @@ describe("AdminEvidenceVaultCard", () => {
           "The quarantined account was restored. The action remains audited."
         )
       ).toBeTruthy();
+    }
+  );
+
+  test.each([
+    ["quarantine", "none"],
+    ["quarantine", "archives"],
+    ["quarantine", "accounts"],
+    ["quarantine", "both"],
+    ["restore", "none"],
+    ["restore", "archives"],
+    ["restore", "accounts"],
+    ["restore", "both"]
+  ] as const)(
+    "refreshes both lists once after committed %s and preserves success when %s refresh fails",
+    async (action, failure) => {
+      const onAccountsChanged = jest.fn(async () => {
+        if (failure === "accounts" || failure === "both") {
+          throw new Error("Active list unavailable");
+        }
+      });
+      const screen = await readyAccountAction(action, onAccountsChanged);
+      expect(onAccountsChanged).not.toHaveBeenCalled();
+      expect(mockRemoved).toHaveBeenCalledTimes(1);
+      if (failure === "archives" || failure === "both") {
+        mockRemoved.mockRejectedValueOnce(new Error("Archive list unavailable"));
+      } else {
+        mockRemoved.mockResolvedValueOnce({ accounts: [], nextCursor: null });
+      }
+
+      fireEvent.press(
+        screen.getByText(
+          action === "quarantine"
+            ? "Quarantine reviewed account"
+            : "Restore reviewed account"
+        )
+      );
+
+      const successMessage =
+        action === "quarantine"
+          ? `Account quarantined in private archive ${ARCHIVE_ID}. It remains reversible until retention permits verified finalization.`
+          : "The quarantined account was restored. The action remains audited.";
+      const failedLists = [
+        ...(failure === "archives" || failure === "both"
+          ? ["removed-account archive list"]
+          : []),
+        ...(failure === "accounts" || failure === "both" ? ["active-account list"] : [])
+      ];
+      expect(
+        await screen.findByText(
+          failedLists.length
+            ? `${successMessage}\nList refresh failed (${failedLists.join(", ")}). The account change succeeded; refresh the lists before another action.`
+            : successMessage
+        )
+      ).toBeTruthy();
+      await waitFor(() => expect(onAccountsChanged).toHaveBeenCalledTimes(1));
+      expect(mockRemoved).toHaveBeenCalledTimes(2);
+      expect(
+        action === "quarantine" ? mockQuarantine : mockRestore
+      ).toHaveBeenCalledTimes(1);
+      expect(screen.queryByLabelText("Exact account quarantine confirmation")).toBeNull();
+      expect(screen.queryByLabelText("Exact account restore confirmation")).toBeNull();
+      if (failure === "none" || failure === "accounts") {
+        await waitFor(() =>
+          expect(screen.queryByText(`removed-account-${ARCHIVE_ID}`)).toBeNull()
+        );
+      }
+    }
+  );
+
+  test.each(["quarantine", "restore"] as const)(
+    "does not refresh the parent or archive list after a failed %s",
+    async (action) => {
+      const onAccountsChanged = jest.fn();
+      const screen = await readyAccountAction(action, onAccountsChanged);
+      const mutation = action === "quarantine" ? mockQuarantine : mockRestore;
+      mutation.mockRejectedValueOnce(new Error("Mutation refused"));
+
+      fireEvent.press(
+        screen.getByText(
+          action === "quarantine"
+            ? "Quarantine reviewed account"
+            : "Restore reviewed account"
+        )
+      );
+
+      expect(await screen.findByText(/Mutation refused/)).toBeTruthy();
+      expect(mutation).toHaveBeenCalledTimes(1);
+      expect(onAccountsChanged).not.toHaveBeenCalled();
+      expect(mockRemoved).toHaveBeenCalledTimes(1);
     }
   );
 });

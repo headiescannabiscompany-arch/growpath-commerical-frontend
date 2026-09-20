@@ -2665,6 +2665,7 @@ export default function PlatformAdminRoute() {
 
       <AdminEvidenceVaultCard
         requestedUser={vaultRequestedUser}
+        onAccountsChanged={load}
         users={orderedUsers.map((item) => ({
           id: item._id,
           email: item.email,
