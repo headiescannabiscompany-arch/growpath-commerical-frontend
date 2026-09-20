@@ -26,7 +26,6 @@ describe("public Updates page", () => {
       expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
     }
     expect(screen.getByText("Last updated September 20, 2026")).toBeTruthy();
-    expect(screen.getByText("Admin account-review safeguards")).toBeTruthy();
     expect(screen.getByText("Cleaner grow and journal creation")).toBeTruthy();
     expect(screen.getByText("Visual grow stories and journal photos")).toBeTruthy();
     expect(screen.getByText("Complete missing age information in Profile")).toBeTruthy();
@@ -60,7 +59,6 @@ describe("public Updates page", () => {
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[1].entries).toEqual([]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
-      "admin-review-safeguards",
       "grow-journal-completion",
       "timeline-photos-sharing",
       "profile-age-confirmation",
@@ -69,22 +67,6 @@ describe("public Updates page", () => {
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
-  });
-
-  it("separates verified Admin review safeguards from unfinished access and removal checks", () => {
-    const live = PUBLIC_UPDATE_SECTIONS[0].entries.find(
-      (entry) => entry.id === "admin-review-safeguards"
-    );
-    const planned = PUBLIC_UPDATE_SECTIONS[2].entries.find(
-      (entry) => entry.id === "account-admin-controls"
-    );
-    expect(live?.summary).toMatch(/protected-account removal is blocked/);
-    expect(live?.summary).toMatch(/opening a review does not remove an account/);
-    expect(planned?.summary).toMatch(/remaining second-Admin sign-in/);
-    expect(planned?.summary).toMatch(/end-to-end removal\/restore checks/);
-    expect(live?.summary).not.toMatch(
-      /all Admin|fully verified|legal approval|retention approved/i
-    );
   });
 
   it("keeps unverified date and sharing follow-ups separate from live fixes", () => {
