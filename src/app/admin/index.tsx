@@ -1430,7 +1430,7 @@ export default function PlatformAdminRoute() {
   ) {
     setBusyId(item._id);
     try {
-      await apiRequest(`/api/admin/moderation-cases/${item._id}/action`, {
+      await adminVaultRequest(`/api/admin/moderation-cases/${item._id}/action`, {
         method: "POST",
         body: { action, ...(action === "move" ? { category: moveCategory.trim() } : {}) }
       });

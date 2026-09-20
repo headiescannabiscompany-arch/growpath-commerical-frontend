@@ -1551,7 +1551,11 @@ describe("PlatformAdminRoute", () => {
         "/api/admin/moderation-cases/case-1/action",
         {
           method: "POST",
-          body: { action: "lock" }
+          body: { action: "lock" },
+          cache: "no-store",
+          retries: 0,
+          invalidateOn401: false,
+          headers: {}
         }
       )
     );
@@ -1563,7 +1567,11 @@ describe("PlatformAdminRoute", () => {
         "/api/admin/moderation-cases/case-1/action",
         {
           method: "POST",
-          body: { action: "pin" }
+          body: { action: "pin" },
+          cache: "no-store",
+          retries: 0,
+          invalidateOn401: false,
+          headers: {}
         }
       )
     );
@@ -1576,7 +1584,11 @@ describe("PlatformAdminRoute", () => {
         "/api/admin/moderation-cases/case-1/action",
         {
           method: "POST",
-          body: { action: "move", category: "help" }
+          body: { action: "move", category: "help" },
+          cache: "no-store",
+          retries: 0,
+          invalidateOn401: false,
+          headers: {}
         }
       )
     );
@@ -1588,7 +1600,11 @@ describe("PlatformAdminRoute", () => {
         "/api/admin/moderation-cases/case-1/action",
         {
           method: "POST",
-          body: { action: "remove" }
+          body: { action: "remove" },
+          cache: "no-store",
+          retries: 0,
+          invalidateOn401: false,
+          headers: {}
         }
       )
     );
@@ -1600,7 +1616,11 @@ describe("PlatformAdminRoute", () => {
         "/api/admin/moderation-cases/case-1/action",
         {
           method: "POST",
-          body: { action: "restore" }
+          body: { action: "restore" },
+          cache: "no-store",
+          retries: 0,
+          invalidateOn401: false,
+          headers: {}
         }
       )
     );

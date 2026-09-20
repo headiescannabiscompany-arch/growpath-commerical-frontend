@@ -21,7 +21,7 @@ const PROTECTED_PATHS = [
 
 const PAGE_CHANGE_BUDGETS = new Map([
   ["src/app/account/billing.tsx", 80],
-  // Owner-approved 2026-09-20 passkey wiring adds 37 lines for restricted API
+  // Owner-approved 2026-09-20 passkey wiring changes 39 lines for restricted API
   // calls and lock/expiry data clearing; no page structure/styles are changed.
   ["src/app/admin/index.tsx", 140],
   ["src/app/home/commercial/profile.tsx", 80],
