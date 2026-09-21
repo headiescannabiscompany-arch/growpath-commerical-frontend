@@ -1533,6 +1533,43 @@ describe("PlatformAdminRoute", () => {
     expect(mockPush).toHaveBeenCalledWith("/forum/post/post-1");
   });
 
+  it("binds a redacted restricted case to its id without exposing generic content actions", async () => {
+    const caseId = "6ab08f188b2daafa27ecb156";
+    mockRouteParams = { moderationCaseId: caseId };
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/admin/moderation-cases") {
+        return Promise.resolve({
+          cases: [
+            {
+              id: caseId,
+              restricted: true,
+              caseKind: "restricted_severe_harm",
+              severity: "critical",
+              status: "reviewing",
+              reason: "must never render private narrative in the generic queue",
+              evidenceSnapshot: { content: { body: "private evidence must not appear" } }
+            }
+          ]
+        });
+      }
+      return defaultAdminApi(path);
+    });
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Opened from a moderation investigation link");
+    expect(screen.getByText(/Restricted safety case/)).toBeTruthy();
+    expect(screen.queryByText("Open reported content")).toBeNull();
+    expect(screen.queryByText("Preserve / legal escalation")).toBeNull();
+    expect(screen.queryByText(/must never render private narrative/)).toBeNull();
+    expect(screen.queryByText(/private evidence must not appear/)).toBeNull();
+    fireEvent.press(screen.getByText("Leave content / close case"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        `/api/admin/moderation-cases/${caseId}/action`,
+        expect.objectContaining({ method: "POST", body: { action: "leave" } })
+      )
+    );
+  });
+
   it("sends the enforced Forum moderation actions from the administrator review card", async () => {
     const screen = render(<PlatformAdminRoute />);
     await waitFor(() => expect(screen.getByText("Soft-remove content")).toBeTruthy());

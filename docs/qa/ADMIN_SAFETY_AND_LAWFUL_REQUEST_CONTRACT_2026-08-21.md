@@ -1,6 +1,6 @@
 # Admin safety and lawful-request contract
 
-Updated: 2026-09-20
+Updated: 2026-09-21
 
 ## Explicit restricted report intake
 
@@ -17,9 +17,10 @@ copy suspected illegal material. The existing dialog scrolls within the viewport
 so its choices and Cancel/Submit controls remain reachable on small screens.
 No page shell, theme, navigation, or automatic account enforcement changes.
 
-Local routing/theme/public-timeline tests pass (15/15). Hosted intake, restricted
-case save/readback, notification delivery, and small-screen visual acceptance
-remain required; these local results do not close the production or legal gates.
+Local routing/theme/public-timeline tests pass (15/15). Staging synthetic intake,
+private note/mock receipt save and reload, and redacted notification delivery
+passed on September 20. No actual outside report was submitted. Small-screen
+visual acceptance remains open; these results do not close production/legal gates.
 
 This contract refines canonical stories A-01 through A-05. It does not make a legal
 determination, authorize a disclosure, or close production acceptance. Legal counsel and
@@ -96,6 +97,19 @@ stored `approved` or `disclosed` record is read-only in this frontend and must b
 through that procedure rather than acted on from the page.
 
 ## Admin deep links and account isolation
+
+Restricted moderation rows use the backend's redacted `id`, not a required
+legacy `_id`. The queue normalizes that identifier and keeps only operational
+status/severity for restricted rows, even if a legacy payload includes private
+fields. It never fabricates a reported-content URL or a preservation draft from
+withheld target fields. Review instructions point to the existing restricted
+Vault controls; closing a reviewed case remains server-authorized and bound to
+the exact case ID. Ordinary moderation rows keep their existing controls.
+
+The owner approved this narrow queue correction for staging on September 21.
+The interface guard's Admin-only cumulative allowance is 231 changed lines;
+the recovered baseline and protected shell/layout/navigation/theme paths remain
+unchanged. The 58 focused route/report tests pass before hosted cleanup testing.
 
 Admin investigation links may carry `section`, `targetType`, `targetId`, or
 `moderationCaseId`. The Admin page must visibly acknowledge the link, bring a returned
