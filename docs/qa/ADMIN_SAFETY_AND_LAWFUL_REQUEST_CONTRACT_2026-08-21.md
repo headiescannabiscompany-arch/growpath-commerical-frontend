@@ -98,6 +98,33 @@ through that procedure rather than acted on from the page.
 
 ## Admin deep links and account isolation
 
+### Archive retention controls (staging acceptance pending)
+
+The Vault retention form is closed by default and visible only for the returned
+`evidenceApproval` capability. It uses the existing canonical retention route,
+without changing role assignments, retention durations, request transitions or
+server authority checks. Apply, renew and release must be chosen deliberately;
+renewal offers only the existing 2703(f) authority. Covered-report applications
+require an agency reference and the shared local-calendar/date-time picker,
+converted to an absolute submission timestamp only for transport.
+
+Preparing the exact confirmation phrase is a GET, not a dry run or eligibility
+check, and the UI explicitly says so. Private reasons/references are not put in
+its query string. Submission requires a separate acknowledgement and typed exact
+phrase. The POST allowlists input fields (never a client actor or expiry), never
+retries, and validates the matching archive/request/authority/hold receipt. A
+missing, failed or invalid receipt is an uncertain outcome, not proof of no change:
+operators are told to check saved state/audit before starting a new reviewed change.
+Duplicate clicks and reuse of the submitted form are blocked. Closing, backgrounding,
+security changes or editing the proposal invalidates prepared confirmations and
+late results. Preparation expires locally after five minutes.
+
+Release warns that scheduled deletion may subsequently become eligible; it is not
+a purge command. The existing server requires a matching retained hold and closed
+or rejected request, enforces independent approval and transactional audit, and
+does not approve/disclose the legal request or send data. Neither the frontend
+form nor local synthetic tests satisfy production legal/operator approval.
+
 ### Scoped archived-data access (staging acceptance pending)
 
 The existing Vault now contains a closed-by-default scoped-access form for the

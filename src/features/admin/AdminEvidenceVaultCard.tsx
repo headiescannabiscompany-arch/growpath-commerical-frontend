@@ -34,6 +34,7 @@ import { AdminEvidenceApprovalWorkspace } from "@/features/admin/AdminEvidenceAp
 import AdminPasskeySecurity from "@/features/admin/AdminPasskeySecurity";
 import AdminArchiveAudit from "@/features/admin/AdminArchiveAudit";
 import AdminArchiveAccess from "@/features/admin/AdminArchiveAccess";
+import AdminArchiveRetention from "@/features/admin/AdminArchiveRetention";
 import { useAdminSecurityEpoch } from "@/features/admin/useAdminSecurity";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -569,6 +570,7 @@ export default function AdminEvidenceVaultCard({
           <AdminPasskeySecurity />
           <AdminEvidenceApprovalWorkspace key={securityEpoch} />
           <AdminArchiveAccess authorized={capabilities?.evidenceAccess === true} />
+          <AdminArchiveRetention authorized={capabilities?.evidenceApproval === true} />
 
           {capabilities?.accountRemovalOwner ? (
             <View style={styles.section}>
