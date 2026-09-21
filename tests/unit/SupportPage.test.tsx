@@ -51,8 +51,9 @@ describe("SupportPage", () => {
     expect(screen.getByText("Legal Notices")).toBeTruthy();
     expect(screen.getByText("Security Reports")).toBeTruthy();
     expect(screen.getByText(/Email billing@growpathai\.com/)).toBeTruthy();
-    expect(screen.getByText(/Email privacy@growpathai\.com/)).toBeTruthy();
-    expect(screen.getByText(/Email legal@growpathai\.com/)).toBeTruthy();
+    expect(screen.getAllByText(/Email admin@growpathai\.com/)).toHaveLength(2);
+    expect(screen.queryByText(/privacy@growpathai\.com/)).toBeNull();
+    expect(screen.queryByText(/legal@growpathai\.com/)).toBeNull();
     expect(screen.getByText(/Email security@growpathai\.com/)).toBeTruthy();
     expect(screen.queryByText(/Email noreply@growpathai\.com/)).toBeNull();
     expect(screen.queryByText(/Email notifications@growpathai\.com/)).toBeNull();

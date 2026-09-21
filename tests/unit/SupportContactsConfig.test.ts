@@ -4,7 +4,7 @@ import {
 } from "../../src/config/supportContacts";
 
 describe("support contact alias config", () => {
-  it("uses the confirmed live public support aliases", () => {
+  it("uses the configured public contacts and owner-confirmed privacy/legal mailbox", () => {
     expect(SUPPORT_CONTACTS).toEqual({
       general: "support@growpathai.com",
       help: "help@growpathai.com",
@@ -16,8 +16,8 @@ describe("support contact alias config", () => {
       orders: "orders@growpathai.com",
       sales: "sales@growpathai.com",
       partners: "partners@growpathai.com",
-      privacy: "privacy@growpathai.com",
-      legal: "legal@growpathai.com",
+      privacy: "admin@growpathai.com",
+      legal: "admin@growpathai.com",
       security: "security@growpathai.com",
       commercial: "commercial@growpathai.com",
       facility: "facility@growpathai.com",
@@ -28,7 +28,7 @@ describe("support contact alias config", () => {
     });
   });
 
-  it("routes public support topics to the matching specialized inboxes", () => {
+  it("routes public support topics to their configured inboxes", () => {
     const routedEmails = SUPPORT_CONTACT_ROUTING.map((route) => route.email);
 
     expect(routedEmails).toEqual(
@@ -55,5 +55,16 @@ describe("support contact alias config", () => {
 
     expect(routedEmails).not.toContain(SUPPORT_CONTACTS.noreply);
     expect(routedEmails).not.toContain(SUPPORT_CONTACTS.notifications);
+  });
+
+  it("routes both privacy and legal topics to the monitored Admin mailbox", () => {
+    for (const title of ["Privacy Requests", "Legal Notices"]) {
+      expect(SUPPORT_CONTACT_ROUTING.find((route) => route.title === title)?.email).toBe(
+        "admin@growpathai.com"
+      );
+    }
+    expect(SUPPORT_CONTACT_ROUTING.map((route) => route.email)).not.toEqual(
+      expect.arrayContaining(["privacy@growpathai.com", "legal@growpathai.com"])
+    );
   });
 });

@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <PublicInfoPage
       title="Privacy Policy"
-      updated="July 2, 2026"
+      updated="September 21, 2026"
       intro="GrowPath collects only the information needed to provide account access, cultivation records, diagnostics, subscriptions, support, and compliance workflows."
       sections={[
         {
