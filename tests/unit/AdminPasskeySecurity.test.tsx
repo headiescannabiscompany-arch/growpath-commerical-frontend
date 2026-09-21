@@ -114,7 +114,47 @@ test("labels enrollment preparation when server-side enforcement is disabled", a
       )
     ).toBeTruthy()
   );
+  expect(screen.queryByText(/Losing every passkey keeps the Vault locked/)).toBeNull();
+  expect(screen.getByText(/Once passkey enforcement is enabled/)).toBeTruthy();
 });
+
+test("distinguishes the device name from credentials without disabling password-manager support", async () => {
+  const screen = await openPanel();
+  await waitFor(() => expect(screen.getByLabelText(PASSWORD_LABEL)).toBeTruthy());
+  expect(screen.getByText("Device name (not your email)")).toBeTruthy();
+  expect(
+    screen.getByText("Current password for the signed-in Admin account")
+  ).toBeTruthy();
+  const label = screen.getByLabelText("Admin passkey label");
+  expect(label.props.autoComplete).toBe("off");
+  expect(label.props.textContentType).toBe("none");
+  expect(screen.getByLabelText(PASSWORD_LABEL).props.autoComplete).toBe(
+    "current-password"
+  );
+  expect(screen.getByLabelText(PASSWORD_LABEL).props.secureTextEntry).toBe(true);
+});
+
+test.each([true, false])(
+  "ending verification does not claim an enforcement change (enforcement=%s)",
+  async (enforcementEnabled) => {
+    mockExpiry = VERIFIED_UNTIL;
+    mockStatus.mockResolvedValue({ ...statusFor("A", 1), enforcementEnabled });
+    mockLock.mockImplementation(async () => notifySecurity());
+    const screen = await openPanel();
+    fireEvent.press(screen.getByText("End verified session"));
+    await waitFor(() => expect(mockLock).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Passkey verification ended. Existing role restrictions and the current enforcement setting still apply."
+        )
+      ).toBeTruthy()
+    );
+    expect(screen.queryByText(/Verified until/)).toBeNull();
+    expect(screen.getByText("End verified session")).toBeDisabled();
+    expect(screen.queryByText("Restricted access is locked.")).toBeNull();
+  }
+);
 
 test("switching accounts clears prior device metadata, removal selection, drafts and feedback, then loads the new identity", async () => {
   mockExpiry = VERIFIED_UNTIL;

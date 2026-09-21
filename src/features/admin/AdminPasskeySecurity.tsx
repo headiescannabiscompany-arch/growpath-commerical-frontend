@@ -168,7 +168,7 @@ export default function AdminPasskeySecurity() {
       <Text style={styles.text}>
         {expiresAt
           ? `Verified until ${new Date(expiresAt).toLocaleTimeString()}. Existing role and review restrictions still apply.`
-          : "Verify with your own passkey before sensitive account-removal and Evidence Vault actions."}
+          : "Set up and verify your own passkey here. Open this section to check whether passkey enforcement is enabled."}
       </Text>
       {button(expanded ? "Hide Admin security" : "Set up or verify a passkey", () => {
         setPassword("");
@@ -211,8 +211,12 @@ export default function AdminPasskeySecurity() {
               !supported || !status?.enrolled
             )}
             {button(
-              "Lock restricted access",
-              () => void run(lockAdminSecurity, "Restricted access is locked."),
+              "End verified session",
+              () =>
+                void run(
+                  lockAdminSecurity,
+                  "Passkey verification ended. Existing role restrictions and the current enforcement setting still apply."
+                ),
               !expiresAt
             )}
           </View>
@@ -223,6 +227,7 @@ export default function AdminPasskeySecurity() {
                 device requires verification with an existing passkey first. Your PIN,
                 biometric, and private key stay with your device/provider.
               </Text>
+              <Text style={styles.text}>Device name (not your email)</Text>
               <TextInput
                 accessibilityLabel="Admin passkey label"
                 value={label}
@@ -231,8 +236,14 @@ export default function AdminPasskeySecurity() {
                 placeholderTextColor={palette.textMuted}
                 style={styles.input}
                 maxLength={80}
+                autoComplete="off"
+                textContentType="none"
+                autoCorrect={false}
                 editable={!busy}
               />
+              <Text style={styles.text}>
+                Current password for the signed-in Admin account
+              </Text>
               <TextInput
                 accessibilityLabel="Current Admin password for passkey changes"
                 value={password}
@@ -244,6 +255,7 @@ export default function AdminPasskeySecurity() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 textContentType="password"
+                autoComplete="current-password"
                 editable={!busy}
               />
               {button(
@@ -302,9 +314,9 @@ export default function AdminPasskeySecurity() {
             </>
           ) : null}
           <Text style={styles.text}>
-            Losing every passkey keeps the Vault locked. Password reset does not remove
-            this protection; no automatic recovery or external evidence disclosure is
-            enabled here.
+            Once passkey enforcement is enabled, losing every passkey blocks sensitive
+            actions. Password reset does not remove that requirement. No automatic passkey
+            recovery or external evidence disclosure is enabled here.
           </Text>
         </View>
       ) : null}
