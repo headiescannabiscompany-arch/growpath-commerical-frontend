@@ -1,6 +1,25 @@
 # Admin safety and lawful-request contract
 
-Updated: 2026-08-25
+Updated: 2026-09-20
+
+## Explicit restricted report intake
+
+The existing content-report popup exposes the backend's four distinct restricted
+categories: `child_exploitation`, `human_trafficking`,
+`repeated_hard_drug_sales`, and `imminent_threat`. The reporter must deliberately
+choose the specific category and supply a reason before submitting. Existing
+`exploitation`, `illegal_sales`, and `danger` choices keep their original values;
+neither new submissions nor historical reports are silently reclassified.
+
+The popup explains that restricted review is not a finding of wrongdoing, an
+emergency dispatch, or a law-enforcement report, and asks users not to upload or
+copy suspected illegal material. The existing dialog scrolls within the viewport
+so its choices and Cancel/Submit controls remain reachable on small screens.
+No page shell, theme, navigation, or automatic account enforcement changes.
+
+Local routing/theme/public-timeline tests pass (15/15). Hosted intake, restricted
+case save/readback, notification delivery, and small-screen visual acceptance
+remain required; these local results do not close the production or legal gates.
 
 This contract refines canonical stories A-01 through A-05. It does not make a legal
 determination, authorize a disclosure, or close production acceptance. Legal counsel and
