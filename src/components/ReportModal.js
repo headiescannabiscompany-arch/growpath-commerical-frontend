@@ -1,5 +1,13 @@
 import React, { useMemo, useState } from "react";
-import { Modal, View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import {
+  Modal,
+  View,
+  ScrollView,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet
+} from "react-native";
 import { submitReport } from "../api/reports";
 import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
@@ -69,97 +77,122 @@ const ReportModal = ({
           accessibilityViewIsModal
           style={styles.container}
         >
-          <Text accessibilityRole="header" aria-level={2} style={styles.title}>
-            Report Content
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Reason for report..."
-            placeholderTextColor={palette.textMuted}
-            value={reason}
-            onChangeText={setReason}
-            editable={!loading}
-            multiline
-            accessibilityLabel="Report reason"
-          />
-          <Text style={styles.label}>What best describes the problem?</Text>
-          <View style={styles.categoryRow}>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+              Report Content
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Reason for report..."
+              placeholderTextColor={palette.textMuted}
+              value={reason}
+              onChangeText={setReason}
+              editable={!loading}
+              multiline
+              accessibilityLabel="Report reason"
+            />
+            <Text style={styles.label}>What best describes the problem?</Text>
+            <View style={styles.categoryRow}>
+              {[
+                ["spam", "Spam"],
+                ["harassment", "Harassment"],
+                ["danger", "Immediate danger"],
+                ["exploitation", "Exploitation"],
+                ["illegal_sales", "Illegal sales"],
+                ["child_exploitation", "Suspected child exploitation"],
+                ["human_trafficking", "Suspected human trafficking"],
+                ["repeated_hard_drug_sales", "Repeated hard-drug sales"],
+                ["imminent_threat", "Imminent threat of harm"],
+                ["regulated_content_mislabeled", "Age/regulated content mislabeled"],
+                ["privacy", "Privacy"],
+                ["copyright", "Copyright"],
+                ["misinformation", "Misinformation"],
+                ["other", "Other"]
+              ].map(([value, label]) => (
+                <Pressable
+                  key={value}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: category === value }}
+                  style={[
+                    styles.categoryButton,
+                    category === value && styles.categoryButtonSelected
+                  ]}
+                  onPress={() => setCategory(value)}
+                  disabled={loading}
+                >
+                  <Text style={styles.categoryText}>{label}</Text>
+                </Pressable>
+              ))}
+            </View>
             {[
-              ["spam", "Spam"],
-              ["harassment", "Harassment"],
-              ["danger", "Immediate danger"],
-              ["exploitation", "Exploitation"],
-              ["illegal_sales", "Illegal sales"],
-              ["regulated_content_mislabeled", "Age/regulated content mislabeled"],
-              ["privacy", "Privacy"],
-              ["copyright", "Copyright"],
-              ["misinformation", "Misinformation"],
-              ["other", "Other"]
-            ].map(([value, label]) => (
+              "danger",
+              "exploitation",
+              "child_exploitation",
+              "human_trafficking",
+              "repeated_hard_drug_sales",
+              "imminent_threat"
+            ].includes(category) ? (
+              <Text style={styles.urgentHelp}>
+                If someone is in immediate danger, contact local emergency services now.
+                This report preserves information for GrowPathAI review but is not an
+                emergency dispatch service.
+              </Text>
+            ) : null}
+            {[
+              "child_exploitation",
+              "human_trafficking",
+              "repeated_hard_drug_sales",
+              "imminent_threat"
+            ].includes(category) ? (
+              <Text style={styles.label}>
+                This goes to restricted GrowPathAI safety review. It does not contact law
+                enforcement or confirm that wrongdoing occurred. Describe only what you
+                observed; do not upload or copy suspected illegal material.
+              </Text>
+            ) : null}
+            {error ? (
+              <Text
+                accessibilityRole="alert"
+                accessibilityLiveRegion="assertive"
+                style={styles.error}
+              >
+                {error}
+              </Text>
+            ) : null}
+            <View style={styles.buttonRow}>
               <Pressable
-                key={value}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: category === value }}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+                accessibilityState={{ disabled: loading }}
                 style={[
-                  styles.categoryButton,
-                  category === value && styles.categoryButtonSelected
+                  styles.actionButton,
+                  styles.cancelButton,
+                  loading && styles.disabled
                 ]}
-                onPress={() => setCategory(value)}
+                onPress={onClose}
                 disabled={loading}
               >
-                <Text style={styles.categoryText}>{label}</Text>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
               </Pressable>
-            ))}
-          </View>
-          {category === "danger" || category === "exploitation" ? (
-            <Text style={styles.urgentHelp}>
-              If someone is in immediate danger, contact local emergency services now.
-              This report preserves information for GrowPathAI review but is not an
-              emergency dispatch service.
-            </Text>
-          ) : null}
-          {error ? (
-            <Text
-              accessibilityRole="alert"
-              accessibilityLiveRegion="assertive"
-              style={styles.error}
-            >
-              {error}
-            </Text>
-          ) : null}
-          <View style={styles.buttonRow}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Cancel"
-              accessibilityState={{ disabled: loading }}
-              style={[
-                styles.actionButton,
-                styles.cancelButton,
-                loading && styles.disabled
-              ]}
-              onPress={onClose}
-              disabled={loading}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Submit"
-              accessibilityState={{ disabled: loading || !reason.trim() }}
-              style={[
-                styles.actionButton,
-                styles.submitButton,
-                (loading || !reason.trim()) && styles.disabled
-              ]}
-              onPress={handleSubmit}
-              disabled={loading || !reason.trim()}
-            >
-              <Text style={styles.submitButtonText}>Submit</Text>
-            </Pressable>
-          </View>
-          <View style={styles.reportBug}>
-            <ReportBugButton location="Report content popup" />
-          </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Submit"
+                accessibilityState={{ disabled: loading || !reason.trim() }}
+                style={[
+                  styles.actionButton,
+                  styles.submitButton,
+                  (loading || !reason.trim()) && styles.disabled
+                ]}
+                onPress={handleSubmit}
+                disabled={loading || !reason.trim()}
+              >
+                <Text style={styles.submitButtonText}>Submit</Text>
+              </Pressable>
+            </View>
+            <View style={styles.reportBug}>
+              <ReportBugButton location="Report content popup" />
+            </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -181,6 +214,7 @@ export const createReportModalStyles = (palette) =>
       borderWidth: 1,
       padding: 20,
       width: "85%",
+      maxHeight: "90%",
       maxWidth: 400
     },
     title: {
