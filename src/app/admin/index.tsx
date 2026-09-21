@@ -256,6 +256,7 @@ function blockedSyntheticCleanupPreview(
 
 type ModerationCase = {
   _id: string;
+  restricted?: boolean;
   targetType: string;
   targetId: string;
   reason: string;
@@ -281,6 +282,32 @@ type ModerationCase = {
     content?: { title?: string; body?: string; content?: string; tags?: string[] };
   };
 };
+
+function normalizeModerationCases(values: unknown): ModerationCase[] {
+  if (!Array.isArray(values)) return [];
+  return values.flatMap((value) => {
+    if (!value || typeof value !== "object") return [];
+    const id = String(value.id || value._id || "").trim();
+    if (!id) return [];
+    if (value.restricted === true || value.caseKind === "restricted_severe_harm") {
+      // Restricted queue responses deliberately omit identity, target and evidence.
+      // Never hydrate them from optional legacy fields or invent a content URL.
+      return [
+        {
+          _id: id,
+          restricted: true,
+          targetType: "",
+          targetId: "",
+          reason: "",
+          action: "",
+          severity: String(value.severity || ""),
+          status: String(value.status || "")
+        }
+      ];
+    }
+    return [{ ...value, _id: id } as ModerationCase];
+  });
+}
 
 function moderationPreview(item: ModerationCase) {
   const content = item.evidenceSnapshot?.content;
@@ -995,9 +1022,7 @@ export default function PlatformAdminRoute() {
       if (usersResponse)
         setUsers(Array.isArray(usersResponse.users) ? usersResponse.users : []);
       if (moderationResponse)
-        setModerationCases(
-          Array.isArray(moderationResponse.cases) ? moderationResponse.cases : []
-        );
+        setModerationCases(normalizeModerationCases(moderationResponse.cases));
       if (evidenceResponse && securityEpoch === getAdminSecurityEpoch())
         setEvidenceRequests(normalizeAdminEvidenceRequests(evidenceResponse.requests));
       if (supportResponse)
@@ -3122,8 +3147,15 @@ export default function PlatformAdminRoute() {
                   </Text>
                 ) : null}
                 <Text style={styles.caseTitle}>
-                  {item.targetType} · {item.severity} · {item.status}
+                  {item.restricted ? "Restricted safety case" : item.targetType} ·{" "}
+                  {item.severity} · {item.status}
                 </Text>
+                {item.restricted ? (
+                  <Text style={styles.meta}>
+                    Review case {item._id} in Removed accounts / Evidence vault above.
+                    Subject, content, and private details are withheld from this queue.
+                  </Text>
+                ) : null}
                 <Text style={styles.meta}>{item.reason}</Text>
                 {moderationPreview(item) ? (
                   <Text style={styles.evidencePreview} numberOfLines={4}>
@@ -3149,14 +3181,16 @@ export default function PlatformAdminRoute() {
                 ) : null}
               </View>
               <View style={styles.actions}>
-                <Pressable
-                  accessibilityLabel={`Open reported ${item.targetType}`}
-                  accessibilityRole="button"
-                  style={styles.secondaryButton}
-                  onPress={() => router.push(moderationTargetHref(item) as never)}
-                >
-                  <Text style={styles.secondaryText}>Open reported content</Text>
-                </Pressable>
+                {!item.restricted ? (
+                  <Pressable
+                    accessibilityLabel={`Open reported ${item.targetType}`}
+                    accessibilityRole="button"
+                    style={styles.secondaryButton}
+                    onPress={() => router.push(moderationTargetHref(item) as never)}
+                  >
+                    <Text style={styles.secondaryText}>Open reported content</Text>
+                  </Pressable>
+                ) : null}
                 {supportsModerationActions(item.targetType) ? (
                   <>
                     <Pressable
@@ -3203,22 +3237,24 @@ export default function PlatformAdminRoute() {
                 >
                   <Text style={styles.secondaryText}>Leave content / close case</Text>
                 </Pressable>
-                <Pressable
-                  disabled={busyId === item._id}
-                  style={styles.secondaryButton}
-                  onPress={() => {
-                    setSourceModerationCaseId(item._id);
-                    setEvidenceDraft((current) => ({
-                      ...current,
-                      requestType: "preservation",
-                      targetUserId: item.subjectUserId || "",
-                      scope: `Moderation case ${item._id} · ${item.targetType}:${item.targetId}`
-                    }));
-                    setShowEvidenceRequestForm(true);
-                  }}
-                >
-                  <Text style={styles.secondaryText}>Preserve / legal escalation</Text>
-                </Pressable>
+                {!item.restricted ? (
+                  <Pressable
+                    disabled={busyId === item._id}
+                    style={styles.secondaryButton}
+                    onPress={() => {
+                      setSourceModerationCaseId(item._id);
+                      setEvidenceDraft((current) => ({
+                        ...current,
+                        requestType: "preservation",
+                        targetUserId: item.subjectUserId || "",
+                        scope: `Moderation case ${item._id} · ${item.targetType}:${item.targetId}`
+                      }));
+                      setShowEvidenceRequestForm(true);
+                    }}
+                  >
+                    <Text style={styles.secondaryText}>Preserve / legal escalation</Text>
+                  </Pressable>
+                ) : null}
                 {item.targetType === "forumPost" ? (
                   <>
                     <Pressable
