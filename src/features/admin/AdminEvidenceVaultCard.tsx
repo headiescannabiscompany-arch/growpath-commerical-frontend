@@ -115,6 +115,7 @@ export default function AdminEvidenceVaultCard({
   const [restoreConfirmation, setRestoreConfirmation] = useState("");
 
   const [selectedCaseId, setSelectedCaseId] = useState("");
+  const caseGeneration = useRef(0);
   const [caseRecords, setCaseRecords] = useState<RestrictedCaseRecord[]>([]);
   const [caseNote, setCaseNote] = useState("");
   const [caseNoteConfirmation, setCaseNoteConfirmation] = useState("");
@@ -129,20 +130,38 @@ export default function AdminEvidenceVaultCard({
   const [reportConfirmation, setReportConfirmation] = useState("");
   const securityEpoch = useAdminSecurityEpoch();
 
+  const clearCaseDrafts = useCallback(() => {
+    setCaseNote("");
+    setCaseNoteConfirmation("");
+    setShowExternalReport(false);
+    setAgencyCategory("local");
+    setAgencyReference("");
+    setReportReference("");
+    setReportSubmittedAt("");
+    setReportSummary("");
+    setReportConfirmation("");
+  }, []);
+
   useEffect(() => {
     removalReviewGeneration.current += 1;
     restoreReviewGeneration.current += 1;
+    caseGeneration.current += 1;
     setRemovalReview(null);
     setRestoreReview(null);
     setRemovalConfirmation("");
     setRestoreConfirmation("");
     setSelectedCaseId("");
     setCaseRecords([]);
-    setCaseNote("");
-    setCaseNoteConfirmation("");
-    setReportSummary("");
-    setReportConfirmation("");
-  }, [securityEpoch]);
+    clearCaseDrafts();
+    setFeedback("");
+    setBusy((current) =>
+      current.startsWith("case:") ||
+      current === "case-note" ||
+      current === "external-report"
+        ? ""
+        : current
+    );
+  }, [securityEpoch, clearCaseDrafts]);
 
   const removalInput: AccountRemovalInput = {
     expectedEmail: expectedEmail.trim().toLowerCase(),
@@ -327,20 +346,42 @@ export default function AdminEvidenceVaultCard({
 
   async function loadCaseRecords(caseId: string) {
     if (busy) return;
+    const generation = ++caseGeneration.current;
     setBusy(`case:${caseId}`);
     setFeedback("");
+    setSelectedCaseId(caseId);
+    setCaseRecords([]);
+    clearCaseDrafts();
     try {
-      setSelectedCaseId(caseId);
-      setCaseRecords(await listRestrictedCaseRecords(caseId));
+      const records = await listRestrictedCaseRecords(caseId);
+      if (generation !== caseGeneration.current) return;
+      setCaseRecords(records);
     } catch (error) {
+      if (generation !== caseGeneration.current) return;
       setFeedback(errorLabel(error, "Restricted case records could not be opened."));
     } finally {
-      setBusy("");
+      if (generation === caseGeneration.current) setBusy("");
+    }
+  }
+
+  async function refreshSavedCase(caseId: string, generation: number, message: string) {
+    setFeedback(message);
+    try {
+      const records = await listRestrictedCaseRecords(caseId);
+      if (generation !== caseGeneration.current) return;
+      setCaseRecords(records);
+    } catch (_error) {
+      if (generation !== caseGeneration.current) return;
+      setCaseRecords([]);
+      setFeedback(
+        `${message} Record list refresh failed. Reopen this case to refresh; do not submit the saved record again.`
+      );
     }
   }
 
   async function saveCaseNote() {
     if (!selectedCaseId || busy) return;
+    const generation = caseGeneration.current;
     setBusy("case-note");
     setFeedback("");
     try {
@@ -348,19 +389,25 @@ export default function AdminEvidenceVaultCard({
         note: caseNote.trim(),
         confirmation: caseNoteConfirmation
       });
+      if (generation !== caseGeneration.current) return;
       setCaseNote("");
       setCaseNoteConfirmation("");
-      setCaseRecords(await listRestrictedCaseRecords(selectedCaseId));
-      setFeedback("Encrypted restricted case note recorded. Nothing was transmitted.");
+      await refreshSavedCase(
+        selectedCaseId,
+        generation,
+        "Encrypted restricted case note recorded. Nothing was transmitted."
+      );
     } catch (error) {
+      if (generation !== caseGeneration.current) return;
       setFeedback(errorLabel(error, "Restricted case note was not recorded."));
     } finally {
-      setBusy("");
+      if (generation === caseGeneration.current) setBusy("");
     }
   }
 
   async function saveExternalReportRecord() {
     if (!selectedCaseId || busy) return;
+    const generation = caseGeneration.current;
     setBusy("external-report");
     setFeedback("");
     try {
@@ -372,20 +419,23 @@ export default function AdminEvidenceVaultCard({
         summary: reportSummary.trim(),
         confirmation: reportConfirmation
       });
+      if (generation !== caseGeneration.current) return;
       setAgencyReference("");
       setReportReference("");
       setReportSubmittedAt("");
       setReportSummary("");
       setReportConfirmation("");
       setShowExternalReport(false);
-      setCaseRecords(await listRestrictedCaseRecords(selectedCaseId));
-      setFeedback(
+      await refreshSavedCase(
+        selectedCaseId,
+        generation,
         "The external report was recorded and encrypted. GrowPath did not send or disclose anything."
       );
     } catch (error) {
+      if (generation !== caseGeneration.current) return;
       setFeedback(errorLabel(error, "External-report record was not saved."));
     } finally {
-      setBusy("");
+      if (generation === caseGeneration.current) setBusy("");
     }
   }
 

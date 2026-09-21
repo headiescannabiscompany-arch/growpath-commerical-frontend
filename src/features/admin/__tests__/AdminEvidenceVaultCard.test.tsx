@@ -3,15 +3,19 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import AdminEvidenceVaultCard from "../AdminEvidenceVaultCard";
 import {
+  addRestrictedCaseNote,
   getEvidenceVaultCapabilities,
   listAdminEvidenceRequests,
   listRemovedAccounts,
   listRestrictedCases,
+  listRestrictedCaseRecords,
+  recordRestrictedExternalReport,
   quarantineAccount,
   restoreQuarantinedAccount,
   reviewAccountRemoval,
   reviewAccountRestore
 } from "@/api/adminEvidenceVault";
+import { clearAdminStepUp } from "@/api/adminPasskeys";
 
 jest.mock("@/api/adminEvidenceVault", () => ({
   addRestrictedCaseNote: jest.fn(),
@@ -269,6 +273,240 @@ describe("AdminEvidenceVaultCard", () => {
       nextCursor: null
     });
     mockCases.mockResolvedValue([]);
+  });
+
+  const CASE_A = "64b000000000000000000021";
+  const CASE_B = "64b000000000000000000022";
+  const mockRecords = listRestrictedCaseRecords as jest.MockedFunction<
+    typeof listRestrictedCaseRecords
+  >;
+  const mockNote = addRestrictedCaseNote as jest.MockedFunction<
+    typeof addRestrictedCaseNote
+  >;
+  const mockReport = recordRestrictedExternalReport as jest.MockedFunction<
+    typeof recordRestrictedExternalReport
+  >;
+  const savedNote = {
+    id: "note-a",
+    caseId: CASE_A,
+    actorUserId: TARGET_ID,
+    agencyCategory: "",
+    submittedAt: null,
+    recordType: "case_note" as const,
+    createdAt: "2026-09-20T12:00:00Z",
+    data: { note: "Synthetic private case A note" }
+  };
+
+  async function caseScreen() {
+    mockCapabilities.mockResolvedValue({
+      ...capabilityReceipt(),
+      capabilities: {
+        accountRemovalOwner: false,
+        evidenceAccess: false,
+        evidenceApproval: false,
+        severeHarmReview: true
+      }
+    });
+    mockCases.mockResolvedValue(
+      [CASE_A, CASE_B].map((id) => ({
+        id,
+        restricted: true,
+        status: "open",
+        severity: "low",
+        assigned: false,
+        createdAt: "2026-09-20T12:00:00Z",
+        updatedAt: "2026-09-20T12:00:00Z",
+        resolvedAt: null
+      }))
+    );
+    mockRecords.mockResolvedValue([]);
+    const screen = render(<AdminEvidenceVaultCard users={[]} />);
+    fireEvent.press(screen.getByLabelText("Open evidence vault controls"));
+    await screen.findAllByText("Open encrypted case record");
+    fireEvent.press(screen.getAllByText("Open encrypted case record")[0]);
+    await waitFor(() => expect(mockRecords).toHaveBeenCalledWith(CASE_A));
+    await act(async () => {});
+    return screen;
+  }
+
+  test("records only the selected case with exact note confirmation", async () => {
+    const screen = await caseScreen();
+    mockNote.mockResolvedValue({ id: "note-a" });
+    fireEvent.changeText(
+      screen.getByLabelText("Restricted case note"),
+      "  Synthetic private note  "
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Exact restricted case note confirmation"),
+      `ADD RESTRICTED NOTE ${CASE_B}`
+    );
+    fireEvent.press(screen.getByText("Encrypt and add case note"));
+    expect(mockNote).not.toHaveBeenCalled();
+    fireEvent.changeText(
+      screen.getByLabelText("Exact restricted case note confirmation"),
+      `ADD RESTRICTED NOTE ${CASE_A}`
+    );
+    fireEvent.press(screen.getByText("Encrypt and add case note"));
+    await screen.findByText(
+      "Encrypted restricted case note recorded. Nothing was transmitted."
+    );
+    expect(mockNote).toHaveBeenCalledTimes(1);
+    expect(mockNote).toHaveBeenCalledWith(CASE_A, {
+      note: "Synthetic private note",
+      confirmation: `ADD RESTRICTED NOTE ${CASE_A}`
+    });
+    expect(mockReport).not.toHaveBeenCalled();
+  });
+
+  test("clears private records and drafts before loading another case, including failed loads", async () => {
+    const screen = await caseScreen();
+    mockRecords.mockResolvedValueOnce([savedNote]);
+    fireEvent.press(screen.getAllByText("Open encrypted case record")[0]);
+    await screen.findByText(/Synthetic private case A note/);
+    fireEvent.changeText(
+      screen.getByLabelText("Restricted case note"),
+      "Case A unsaved draft"
+    );
+    fireEvent.press(screen.getByText("Record an outside report already submitted"));
+    fireEvent.changeText(
+      screen.getByLabelText("Outside agency reference"),
+      "Case A agency"
+    );
+    mockRecords.mockRejectedValueOnce(new Error("Synthetic case B load denied"));
+    fireEvent.press(screen.getAllByText("Open encrypted case record")[1]);
+    await screen.findByText("Synthetic case B load denied");
+    expect(screen.queryByText(/Synthetic private case A note/)).toBeNull();
+    expect(screen.getByLabelText("Restricted case note")).toHaveProp("value", "");
+    expect(screen.queryByLabelText("Outside agency reference")).toBeNull();
+  });
+
+  test("a successful note with failed list refresh is not presented as a failed save", async () => {
+    const screen = await caseScreen();
+    mockNote.mockResolvedValue({ id: "note-a" });
+    mockRecords.mockRejectedValueOnce(new Error("Synthetic refresh unavailable"));
+    fireEvent.changeText(
+      screen.getByLabelText("Restricted case note"),
+      "Synthetic private note"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Exact restricted case note confirmation"),
+      `ADD RESTRICTED NOTE ${CASE_A}`
+    );
+    fireEvent.press(screen.getByText("Encrypt and add case note"));
+    await screen.findByText(/recorded.*refresh failed/i);
+    expect(mockNote).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("Restricted case note")).toHaveProp("value", "");
+  });
+
+  test("does not restore case data after security is locked while a load is pending", async () => {
+    const screen = await caseScreen();
+    let finish!: (records: (typeof savedNote)[]) => void;
+    mockRecords.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    fireEvent.press(screen.getAllByText("Open encrypted case record")[0]);
+    act(() => clearAdminStepUp());
+    await act(async () => finish([savedNote]));
+    expect(screen.queryByLabelText("Restricted case note")).toBeNull();
+    expect(screen.queryByText(/Synthetic private case A note/)).toBeNull();
+    mockRecords.mockResolvedValueOnce([]);
+    fireEvent.press(screen.getAllByText("Open encrypted case record")[1]);
+    await act(async () => {});
+    expect(screen.queryByText(/Synthetic private case A note/)).toBeNull();
+  });
+
+  test("does not load or expose restricted case controls without the reviewer capability", async () => {
+    const screen = render(<AdminEvidenceVaultCard users={[]} />);
+    fireEvent.press(screen.getByLabelText("Open evidence vault controls"));
+    await waitFor(() => expect(mockCapabilities).toHaveBeenCalled());
+    expect(mockCases).not.toHaveBeenCalled();
+    expect(mockRecords).not.toHaveBeenCalled();
+    expect(screen.queryByText("Restricted severe-harm cases")).toBeNull();
+  });
+
+  test.each([false, true])(
+    "records a previously submitted report once, with refresh failure=%s",
+    async (refreshFails) => {
+      const screen = await caseScreen();
+      mockReport.mockResolvedValue({
+        id: "report-a",
+        externalTransmissionPerformed: false
+      });
+      fireEvent.press(screen.getByText("Record an outside report already submitted"));
+      fireEvent.changeText(
+        screen.getByLabelText("Outside agency reference"),
+        " Synthetic agency "
+      );
+      fireEvent.changeText(
+        screen.getByLabelText("Outside report reference"),
+        " Synthetic reference "
+      );
+      fireEvent.changeText(
+        screen.getByLabelText("Outside report submitted at"),
+        "2026-09-20T12:00:00Z"
+      );
+      fireEvent.changeText(
+        screen.getByLabelText("Outside report summary"),
+        " Synthetic report summary "
+      );
+      fireEvent.changeText(
+        screen.getByLabelText("Exact outside report confirmation"),
+        `RECORD EXTERNAL REPORT ${CASE_B}`
+      );
+      fireEvent.press(screen.getByText("Encrypt submitted-report record"));
+      expect(mockReport).not.toHaveBeenCalled();
+      fireEvent.changeText(
+        screen.getByLabelText("Exact outside report confirmation"),
+        `RECORD EXTERNAL REPORT ${CASE_A}`
+      );
+      if (refreshFails)
+        mockRecords.mockRejectedValueOnce(new Error("Synthetic refresh failed"));
+      fireEvent.press(screen.getByText("Encrypt submitted-report record"));
+      await screen.findByText(
+        refreshFails
+          ? /recorded.*refresh failed/i
+          : "The external report was recorded and encrypted. GrowPath did not send or disclose anything."
+      );
+      expect(mockReport).toHaveBeenCalledTimes(1);
+      expect(mockReport).toHaveBeenCalledWith(CASE_A, {
+        agencyCategory: "local",
+        agencyReference: "Synthetic agency",
+        reportReference: "Synthetic reference",
+        submittedAt: "2026-09-20T12:00:00Z",
+        summary: "Synthetic report summary",
+        confirmation: `RECORD EXTERNAL REPORT ${CASE_A}`
+      });
+      expect(mockNote).not.toHaveBeenCalled();
+      expect(screen.queryByLabelText("Outside report summary")).toBeNull();
+    }
+  );
+
+  test("ignores a late note receipt after security lock and does not fetch its records", async () => {
+    const screen = await caseScreen();
+    let finish!: (receipt: { id: string }) => void;
+    mockNote.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Restricted case note"),
+      "Synthetic private note"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Exact restricted case note confirmation"),
+      `ADD RESTRICTED NOTE ${CASE_A}`
+    );
+    fireEvent.press(screen.getByText("Encrypt and add case note"));
+    act(() => clearAdminStepUp());
+    await act(async () => finish({ id: "note-a" }));
+    expect(mockRecords).toHaveBeenCalledTimes(1);
+    expect(screen.queryByLabelText("Restricted case note")).toBeNull();
+    expect(screen.queryByText(/Encrypted restricted case note recorded/)).toBeNull();
   });
 
   test("stays collapsed and makes no restricted request until explicitly opened", () => {
