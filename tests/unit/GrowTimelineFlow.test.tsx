@@ -1,9 +1,33 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { fireEvent, render } from "@testing-library/react-native";
 
 import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
 
 describe("GrowTimelineFlow", () => {
+  it("lets the heading wrap beside a stable count while long timelines keep every point selectable", () => {
+    const events = Array.from({ length: 40 }, (_, index) => ({
+      id: `point-${index}`,
+      title: `Milestone ${index + 1}`,
+      timestamp: new Date(Date.UTC(2026, 0, index + 1)).toISOString(),
+      summary: `Detail for milestone ${index + 1}`
+    }));
+    const screen = render(<GrowTimelineFlow events={events} />);
+    expect(
+      StyleSheet.flatten(screen.getByTestId("grow-timeline-heading-copy").props.style)
+    ).toMatchObject({
+      flex: 1,
+      minWidth: 0
+    });
+    expect(StyleSheet.flatten(screen.getByText("40 points").props.style)).toMatchObject({
+      flexShrink: 0
+    });
+    fireEvent.press(screen.getByLabelText("Open timeline entry 40: Milestone 40"));
+    expect(screen.getByText("Detail for milestone 40")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Open timeline entry 1: Milestone 1"));
+    expect(screen.getByText("Detail for milestone 1")).toBeTruthy();
+  });
+
   it("scrolls horizontally and opens another point's full detail and photo", () => {
     const screen = render(
       <GrowTimelineFlow

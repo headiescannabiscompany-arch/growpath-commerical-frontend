@@ -68,7 +68,7 @@ export default function GrowTimelineFlow({
   return (
     <View accessibilityLabel="Visual grow timeline flowchart" style={styles.frame}>
       <View style={styles.headerRow}>
-        <View>
+        <View testID="grow-timeline-heading-copy" style={styles.headerCopy}>
           <Text style={styles.kicker}>VISUAL GROW STORY</Text>
           <Text style={styles.heading}>Select a point to open the full entry</Text>
         </View>
@@ -179,9 +179,11 @@ const createStyles = (palette: ThemePalette) =>
     headerRow: {
       alignItems: "flex-end",
       flexDirection: "row",
+      gap: 12,
       justifyContent: "space-between",
       paddingHorizontal: 16
     },
+    headerCopy: { flex: 1, minWidth: 0 },
     kicker: {
       color: palette.accent,
       fontSize: 11,
@@ -189,7 +191,7 @@ const createStyles = (palette: ThemePalette) =>
       letterSpacing: 1.2
     },
     heading: { color: palette.text, fontSize: 18, fontWeight: "900", marginTop: 3 },
-    count: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    count: { color: palette.textMuted, fontSize: 12, fontWeight: "800", flexShrink: 0 },
     flow: {
       minWidth: "100%",
       paddingHorizontal: 12,
