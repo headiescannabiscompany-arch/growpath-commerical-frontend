@@ -32,6 +32,7 @@ import {
 import AppCard from "@/components/layout/AppCard";
 import { AdminEvidenceApprovalWorkspace } from "@/features/admin/AdminEvidenceApprovalPanel";
 import AdminPasskeySecurity from "@/features/admin/AdminPasskeySecurity";
+import AdminArchiveAudit from "@/features/admin/AdminArchiveAudit";
 import { useAdminSecurityEpoch } from "@/features/admin/useAdminSecurity";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -98,6 +99,10 @@ export default function AdminEvidenceVaultCard({
   const [capabilityState, setCapabilityState] =
     useState<EvidenceVaultCapabilities | null>(null);
   const [removed, setRemoved] = useState<RemovedAccountSummary[]>([]);
+  const [archiveCursor, setArchiveCursor] = useState<string | null>(null);
+  const [loadingMoreArchives, setLoadingMoreArchives] = useState(false);
+  const archiveGeneration = useRef(0);
+  const archivePagePending = useRef(false);
   const [restrictedCases, setRestrictedCases] = useState<RestrictedCaseSummary[]>([]);
 
   const [targetUserId, setTargetUserId] = useState("");
@@ -129,6 +134,15 @@ export default function AdminEvidenceVaultCard({
   const [reportSummary, setReportSummary] = useState("");
   const [reportConfirmation, setReportConfirmation] = useState("");
   const securityEpoch = useAdminSecurityEpoch();
+
+  useEffect(() => {
+    archiveGeneration.current += 1;
+    archivePagePending.current = false;
+    setLoadingMoreArchives(false);
+    return () => {
+      archiveGeneration.current += 1;
+    };
+  }, [securityEpoch]);
 
   const clearCaseDrafts = useCallback(() => {
     setCaseNote("");
@@ -178,6 +192,9 @@ export default function AdminEvidenceVaultCard({
   }
 
   const refreshWorkspace = useCallback(async () => {
+    const generation = ++archiveGeneration.current;
+    archivePagePending.current = false;
+    setLoadingMoreArchives(false);
     setLoading(true);
     setFeedback("");
     try {
@@ -191,7 +208,9 @@ export default function AdminEvidenceVaultCard({
           ? listRestrictedCases()
           : Promise.resolve([])
       ]);
+      if (generation !== archiveGeneration.current) return;
       setRemoved(accounts.accounts);
+      setArchiveCursor(accounts.nextCursor);
       setRestrictedCases(cases);
     } catch (error) {
       setFeedback(errorLabel(error, "Unable to load restricted Admin controls."));
@@ -199,6 +218,40 @@ export default function AdminEvidenceVaultCard({
       setLoading(false);
     }
   }, []);
+
+  async function loadMoreArchives() {
+    if (!archiveCursor || loading || busy || archivePagePending.current) return;
+    const cursor = archiveCursor;
+    const generation = archiveGeneration.current;
+    archivePagePending.current = true;
+    setLoadingMoreArchives(true);
+    try {
+      const page = await listRemovedAccounts(cursor);
+      if (generation !== archiveGeneration.current) return;
+      setRemoved((current) => {
+        const ids = new Set(current.map((archive) => archive.archiveId));
+        return [
+          ...current,
+          ...page.accounts.filter((archive) => {
+            if (ids.has(archive.archiveId)) return false;
+            ids.add(archive.archiveId);
+            return true;
+          })
+        ];
+      });
+      setArchiveCursor(page.nextCursor === cursor ? null : page.nextCursor);
+    } catch {
+      if (generation === archiveGeneration.current)
+        setFeedback(
+          "Unable to load more archives. Existing rows are unchanged; retry when ready."
+        );
+    } finally {
+      if (generation === archiveGeneration.current) {
+        archivePagePending.current = false;
+        setLoadingMoreArchives(false);
+      }
+    }
+  }
 
   useEffect(() => {
     if (!requestedUser) return;
@@ -224,7 +277,12 @@ export default function AdminEvidenceVaultCard({
 
   function toggle() {
     setExpanded((current) => {
-      if (current) return false;
+      if (current) {
+        archiveGeneration.current += 1;
+        archivePagePending.current = false;
+        setLoadingMoreArchives(false);
+        return false;
+      }
       if (!capabilityState) capabilityLoadAttempted.current = false;
       return true;
     });
@@ -283,14 +341,21 @@ export default function AdminEvidenceVaultCard({
   }
 
   async function refreshAccountLists(successMessage: string) {
+    const generation = ++archiveGeneration.current;
+    archivePagePending.current = false;
+    setLoadingMoreArchives(false);
     const [archivesResult, accountsResult] = await Promise.allSettled([
       Promise.resolve().then(() => listRemovedAccounts()),
       Promise.resolve().then(() => onAccountsChanged?.())
     ]);
     const failedLists: string[] = [];
-    if (archivesResult.status === "fulfilled") {
+    if (
+      archivesResult.status === "fulfilled" &&
+      generation === archiveGeneration.current
+    ) {
       setRemoved(archivesResult.value.accounts);
-    } else {
+      setArchiveCursor(archivesResult.value.nextCursor);
+    } else if (archivesResult.status === "rejected") {
       failedLists.push("removed-account archive list");
     }
     if (accountsResult.status === "rejected") failedLists.push("active-account list");
@@ -685,6 +750,9 @@ export default function AdminEvidenceVaultCard({
               <View style={styles.rowBetween}>
                 <Text style={styles.sectionTitle}>Removed accounts</Text>
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Refresh removed accounts"
+                  disabled={loading || Boolean(busy)}
                   style={styles.linkButton}
                   onPress={() => void refreshWorkspace()}
                 >
@@ -708,6 +776,7 @@ export default function AdminEvidenceVaultCard({
                       : "No legal hold reported"}
                     {archive.operationalIssue ? " · operational review required" : ""}
                   </Text>
+                  <AdminArchiveAudit archiveId={archive.archiveId} />
                   {archive.quarantineStatus === "quarantined" && !archive.legalHold ? (
                     <Pressable
                       accessibilityRole="button"
@@ -725,6 +794,21 @@ export default function AdminEvidenceVaultCard({
                   ) : null}
                 </View>
               ))}
+              {archiveCursor ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Load more removed accounts"
+                  disabled={loading || loadingMoreArchives || Boolean(busy)}
+                  onPress={() => void loadMoreArchives()}
+                  style={styles.linkButton}
+                >
+                  <Text style={styles.linkText}>
+                    {loadingMoreArchives
+                      ? "Loading archives…"
+                      : "Load more removed accounts"}
+                  </Text>
+                </Pressable>
+              ) : null}
               {!removed.length && !loading ? (
                 <Text style={styles.meta}>
                   No quarantined or restored account archives were returned.
