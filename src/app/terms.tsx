@@ -7,7 +7,7 @@ export default function TermsPage() {
   return (
     <PublicInfoPage
       title="Terms of Service"
-      updated="July 2, 2026"
+      updated="September 21, 2026"
       intro="These terms govern access to GrowPath apps, websites, APIs, subscriptions, AI tools, and facility workflows."
       sections={[
         {
