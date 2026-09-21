@@ -98,6 +98,27 @@ through that procedure rather than acted on from the page.
 
 ## Admin deep links and account isolation
 
+### Scoped archived-data access (staging acceptance pending)
+
+The existing Vault now contains a closed-by-default scoped-access form for the
+server-returned `evidenceAccess` capability. It does not approve legal requests,
+grant roles, lift holds, or enable external disclosure. Operators supply an
+authorized archive/request pair, purpose, selected minimum-necessary scopes,
+acknowledgement and exact confirmation. The existing backend independently
+checks active preservation, approved scope, request/account binding and separate
+approver/legal-review identities before issuing an expiring one-use token.
+
+Review does not open archive data. A separate fresh exact confirmation is needed
+to consume the token. Mutation requests are never automatically retried. Client
+state consumes the token before I/O, rejects mismatched response IDs/scopes,
+invalid date windows and malformed receipts, and discards late results after
+input, account/security, capability, background or close changes. No server error
+payload is displayed. Private data is plain paginated text: no embedded media,
+HTML, links, storage persistence, export or transmission control. It clears on
+close/background/security changes and after five minutes; unconsumed review
+tokens clear at their server-supplied expiry. Production legal/operator and
+authentic independent approval gates remain open; local tests do not satisfy them.
+
 The existing anonymous removed-account list supports explicit, deduplicated
 pagination. A failed next page preserves existing rows and a retry control;
 refresh, account mutation, collapse and security changes invalidate stale page

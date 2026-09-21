@@ -33,6 +33,7 @@ import AppCard from "@/components/layout/AppCard";
 import { AdminEvidenceApprovalWorkspace } from "@/features/admin/AdminEvidenceApprovalPanel";
 import AdminPasskeySecurity from "@/features/admin/AdminPasskeySecurity";
 import AdminArchiveAudit from "@/features/admin/AdminArchiveAudit";
+import AdminArchiveAccess from "@/features/admin/AdminArchiveAccess";
 import { useAdminSecurityEpoch } from "@/features/admin/useAdminSecurity";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -567,6 +568,7 @@ export default function AdminEvidenceVaultCard({
 
           <AdminPasskeySecurity />
           <AdminEvidenceApprovalWorkspace key={securityEpoch} />
+          <AdminArchiveAccess authorized={capabilities?.evidenceAccess === true} />
 
           {capabilities?.accountRemovalOwner ? (
             <View style={styles.section}>
