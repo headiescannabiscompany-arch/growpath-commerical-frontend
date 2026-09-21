@@ -387,6 +387,45 @@ export async function listRemovedAccounts(cursor?: string) {
   return { accounts: response.accounts, nextCursor: response.nextCursor || null };
 }
 
+export type ArchiveAuditVerification = {
+  valid: boolean;
+  eventCount: number;
+  brokenSequence?: number;
+};
+
+export async function verifyArchiveAudit(
+  archiveId: string,
+  kind: "access" | "retention"
+): Promise<ArchiveAuditVerification> {
+  if (!/^[a-f0-9]{24}$/.test(archiveId) || !["access", "retention"].includes(kind)) {
+    throw new Error("Invalid archive audit selection.");
+  }
+  const response = await apiRequest<{
+    ok: boolean;
+    verification: ArchiveAuditVerification;
+  }>(`${BASE}/audit/${encodeURIComponent(`evidence-${kind}:${archiveId}`)}/verify`, {
+    cache: "no-store"
+  });
+  const receipt = response?.verification;
+  if (
+    !receipt ||
+    typeof receipt.valid !== "boolean" ||
+    response.ok !== receipt.valid ||
+    !Number.isSafeInteger(receipt.eventCount) ||
+    receipt.eventCount < 0 ||
+    (!receipt.valid &&
+      (!Number.isSafeInteger(receipt.brokenSequence) ||
+        receipt.brokenSequence! < 1 ||
+        receipt.brokenSequence! > receipt.eventCount))
+  )
+    throw new Error("GrowPath returned an invalid audit verification.");
+  return {
+    valid: receipt.valid,
+    eventCount: receipt.eventCount,
+    ...(!receipt.valid ? { brokenSequence: receipt.brokenSequence } : {})
+  };
+}
+
 export async function reviewAccountRestore(archiveId: string) {
   const response = await apiRequest<{ ok: true; review: RestoreReview }>(
     `${BASE}/removed-accounts/${encodeURIComponent(archiveId)}/restore-review`,

@@ -10,6 +10,7 @@ import {
   listAdminEvidenceRequests,
   normalizeAdminEvidenceRequest,
   reviewLegalEvidenceApproval,
+  verifyArchiveAudit,
   updateLegalEvidenceRequestReview
 } from "@/api/adminEvidenceVault";
 
@@ -29,6 +30,42 @@ const proposal = {
 };
 
 describe("Admin Evidence Vault API", () => {
+  it("verifies only named archive audit chains without reading the archive", async () => {
+    mockApiRequest.mockResolvedValue({
+      ok: true,
+      verification: { valid: true, eventCount: 0, headHash: "0".repeat(64) }
+    });
+    await expect(verifyArchiveAudit(TARGET_ID, "access")).resolves.toEqual({
+      valid: true,
+      eventCount: 0
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      `/api/admin/evidence-vault/audit/evidence-access%3A${TARGET_ID}/verify`,
+      expect.objectContaining({ cache: "no-store" })
+    );
+  });
+
+  it("preserves failed-chain receipts and rejects malformed verification", async () => {
+    mockApiRequest.mockResolvedValue({
+      ok: false,
+      verification: { valid: false, eventCount: 3, brokenSequence: 2 }
+    });
+    await expect(verifyArchiveAudit(TARGET_ID, "retention")).resolves.toEqual({
+      valid: false,
+      eventCount: 3,
+      brokenSequence: 2
+    });
+    mockApiRequest.mockResolvedValue({
+      ok: true,
+      verification: { valid: true, eventCount: -1 }
+    });
+    await expect(verifyArchiveAudit(TARGET_ID, "retention")).rejects.toThrow(
+      "invalid audit verification"
+    );
+    await expect(verifyArchiveAudit("not-an-id", "access")).rejects.toThrow(
+      "Invalid archive audit selection"
+    );
+  });
   beforeEach(() => {
     jest.clearAllMocks();
   });

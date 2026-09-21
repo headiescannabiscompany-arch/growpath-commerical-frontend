@@ -247,6 +247,59 @@ async function readyAccountAction(
 }
 
 describe("AdminEvidenceVaultCard", () => {
+  it("loads the next archive page without duplicate rows and removes the exhausted cursor", async () => {
+    const first = await mockRemoved();
+    const second = {
+      ...first.accounts[0],
+      archiveId: SECOND_ARCHIVE_ID,
+      anonymousAccountLabel: `removed-account-${SECOND_ARCHIVE_ID}`
+    };
+    mockRemoved
+      .mockResolvedValueOnce({ ...first, nextCursor: ARCHIVE_ID })
+      .mockResolvedValueOnce({ accounts: [...first.accounts, second], nextCursor: null });
+    const screen = render(<AdminEvidenceVaultCard users={USERS} />);
+    fireEvent.press(screen.getByLabelText("Open evidence vault controls"));
+    fireEvent.press(await screen.findByLabelText("Load more removed accounts"));
+    await screen.findByText(`removed-account-${SECOND_ARCHIVE_ID}`);
+    expect(screen.getAllByText(`removed-account-${ARCHIVE_ID}`)).toHaveLength(1);
+    expect(mockRemoved).toHaveBeenLastCalledWith(ARCHIVE_ID);
+    expect(screen.queryByLabelText("Load more removed accounts")).toBeNull();
+  });
+
+  it("discards a delayed archive page after Refresh", async () => {
+    const first = await mockRemoved();
+    let resolve!: (value: typeof first) => void;
+    mockRemoved
+      .mockResolvedValueOnce({ ...first, nextCursor: ARCHIVE_ID })
+      .mockReturnValueOnce(
+        new Promise((done) => {
+          resolve = done;
+        })
+      )
+      .mockResolvedValueOnce({ accounts: [], nextCursor: null });
+    const screen = render(<AdminEvidenceVaultCard users={USERS} />);
+    fireEvent.press(screen.getByLabelText("Open evidence vault controls"));
+    fireEvent.press(await screen.findByLabelText("Load more removed accounts"));
+    fireEvent.press(screen.getByLabelText("Refresh removed accounts"));
+    await screen.findByText("No quarantined or restored account archives were returned.");
+    await act(async () => resolve(first));
+    expect(screen.queryByText(`removed-account-${ARCHIVE_ID}`)).toBeNull();
+  });
+
+  it("keeps existing archives and the retry control when the next page fails", async () => {
+    const first = await mockRemoved();
+    mockRemoved
+      .mockResolvedValueOnce({ ...first, nextCursor: ARCHIVE_ID })
+      .mockRejectedValueOnce(new Error("test failure"));
+    const screen = render(<AdminEvidenceVaultCard users={USERS} />);
+    fireEvent.press(screen.getByLabelText("Open evidence vault controls"));
+    fireEvent.press(await screen.findByLabelText("Load more removed accounts"));
+    await screen.findByText(
+      "Unable to load more archives. Existing rows are unchanged; retry when ready."
+    );
+    expect(screen.getByText(`removed-account-${ARCHIVE_ID}`)).toBeTruthy();
+    expect(screen.getByLabelText("Load more removed accounts")).toBeTruthy();
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     mockCapabilities.mockResolvedValue(capabilityReceipt());

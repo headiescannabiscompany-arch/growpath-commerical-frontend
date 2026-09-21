@@ -98,6 +98,17 @@ through that procedure rather than acted on from the page.
 
 ## Admin deep links and account isolation
 
+The existing anonymous removed-account list supports explicit, deduplicated
+pagination. A failed next page preserves existing rows and a retry control;
+refresh, account mutation, collapse and security changes invalidate stale page
+responses. The existing per-archive rows offer an explicit read-only verification
+of the `evidence-access` and `evidence-retention` audit chains. This fetches only
+verification metadata, not archive contents or the separate account-removal
+history. Empty chains mean no events recorded, not a successful integrity proof.
+Broken-chain and unavailable checks are never displayed as success. Verification
+results clear on archive/security changes and unmount. No hold, access approval,
+data-export, purge or disclosure action is added by these controls.
+
 Restricted moderation rows use the backend's redacted `id`, not a required
 legacy `_id`. The queue normalizes that identifier and keeps only operational
 status/severity for restricted rows, even if a legacy payload includes private
