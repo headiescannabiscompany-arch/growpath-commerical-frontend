@@ -1,6 +1,6 @@
 import React from "react";
 import { ActivityIndicator, Linking, StyleSheet, TextInput } from "react-native";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { fireEvent, fireEventAsync, render, waitFor } from "@testing-library/react-native";
 
 import PlatformAdminRoute, {
   createPlatformAdminStyles,
@@ -919,7 +919,9 @@ describe("PlatformAdminRoute", () => {
       screen.getByLabelText("Exact account quarantine confirmation"),
       quarantinePhrase
     );
-    fireEvent.press(screen.getByText("Quarantine reviewed account"));
+    // Flush the async mutation and its dependent list refresh before polling
+    // the resulting account row. Keep every removal/restore assertion below.
+    await fireEventAsync.press(screen.getByText("Quarantine reviewed account"));
 
     await waitFor(() =>
       expect(screen.queryByLabelText(`Admin account ${member.email}`)).toBeNull()
@@ -940,7 +942,7 @@ describe("PlatformAdminRoute", () => {
       screen.getByLabelText("Exact account restore confirmation"),
       restorePhrase
     );
-    fireEvent.press(screen.getByText("Restore reviewed account"));
+    await fireEventAsync.press(screen.getByText("Restore reviewed account"));
 
     expect(await screen.findByLabelText(`Admin account ${member.email}`)).toBeTruthy();
     expect(screen.UNSAFE_getByType(AdminEvidenceVaultCard).props.users).toEqual([
