@@ -1,4 +1,4 @@
-import { apiRequest } from "@/api/apiRequest";
+import { API_URL, apiRequest } from "@/api/apiRequest";
 import { marketplaceDownloadUrl } from "@/api/marketplaceBuyer";
 import {
   downloadAndSaveMarketplaceContent,
@@ -182,7 +182,7 @@ describe("protected Marketplace delivery", () => {
       .fn()
       .mockResolvedValue(json({ downloadUrl: "/uploads/free.txt" }));
     await downloadAndSaveMarketplaceContent("offer-1", { allowLegacyExternal: true });
-    expect(mockOpen).toHaveBeenCalledWith("http://127.0.0.1:1/uploads/free.txt");
+    expect(mockOpen).toHaveBeenCalledWith(`${new URL(API_URL).origin}/uploads/free.txt`);
   });
 
   it("rejects a non-Blob successful body", async () => {
