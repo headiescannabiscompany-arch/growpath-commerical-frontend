@@ -25,7 +25,9 @@ describe("public Updates page", () => {
     for (const section of PUBLIC_UPDATE_SECTIONS) {
       expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
     }
-    expect(screen.getByText("Last updated September 20, 2026")).toBeTruthy();
+    expect(screen.getByText("Last updated September 22, 2026")).toBeTruthy();
+    expect(screen.getByText("Timeline headings that fit on phones")).toBeTruthy();
+    expect(screen.getByText("Account management and complimentary access")).toBeTruthy();
     expect(screen.getByText("Cleaner grow and journal creation")).toBeTruthy();
     expect(screen.getByText("Visual grow stories and journal photos")).toBeTruthy();
     expect(screen.getByText("Complete missing age information in Profile")).toBeTruthy();
@@ -55,15 +57,19 @@ describe("public Updates page", () => {
   it("includes the remaining public work without presenting it as released", () => {
     expect(PUBLIC_UPDATE_SECTIONS[2].entries.map((entry) => entry.id)).toEqual([
       "timeline-improvements",
+      "store-discovery-review",
       "course-gifting"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[1].entries.map((entry) => entry.id)).toEqual([
-      "account-admin-controls",
-      "complimentary-access-live-gifts",
+      "recovery-release",
+      "live-gift-follow-up",
       "admin-passkey-protection",
-      "admin-safety-review"
+      "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "account-admin-controls",
+      "admin-case-management",
+      "timeline-mobile-heading",
       "grow-journal-completion",
       "timeline-photos-sharing",
       "profile-age-confirmation",
@@ -76,14 +82,17 @@ describe("public Updates page", () => {
 
   it("identifies the next task without claiming unfinished security work is live", () => {
     const underway = PUBLIC_UPDATE_SECTIONS[1].entries;
-    expect(underway[0].summary).toMatch(/next check verifies/);
-    expect(underway[0].summary).toMatch(/synthetic accounts/);
+    expect(underway[0].summary).toMatch(
+      /passed automated checks and staging verification/
+    );
+    expect(underway[0].summary).toMatch(/remain unfinished/);
+    expect(underway[0].summary).toMatch(/Staging success is not a live release/);
     expect(
       underway.find((entry) => entry.id === "admin-passkey-protection")?.summary
-    ).toMatch(/remain before production activation/);
-    expect(underway.find((entry) => entry.id === "admin-safety-review")?.summary).toMatch(
-      /operational and legal review/
-    );
+    ).toMatch(/two-person access acceptance are not yet complete/);
+    expect(
+      underway.find((entry) => entry.id === "final-web-acceptance")?.summary
+    ).toMatch(/not a redesign or a claim of completed legal review/);
     const ids = PUBLIC_UPDATE_SECTIONS.flatMap((section) =>
       section.entries.map((entry) => entry.id)
     );
@@ -119,7 +128,7 @@ describe("public Updates page", () => {
 
   it("contains no private account, provider, credential, or audit identifiers", () => {
     expect(JSON.stringify(PUBLIC_UPDATE_SECTIONS)).not.toMatch(
-      /@|qa\.invalid|cs_live_|cs_test_|acct_|cus_|whsec_|sk_live_|srv-|mongodb|vault|audit record|\b[a-f0-9]{24}\b/i
+      /@|qa\.invalid|cs_live_|cs_test_|acct_|cus_|whsec_|sk_live_|srv-|mongodb|vault|audit record|Erick|jcind|DPAPI|registryId|\b[a-f0-9]{24}\b/i
     );
   });
 });
