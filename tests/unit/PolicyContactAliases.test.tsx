@@ -7,13 +7,13 @@ import { createPublicInfoPageStyles } from "../../src/components/PublicInfoPage"
 import { getThemePalette } from "../../src/theme/appTheme";
 
 describe("public policy contact aliases", () => {
-  it("routes policy contact copy to the specialized live aliases", () => {
+  it("routes policy contact copy to the approved Admin and security inboxes", () => {
     const privacy = render(<PrivacyPage />);
 
     expect(privacy.getByRole("header", { name: "Privacy Policy" })).toBeTruthy();
     expect(privacy.getByRole("button", { name: "Back" })).toBeTruthy();
-    expect(privacy.getByText(/privacy questions.*privacy@growpathai\.com/i)).toBeTruthy();
-    expect(privacy.getByText(/legal notices.*legal@growpathai\.com/i)).toBeTruthy();
+    expect(privacy.getByText(/privacy questions.*admin@growpathai\.com/i)).toBeTruthy();
+    expect(privacy.getByText(/legal notices.*admin@growpathai\.com/i)).toBeTruthy();
     expect(privacy.getByText(/security reports.*security@growpathai\.com/i)).toBeTruthy();
 
     const terms = render(<TermsPage />);
@@ -21,7 +21,7 @@ describe("public policy contact aliases", () => {
     expect(terms.getByRole("header", { name: "Terms of Service" })).toBeTruthy();
     expect(terms.getByRole("button", { name: "Back" })).toBeTruthy();
     expect(
-      terms.getByText(/terms, legal, or account notices.*legal@growpathai\.com/i)
+      terms.getByText(/terms, legal, or account notices.*admin@growpathai\.com/i)
     ).toBeTruthy();
     expect(terms.getByText(/support@growpathai\.com/)).toBeTruthy();
   });
