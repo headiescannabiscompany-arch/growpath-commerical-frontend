@@ -49,6 +49,26 @@ jest.mock("expo-image-picker", () => ({
 
 jest.setTimeout(15000);
 
+async function renderLoadedUploads() {
+  const Screen = require("@/screens/commercial/ContentMarketplaceScreen").default;
+  const screen = render(<Screen initialTab="uploads" />);
+  // Explicitly await the initial request promises and flush their state updates
+  // before asserting readiness; absence-only polling can race React's act scope.
+  await act(async () => {
+    await Promise.all([
+      mockBrowseMarketplace.mock.results.at(-1)?.value,
+      mockGetMyUploads.mock.results.at(-1)?.value,
+      mockGetSalesData.mock.results.at(-1)?.value
+    ]);
+  });
+  await waitFor(() => {
+    expect(mockGetMyUploads).toHaveBeenCalled();
+    expect(screen.getByText("Refresh offers")).toBeTruthy();
+    expect(screen.queryByText("Refreshing offers...")).toBeNull();
+  });
+  return screen;
+}
+
 describe("ContentMarketplaceScreen storefront offers", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -232,9 +252,7 @@ describe("ContentMarketplaceScreen storefront offers", () => {
           rejectSave = reject;
         })
     );
-    const Screen = require("@/screens/commercial/ContentMarketplaceScreen").default;
-    const screen = render(<Screen initialTab="uploads" />);
-    await waitFor(() => expect(screen.queryByText("Refreshing offers...")).toBeNull());
+    const screen = await renderLoadedUploads();
     fireEvent.press(screen.getAllByText("Create Offer")[0]);
     fireEvent.changeText(screen.getByPlaceholderText("Title"), "Retained guide");
     fireEvent.changeText(screen.getByPlaceholderText("Description"), "Retained draft");
@@ -281,9 +299,7 @@ describe("ContentMarketplaceScreen storefront offers", () => {
         })
     );
     mockUploadImage.mockRejectedValueOnce(new Error("Thumbnail failed"));
-    const Screen = require("@/screens/commercial/ContentMarketplaceScreen").default;
-    const screen = render(<Screen initialTab="uploads" />);
-    await waitFor(() => expect(screen.queryByText("Refreshing offers...")).toBeNull());
+    const screen = await renderLoadedUploads();
     fireEvent.press(screen.getAllByText("Create Offer")[0]);
     fireEvent.changeText(screen.getByPlaceholderText("Title"), "Correct file guide");
     fireEvent.changeText(
@@ -344,9 +360,7 @@ describe("ContentMarketplaceScreen storefront offers", () => {
           resolveMedia = resolve;
         })
     );
-    const Screen = require("@/screens/commercial/ContentMarketplaceScreen").default;
-    const screen = render(<Screen initialTab="uploads" />);
-    await waitFor(() => expect(screen.queryByText("Refreshing offers...")).toBeNull());
+    const screen = await renderLoadedUploads();
     fireEvent.press(screen.getAllByText("Create Offer")[0]);
     fireEvent.changeText(screen.getByPlaceholderText("Title"), "Original owner's guide");
     fireEvent.changeText(screen.getByPlaceholderText("Description"), "Original draft");
