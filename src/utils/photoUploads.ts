@@ -64,7 +64,24 @@ export function resolveImageUri(uri: string | null | undefined) {
   return value;
 }
 
-export async function persistImageUris(uris: string[]) {
+export type UploadedPhotoMetadata = {
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+  width?: number | null;
+  height?: number | null;
+};
+
+export async function persistImageUris(
+  uris: string[],
+  options: {
+    prepareForJournal?: boolean;
+    onUploaded?: (
+      sourceUri: string,
+      url: string,
+      metadata: UploadedPhotoMetadata
+    ) => void;
+  } = {}
+) {
   const persisted: string[] = [];
   for (const uri of uris) {
     if (!uri) continue;
@@ -72,11 +89,14 @@ export async function persistImageUris(uris: string[]) {
       persisted.push(uri);
       continue;
     }
-    const uploaded = await uploadImage(uri);
+    const uploaded = options.prepareForJournal
+      ? await uploadImage(uri, { prepareForJournal: true })
+      : await uploadImage(uri);
     if (!uploaded?.url) {
       throw new Error("Image upload did not return a URL.");
     }
     persisted.push(uploaded.url);
+    options.onUploaded?.(uri, uploaded.url, uploaded.imageMetadata || {});
   }
   return persisted;
 }

@@ -189,7 +189,10 @@ describe("LogDetailScreen", () => {
     );
     fireEvent.press(screen.getByLabelText("Save log changes"));
     await waitFor(() => expect(screen.getByText("Journal entry saved.")).toBeTruthy());
-    expect(mockPersistPhotos).toHaveBeenCalledWith(["blob:new-photo"]);
+    expect(mockPersistPhotos).toHaveBeenCalledWith(
+      ["blob:new-photo"],
+      expect.objectContaining({ prepareForJournal: true })
+    );
     expect(mockUpdatePersonalLog).toHaveBeenCalledWith(
       "log-1",
       expect.objectContaining({
@@ -255,6 +258,17 @@ describe("LogDetailScreen", () => {
 
   it("reuses an uploaded photo after a failed save instead of uploading its local URI again", async () => {
     mockUpdatePersonalLog.mockResolvedValue(null);
+    const metadata = {
+      mimeType: "image/jpeg",
+      sizeBytes: 2000000,
+      width: null,
+      height: null
+    };
+    mockPersistPhotos.mockImplementation(async (uris: string[], options: any) => {
+      if (uris[0] === "blob:new-photo")
+        options.onUploaded(uris[0], "/uploads/new-photo.jpg", metadata);
+      return ["/uploads/new-photo.jpg"];
+    });
     const screen = render(<LogDetailScreen />);
     await waitFor(() => expect(screen.getByText("Leaf photo")).toBeTruthy());
     fireEvent.press(screen.getByLabelText("Edit log entry"));
@@ -269,6 +283,10 @@ describe("LogDetailScreen", () => {
     fireEvent.press(screen.getByLabelText("Save log changes"));
     await waitFor(() => expect(mockPersistPhotos).toHaveBeenCalledTimes(2));
     expect(mockPersistPhotos.mock.calls[1][0]).toEqual(["/uploads/new-photo.jpg"]);
+    await waitFor(() => expect(mockUpdatePersonalLog).toHaveBeenCalledTimes(2));
+    for (const [, payload] of mockUpdatePersonalLog.mock.calls) {
+      expect(payload.photoMetadata[1]).toEqual(expect.objectContaining(metadata));
+    }
   });
 
   it("retains completed uploads when a later photo fails and retries only its local URI", async () => {

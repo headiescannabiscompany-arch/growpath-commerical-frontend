@@ -27,7 +27,11 @@ import {
 } from "@/features/personal/tools/ToolPlantContextPicker";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
+import {
+  isPersistedImageUri,
+  persistImageUris,
+  type UploadedPhotoMetadata
+} from "@/utils/photoUploads";
 import { createWorkspaceLog } from "@/features/grows/workspaceData";
 import { localCalendarDate } from "@/features/grows/routeUtils";
 
@@ -213,7 +217,22 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     setSaving(true);
     setError("");
     try {
-      const uploadedPhotos = await persistImageUris(photos.map((photo) => photo.uri));
+      const savedPhotoDetails = new Map<string, UploadedPhotoMetadata>();
+      const uploadedPhotos = await persistImageUris(
+        photos.map((photo) => photo.uri),
+        {
+          prepareForJournal: true,
+          onUploaded: (sourceUri, url, metadata) => {
+            const source = photos.find((photo) => photo.uri === sourceUri);
+            const saved = { ...source, ...metadata, uri: url };
+            savedPhotoDetails.set(url, metadata);
+            // Keep completed uploads if a later photo or saving the entry fails.
+            setPhotos((current) =>
+              current.map((photo) => (photo.uri === sourceUri ? saved : photo))
+            );
+          }
+        }
+      );
       const created = await createWorkspaceLog(workspace, {
         growId,
         plantId: toolRunContext.plantId,
@@ -231,6 +250,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           width: photos[index]?.width || null,
           height: photos[index]?.height || null,
           sizeBytes: photos[index]?.sizeBytes || null,
+          ...savedPhotoDetails.get(url),
           stage: logType,
           consentForAI: Boolean(suggestions),
           consentForTraining: false

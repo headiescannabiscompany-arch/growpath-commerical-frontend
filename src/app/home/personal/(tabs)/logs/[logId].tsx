@@ -23,7 +23,11 @@ import {
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { fmtDate } from "@/features/grows/routeUtils";
-import { persistImageUris, resolveImageUri } from "@/utils/photoUploads";
+import {
+  persistImageUris,
+  resolveImageUri,
+  type UploadedPhotoMetadata
+} from "@/utils/photoUploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -149,15 +153,29 @@ export default function LogDetailScreen() {
     setFeedback("");
     try {
       const uploaded: string[] = [];
+      const savedMetadata = new Map<string, UploadedPhotoMetadata>();
       for (const [index, photo] of addedPhotos.entries()) {
-        const [url] = await persistImageUris([photo.uri]);
+        const [url] = await persistImageUris([photo.uri], {
+          prepareForJournal: true,
+          onUploaded: (_sourceUri, savedUrl, metadata) => {
+            savedMetadata.set(savedUrl, metadata);
+          }
+        });
         if (!url) throw new Error("Image upload did not return a URL.");
         uploaded.push(url);
         // Retain each upload even if a later photo or the journal PATCH fails.
         setAddedPhotos((current) =>
           current.map((candidate, candidateIndex) =>
             candidateIndex === index && candidate.uri === photo.uri
-              ? { ...candidate, uri: url }
+              ? {
+                  ...candidate,
+                  ...savedMetadata.get(url),
+                  mimeType: savedMetadata.get(url)?.mimeType || candidate.mimeType,
+                  width: savedMetadata.get(url)?.width === null ? 0 : candidate.width,
+                  height: savedMetadata.get(url)?.height === null ? 0 : candidate.height,
+                  fileSize: savedMetadata.get(url)?.sizeBytes ?? candidate.fileSize,
+                  uri: url
+                }
               : candidate
           )
         );
@@ -179,6 +197,7 @@ export default function LogDetailScreen() {
                 width: addedPhotos[index]?.width || null,
                 height: addedPhotos[index]?.height || null,
                 sizeBytes: addedPhotos[index]?.fileSize || null,
+                ...savedMetadata.get(url),
                 consentForAI: false,
                 consentForTraining: false
               }))

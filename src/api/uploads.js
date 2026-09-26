@@ -80,28 +80,58 @@ function normalizeUploadInput(input, fallbackName) {
 }
 
 // Unified upload function: supports web/native, FormData, and Authorization
-export async function uploadImage(uri) {
+export async function uploadImage(uri, { prepareForJournal = false } = {}) {
   if (!uri) throw new Error("uploadImage: uri is required");
 
   const formData = new FormData();
   const filename = String(uri).split("/").pop() || "upload.jpg";
   const type = guessMime(filename);
 
-  if (Platform.OS === "web") {
-    const blob = await uriToBlob(uri);
-    formData.append("image", blob, filename);
-  } else {
-    formData.append("image", {
-      uri,
-      name: filename,
-      type
-    });
-  }
+  let prepared = null;
+  let preparedNative = null;
+  try {
+    if (Platform.OS === "web") {
+      const blob = await uriToBlob(uri);
+      if (prepareForJournal) {
+        prepared = await prepareEvidenceImageForUpload(blob, filename);
+      }
+      formData.append("image", prepared?.blob || blob, prepared?.fileName || filename);
+    } else {
+      if (prepareForJournal) {
+        preparedNative = await prepareNativeEvidenceImageForUpload({
+          uri,
+          fileName: filename,
+          mimeType: type
+        });
+      }
+      formData.append("image", {
+        uri: preparedNative?.uri || uri,
+        name: preparedNative?.fileName || filename,
+        type: preparedNative?.mimeType || type
+      });
+    }
 
-  return apiRequest("/api/uploads/image", {
-    method: "POST",
-    body: formData
-  });
+    const uploaded = await apiRequest("/api/uploads/image", {
+      method: "POST",
+      body: formData
+    });
+    const image = prepared || preparedNative;
+    if (!image) return uploaded;
+    return {
+      ...uploaded,
+      imageMetadata: {
+        mimeType: image.mimeType,
+        sizeBytes: image.uploadBytes,
+        // The helper does not return output dimensions. Unknown is preferable to
+        // incorrectly storing the original dimensions for a resized JPEG.
+        ...(image.optimized ? { width: null, height: null } : {})
+      }
+    };
+  } finally {
+    if (preparedNative?.optimized && preparedNative.uri !== uri) {
+      await discardPreparedNativeEvidenceImage(preparedNative.uri);
+    }
+  }
 }
 
 export async function uploadMarketplaceFile(input, options = {}) {

@@ -69,4 +69,41 @@ describe("photo upload persistence helpers", () => {
   it("returns null for empty optional image input", async () => {
     await expect(persistImageUri(null)).resolves.toBeNull();
   });
+
+  it("opts journal photos into preparation without resending saved URLs", async () => {
+    const onUploaded = jest.fn();
+    mockUploadImage.mockResolvedValue({
+      url: "/uploads/prepared.jpg",
+      imageMetadata: { sizeBytes: 2000000, width: null }
+    });
+    await expect(
+      persistImageUris(["/uploads/saved.jpg", "blob:phone"], {
+        prepareForJournal: true,
+        onUploaded
+      })
+    ).resolves.toEqual(["/uploads/saved.jpg", "/uploads/prepared.jpg"]);
+    expect(mockUploadImage).toHaveBeenCalledTimes(1);
+    expect(mockUploadImage).toHaveBeenCalledWith("blob:phone", {
+      prepareForJournal: true
+    });
+    expect(onUploaded).toHaveBeenCalledWith("blob:phone", "/uploads/prepared.jpg", {
+      sizeBytes: 2000000,
+      width: null
+    });
+  });
+
+  it("reports each completed upload before a later photo fails", async () => {
+    const onUploaded = jest.fn();
+    mockUploadImage
+      .mockResolvedValueOnce({ url: "/uploads/first.jpg" })
+      .mockRejectedValueOnce(new Error("Photo cannot be prepared"));
+    await expect(
+      persistImageUris(["blob:first", "blob:second"], {
+        prepareForJournal: true,
+        onUploaded
+      })
+    ).rejects.toThrow("Photo cannot be prepared");
+    expect(onUploaded).toHaveBeenCalledTimes(1);
+    expect(onUploaded).toHaveBeenCalledWith("blob:first", "/uploads/first.jpg", {});
+  });
 });

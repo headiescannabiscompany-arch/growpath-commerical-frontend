@@ -228,6 +228,42 @@ describe("NewLogScreen plant/photo context", () => {
     });
   });
 
+  it("retains prepared upload metadata and its URL when a failed journal save is retried", async () => {
+    const metadata = {
+      mimeType: "image/jpeg",
+      sizeBytes: 2000000,
+      width: null,
+      height: null
+    };
+    mockPersistImageUris.mockImplementation(async (uris: string[], options: any) =>
+      uris.map((uri) => {
+        if (uri.startsWith("https://")) return uri;
+        const url = "https://cdn.example.com/prepared.jpg";
+        options.onUploaded(uri, url, metadata);
+        return url;
+      })
+    );
+    mockCreatePersonalLog.mockRejectedValueOnce(new Error("Temporary save failure"));
+    const screen = render(<NewLogScreen />);
+    fillDraft(screen);
+    await attachPhoto(screen);
+    fireEvent.press(screen.getByLabelText("Create log"));
+    await waitFor(() => expect(screen.getByText("Temporary save failure")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Create log"));
+    await waitFor(() => expect(mockCreatePersonalLog).toHaveBeenCalledTimes(2));
+    expect(mockPersistImageUris.mock.calls[1][0]).toEqual([
+      "https://cdn.example.com/prepared.jpg"
+    ]);
+    for (const [payload] of mockCreatePersonalLog.mock.calls) {
+      expect(payload.photoMetadata).toEqual([
+        expect.objectContaining({
+          ...metadata,
+          url: "https://cdn.example.com/prepared.jpg"
+        })
+      ]);
+    }
+  });
+
   it("keeps journal creation available for free personal accounts", async () => {
     mockEntitlementsCan.mockImplementation(
       (capability) => capability !== "LOGS_PERSONAL_WRITE"
@@ -349,7 +385,10 @@ describe("NewLogScreen plant/photo context", () => {
     fireEvent.press(getByLabelText("Create log"));
 
     await waitFor(() => expect(mockCreatePersonalLog).toHaveBeenCalled());
-    expect(mockPersistImageUris).toHaveBeenCalledWith(["file:///tmp/olive-leaf.jpg"]);
+    expect(mockPersistImageUris).toHaveBeenCalledWith(
+      ["file:///tmp/olive-leaf.jpg"],
+      expect.objectContaining({ prepareForJournal: true })
+    );
     expect(mockCreatePersonalLog).toHaveBeenCalledWith(
       expect.objectContaining({
         growId: "grow-1",
@@ -413,7 +452,10 @@ describe("NewLogScreen plant/photo context", () => {
       fireEvent.press(screen.getByLabelText("Create log"));
 
       await waitFor(() => expect(create).toHaveBeenCalledTimes(2));
-      expect(mockPersistImageUris).toHaveBeenLastCalledWith([]);
+      expect(mockPersistImageUris).toHaveBeenLastCalledWith(
+        [],
+        expect.objectContaining({ prepareForJournal: true })
+      );
       expect(create.mock.calls[1][0]).toEqual(
         expect.objectContaining({
           growId: "grow-1",
@@ -611,9 +653,10 @@ describe("NewLogScreen plant/photo context", () => {
       await attachPhoto(screen);
       fireEvent.press(screen.getByLabelText("Create log"));
       await waitFor(() => expect(mockCreatePersonalLog).toHaveBeenCalledTimes(2));
-      expect(mockPersistImageUris).toHaveBeenLastCalledWith([
-        "file:///tmp/olive-leaf.jpg"
-      ]);
+      expect(mockPersistImageUris).toHaveBeenLastCalledWith(
+        ["file:///tmp/olive-leaf.jpg"],
+        expect.objectContaining({ prepareForJournal: true })
+      );
     }
   );
 

@@ -724,7 +724,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not claim causation from an observational run comparison.",
       "Exclude synthetic QA evidence from ordinary production conclusions unless it is explicitly selected and labeled.",
       "The deterministic comparison uses no AI credit; optional AI explanation must preserve the same evidence limits.",
-      "Timeline exports must remain readable and must not expose raw machine payloads, evidence fingerprints, provider data or private identifiers."
+      "Timeline exports must remain readable and must not expose raw machine payloads, evidence fingerprints, provider data or private identifiers.",
+      "Journal uploads prepare oversized phone photos locally without overwriting device originals, retain completed uploads across draft retries, and record uploaded byte/type metadata without claiming unknown resized dimensions. This does not grant AI consent or change original-evidence policy."
     ],
     ["run-comparison"]
   ),

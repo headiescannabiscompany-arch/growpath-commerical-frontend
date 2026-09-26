@@ -44,6 +44,110 @@ describe("uploads API", () => {
     });
   });
 
+  it("prepares a large web journal photo before multipart upload and returns honest metadata", async () => {
+    Object.defineProperty(platform, "OS", { configurable: true, value: "web" });
+    const { uploadImage } = require("@/api/uploads");
+    const original = new Blob([new Uint8Array(12 * 1024 * 1024)], { type: "image/jpeg" });
+    const preparedBlob = new Blob([new Uint8Array(2 * 1024 * 1024)], {
+      type: "image/jpeg"
+    });
+    mockUriToBlob.mockResolvedValue(original);
+    mockPrepareEvidenceImageForUpload.mockResolvedValue({
+      blob: preparedBlob,
+      fileName: "phone.jpg",
+      mimeType: "image/jpeg",
+      uploadBytes: preparedBlob.size,
+      optimized: true
+    });
+    const append = jest.spyOn(FormData.prototype, "append");
+    try {
+      const result = await uploadImage("blob:phone", { prepareForJournal: true });
+      expect(mockPrepareEvidenceImageForUpload).toHaveBeenCalledWith(
+        original,
+        "blob:phone"
+      );
+      expect(append).toHaveBeenCalledWith("image", preparedBlob, "phone.jpg");
+      expect(result.imageMetadata).toEqual({
+        mimeType: "image/jpeg",
+        sizeBytes: preparedBlob.size,
+        width: null,
+        height: null
+      });
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/uploads/image", {
+        method: "POST",
+        body: expect.any(FormData)
+      });
+    } finally {
+      append.mockRestore();
+    }
+  });
+
+  it("does not send an unprepared oversized journal photo when preparation fails", async () => {
+    Object.defineProperty(platform, "OS", { configurable: true, value: "web" });
+    const { uploadImage } = require("@/api/uploads");
+    mockUriToBlob.mockResolvedValue({ size: 12000000 });
+    mockPrepareEvidenceImageForUpload.mockRejectedValue(
+      new Error("Photo cannot be prepared")
+    );
+    await expect(uploadImage("blob:phone", { prepareForJournal: true })).rejects.toThrow(
+      "Photo cannot be prepared"
+    );
+    expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])(
+    "cleans only the temporary native journal JPEG (request fails: %s)",
+    async (fails) => {
+      Object.defineProperty(platform, "OS", { configurable: true, value: "ios" });
+      const { uploadImage } = require("@/api/uploads");
+      mockPrepareNativeEvidenceImageForUpload.mockResolvedValue({
+        uri: "file:///cache/prepared.jpg",
+        fileName: "phone.jpg",
+        mimeType: "image/jpeg",
+        uploadBytes: 2000000,
+        optimized: true
+      });
+      if (fails) mockApiRequest.mockRejectedValue(new Error("Offline"));
+      const request = uploadImage("file:///photos/phone.HEIC", {
+        prepareForJournal: true
+      });
+      if (fails) await expect(request).rejects.toThrow("Offline");
+      else
+        await expect(request).resolves.toMatchObject({
+          imageMetadata: { sizeBytes: 2000000 }
+        });
+      expect(mockDiscardPreparedNativeEvidenceImage).toHaveBeenCalledTimes(1);
+      expect(mockDiscardPreparedNativeEvidenceImage).toHaveBeenCalledWith(
+        "file:///cache/prepared.jpg"
+      );
+    }
+  );
+
+  it("leaves non-journal image upload behavior unchanged", async () => {
+    Object.defineProperty(platform, "OS", { configurable: true, value: "web" });
+    const { uploadImage } = require("@/api/uploads");
+    mockUriToBlob.mockResolvedValue(
+      new Blob([new Uint8Array(100)], { type: "image/jpeg" })
+    );
+    await uploadImage("blob:original");
+    expect(mockPrepareEvidenceImageForUpload).not.toHaveBeenCalled();
+    expect(mockPrepareNativeEvidenceImageForUpload).not.toHaveBeenCalled();
+  });
+
+  it("never deletes an unchanged native journal original", async () => {
+    Object.defineProperty(platform, "OS", { configurable: true, value: "ios" });
+    const { uploadImage } = require("@/api/uploads");
+    mockPrepareNativeEvidenceImageForUpload.mockResolvedValue({
+      uri: "file:///phone.jpg",
+      fileName: "phone.jpg",
+      mimeType: "image/jpeg",
+      uploadBytes: 1000000,
+      optimized: false
+    });
+    await uploadImage("file:///phone.jpg", { prepareForJournal: true });
+    expect(mockDiscardPreparedNativeEvidenceImage).not.toHaveBeenCalled();
+  });
+
   it("uploads a Marketplace file privately and returns only a stable asset binding", async () => {
     const { uploadMarketplaceFile } = require("@/api/uploads");
     const signal = new AbortController().signal;

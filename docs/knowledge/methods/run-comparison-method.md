@@ -1,5 +1,15 @@
 # Run Comparison and Grow History
 
+Journal photo uploads use the existing local image-preparation helper before the
+5 MiB image endpoint: compatible photos below its 4.5 MiB target pass unchanged;
+larger/normalization-required photos are prepared as JPEG without enlarging pixels.
+The device original is not overwritten. Record the uploaded MIME type and byte
+size; clear unknown post-resize dimensions rather than reuse original dimensions.
+Retain each successful upload in an unfinished draft so retries do not resend it.
+Preparation failure must not create a journal entry or discard the user's draft.
+This transport rule is limited to ordinary journal uploads; it does not change
+AI original-evidence policy, grant AI consent, or publish a photo/timeline.
+
 Run comparison is an evidence review across two to five owned saved grows. It is not a demo-data calculator, a universal score, or proof that one recorded difference caused an outcome.
 
 Start from saved grow records. Preserve the grow, plant, log, task, ToolRun, diagnosis, recipe, telemetry, harvest, dry/cure, pheno and final-quality provenance used for each snapshot. Synthetic QA evidence must remain labeled and must not be mixed into an ordinary production comparison as if it were measured history.
