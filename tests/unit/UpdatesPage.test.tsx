@@ -25,7 +25,8 @@ describe("public Updates page", () => {
     for (const section of PUBLIC_UPDATE_SECTIONS) {
       expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
     }
-    expect(screen.getByText("Last updated September 22, 2026")).toBeTruthy();
+    expect(screen.getByText("Last updated September 27, 2026")).toBeTruthy();
+    expect(screen.getByText("Larger journal photos and safer retries")).toBeTruthy();
     expect(screen.getByText("Timeline headings that fit on phones")).toBeTruthy();
     expect(screen.getByText("Account management and complimentary access")).toBeTruthy();
     expect(screen.getByText("Cleaner grow and journal creation")).toBeTruthy();
@@ -67,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "journal-large-photo-upload",
       "account-admin-controls",
       "admin-case-management",
       "timeline-mobile-heading",

@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "September 22, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "September 27, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Available on GrowPathAI now.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "journal-large-photo-upload",
+        title: "Larger journal photos and safer retries",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Journal uploads now prepare oversized supported images to fit the upload limit without changing the original file on your device. Add photos to new or existing entries, and retry a failed save without uploading completed photos again. Grow-list connection errors now show a retry option instead of an incorrect limit-reached message. A 14 MB JPEG passed staging save, append, and recovery checks; format support still depends on your browser or device."
+      },
       {
         id: "account-admin-controls",
         title: "Account management and complimentary access",
