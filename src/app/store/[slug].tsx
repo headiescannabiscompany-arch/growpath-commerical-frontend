@@ -10,7 +10,7 @@ import {
   Text,
   View
 } from "react-native";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 
 import { checkoutProduct, getProductPurchaseStatus } from "@/api/products";
 import { fetchPublicStorefront } from "@/api/storefront";
@@ -18,6 +18,7 @@ import {
   recordCommercialAnalyticsEvent,
   type CommercialAnalyticsEvent
 } from "@/api/commercialAnalytics";
+import { useAuth } from "@/auth/AuthContext";
 import AppPage from "@/components/layout/AppPage";
 import ProductPurchaseIntentControl from "@/components/commercial/ProductPurchaseIntentControl";
 import PurchaseIntentTrialCard from "@/components/commercial/PurchaseIntentTrialCard";
@@ -30,6 +31,7 @@ import {
   publicLinks
 } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
+import { parsePublicProductReturnPath, safeLoginPath } from "@/utils/authReturnPath";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
@@ -85,6 +87,8 @@ export default function PublicStorefrontRoute() {
     checkout?: string;
     product?: string;
   }>();
+  const auth = useAuth();
+  const router = useRouter();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
   const selectedLineId = useMemo(() => String(params.line || "").trim(), [params.line]);
   const returnFeedHref = "/feed";
@@ -191,6 +195,7 @@ export default function PublicStorefrontRoute() {
   }, [slug, storefront]);
 
   async function buy(product: any) {
+    if (auth.isHydrating) return;
     if (isRegulatedCannabisProduct(product)) {
       Alert.alert(
         "Licensed transfer required",
@@ -198,8 +203,19 @@ export default function PublicStorefrontRoute() {
       );
       return;
     }
+    if (!publicProductCanCheckout(product, storefront)) return;
     const id = productId(product);
     if (!id) return;
+    if (!auth.isAuthed) {
+      const savedId = product?.id || product?._id || product?.productId;
+      const savedSlug = storefront?.slug;
+      const next =
+        typeof savedId === "string" && typeof savedSlug === "string"
+          ? parsePublicProductReturnPath(`/store/${savedSlug}/products/${savedId}`)
+          : "";
+      router.push(safeLoginPath(undefined, next) as any);
+      return;
+    }
     setBusyId(id);
     setFeedback("");
     trackCommercialClick({
@@ -524,9 +540,17 @@ export default function PublicStorefrontRoute() {
                       </Link>
                       {canCheckout ? (
                         <Pressable
+                          accessibilityRole="button"
                           accessibilityLabel={`Buy ${product?.name || "product"}`}
-                          style={[styles.button, busyId === id && styles.disabled]}
-                          disabled={busyId === id}
+                          accessibilityState={{
+                            disabled: busyId === id || auth.isHydrating,
+                            busy: busyId === id
+                          }}
+                          style={[
+                            styles.button,
+                            (busyId === id || auth.isHydrating) && styles.disabled
+                          ]}
+                          disabled={busyId === id || auth.isHydrating}
                           onPress={() => buy(product)}
                         >
                           <Text style={styles.buttonText}>

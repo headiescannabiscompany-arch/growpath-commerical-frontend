@@ -504,6 +504,149 @@ describe("public commercial routes", () => {
     );
   });
 
+  describe("ordinary storefront card Buy sign-in return", () => {
+    const savedProductId = "507f191e810c19729de86001";
+    const savedStorefront = { ...publicPayload.storefront, slug: "living-soil-labs" };
+    const savedProduct = { ...publicPayload.products[0], id: savedProductId };
+    const loginPath = `/login?next=${encodeURIComponent(
+      `/store/living-soil-labs/products/${savedProductId}`
+    )}`;
+
+    function expectNoCheckout() {
+      expect(jest.requireMock("@/api/products").checkoutProduct).not.toHaveBeenCalled();
+      expect(mockRecordCommercialAnalyticsEvent).not.toHaveBeenCalledWith(
+        expect.objectContaining({ eventType: "product_checkout_click" })
+      );
+      expect(mockSubmitProductPurchaseIntent).not.toHaveBeenCalled();
+    }
+
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ isAuthed: false, isHydrating: false, user: null });
+      mockRouteParams = { slug: "requested-store-alias" };
+      mockFetchPublicStorefront.mockResolvedValue({
+        ...publicPayload,
+        storefront: savedStorefront,
+        products: [savedProduct]
+      });
+    });
+
+    it.each(["id", "_id", "productId"])(
+      "returns signed-out Buy to the canonical detail using stored %s, not aliases",
+      async (field: string) => {
+        mockFetchPublicStorefront.mockResolvedValue({
+          ...publicPayload,
+          storefront: savedStorefront,
+          products: [
+            { ...savedProduct, id: undefined, [field]: savedProductId, slug: "veg-mix" }
+          ]
+        });
+        const screen = render(<PublicStorefrontRoute />);
+        const buy = await screen.findByRole("button", { name: "Buy Veg Mix" });
+        expectNoCheckout();
+        expect(mockRouterPush).not.toHaveBeenCalled();
+        fireEvent.press(buy);
+
+        expect(mockRouterPush).toHaveBeenCalledTimes(1);
+        expect(mockRouterPush).toHaveBeenCalledWith(loginPath);
+        expectNoCheckout();
+      }
+    );
+
+    it.each([
+      ["missing stored slug", undefined, savedProductId],
+      ["array product id", "living-soil-labs", [savedProductId]]
+    ])(
+      "uses plain sign-in for %s without making a checkout",
+      async (_case: unknown, savedSlug: unknown, savedId: unknown) => {
+        mockFetchPublicStorefront.mockResolvedValue({
+          ...publicPayload,
+          storefront: { ...savedStorefront, slug: savedSlug },
+          products: [{ ...savedProduct, id: savedId }]
+        });
+        const screen = render(<PublicStorefrontRoute />);
+        fireEvent.press(await screen.findByRole("button", { name: "Buy Veg Mix" }));
+
+        expect(mockRouterPush).toHaveBeenCalledWith("/login");
+        expectNoCheckout();
+      }
+    );
+
+    it.each([false, true])(
+      "blocks the card Buy handler during hydration when isAuthed is %s",
+      async (isAuthed: boolean) => {
+        mockUseAuth.mockReturnValue({ isAuthed, isHydrating: true, user: null });
+        const screen = render(<PublicStorefrontRoute />);
+        const buy = await screen.findByRole("button", { name: "Buy Veg Mix" });
+        expect(buy).toBeDisabled();
+        expect(buy).toHaveProp("accessibilityState", { disabled: true, busy: false });
+        fireEvent.press(buy);
+        const handler = screen.UNSAFE_root.findAll(
+          (node: { props: { accessibilityLabel?: string; onPress?: unknown } }) =>
+            node.props.accessibilityLabel === "Buy Veg Mix" &&
+            typeof node.props.onPress === "function"
+        )[0].props.onPress;
+        await act(async () => handler());
+
+        expect(mockRouterPush).not.toHaveBeenCalled();
+        expectNoCheckout();
+      }
+    );
+
+    it("requires a fresh card Buy after login and keeps the signed-in storefront return", async () => {
+      const checkout = jest.requireMock("@/api/products").checkoutProduct;
+      checkout.mockResolvedValue({ url: "https://checkout.example.com/session" });
+      const openUrlSpy = jest.spyOn(Linking, "openURL").mockResolvedValue(true as any);
+      const screen = render(<PublicStorefrontRoute />);
+      fireEvent.press(await screen.findByRole("button", { name: "Buy Veg Mix" }));
+      expect(mockRouterPush).toHaveBeenCalledWith(loginPath);
+
+      mockUseAuth.mockReturnValue({
+        isAuthed: true,
+        isHydrating: false,
+        user: { id: "viewer-1" }
+      });
+      screen.rerender(<PublicStorefrontRoute />);
+      expectNoCheckout();
+      expect(mockRouterPush).toHaveBeenCalledTimes(1);
+      fireEvent.press(screen.getByRole("button", { name: "Buy Veg Mix" }));
+      await waitFor(() =>
+        expect(openUrlSpy).toHaveBeenCalledWith("https://checkout.example.com/session")
+      );
+
+      expect(checkout).toHaveBeenCalledTimes(1);
+      expect(checkout).toHaveBeenCalledWith(savedProductId, {
+        returnPath: "/store/requested-store-alias"
+      });
+      expect(mockRecordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: "product_checkout_click",
+          productId: savedProductId,
+          storefrontSlug: "requested-store-alias",
+          source: "public_storefront"
+        })
+      );
+      expect(mockRouterPush).toHaveBeenCalledTimes(1);
+      expect(screen.getByText("Checkout started.")).toBeTruthy();
+    });
+
+    it.each(["purchaseIntentEnabled", "regulatedCannabis"])(
+      "does not expose card Buy for %s products while signed out",
+      async (flag: string) => {
+        mockFetchPublicStorefront.mockResolvedValue({
+          ...publicPayload,
+          storefront: savedStorefront,
+          products: [{ ...savedProduct, [flag]: true }]
+        });
+        const screen = render(<PublicStorefrontRoute />);
+        await screen.findByText("Veg Mix");
+
+        expect(screen.queryByRole("button", { name: "Buy Veg Mix" })).toBeNull();
+        expect(mockRouterPush).not.toHaveBeenCalled();
+        expectNoCheckout();
+      }
+    );
+  });
+
   it("verifies a storefront Checkout return without starting another Checkout", async () => {
     mockGetProductPurchaseStatus.mockResolvedValue(paidProductPurchaseStatus);
     mockRouteParams = {

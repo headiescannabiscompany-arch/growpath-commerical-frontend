@@ -14,7 +14,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "September 27, 2026",
         dateLabel: "Released",
         summary:
-          "Signed-out shoppers choosing Buy on ordinary products now go to sign in and return to the same product when its saved identity is verified. Signing in does not place an order or open checkout automatically. Existing purchase-interest, eligibility and payment rules stay unchanged. New-account verification and course purchase returns remain separate follow-ups."
+          "Signed-out shoppers choosing Buy on storefront cards or ordinary product details now go to sign in and return to the same product when its saved identity is verified. Signing in does not place an order or open checkout automatically. Existing purchase-interest, eligibility and payment rules stay unchanged. New-account verification and course purchase returns remain separate follow-ups."
       },
       {
         id: "product-line-safety",
