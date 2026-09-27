@@ -698,6 +698,156 @@ describe("public commercial routes", () => {
     expect(screen.getByText("5 yes · goal 25")).toBeTruthy();
   });
 
+  describe.each([
+    ["storefront card", PublicStorefrontRoute],
+    ["product detail", PublicProductRoute]
+  ] as const)("%s purchase-interest sign-in return", (_caller, Route) => {
+    const savedProductId = "507f191e810c19729de86001";
+    const savedStorefront = { ...publicPayload.storefront, slug: "living-soil-labs" };
+    const savedProduct = {
+      ...publicPayload.products[0],
+      id: savedProductId,
+      slug: "requested-product-alias",
+      externalPurchaseUrl: undefined,
+      purchaseIntentEnabled: true,
+      purchaseIntentTarget: 25,
+      purchaseIntentSummary: { yes: 4, maybe: 2, no: 1, total: 7 }
+    };
+    const loginPath = `/login?next=${encodeURIComponent(
+      `/store/living-soil-labs/products/${savedProductId}`
+    )}`;
+
+    function expectNoCommerceOrClick() {
+      expect(jest.requireMock("@/api/products").checkoutProduct).not.toHaveBeenCalled();
+      expect(mockStartCourseCheckout).not.toHaveBeenCalled();
+      expect(
+        mockRecordCommercialAnalyticsEvent.mock.calls.filter(([event]) =>
+          String(event?.eventType).includes("click")
+        )
+      ).toEqual([]);
+    }
+
+    function expectNoAction() {
+      expect(mockSubmitProductPurchaseIntent).not.toHaveBeenCalled();
+      expect(mockRouterPush).not.toHaveBeenCalled();
+      expectNoCommerceOrClick();
+    }
+
+    function expectOnlyLoginLink(expected: string) {
+      expect([
+        ...new Set(mockLinkHrefs.filter((href) => href.startsWith("/login")))
+      ]).toEqual([expected]);
+    }
+
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ isAuthed: false, isHydrating: false, user: null });
+      mockRouteParams = {
+        slug: "requested-store-alias",
+        productId: "requested-product-alias"
+      };
+      mockFetchPublicStorefront.mockResolvedValue({
+        ...publicPayload,
+        storefront: savedStorefront,
+        products: [savedProduct]
+      });
+    });
+
+    it.each(["id", "_id", "productId"])(
+      "offers the canonical saved %s return instead of requested aliases without an action",
+      async (field: string) => {
+        mockFetchPublicStorefront.mockResolvedValue({
+          ...publicPayload,
+          storefront: savedStorefront,
+          products: [
+            {
+              ...savedProduct,
+              id: undefined,
+              _id: undefined,
+              productId: undefined,
+              [field]: savedProductId
+            }
+          ]
+        });
+        const screen = render(<Route />);
+        await screen.findByText("Sign in to opt in");
+
+        expectOnlyLoginLink(loginPath);
+        expect(screen.queryByRole("button", { name: "Buy Veg Mix" })).toBeNull();
+        expect(screen.queryByLabelText("yes — purchase interest for Veg Mix")).toBeNull();
+        expectNoAction();
+      }
+    );
+
+    it.each([
+      ["missing saved slug", undefined, savedProductId],
+      ["array saved slug", ["living-soil-labs"], savedProductId],
+      ["unsafe saved slug", "../admin", savedProductId],
+      ["array saved id", "living-soil-labs", [savedProductId]],
+      ["object saved id", "living-soil-labs", { value: savedProductId }],
+      ["non-24hex saved id", "living-soil-labs", "product-1"],
+      [
+        "missing id despite a canonical-looking product slug",
+        "living-soil-labs",
+        undefined
+      ]
+    ])(
+      "offers only plain sign-in for %s and does not invent an identity",
+      async (_case: unknown, savedSlug: unknown, savedId: unknown) => {
+        mockRouteParams = { slug: "requested-store-alias", productId: savedProductId };
+        mockFetchPublicStorefront.mockResolvedValue({
+          ...publicPayload,
+          storefront: { ...savedStorefront, slug: savedSlug },
+          products: [
+            {
+              ...savedProduct,
+              id: savedId,
+              _id: undefined,
+              productId: undefined,
+              slug: savedProductId
+            }
+          ]
+        });
+        const screen = render(<Route />);
+        await screen.findByText("Sign in to opt in");
+
+        expectOnlyLoginLink("/login");
+        expect(screen.queryByRole("button", { name: "Buy Veg Mix" })).toBeNull();
+        expectNoAction();
+      }
+    );
+
+    it("does not replay interest after sign-in and keeps deliberate Yes on the existing API", async () => {
+      const screen = render(<Route />);
+      await screen.findByText("Sign in to opt in");
+      expectOnlyLoginLink(loginPath);
+      expect(screen.queryByRole("button", { name: "Buy Veg Mix" })).toBeNull();
+      expectNoAction();
+
+      mockUseAuth.mockReturnValue({
+        isAuthed: true,
+        isHydrating: false,
+        user: { id: "viewer-1" }
+      });
+      screen.rerender(<Route />);
+      const yes = await screen.findByLabelText("yes — purchase interest for Veg Mix");
+      expect(screen.queryByText("Sign in to opt in")).toBeNull();
+      expect(screen.queryByRole("button", { name: "Buy Veg Mix" })).toBeNull();
+      expectNoAction();
+
+      fireEvent.press(yes);
+      await waitFor(() =>
+        expect(mockSubmitProductPurchaseIntent).toHaveBeenCalledWith(
+          savedProductId,
+          "yes"
+        )
+      );
+      expect(mockSubmitProductPurchaseIntent).toHaveBeenCalledTimes(1);
+      expect(await screen.findByText("5 yes · goal 25")).toBeTruthy();
+      expect(mockRouterPush).not.toHaveBeenCalled();
+      expectNoCommerceOrClick();
+    });
+  });
+
   it("shows dispensary inventory with website and pickup handoff but no checkout", async () => {
     mockFetchPublicStorefront.mockResolvedValue({
       ...publicPayload,

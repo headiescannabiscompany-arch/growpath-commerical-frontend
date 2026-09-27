@@ -194,6 +194,14 @@ export default function PublicStorefrontRoute() {
     });
   }, [slug, storefront]);
 
+  function productReturnPath(product: any) {
+    const savedId = product?.id || product?._id || product?.productId;
+    const savedSlug = storefront?.slug;
+    return typeof savedId === "string" && typeof savedSlug === "string"
+      ? parsePublicProductReturnPath(`/store/${savedSlug}/products/${savedId}`)
+      : "";
+  }
+
   async function buy(product: any) {
     if (auth.isHydrating) return;
     if (isRegulatedCannabisProduct(product)) {
@@ -207,13 +215,7 @@ export default function PublicStorefrontRoute() {
     const id = productId(product);
     if (!id) return;
     if (!auth.isAuthed) {
-      const savedId = product?.id || product?._id || product?.productId;
-      const savedSlug = storefront?.slug;
-      const next =
-        typeof savedId === "string" && typeof savedSlug === "string"
-          ? parsePublicProductReturnPath(`/store/${savedSlug}/products/${savedId}`)
-          : "";
-      router.push(safeLoginPath(undefined, next) as any);
+      router.push(safeLoginPath(undefined, productReturnPath(product)) as any);
       return;
     }
     setBusyId(id);
@@ -578,7 +580,7 @@ export default function PublicStorefrontRoute() {
                     <ProductPurchaseIntentControl
                       compact
                       product={product}
-                      returnPath={`/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(String(product.id || product._id || ""))}`}
+                      returnPath={productReturnPath(product)}
                     />
                   ) : null}
                 </View>

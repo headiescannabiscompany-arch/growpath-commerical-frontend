@@ -68,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "product-interest-signin-return",
       "free-product-signup-return",
       "course-discovery-signin",
       "product-buy-signin-return",
@@ -117,6 +118,19 @@ describe("public Updates page", () => {
     expect(live).not.toMatch(/calendar-date|all platforms|identity verified/i);
     expect(planned?.summary).toMatch(/Investigate reported calendar-date mismatches/);
     expect(planned?.summary).toMatch(/separate from the released/);
+  });
+
+  it("bounds interest sign-in claims to the two released public product surfaces", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "product-interest-signin-return"
+    );
+    expect(entry?.summary).toMatch(/storefront cards and product details/);
+    expect(entry?.summary).toMatch(
+      /never records an answer or makes a purchase automatically/
+    );
+    expect(entry?.summary).toMatch(
+      /Discover's separate catalog links remain under review/
+    );
   });
 
   it("bounds Free product signup claims to the same browser without transactions", () => {

@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "product-interest-signin-return",
+        title: "More reliable product-interest sign-in links",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Product-interest links on storefront cards and product details now use the saved product address when sending you to sign in, even when you arrived through an alternate address. Invalid product details fall back safely to sign-in. Signing in never records an answer or makes a purchase automatically; you still choose your response. Discover's separate catalog links remain under review."
+      },
+      {
         id: "free-product-signup-return",
         title: "Keep your product link through Free signup",
         date: "September 27, 2026",

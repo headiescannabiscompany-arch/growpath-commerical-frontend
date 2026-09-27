@@ -356,6 +356,12 @@ export default function PublicProductRoute() {
     .filter((item) => productKey(item) !== productKey(product))
     .slice(0, 3);
   const productId = productKey(product);
+  const savedId = product?.id || product?._id || product?.productId;
+  const savedSlug = storefront?.slug;
+  const productReturnPath =
+    typeof savedId === "string" && typeof savedSlug === "string"
+      ? parsePublicProductReturnPath(`/store/${savedSlug}/products/${savedId}`)
+      : "";
   const refreshProductPaymentStatus = useCallback(async () => {
     if (!auth.isAuthed || !productId) {
       setPurchaseStatus(null);
@@ -431,13 +437,7 @@ export default function PublicProductRoute() {
     const id = productKey(product);
     if (!id) return;
     if (!auth.isAuthed) {
-      const savedId = product?.id || product?._id || product?.productId;
-      const savedSlug = storefront?.slug;
-      const next =
-        typeof savedId === "string" && typeof savedSlug === "string"
-          ? parsePublicProductReturnPath(`/store/${savedSlug}/products/${savedId}`)
-          : "";
-      router.push(safeLoginPath(undefined, next) as any);
+      router.push(safeLoginPath(undefined, productReturnPath) as any);
       return;
     }
     setBusy(true);
@@ -692,7 +692,7 @@ export default function PublicProductRoute() {
             {product.purchaseIntentEnabled ? (
               <ProductPurchaseIntentControl
                 product={product}
-                returnPath={`/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(productId)}`}
+                returnPath={productReturnPath}
               />
             ) : null}
 
