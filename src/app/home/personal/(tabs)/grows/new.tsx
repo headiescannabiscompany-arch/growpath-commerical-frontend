@@ -249,6 +249,8 @@ export default function NewGrowScreen({
 
   const [saving, setSaving] = React.useState(false);
   const [checkingLimit, setCheckingLimit] = React.useState(true);
+  const [limitCheckFailed, setLimitCheckFailed] = React.useState(false);
+  const [limitCheckAttempt, setLimitCheckAttempt] = React.useState(0);
   const [existingGrowCount, setExistingGrowCount] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
   const [createdGrowId, setCreatedGrowId] = React.useState("");
@@ -396,6 +398,7 @@ export default function NewGrowScreen({
   const canCreateGrow =
     hasCreateCapability &&
     !checkingLimit &&
+    !limitCheckFailed &&
     (maxGrows <= 0 || existingGrowCount < maxGrows);
 
   React.useEffect(() => {
@@ -409,11 +412,12 @@ export default function NewGrowScreen({
         return;
       }
       setCheckingLimit(true);
+      setLimitCheckFailed(false);
       try {
         const rows = await listWorkspaceGrows(workspace);
         if (alive) setExistingGrowCount(Array.isArray(rows) ? rows.length : 0);
       } catch {
-        if (alive) setExistingGrowCount(maxGrows || 0);
+        if (alive) setLimitCheckFailed(true);
       } finally {
         if (alive) setCheckingLimit(false);
       }
@@ -423,7 +427,7 @@ export default function NewGrowScreen({
     return () => {
       alive = false;
     };
-  }, [hasCreateCapability, maxGrows, workspace]);
+  }, [hasCreateCapability, maxGrows, workspace, limitCheckAttempt]);
 
   const pickPhotos = React.useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -665,6 +669,34 @@ export default function NewGrowScreen({
           <ActivityIndicator color={palette.accent} />
           <Text style={{ color: palette.textMuted }}>Checking grow limit...</Text>
         </ScrollView>
+      </ScreenBoundary>
+    );
+  }
+
+  if (limitCheckFailed && hasCreateCapability) {
+    return (
+      <ScreenBoundary
+        title="New Grow"
+        showBack
+        backFallbackHref={backTarget}
+        preferBackFallback={preferSourceBack}
+      >
+        <View style={{ padding: 16, gap: 10, backgroundColor: palette.page }}>
+          <Text accessibilityRole="alert" style={{ color: palette.text }}>
+            Could not check your grows. Your grow limit has not been confirmed.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Try checking grow limit again"
+            onPress={() => {
+              setCheckingLimit(true);
+              setLimitCheckAttempt((attempt) => attempt + 1);
+            }}
+            style={{ padding: 12, backgroundColor: palette.accent, borderRadius: 8 }}
+          >
+            <Text style={{ color: palette.page }}>Try again</Text>
+          </Pressable>
+        </View>
       </ScreenBoundary>
     );
   }

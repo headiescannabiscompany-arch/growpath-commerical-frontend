@@ -143,6 +143,44 @@ describe("NewGrowScreen access", () => {
     expect(mockApiRequest).not.toHaveBeenCalled();
   });
 
+  it.each([1, 0])(
+    "shows a retryable loading error, not a full limit (%s), and recovers",
+    async (maxGrows) => {
+      mockLimits = { maxGrows };
+      mockListPersonalGrows.mockRejectedValueOnce(new Error("Network unavailable"));
+      render(<NewGrowScreen />);
+
+      await waitFor(() =>
+        expect(screen.getByRole("alert")).toHaveTextContent(
+          "Could not check your grows. Your grow limit has not been confirmed."
+        )
+      );
+      expect(screen.queryByText("Free grow limit reached")).toBeNull();
+      expect(screen.queryByText("Grow limit reached")).toBeNull();
+      expect(screen.queryByLabelText("Create grow")).toBeNull();
+      expect(mockApiRequest).not.toHaveBeenCalled();
+
+      fireEvent.press(screen.getByLabelText("Try checking grow limit again"));
+      await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
+      expect(mockListPersonalGrows).toHaveBeenCalledTimes(2);
+      expect(screen.queryByRole("alert")).toBeNull();
+    }
+  );
+
+  it("still enforces a confirmed full grow limit after retry", async () => {
+    mockLimits = { maxGrows: 1 };
+    mockListPersonalGrows
+      .mockRejectedValueOnce(new Error("Network unavailable"))
+      .mockResolvedValueOnce([{ id: "existing-grow" }]);
+    render(<NewGrowScreen />);
+
+    await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Try checking grow limit again"));
+    await waitFor(() => expect(screen.getByText("Free grow limit reached")).toBeTruthy());
+    expect(screen.queryByLabelText("Create grow")).toBeNull();
+    expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
   it("lets free personal users create their first grow within the limit", async () => {
     mockEntitlementsCan.mockReturnValue(true);
     mockLimits = { maxGrows: 1 };
