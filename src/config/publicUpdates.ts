@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "free-product-signup-return",
+        title: "Keep your product link through Free signup",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Free-account signup from a saved product can now retain that destination through email verification and matching sign-in in the same browser for up to one hour, including another tab. Immediate sign-in still completes normal onboarding first. Returning never purchases or records interest automatically. Other browsers, paid-plan signup and course signup remain separate follow-ups."
+      },
+      {
         id: "course-discovery-signin",
         title: "Clearer course previews and sign-in",
         date: "September 27, 2026",

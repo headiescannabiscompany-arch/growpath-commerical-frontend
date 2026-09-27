@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -17,6 +17,7 @@ import { INTEREST_TIERS } from "@/config/interests";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { parseClaimReturnPath } from "@/utils/claimReturnPath";
+import { parsePublicProductReturnPath } from "@/utils/authReturnPath";
 
 type InterestMap = Record<string, string[]>;
 
@@ -49,11 +50,13 @@ export default function GuildOnboardingScreen() {
   }>();
   const requestedNext = singleParam(params.next);
   const claimNext = parseClaimReturnPath(requestedNext);
+  const productNext = parsePublicProductReturnPath(params.next);
   const next = claimNext
     ? claimNext
-    : ["/", "/home/personal", "/onboarding/walkthroughs"].includes(requestedNext)
-      ? requestedNext
-      : "/";
+    : productNext ||
+      (["/", "/home/personal", "/onboarding/walkthroughs"].includes(requestedNext)
+        ? requestedNext
+        : "/");
   const mode = singleParam(params.mode);
   const plan = singleParam(params.plan);
   const { width } = useWindowDimensions();
@@ -67,6 +70,17 @@ export default function GuildOnboardingScreen() {
   const [loadingGuilds, setLoadingGuilds] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const savingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const saveGeneration = useRef(0);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      saveGeneration.current += 1;
+    };
+  }, [next, mode, plan, auth.token, auth.user?._id, auth.user?.id]);
 
   useEffect(() => {
     let mounted = true;
@@ -108,17 +122,24 @@ export default function GuildOnboardingScreen() {
   }
 
   async function save() {
+    if (!mountedRef.current || savingRef.current) return;
     if (!canContinue) {
       setError("Select at least one crop or plant category.");
       return;
     }
+    savingRef.current = true;
+    const generation = ++saveGeneration.current;
+    const isCurrent = () => mountedRef.current && generation === saveGeneration.current;
     setSaving(true);
     setError("");
     try {
       await updateGrowInterests(interests);
+      if (!isCurrent()) return;
       await auth.retryMe();
+      if (!isCurrent()) return;
       for (const id of selectedGuildIds) {
         await joinGuild(id);
+        if (!isCurrent()) return;
       }
       if (next === "/onboarding/walkthroughs") {
         router.replace({
@@ -129,9 +150,11 @@ export default function GuildOnboardingScreen() {
         router.replace(next as any);
       }
     } catch (e: any) {
+      if (!isCurrent()) return;
       setError(e?.message || "Unable to save forum group selections.");
     } finally {
-      setSaving(false);
+      savingRef.current = false;
+      if (mountedRef.current) setSaving(false);
     }
   }
 

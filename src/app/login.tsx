@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -19,9 +19,17 @@ import LegalLinks from "@/components/LegalLinks";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { parseSafeLoginReturnPath } from "@/utils/authReturnPath";
+import {
+  parsePublicProductReturnPath,
+  parseSafeLoginReturnPath
+} from "@/utils/authReturnPath";
 import { parseClaimReturnPath } from "@/utils/claimReturnPath";
 import { COMPLIMENTARY_CLAIM_PATH } from "@/utils/complimentaryClaimTokenStore";
+import {
+  consumeProductSignupContinuation,
+  readProductSignupContinuation,
+  type ProductSignupContinuation
+} from "@/utils/shopperProductContinuation";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -37,6 +45,8 @@ export default function LoginScreen() {
   const safeNext = parseSafeLoginReturnPath(params.next);
   const entitlementClaimNext =
     claimNext || (safeNext === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "");
+  const registrationNext =
+    entitlementClaimNext || parsePublicProductReturnPath(params.next);
   const initialEmail = String(
     Array.isArray(params.email) ? params.email[0] || "" : params.email || ""
   );
@@ -49,21 +59,89 @@ export default function LoginScreen() {
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
   const [verificationMsg, setVerificationMsg] = useState<string | null>(null);
+  const [productResume, setProductResume] = useState<{
+    attempt: number;
+    email: string;
+    snapshot: ProductSignupContinuation;
+  } | null>(null);
+  const mounted = useRef(true);
+  const attempt = useRef(0);
+  const inFlight = useRef(false);
+  const resumeToken = useRef<string | null>(null);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      attempt.current += 1;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!productResume || productResume.attempt !== attempt.current) return;
+    // login() can resolve even when /me fails. A saved destination is not proof
+    // of authentication; wait for this deliberate sign-in's verified session.
+    const changedSession =
+      resumeToken.current !== null && resumeToken.current !== auth.token;
+    if (auth.token && resumeToken.current === null) resumeToken.current = auth.token;
+    if (!changedSession && (auth.isHydrating || auth.meStatus === "loading")) return;
+    const verified =
+      !changedSession &&
+      !safeNext &&
+      auth.isAuthed &&
+      Boolean(auth.token) &&
+      auth.meStatus === "ready" &&
+      auth.user?.email?.trim().toLowerCase() === productResume.email;
+    setProductResume(null);
+    inFlight.current = false;
+    setSubmitting(false);
+    if (!verified) {
+      setErrMsg("Unable to verify this sign-in. Please try again.");
+      return;
+    }
+    // A newer signup in another tab must not be consumed by this attempt.
+    const destination = consumeProductSignupContinuation(productResume.snapshot)
+      ? productResume.snapshot.path
+      : "/account/workspace";
+    router.replace(destination as any);
+  }, [
+    productResume,
+    auth.isHydrating,
+    auth.isAuthed,
+    auth.meStatus,
+    auth.token,
+    auth.user?.email,
+    safeNext,
+    router
+  ]);
 
   const canSubmit = useMemo(() => {
     return email.trim().length > 3 && password.length > 0 && !submitting;
   }, [email, password, submitting]);
 
   async function onSubmit() {
+    if (inFlight.current || !email.trim() || !password) return;
+    inFlight.current = true;
+    const currentAttempt = ++attempt.current;
+    resumeToken.current = null;
+    let awaitingSession = false;
     setErrMsg(null);
     setVerificationMsg(null);
     setSubmitting(true);
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
+      const snapshot = !safeNext ? readProductSignupContinuation(normalizedEmail) : null;
       await auth.login(normalizedEmail, password);
+      if (!mounted.current || currentAttempt !== attempt.current) return;
+      if (snapshot) {
+        awaitingSession = true;
+        setProductResume({ attempt: currentAttempt, email: normalizedEmail, snapshot });
+        return;
+      }
       router.replace((safeNext || "/account/workspace") as any);
     } catch (e: any) {
+      if (!mounted.current || currentAttempt !== attempt.current) return;
       if (e instanceof ApiError) {
         setErrMsg(loginErrorMessage(e));
         if (e.code === "EMAIL_NOT_VERIFIED") {
@@ -73,7 +151,10 @@ export default function LoginScreen() {
         setErrMsg(e?.message || "Login failed");
       }
     } finally {
-      setSubmitting(false);
+      if (mounted.current && currentAttempt === attempt.current && !awaitingSession) {
+        inFlight.current = false;
+        setSubmitting(false);
+      }
     }
   }
 
@@ -217,7 +298,7 @@ export default function LoginScreen() {
             onPress={() =>
               router.push({
                 pathname: "/register",
-                params: entitlementClaimNext ? { next: entitlementClaimNext } : undefined
+                params: registrationNext ? { next: registrationNext } : undefined
               } as any)
             }
             accessibilityRole="button"

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -19,9 +19,14 @@ import CalendarDateField from "@/components/forms/CalendarDateField";
 import LegalLinks from "@/components/LegalLinks";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { parseSafeLoginReturnPath, safeLoginPath } from "@/utils/authReturnPath";
+import {
+  parsePublicProductReturnPath,
+  parseSafeLoginReturnPath,
+  safeLoginPath
+} from "@/utils/authReturnPath";
 import { parseClaimReturnPath } from "@/utils/claimReturnPath";
 import { COMPLIMENTARY_CLAIM_PATH } from "@/utils/complimentaryClaimTokenStore";
+import { rememberProductSignupContinuation } from "@/utils/shopperProductContinuation";
 
 type AccountChoice = {
   key: "free" | "pro" | "commercial" | "facility";
@@ -93,6 +98,7 @@ export default function RegisterScreen() {
   const safeNext = parseSafeLoginReturnPath(params.next);
   const entitlementClaimNext =
     claimNext || (safeNext === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "");
+  const productNext = parsePublicProductReturnPath(params.next);
   const isComplimentaryClaim = entitlementClaimNext === COMPLIMENTARY_CLAIM_PATH;
   const giftSignupChoice = ACCOUNT_CHOICES[0];
 
@@ -106,6 +112,17 @@ export default function RegisterScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [infoMsg, setInfoMsg] = useState<string | null>(null);
+  const submittingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const submitGeneration = useRef(0);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      submitGeneration.current += 1;
+    };
+  }, [entitlementClaimNext, productNext]);
 
   const canSubmit = useMemo(() => {
     const age = ageFromDate(dateOfBirth);
@@ -122,6 +139,10 @@ export default function RegisterScreen() {
   const cannabisEligible = age !== null && age >= 21;
 
   async function onSubmit() {
+    if (!mountedRef.current || submittingRef.current || !canSubmit) return;
+    submittingRef.current = true;
+    const generation = ++submitGeneration.current;
+    const isCurrent = () => mountedRef.current && generation === submitGeneration.current;
     setErrMsg(null);
     setInfoMsg(null);
     setSubmitting(true);
@@ -140,7 +161,11 @@ export default function RegisterScreen() {
         showCannabisContent: cannabisEligible && showCannabisContent
       };
       const signupResult = await auth.signup(payload);
+      if (!isCurrent()) return;
       if (signupResult.emailVerificationRequired && !signupResult.token) {
+        if (signupChoice.key === "free" && productNext && !entitlementClaimNext) {
+          rememberProductSignupContinuation(normalizedEmail, productNext);
+        }
         setPassword("");
         setInfoMsg(
           signupResult.emailSent
@@ -156,12 +181,13 @@ export default function RegisterScreen() {
       router.replace({
         pathname: "/onboarding/guilds",
         params: {
-          next: choice.afterSignup,
+          next: choice.key === "free" && productNext ? productNext : choice.afterSignup,
           mode: choice.mode,
           plan: choice.key
         }
       } as any);
     } catch (e: any) {
+      if (!isCurrent()) return;
       if (e instanceof ApiError) {
         const backendMessage =
           e.data?.error?.message || e.data?.message || "Registration failed";
@@ -170,7 +196,8 @@ export default function RegisterScreen() {
         setErrMsg(e?.message || "Registration failed");
       }
     } finally {
-      setSubmitting(false);
+      submittingRef.current = false;
+      if (mountedRef.current) setSubmitting(false);
     }
   }
 
@@ -344,7 +371,9 @@ export default function RegisterScreen() {
 
           <Pressable
             onPress={() =>
-              router.replace(safeLoginPath(email, entitlementClaimNext) as any)
+              router.replace(
+                safeLoginPath(email, entitlementClaimNext || productNext) as any
+              )
             }
             accessibilityRole="button"
             accessibilityLabel="Back to login"

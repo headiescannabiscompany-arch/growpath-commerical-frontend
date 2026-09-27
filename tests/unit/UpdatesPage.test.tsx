@@ -68,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "free-product-signup-return",
       "course-discovery-signin",
       "product-buy-signin-return",
       "product-line-safety",
@@ -116,6 +117,15 @@ describe("public Updates page", () => {
     expect(live).not.toMatch(/calendar-date|all platforms|identity verified/i);
     expect(planned?.summary).toMatch(/Investigate reported calendar-date mismatches/);
     expect(planned?.summary).toMatch(/separate from the released/);
+  });
+
+  it("bounds Free product signup claims to the same browser without transactions", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "free-product-signup-return"
+    );
+    expect(entry?.summary).toMatch(/same browser for up to one hour/);
+    expect(entry?.summary).toMatch(/never purchases or records interest automatically/);
+    expect(entry?.summary).toMatch(/paid-plan signup and course signup remain separate/);
   });
 
   it("limits course release wording to discovery and existing-account continuation", () => {
