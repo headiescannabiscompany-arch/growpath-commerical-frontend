@@ -70,4 +70,6 @@ jobs:
         run: npm run guard
 
       - name: Run tests
+        env:
+          JEST_CI_COLLECT_FAILURES: "1"
         run: npm run test:ci

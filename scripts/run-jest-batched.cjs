@@ -9,6 +9,8 @@ const laneCount = Math.max(1, Number(process.env.JEST_CI_LANES || 5));
 const heapMb = Math.max(1024, Number(process.env.JEST_CI_HEAP_MB || 12288));
 const outputBufferMb = Math.max(8, Number(process.env.JEST_CI_OUTPUT_BUFFER_MB || 64));
 const traceFile = process.env.JEST_CI_TRACE_FILE || "";
+const collectFailures = process.env.JEST_CI_COLLECT_FAILURES === "1";
+const failedBatches = [];
 const soloTestPatterns = [
   "CommercialWorkflowPages.test.tsx",
   "ContentMarketplaceScreen.test.tsx",
@@ -135,7 +137,9 @@ for (const test of soloTests) {
         failed: true
       })
     );
-    process.exit(result.status || 1);
+    if (!collectFailures) process.exit(result.status || 1);
+    failedBatches.push(batchNumber);
+    continue;
   }
 
   console.log(`✓ Jest batch ${batchNumber}/${totalBatches} passed`);
@@ -198,7 +202,9 @@ for (let laneIndex = 0; laneIndex < lanes.length; laneIndex++) {
           failed: true
         })
       );
-      process.exit(result.status || 1);
+      if (!collectFailures) process.exit(result.status || 1);
+      failedBatches.push(batchNumber);
+      continue;
     }
 
     console.log(`✓ Jest batch ${batchNumber}/${totalBatches} passed`);
@@ -215,4 +221,12 @@ for (let laneIndex = 0; laneIndex < lanes.length; laneIndex++) {
       })
     );
   }
+}
+
+if (failedBatches.length) {
+  console.error(
+    `[jest-batches] ${failedBatches.length}/${totalBatches} batches failed: ` +
+      failedBatches.join(", ")
+  );
+  process.exit(1);
 }

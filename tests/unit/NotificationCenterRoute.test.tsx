@@ -1,5 +1,10 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import {
+  fireEvent,
+  fireEventAsync,
+  render,
+  waitFor
+} from "@testing-library/react-native";
 
 import NotificationCenterRoute, {
   createNotificationCenterStyles
@@ -816,7 +821,7 @@ describe("NotificationCenterRoute", () => {
     await waitFor(() =>
       expect(screen.getByText("Upcoming live: Facility RSVP")).toBeTruthy()
     );
-    fireEvent.press(screen.getByLabelText("Mark all notifications read"));
+    await fireEventAsync.press(screen.getByLabelText("Mark all notifications read"));
     await waitFor(() =>
       expect(screen.queryByText("Upcoming live: Facility RSVP")).toBeNull()
     );
@@ -843,7 +848,7 @@ describe("NotificationCenterRoute", () => {
     await waitFor(() =>
       expect(screen.getByText("Live starts in 15 minutes")).toBeTruthy()
     );
-    fireEvent.press(screen.getByLabelText("Mark all notifications read"));
+    await fireEventAsync.press(screen.getByLabelText("Mark all notifications read"));
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/notifications/read-all", {
