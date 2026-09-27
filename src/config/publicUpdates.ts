@@ -9,12 +9,20 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "course-discovery-signin",
+        title: "Clearer course previews and sign-in",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Signed-out course visitors now see public previews and a clear sign-in action instead of personal payment and progress controls. Existing-account sign-in returns to the saved course without automatically enrolling or opening checkout. Account and course changes clear earlier learner state. Paid content, seller permissions and payment rules stay protected; new-account verification and course gifting remain separate work."
+      },
+      {
         id: "product-buy-signin-return",
         title: "Safer sign-in from product purchases",
         date: "September 27, 2026",
         dateLabel: "Released",
         summary:
-          "Signed-out shoppers choosing Buy on storefront cards or ordinary product details now go to sign in and return to the same product when its saved identity is verified. Signing in does not place an order or open checkout automatically. Existing purchase-interest, eligibility and payment rules stay unchanged. New-account verification and course purchase returns remain separate follow-ups."
+          "Signed-out shoppers choosing Buy on storefront cards or ordinary product details now go to sign in and return to the same product when its saved identity is verified. Signing in does not place an order or open checkout automatically. Existing purchase-interest, eligibility and payment rules stay unchanged. New-account verification remains a separate follow-up."
       },
       {
         id: "product-line-safety",

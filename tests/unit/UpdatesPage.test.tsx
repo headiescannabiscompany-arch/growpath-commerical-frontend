@@ -68,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "course-discovery-signin",
       "product-buy-signin-return",
       "product-line-safety",
       "store-directory-recovery",
@@ -115,6 +116,15 @@ describe("public Updates page", () => {
     expect(live).not.toMatch(/calendar-date|all platforms|identity verified/i);
     expect(planned?.summary).toMatch(/Investigate reported calendar-date mismatches/);
     expect(planned?.summary).toMatch(/separate from the released/);
+  });
+
+  it("limits course release wording to discovery and existing-account continuation", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "course-discovery-signin"
+    );
+    expect(entry?.summary).toMatch(/public previews/);
+    expect(entry?.summary).toMatch(/without automatically enrolling or opening checkout/);
+    expect(entry?.summary).toMatch(/course gifting remain separate work/);
   });
 
   it.each(["day", "night"] as const)(

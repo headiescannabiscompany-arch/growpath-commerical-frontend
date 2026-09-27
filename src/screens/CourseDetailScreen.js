@@ -53,6 +53,7 @@ import { lessonDocumentUrls, lessonHasMedia } from "@/features/learning/lessonMe
 import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { resolveImageUri } from "../utils/photoUploads";
+import { parsePublicCourseReturnPath, safeLoginPath } from "../utils/authReturnPath";
 
 function rowId(row) {
   return String(row?._id || row?.id || "");
@@ -146,15 +147,54 @@ async function openCheckoutUrl(url) {
 /**
  * @param {{ route: any; navigation?: any; facilityWorkspace?: any; onArchived?: () => void }} props
  */
-export default function CourseDetailScreen({
+export default function CourseDetailScreen(props) {
+  const auth = useAuth();
+  const entitlements = useEntitlements();
+  const viewerId = String(auth.user?._id || auth.user?.id || "");
+  const signedIn =
+    !auth.isHydrating && auth.isAuthed !== false && Boolean(auth.isAuthed || viewerId);
+  // Never reuse another viewer's lesson, payment, authoring or note state. The
+  // token remains in memory only; the React key contains a local generation.
+  const [session, setSession] = useState({ token: auth.token, generation: 0 });
+  if (session.token !== auth.token) {
+    setSession({ token: auth.token, generation: session.generation + 1 });
+    return null;
+  }
+  const id =
+    props.route?.params?.id ||
+    props.route?.params?.courseId ||
+    rowId(props.route?.params?.course);
+  const scopeKey = JSON.stringify([
+    id,
+    viewerId,
+    signedIn,
+    Boolean(auth.isHydrating),
+    session.generation,
+    entitlements.mode,
+    props.facilityWorkspace?.facilityId,
+    entitlements.facilityRole
+  ]);
+  return (
+    <CourseDetailSession
+      key={scopeKey}
+      {...props}
+      auth={auth}
+      entitlements={entitlements}
+      signedIn={signedIn}
+    />
+  );
+}
+
+function CourseDetailSession({
   route,
   navigation = null,
   facilityWorkspace = null,
-  onArchived = null
+  onArchived = null,
+  auth,
+  entitlements,
+  signedIn
 }) {
   const router = useRouter();
-  const auth = useAuth();
-  const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
   const facilityMode = Boolean(facilityWorkspace);
   const genericFacilityLearnerMode = entitlements.mode === "facility" && !facilityMode;
@@ -166,7 +206,16 @@ export default function CourseDetailScreen({
   const checkoutResult = String(route?.params?.checkout || "").toLowerCase();
   const checkoutHandledRef = useRef(false);
 
-  const [course, setCourse] = useState(initialCourse);
+  const [course, setCourse] = useState(null);
+  const mountedRef = useRef(true);
+  const loadGeneration = useRef(0);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      loadGeneration.current += 1;
+    };
+  }, []);
   const [reviews, setReviews] = useState([]);
   const [enrollment, setEnrollment] = useState(null);
   const [facilityLearnerState, setFacilityLearnerState] = useState(null);
@@ -194,7 +243,8 @@ export default function CourseDetailScreen({
   );
   const loadedFacilityVisibility = facilityVisibilityOf(course);
 
-  const loadedCourseId = rowId(course) || courseId;
+  const verifiedCourseId = rowId(course);
+  const loadedCourseId = verifiedCourseId || courseId;
   const lessons = useMemo(() => normalizeList(course?.lessons, "lessons"), [course]);
   const liveSessions = useMemo(
     () => normalizeList(course?.liveSessions, "liveSessions"),
@@ -268,7 +318,7 @@ export default function CourseDetailScreen({
       ""
   );
   const ownsCourse = Boolean(
-    course?._viewerOwnsCourse || (viewerId && ownerId === viewerId)
+    signedIn && (course?._viewerOwnsCourse || (viewerId && ownerId === viewerId))
   );
   const commercialManagedCourse = isCommercialManagedCourse(course);
   const facilityManagedCourse = isFacilityManagedCourse(course);
@@ -276,6 +326,7 @@ export default function CourseDetailScreen({
     course?.facilityId?._id || course?.facilityId?.id || course?.facilityId || ""
   );
   const facilityScopeMatches = Boolean(
+    signedIn &&
     facilityMode &&
     facilityManagedCourse &&
     facilityWorkspace?.facilityId &&
@@ -318,12 +369,13 @@ export default function CourseDetailScreen({
   const canOpenLessons = facilityMode
     ? facilityScopeMatches
     : !isPaidCourse ||
-      workspaceOwnsCourse ||
-      enrolled ||
-      course?._viewerHasAccess === true;
-  const learnerActionsAvailable = facilityMode
-    ? Boolean(course?.isPublished && facilityLearnerState?.accessSource)
-    : canOpenLessons;
+      (signedIn &&
+        (workspaceOwnsCourse || enrolled || course?._viewerHasAccess === true));
+  const learnerActionsAvailable =
+    signedIn &&
+    (facilityMode
+      ? Boolean(course?.isPublished && facilityLearnerState?.accessSource)
+      : canOpenLessons);
   const canRequestRefund =
     Boolean(enrollment?.recordId) &&
     refundRequestStatus !== "requested" &&
@@ -363,16 +415,19 @@ export default function CourseDetailScreen({
   }, [course]);
 
   const load = useCallback(async () => {
+    if (!mountedRef.current || auth.isHydrating || (facilityMode && !signedIn)) return;
     if (!facilityMode && !access.canViewCourses) {
       setLoading(false);
       return;
     }
-    if (!courseId && !initialCourse) {
+    if (!courseId) {
       setLoading(false);
       return;
     }
     setLoading(true);
     setFeedback("");
+    const generation = ++loadGeneration.current;
+    const isCurrent = () => mountedRef.current && generation === loadGeneration.current;
     if (facilityMode) {
       setFacilityLearnerState(null);
       setLiveRsvpIds([]);
@@ -385,10 +440,9 @@ export default function CourseDetailScreen({
         if (id && typeof facilityWorkspace?.api?.get !== "function") {
           throw new Error("Facility course loading is unavailable.");
         }
-        const courseResponse = id
-          ? await facilityWorkspace?.api?.get?.(id)
-          : initialCourse;
-        const nextCourse = normalizeCourse(courseResponse, initialCourse);
+        const courseResponse = await facilityWorkspace.api.get(id);
+        if (!isCurrent()) return;
+        const nextCourse = normalizeCourse(courseResponse, null);
         if (!nextCourse) throw new Error("Unable to load course.");
         let nextLearnerState = null;
         if (nextCourse.isPublished) {
@@ -399,6 +453,7 @@ export default function CourseDetailScreen({
             rowId(nextCourse) || id
           );
         }
+        if (!isCurrent()) return;
         setCourse(nextCourse);
         setEnrollment(null);
         setReviews([]);
@@ -421,17 +476,20 @@ export default function CourseDetailScreen({
         reviewsResponse,
         notesResponse
       ] = await Promise.all([
-        id
-          ? facilityMode
-            ? facilityWorkspace?.api?.get?.(id)
-            : getCourse(id)
-          : Promise.resolve(initialCourse),
-        id ? getEnrollmentStatus(id).catch(() => null) : Promise.resolve(null),
-        id ? getCoursePaymentStatus(id).catch(() => null) : Promise.resolve(null),
+        getCourse(id),
+        id && signedIn
+          ? getEnrollmentStatus(id).catch(() => null)
+          : Promise.resolve(null),
+        id && signedIn
+          ? getCoursePaymentStatus(id).catch(() => null)
+          : Promise.resolve(null),
         id ? getReviews(id).catch(() => []) : Promise.resolve([]),
-        id ? getCourseLearnerNotes(id).catch(() => null) : Promise.resolve(null)
+        id && signedIn
+          ? getCourseLearnerNotes(id).catch(() => null)
+          : Promise.resolve(null)
       ]);
-      setCourse(normalizeCourse(courseResponse, initialCourse));
+      if (!isCurrent()) return;
+      setCourse(normalizeCourse(courseResponse, null));
       setFacilityLearnerState(null);
       setEnrollment({
         ...(paymentResponse || {}),
@@ -443,23 +501,35 @@ export default function CourseDetailScreen({
         Object.fromEntries(noteRows.map((item) => [String(item.lessonId), item.note]))
       );
     } catch (error) {
-      if (facilityMode) setCourse(null);
+      if (!isCurrent()) return;
+      setCourse(null);
       setFeedback(error?.message || "Unable to load course.");
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
-  }, [access.canViewCourses, courseId, facilityMode, facilityWorkspace, initialCourse]);
+  }, [
+    access.canViewCourses,
+    auth.isHydrating,
+    signedIn,
+    courseId,
+    facilityMode,
+    facilityWorkspace,
+    initialCourse
+  ]);
 
   useEffect(() => {
     load();
+    return () => {
+      loadGeneration.current += 1;
+    };
   }, [load]);
 
   useEffect(() => {
-    if (loadedCourseId) trackCourseView(loadedCourseId).catch(() => null);
-  }, [loadedCourseId]);
+    if (verifiedCourseId) trackCourseView(verifiedCourseId).catch(() => null);
+  }, [verifiedCourseId]);
 
   useEffect(() => {
-    if (!loadedCourseId || facilityMode) return;
+    if (!signedIn || !loadedCourseId || facilityMode) return;
     let alive = true;
     apiRequest(`/api/courses/${encodeURIComponent(loadedCourseId)}/live-rsvps`)
       .then((response) => {
@@ -469,10 +539,10 @@ export default function CourseDetailScreen({
     return () => {
       alive = false;
     };
-  }, [facilityMode, loadedCourseId]);
+  }, [signedIn, facilityMode, loadedCourseId]);
 
   const refreshPaymentStatus = useCallback(async () => {
-    if (!loadedCourseId || facilityMode) return null;
+    if (!signedIn || !mountedRef.current || !loadedCourseId || facilityMode) return null;
     try {
       const [payment, status] = await Promise.all([
         getCoursePaymentStatus(loadedCourseId).catch(() => null),
@@ -482,16 +552,24 @@ export default function CourseDetailScreen({
         ...(payment || {}),
         ...(status?.data || status || {})
       };
+      if (!mountedRef.current) return null;
       setEnrollment(next);
       return next;
     } catch (error) {
       setFeedback(error?.message || "Unable to refresh payment status.");
       return null;
     }
-  }, [facilityMode, loadedCourseId]);
+  }, [signedIn, facilityMode, loadedCourseId]);
 
   useEffect(() => {
-    if (facilityMode || loading || checkoutHandledRef.current || !checkoutResult) return;
+    if (
+      !signedIn ||
+      facilityMode ||
+      loading ||
+      checkoutHandledRef.current ||
+      !checkoutResult
+    )
+      return;
     checkoutHandledRef.current = true;
     if (checkoutResult === "canceled") {
       setFeedback("Checkout was canceled. No course access was changed.");
@@ -500,6 +578,7 @@ export default function CourseDetailScreen({
     if (checkoutResult !== "success") return;
     void (async () => {
       const next = await refreshPaymentStatus();
+      if (!mountedRef.current) return;
       const confirmed = Boolean(next?.enrolled || next?.isEnrolled);
       setFeedback(
         confirmed
@@ -507,15 +586,26 @@ export default function CourseDetailScreen({
           : "Payment submitted. Stripe confirmation is still processing; refresh status in a moment."
       );
     })();
-  }, [checkoutResult, facilityMode, loading, refreshPaymentStatus]);
+  }, [signedIn, checkoutResult, facilityMode, loading, refreshPaymentStatus]);
+
+  function signInToCourse() {
+    if (auth.isHydrating || !mountedRef.current) return;
+    const savedId = course?._id || course?.id;
+    const destination =
+      typeof savedId === "string"
+        ? parsePublicCourseReturnPath(`/courses?courseId=${savedId}`)
+        : null;
+    router.push(safeLoginPath("", destination));
+  }
 
   async function enroll() {
-    if (!loadedCourseId || facilityMode) return;
+    if (!signedIn || !mountedRef.current || !loadedCourseId || facilityMode) return;
     setSaving(true);
     setFeedback("");
     try {
       if (isPaidCourse) {
         const checkout = await startCourseCheckout(loadedCourseId);
+        if (!mountedRef.current) return;
         const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
         if (!url) {
           setFeedback("Checkout unavailable. The backend did not return a checkout URL.");
@@ -539,6 +629,7 @@ export default function CourseDetailScreen({
   }
 
   async function saveCourseFee() {
+    if (!signedIn || !mountedRef.current) return;
     if (
       !loadedCourseId ||
       !canManageCoursePricing ||
@@ -591,8 +682,10 @@ export default function CourseDetailScreen({
   }
 
   async function openLesson(lesson) {
+    if (!canOpenLessons || !mountedRef.current) return;
     const id = rowId(lesson);
     if (id) await trackLessonView(id).catch(() => null);
+    if (!mountedRef.current) return;
     if (navigation?.navigate) {
       navigation.navigate("Lesson", {
         lesson,
@@ -619,6 +712,7 @@ export default function CourseDetailScreen({
   }
 
   async function saveLessonNote() {
+    if (!signedIn || !mountedRef.current) return;
     const lessonId = rowId(activeLesson);
     if (!loadedCourseId || !lessonId || !learnerActionsAvailable) return;
     setSaving(true);
@@ -651,6 +745,7 @@ export default function CourseDetailScreen({
   }
 
   function askAIAboutCourse() {
+    if (!signedIn || !mountedRef.current) return;
     const lessonId = rowId(activeLesson);
     const query = new URLSearchParams({
       preset: "course",
@@ -668,17 +763,26 @@ export default function CourseDetailScreen({
   }
 
   async function openRelatedProduct(productId) {
+    if (!signedIn || !mountedRef.current) return;
     if (loadedCourseId) {
       await trackCourseProductClick(loadedCourseId, productId).catch(() => null);
     }
+    if (!mountedRef.current) return;
     router.push(`/home/commercial/products/${encodeURIComponent(String(productId))}`);
   }
 
   async function createLessonTask() {
-    if (!activeLesson || !loadedCourseId) return;
+    if (
+      !learnerActionsAvailable ||
+      !mountedRef.current ||
+      !activeLesson ||
+      !loadedCourseId
+    )
+      return;
     setSaving(true);
     try {
       const grows = await listPersonalGrows();
+      if (!mountedRef.current) return;
       const grow = grows.find((item) => item?.status === "active") || grows[0];
       const growId = rowId(grow);
       if (!growId) {
@@ -709,6 +813,7 @@ export default function CourseDetailScreen({
   }
 
   async function markLessonComplete(lesson) {
+    if (!signedIn || !mountedRef.current) return;
     const id = rowId(lesson);
     if (!id || !loadedCourseId || !learnerActionsAvailable) return;
     setSaving(true);
@@ -723,6 +828,7 @@ export default function CourseDetailScreen({
       } else {
         await completeLesson(id, loadedCourseId);
       }
+      if (!mountedRef.current) return;
       await sendWatchTime(id, Number(lesson?.durationSeconds || 0)).catch(() => null);
       setFeedback("Lesson marked complete.");
       setActiveLesson(null);
@@ -735,6 +841,7 @@ export default function CourseDetailScreen({
   }
 
   async function publishCurrentCourse() {
+    if (!signedIn || !mountedRef.current) return;
     if (!loadedCourseId || !canPublishManagedCourse) return;
     if (facilityMode && isPaidCourse && facilityVisibility === "facilityOnly") {
       setFeedback(
@@ -764,6 +871,7 @@ export default function CourseDetailScreen({
   }
 
   async function unpublishCurrentCourse() {
+    if (!signedIn || !mountedRef.current) return;
     if (!loadedCourseId || !canPublishManagedCourse) return;
     setSaving(true);
     try {
@@ -785,6 +893,7 @@ export default function CourseDetailScreen({
   }
 
   async function archiveCurrentCourse() {
+    if (!signedIn || !mountedRef.current) return;
     if (!loadedCourseId || course?.isPublished || !canArchiveManagedCourse) return;
     setSaving(true);
     try {
@@ -796,6 +905,7 @@ export default function CourseDetailScreen({
       } else {
         await archiveCourse(loadedCourseId);
       }
+      if (!mountedRef.current) return;
       setArchiveConfirmOpen(false);
       setFeedback("Course archived. Returning to your active courses.");
       if (onArchived) {
@@ -813,6 +923,7 @@ export default function CourseDetailScreen({
   }
 
   async function saveFacilityVisibility() {
+    if (!signedIn || !mountedRef.current) return;
     if (
       !loadedCourseId ||
       !facilityScopeMatches ||
@@ -848,7 +959,8 @@ export default function CourseDetailScreen({
   }
 
   async function reportCourse() {
-    if (!loadedCourseId || !reportReason.trim()) return;
+    if (!signedIn || !mountedRef.current || !loadedCourseId || !reportReason.trim())
+      return;
     setSaving(true);
     try {
       await submitReport({
@@ -868,7 +980,14 @@ export default function CourseDetailScreen({
   }
 
   async function submitRefund() {
-    if (!loadedCourseId || !refundReason.trim()) return;
+    if (
+      !signedIn ||
+      !mountedRef.current ||
+      !canRequestRefund ||
+      !loadedCourseId ||
+      !refundReason.trim()
+    )
+      return;
     setSaving(true);
     try {
       await requestCourseRefund(loadedCourseId, {
@@ -889,7 +1008,14 @@ export default function CourseDetailScreen({
   }
 
   async function submitDispute() {
-    if (!loadedCourseId || !disputeReason.trim()) return;
+    if (
+      !signedIn ||
+      !mountedRef.current ||
+      !canReportPaymentIssue ||
+      !loadedCourseId ||
+      !disputeReason.trim()
+    )
+      return;
     setSaving(true);
     try {
       await openCourseDispute(loadedCourseId, {
@@ -910,13 +1036,20 @@ export default function CourseDetailScreen({
   }
 
   async function exportSales() {
-    if (!loadedCourseId) return;
+    if (
+      !signedIn ||
+      !mountedRef.current ||
+      !access.canViewCourseAnalytics ||
+      !loadedCourseId
+    )
+      return;
     setSaving(true);
     try {
       const response = await exportCourseSales({
         range: salesRange,
         courseId: loadedCourseId
       });
+      if (!mountedRef.current) return;
       const url = response?.url || response?.data?.url;
       if (url) await Linking.openURL(url);
       setFeedback("Course sales report requested.");
@@ -928,6 +1061,7 @@ export default function CourseDetailScreen({
   }
 
   async function openCourseResource(url, options = {}) {
+    if (!canOpenLessons || !mountedRef.current) return;
     setFeedback("");
     try {
       await openCourseMedia(url, options);
@@ -937,12 +1071,14 @@ export default function CourseDetailScreen({
   }
 
   async function addLiveReminder(session, index) {
+    if (!learnerActionsAvailable || !mountedRef.current) return;
     const sessionKey = rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
     if (!session?.scheduledStart || liveReminderIds.includes(sessionKey)) return;
     setSaving(true);
     setFeedback("");
     try {
       const grows = await listPersonalGrows();
+      if (!mountedRef.current) return;
       const grow =
         grows.find(
           (item) => String(item?.status || "active").toLowerCase() === "active"
@@ -993,6 +1129,7 @@ export default function CourseDetailScreen({
   }
 
   async function toggleLiveRsvp(session, index) {
+    if (!signedIn || !mountedRef.current) return;
     const sourceSessionId = String(session?.sourceSessionId || "").trim();
     const sessionKey = facilityMode
       ? sourceSessionId
@@ -1042,6 +1179,7 @@ export default function CourseDetailScreen({
   }
 
   function addLesson() {
+    if (!signedIn || !mountedRef.current) return;
     if (!loadedCourseId || !canManageLessons) return;
     if (!navigation?.navigate) {
       router.push(
@@ -1055,6 +1193,7 @@ export default function CourseDetailScreen({
   }
 
   function editLesson(lesson) {
+    if (!canManageLessons || !mountedRef.current) return;
     const id = rowId(lesson);
     if (!id || !loadedCourseId) return;
     if (navigation?.navigate) {
@@ -1072,6 +1211,7 @@ export default function CourseDetailScreen({
   }
 
   async function deleteFacilityLesson(lesson) {
+    if (!signedIn || !mountedRef.current) return;
     const lessonId = rowId(lesson);
     if (
       !facilityMode ||
@@ -1098,7 +1238,7 @@ export default function CourseDetailScreen({
     }
   }
 
-  if (!facilityMode && !access.canViewCourses) {
+  if (!auth.isHydrating && !facilityMode && !access.canViewCourses) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.title}>Course unavailable</Text>
@@ -1113,7 +1253,7 @@ export default function CourseDetailScreen({
     );
   }
 
-  if (loading) {
+  if (loading || auth.isHydrating) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={palette.accent} />
@@ -1270,7 +1410,22 @@ export default function CourseDetailScreen({
         </View>
       ) : null}
 
-      {canManageCoursePricing ? (
+      {!signedIn ? (
+        <View style={styles.card}>
+          <Text style={styles.meta}>
+            Sign in to enroll, purchase access, and keep your course progress. Signing in
+            does not start checkout or enroll you automatically.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Sign in to continue with this course"
+            onPress={signInToCourse}
+            style={styles.primaryBtn}
+          >
+            <Text style={styles.primaryText}>Sign in to continue</Text>
+          </Pressable>
+        </View>
+      ) : canManageCoursePricing ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
             {facilityMode ? "Facility course pricing" : "Creator pricing"}
@@ -1317,7 +1472,7 @@ export default function CourseDetailScreen({
       ) : (
         <Text style={styles.badge}>Enrolled</Text>
       )}
-      {!facilityMode && !workspaceOwnsCourse && isPaidCourse ? (
+      {signedIn && !facilityMode && !workspaceOwnsCourse && isPaidCourse ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Purchase Status</Text>
           <Text style={styles.meta}>
@@ -1343,7 +1498,7 @@ export default function CourseDetailScreen({
         </View>
       ) : null}
 
-      {!facilityMode || learnerActionsAvailable ? (
+      {signedIn && (!facilityMode || learnerActionsAvailable) ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Your progress</Text>
           <Text style={styles.meta} accessibilityLabel="Course lesson progress">
@@ -1481,48 +1636,52 @@ export default function CourseDetailScreen({
         {!lessons.length ? <Text style={styles.meta}>No lessons returned.</Text> : null}
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Course resources</Text>
-        {[...documents, ...mediaAssets].map((resource, index) => {
-          const url = String(
-            resource?.storageUrl || resource?.url || resource?.documentUrl || ""
-          );
-          return (
-            <View
-              key={rowId(resource) || `${resource?.title || "resource"}-${index}`}
-              style={styles.row}
-            >
-              <Text style={styles.rowTitle}>
-                {resource?.title || resource?.fileName || `Resource ${index + 1}`}
-              </Text>
-              {resource?.description ? (
-                <Text style={styles.body}>{resource.description}</Text>
-              ) : null}
-              {url ? (
-                <Pressable
-                  onPress={() =>
-                    openCourseResource(url, {
-                      filename:
-                        resource?.fileName || resource?.title || "course-resource",
-                      mimeType: resource?.fileType || resource?.mimeType || ""
-                    })
-                  }
-                  style={styles.secondaryBtn}
-                >
-                  <Text style={styles.secondaryText}>Open Resource</Text>
-                </Pressable>
-              ) : (
-                <Text style={styles.meta}>Resource is planned but not uploaded yet.</Text>
-              )}
-            </View>
-          );
-        })}
-        {!documents.length && !mediaAssets.length ? (
-          <Text style={styles.meta}>No shared resources attached.</Text>
-        ) : null}
-      </View>
+      {canOpenLessons ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Course resources</Text>
+          {[...documents, ...mediaAssets].map((resource, index) => {
+            const url = String(
+              resource?.storageUrl || resource?.url || resource?.documentUrl || ""
+            );
+            return (
+              <View
+                key={rowId(resource) || `${resource?.title || "resource"}-${index}`}
+                style={styles.row}
+              >
+                <Text style={styles.rowTitle}>
+                  {resource?.title || resource?.fileName || `Resource ${index + 1}`}
+                </Text>
+                {resource?.description ? (
+                  <Text style={styles.body}>{resource.description}</Text>
+                ) : null}
+                {url ? (
+                  <Pressable
+                    onPress={() =>
+                      openCourseResource(url, {
+                        filename:
+                          resource?.fileName || resource?.title || "course-resource",
+                        mimeType: resource?.fileType || resource?.mimeType || ""
+                      })
+                    }
+                    style={styles.secondaryBtn}
+                  >
+                    <Text style={styles.secondaryText}>Open Resource</Text>
+                  </Pressable>
+                ) : (
+                  <Text style={styles.meta}>
+                    Resource is planned but not uploaded yet.
+                  </Text>
+                )}
+              </View>
+            );
+          })}
+          {!documents.length && !mediaAssets.length ? (
+            <Text style={styles.meta}>No shared resources attached.</Text>
+          ) : null}
+        </View>
+      ) : null}
 
-      {course?.forumThreadId || course?.linkedForumThreadIds?.length ? (
+      {signedIn && (course?.forumThreadId || course?.linkedForumThreadIds?.length) ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Course discussion</Text>
           <Text style={styles.meta}>Ask questions and continue the course Q&A.</Text>
@@ -1539,7 +1698,7 @@ export default function CourseDetailScreen({
         </View>
       ) : null}
 
-      {course?.linkedProductIds?.length ? (
+      {signedIn && course?.linkedProductIds?.length ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Related products</Text>
           {course.linkedProductIds.map((productId) => (
@@ -1554,122 +1713,126 @@ export default function CourseDetailScreen({
         </View>
       ) : null}
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Scheduled live sessions</Text>
-        <Text style={styles.meta}>
-          Course lives stay connected to GrowPath Schedule, RSVP status, Notification
-          Center context, and optional My Tasks reminders.
-        </Text>
-        <View style={styles.actions}>
-          <Pressable
-            accessibilityRole="link"
-            accessibilityLabel="Open GrowPath Schedule for course lives"
-            onPress={() => router.push("/home/schedule")}
-            style={styles.secondaryBtn}
-          >
-            <Text style={styles.secondaryText}>Open Schedule</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="link"
-            accessibilityLabel="Open Notification Center for course lives"
-            onPress={() => router.push("/home/notifications")}
-            style={styles.secondaryBtn}
-          >
-            <Text style={styles.secondaryText}>Notifications</Text>
-          </Pressable>
-        </View>
-        {liveSessions.map((session, index) => {
-          const sourceSessionId = String(session?.sourceSessionId || "").trim();
-          const sessionKey = facilityMode
-            ? sourceSessionId || `display-only-live-${index}`
-            : rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
-          const watchUrl = String(
-            session?.watchUrl ||
-              session?.meetingUrl ||
-              (session?.twitchChannel
-                ? `https://www.twitch.tv/${session.twitchChannel}`
-                : "")
-          );
-          const twitchChannel = String(session?.twitchChannel || "");
-          const twitchScheduleUrl = twitchChannel
-            ? `https://www.twitch.tv/${twitchChannel}/schedule`
-            : "";
-          const isRsvped = liveRsvpIds.includes(sessionKey);
-          const reminderLabel = String(session?.reminderPlan?.label || "1 hour before");
-          const notificationCount = Array.isArray(session?.notificationPlan)
-            ? session.notificationPlan.length
-            : 0;
-          return (
-            <View key={sessionKey} style={styles.row}>
-              <Text style={styles.rowTitle}>{session?.title || "Course live"}</Text>
-              <Text style={styles.meta}>
-                {session?.scheduledStart || "Date not scheduled"}
-                {session?.timezone ? ` · ${session.timezone}` : ""}
-              </Text>
-              <Text style={styles.meta}>
-                Reminder: {reminderLabel}
-                {notificationCount
-                  ? ` · ${notificationCount} notification checkpoints`
-                  : " · RSVP notification context"}
-                {isRsvped ? " · Going" : ""}
-              </Text>
-              <View style={styles.actions}>
-                {learnerActionsAvailable && (!facilityMode || sourceSessionId) ? (
-                  <Pressable
-                    disabled={saving}
-                    onPress={() => toggleLiveRsvp(session, index)}
-                    style={isRsvped ? styles.secondaryBtn : styles.primaryBtn}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${isRsvped ? "Cancel RSVP for" : "RSVP to"} ${session?.title || "course live"}`}
-                  >
-                    <Text style={isRsvped ? styles.secondaryText : styles.primaryText}>
-                      {isRsvped ? "Going · Cancel RSVP" : "Remind Me / RSVP"}
-                    </Text>
-                  </Pressable>
-                ) : null}
-                {watchUrl ? (
-                  <Pressable
-                    accessibilityRole="link"
-                    accessibilityLabel={`Watch ${session?.title || "course live"} on Twitch`}
-                    onPress={() => Linking.openURL(watchUrl)}
-                    style={styles.primaryBtn}
-                  >
-                    <Text style={styles.primaryText}>Watch on Twitch</Text>
-                  </Pressable>
-                ) : null}
-                {twitchScheduleUrl ? (
-                  <Pressable
-                    accessibilityRole="link"
-                    accessibilityLabel={`Open ${session?.title || "course live"} Twitch schedule`}
-                    onPress={() => Linking.openURL(twitchScheduleUrl)}
-                    style={styles.secondaryBtn}
-                  >
-                    <Text style={styles.secondaryText}>Twitch Schedule / Follow</Text>
-                  </Pressable>
-                ) : null}
-                {session?.scheduledStart && learnerActionsAvailable ? (
-                  <Pressable
-                    disabled={saving || liveReminderIds.includes(sessionKey)}
-                    onPress={() => addLiveReminder(session, index)}
-                    style={styles.secondaryBtn}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Add ${session?.title || "live session"} reminder to My Tasks`}
-                  >
-                    <Text style={styles.secondaryText}>
-                      {liveReminderIds.includes(sessionKey)
-                        ? "Reminder task created"
-                        : "Optional: Add Task"}
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </View>
+      {canOpenLessons ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Scheduled live sessions</Text>
+          <Text style={styles.meta}>
+            Course lives stay connected to GrowPath Schedule, RSVP status, Notification
+            Center context, and optional My Tasks reminders.
+          </Text>
+          {signedIn ? (
+            <View style={styles.actions}>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel="Open GrowPath Schedule for course lives"
+                onPress={() => router.push("/home/schedule")}
+                style={styles.secondaryBtn}
+              >
+                <Text style={styles.secondaryText}>Open Schedule</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel="Open Notification Center for course lives"
+                onPress={() => router.push("/home/notifications")}
+                style={styles.secondaryBtn}
+              >
+                <Text style={styles.secondaryText}>Notifications</Text>
+              </Pressable>
             </View>
-          );
-        })}
-        {!liveSessions.length ? (
-          <Text style={styles.meta}>No live sessions scheduled.</Text>
-        ) : null}
-      </View>
+          ) : null}
+          {liveSessions.map((session, index) => {
+            const sourceSessionId = String(session?.sourceSessionId || "").trim();
+            const sessionKey = facilityMode
+              ? sourceSessionId || `display-only-live-${index}`
+              : rowId(session) || `${session?.scheduledStart || "live"}-${index}`;
+            const watchUrl = String(
+              session?.watchUrl ||
+                session?.meetingUrl ||
+                (session?.twitchChannel
+                  ? `https://www.twitch.tv/${session.twitchChannel}`
+                  : "")
+            );
+            const twitchChannel = String(session?.twitchChannel || "");
+            const twitchScheduleUrl = twitchChannel
+              ? `https://www.twitch.tv/${twitchChannel}/schedule`
+              : "";
+            const isRsvped = liveRsvpIds.includes(sessionKey);
+            const reminderLabel = String(session?.reminderPlan?.label || "1 hour before");
+            const notificationCount = Array.isArray(session?.notificationPlan)
+              ? session.notificationPlan.length
+              : 0;
+            return (
+              <View key={sessionKey} style={styles.row}>
+                <Text style={styles.rowTitle}>{session?.title || "Course live"}</Text>
+                <Text style={styles.meta}>
+                  {session?.scheduledStart || "Date not scheduled"}
+                  {session?.timezone ? ` · ${session.timezone}` : ""}
+                </Text>
+                <Text style={styles.meta}>
+                  Reminder: {reminderLabel}
+                  {notificationCount
+                    ? ` · ${notificationCount} notification checkpoints`
+                    : " · RSVP notification context"}
+                  {isRsvped ? " · Going" : ""}
+                </Text>
+                <View style={styles.actions}>
+                  {learnerActionsAvailable && (!facilityMode || sourceSessionId) ? (
+                    <Pressable
+                      disabled={saving}
+                      onPress={() => toggleLiveRsvp(session, index)}
+                      style={isRsvped ? styles.secondaryBtn : styles.primaryBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${isRsvped ? "Cancel RSVP for" : "RSVP to"} ${session?.title || "course live"}`}
+                    >
+                      <Text style={isRsvped ? styles.secondaryText : styles.primaryText}>
+                        {isRsvped ? "Going · Cancel RSVP" : "Remind Me / RSVP"}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                  {watchUrl ? (
+                    <Pressable
+                      accessibilityRole="link"
+                      accessibilityLabel={`Watch ${session?.title || "course live"} on Twitch`}
+                      onPress={() => Linking.openURL(watchUrl)}
+                      style={styles.primaryBtn}
+                    >
+                      <Text style={styles.primaryText}>Watch on Twitch</Text>
+                    </Pressable>
+                  ) : null}
+                  {twitchScheduleUrl ? (
+                    <Pressable
+                      accessibilityRole="link"
+                      accessibilityLabel={`Open ${session?.title || "course live"} Twitch schedule`}
+                      onPress={() => Linking.openURL(twitchScheduleUrl)}
+                      style={styles.secondaryBtn}
+                    >
+                      <Text style={styles.secondaryText}>Twitch Schedule / Follow</Text>
+                    </Pressable>
+                  ) : null}
+                  {session?.scheduledStart && learnerActionsAvailable ? (
+                    <Pressable
+                      disabled={saving || liveReminderIds.includes(sessionKey)}
+                      onPress={() => addLiveReminder(session, index)}
+                      style={styles.secondaryBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add ${session?.title || "live session"} reminder to My Tasks`}
+                    >
+                      <Text style={styles.secondaryText}>
+                        {liveReminderIds.includes(sessionKey)
+                          ? "Reminder task created"
+                          : "Optional: Add Task"}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            );
+          })}
+          {!liveSessions.length ? (
+            <Text style={styles.meta}>No live sessions scheduled.</Text>
+          ) : null}
+        </View>
+      ) : null}
 
       {!facilityMode ? (
         <PersonalFeedPlacement
@@ -1679,7 +1842,7 @@ export default function CourseDetailScreen({
         />
       ) : null}
 
-      {activeLesson ? (
+      {activeLesson && canOpenLessons ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{activeLesson.title || "Lesson"}</Text>
           <LessonMediaCard lesson={activeLesson} compact />
@@ -1736,7 +1899,7 @@ export default function CourseDetailScreen({
           {activeLesson.content ? (
             <Text style={styles.body}>{activeLesson.content}</Text>
           ) : null}
-          {activeLesson.forumThreadId ? (
+          {signedIn && activeLesson.forumThreadId ? (
             <Pressable
               onPress={() =>
                 router.push(
@@ -1789,11 +1952,11 @@ export default function CourseDetailScreen({
                 <Text style={styles.primaryText}>Mark Complete</Text>
               </Pressable>
             </>
-          ) : (
+          ) : signedIn ? (
             <Pressable onPress={askAIAboutCourse} style={styles.secondaryBtn}>
               <Text style={styles.secondaryText}>Ask AI About This Lesson</Text>
             </Pressable>
-          )}
+          ) : null}
           <Pressable
             onPress={() => {
               const id = rowId(activeLesson);
@@ -1820,32 +1983,34 @@ export default function CourseDetailScreen({
         {!reviews.length ? <Text style={styles.meta}>No reviews yet.</Text> : null}
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Report Course</Text>
-        <TextInput
-          value={reportReason}
-          onChangeText={setReportReason}
-          placeholder="Reason"
-          placeholderTextColor={palette.textMuted}
-          style={styles.input}
-          accessibilityLabel="Course report reason"
-        />
-        <Pressable
-          disabled={saving || !reportReason.trim()}
-          onPress={reportCourse}
-          accessibilityRole="button"
-          accessibilityLabel="Submit course report"
-          accessibilityState={{ disabled: saving || !reportReason.trim() }}
-          style={[
-            styles.secondaryBtn,
-            (!reportReason.trim() || saving) && styles.disabled
-          ]}
-        >
-          <Text style={styles.secondaryText}>Submit Report</Text>
-        </Pressable>
-      </View>
+      {signedIn ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Report Course</Text>
+          <TextInput
+            value={reportReason}
+            onChangeText={setReportReason}
+            placeholder="Reason"
+            placeholderTextColor={palette.textMuted}
+            style={styles.input}
+            accessibilityLabel="Course report reason"
+          />
+          <Pressable
+            disabled={saving || !reportReason.trim()}
+            onPress={reportCourse}
+            accessibilityRole="button"
+            accessibilityLabel="Submit course report"
+            accessibilityState={{ disabled: saving || !reportReason.trim() }}
+            style={[
+              styles.secondaryBtn,
+              (!reportReason.trim() || saving) && styles.disabled
+            ]}
+          >
+            <Text style={styles.secondaryText}>Submit Report</Text>
+          </Pressable>
+        </View>
+      ) : null}
 
-      {!workspaceOwnsCourse && hasPaidPurchase ? (
+      {signedIn && !workspaceOwnsCourse && hasPaidPurchase ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Refunds and payment support</Text>
           <Text style={styles.meta}>
@@ -1988,7 +2153,7 @@ export default function CourseDetailScreen({
         </View>
       ) : null}
 
-      {!facilityMode && access.canViewCourseAnalytics ? (
+      {signedIn && !facilityMode && access.canViewCourseAnalytics ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Course Sales Report</Text>
           <TextInput

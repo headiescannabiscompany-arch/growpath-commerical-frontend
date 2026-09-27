@@ -201,6 +201,7 @@ export function isCanonicalLegacyCancelReturn(rawBrowserPath?: unknown): boolean
 export function parseSafeLoginReturnPath(value: unknown): string {
   return (
     parsePublicProductReturnPath(value) ||
+    parsePublicCourseReturnPath(value) ||
     parseAuthReturnPath(value) ||
     parseClaimReturnPath(value) ||
     (value === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "")
@@ -213,6 +214,15 @@ export function parsePublicProductReturnPath(value: unknown): string {
     /^\/store\/[a-z0-9][a-z0-9-]{0,99}\/products\/[a-f0-9]{24}$/.test(value)
     ? value
     : "";
+}
+
+// Exact public course destinations only; no aliases, extra query keys or fragments.
+export function parsePublicCourseReturnPath(value: unknown): string | null {
+  if (typeof value !== "string" || value !== value.trim()) return null;
+  return /^\/courses\?courseId=[a-f0-9]{24}$/.test(value) ||
+    /^\/store\/[a-z0-9][a-z0-9-]{0,99}\/courses\/[a-f0-9]{24}$/.test(value)
+    ? value
+    : null;
 }
 
 export function safeLoginPath(email: unknown, next: unknown): string {

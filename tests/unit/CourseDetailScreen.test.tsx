@@ -8,6 +8,7 @@ import CourseDetailScreen, {
 } from "@/screens/CourseDetailScreen";
 import { getThemePalette } from "@/theme/appTheme";
 import FacilityCoursesRoute from "@/app/home/facility/(tabs)/courses";
+import CoursesScreen from "@/screens/CoursesScreen";
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
@@ -17,6 +18,12 @@ const mockCompleteLesson = jest.fn();
 const mockApiRequest = jest.fn();
 const mockGetCourse = jest.fn();
 const mockGetEnrollmentStatus = jest.fn();
+const mockGetCourseLearnerNotes = jest.fn();
+const mockEnrollInCourse = jest.fn();
+const mockGetReviews = jest.fn();
+const mockTrackLessonView = jest.fn();
+const mockSendWatchTime = jest.fn();
+const mockTrackDropoff = jest.fn();
 const mockGetCoursePaymentStatus = jest.fn();
 const mockOpenCourseDispute = jest.fn();
 const mockRequestCourseRefund = jest.fn();
@@ -27,6 +34,7 @@ const mockUnpublishCourse = jest.fn();
 const mockUpdateCourse = jest.fn();
 const mockLearningAccess = {
   canViewCourses: true,
+  canSeePaidCourses: true,
   canCreateCourses: false,
   canSellPaidCourses: false,
   canPublishCourses: false,
@@ -40,6 +48,11 @@ const mockEntitlements = {
   facilityRole: "MANAGER"
 };
 let mockViewerId = "learner-1";
+const mockAuthState: { isAuthed: boolean; isHydrating: boolean; token: string | null } = {
+  isAuthed: true,
+  isHydrating: false,
+  token: "learner-1-token"
+};
 const mockFacility = { selectedId: "facility-1", selected: null };
 const mockFacilityList = jest.fn();
 const mockFacilityGet = jest.fn();
@@ -51,9 +64,13 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: mockReplace })
 }));
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: mockViewerId } })
+  useAuth: () => ({
+    ...mockAuthState,
+    user: mockViewerId ? { id: mockViewerId } : null
+  })
 }));
 jest.mock("@/entitlements", () => ({
+  CAPABILITY_KEYS: { COMMERCIAL_HOME: "COMMERCIAL_HOME" },
   useEntitlements: () => mockEntitlements
 }));
 jest.mock("@/state/useFacility", () => ({ useFacility: () => mockFacility }));
@@ -71,7 +88,10 @@ jest.mock("@/api/facilityCourses", () => ({
   unpublishFacilityCourse: (...args: any[]) => mockFacilityUnpublish(...args)
 }));
 jest.mock("@/features/learning/learningAccess", () => ({
-  getLearningAccess: () => mockLearningAccess
+  getLearningAccess: () => mockLearningAccess,
+  countPaidCourses: (courses: any[]) =>
+    courses.filter((course) => Number(course?.priceCents || course?.price || 0) > 0)
+      .length
 }));
 jest.mock("@/theme/appTheme", () => {
   const actual = jest.requireActual("@/theme/appTheme");
@@ -100,21 +120,18 @@ jest.mock("@/api/reports", () => ({
 jest.mock("@/api/courses", () => ({
   archiveCourse: (...args: any[]) => mockArchiveCourse(...args),
   completeLesson: (...args: any[]) => mockCompleteLesson(...args),
-  enrollInCourse: jest.fn(),
+  enrollInCourse: (...args: any[]) => mockEnrollInCourse(...args),
   getCourse: (...args: any[]) => mockGetCourse(...args),
-  getCourseLearnerNotes: () =>
-    Promise.resolve({
-      notes: [{ lessonId: "lesson-1", note: "Existing note" }]
-    }),
+  getCourseLearnerNotes: (...args: any[]) => mockGetCourseLearnerNotes(...args),
   getEnrollmentStatus: (...args: any[]) => mockGetEnrollmentStatus(...args),
-  getReviews: () => Promise.resolve([]),
+  getReviews: (...args: any[]) => mockGetReviews(...args),
   publishCourse: (...args: any[]) => mockPublishCourse(...args),
   saveCourseLearnerNote: (...args: any[]) => mockSaveNote(...args),
-  sendWatchTime: () => Promise.resolve(),
-  trackDropoff: () => Promise.resolve(),
+  sendWatchTime: (...args: any[]) => mockSendWatchTime(...args),
+  trackDropoff: (...args: any[]) => mockTrackDropoff(...args),
   trackCourseProductClick: () => Promise.resolve(),
   trackCourseView: () => Promise.resolve(),
-  trackLessonView: () => Promise.resolve(),
+  trackLessonView: (...args: any[]) => mockTrackLessonView(...args),
   unpublishCourse: (...args: any[]) => mockUnpublishCourse(...args),
   updateCourse: (...args: any[]) => mockUpdateCourse(...args)
 }));
@@ -154,6 +171,7 @@ describe("CourseDetailScreen learner player", () => {
     jest.clearAllMocks();
     Object.assign(mockLearningAccess, {
       canViewCourses: true,
+      canSeePaidCourses: true,
       canCreateCourses: false,
       canSellPaidCourses: false,
       canPublishCourses: false,
@@ -165,6 +183,11 @@ describe("CourseDetailScreen learner player", () => {
     mockEntitlements.facilityRole = "MANAGER";
     mockFacility.selectedId = "facility-1";
     mockViewerId = "learner-1";
+    Object.assign(mockAuthState, {
+      isAuthed: true,
+      isHydrating: false,
+      token: "learner-1-token"
+    });
     mockApiRequest.mockResolvedValue({ sessionIds: [] });
     mockSaveNote.mockResolvedValue({ note: "Updated note" });
     mockPublishCourse.mockResolvedValue({ published: true });
@@ -173,6 +196,14 @@ describe("CourseDetailScreen learner player", () => {
     mockUpdateCourse.mockResolvedValue({});
     mockArchiveCourse.mockResolvedValue({ archived: true });
     mockGetCourse.mockResolvedValue(freeCourse);
+    mockGetCourseLearnerNotes.mockResolvedValue({
+      notes: [{ lessonId: "lesson-1", note: "Existing note" }]
+    });
+    mockEnrollInCourse.mockResolvedValue({ enrolled: true });
+    mockGetReviews.mockResolvedValue([]);
+    mockTrackLessonView.mockResolvedValue({});
+    mockSendWatchTime.mockResolvedValue({});
+    mockTrackDropoff.mockResolvedValue({});
     mockGetEnrollmentStatus.mockResolvedValue({
       enrolled: true,
       progress: { completedLessonIds: ["lesson-1"], completedLessons: 1, totalLessons: 1 }
@@ -185,6 +216,371 @@ describe("CourseDetailScreen learner player", () => {
     mockOpenCourseDispute.mockResolvedValue({ accepted: true });
     mockRequestCourseRefund.mockResolvedValue({ accepted: true });
   });
+
+  const publicCourseId = "6aa2f5c5d339157652995f10";
+  const secondPublicCourseId = "6aa2f5c5d339157652995f11";
+
+  function signOut() {
+    mockViewerId = "";
+    Object.assign(mockAuthState, { isAuthed: false, isHydrating: false, token: null });
+  }
+
+  function publishedCourse(overrides: Record<string, unknown> = {}) {
+    return {
+      ...freeCourse,
+      id: publicCourseId,
+      isPublished: true,
+      summary: "Public course description",
+      ...overrides
+    };
+  }
+
+  function deferred<T = any>() {
+    let resolve!: (value: T) => void;
+    const promise = new Promise<T>((done) => {
+      resolve = done;
+    });
+    return { promise, resolve };
+  }
+
+  function expectNoPrivateReads() {
+    expect(mockGetEnrollmentStatus).not.toHaveBeenCalled();
+    expect(mockGetCoursePaymentStatus).not.toHaveBeenCalled();
+    expect(mockGetCourseLearnerNotes).not.toHaveBeenCalled();
+    expect(mockApiRequest.mock.calls.some(([path]) => /live-rsvps/.test(path))).toBe(
+      false
+    );
+  }
+
+  function expectNoLearnerMutations() {
+    expect(mockEnrollInCourse).not.toHaveBeenCalled();
+    expect(mockStartCourseCheckout).not.toHaveBeenCalled();
+    expect(mockSaveNote).not.toHaveBeenCalled();
+    expect(mockCompleteLesson).not.toHaveBeenCalled();
+    expect(mockSubmitReport).not.toHaveBeenCalled();
+    expect(mockOpenCourseDispute).not.toHaveBeenCalled();
+    expect(mockRequestCourseRefund).not.toHaveBeenCalled();
+  }
+
+  it("keeps anonymous paid discovery public and returns sign-in to the saved course identity", async () => {
+    signOut();
+    const course = publishedCourse({
+      priceCents: 2500,
+      _viewerHasAccess: true,
+      _viewerOwnsCourse: true,
+      enrolled: true,
+      creatorId: "former-viewer"
+    });
+    mockGetCourse.mockResolvedValue(course);
+    mockGetReviews.mockResolvedValue([
+      { id: "review-1", rating: 5, text: "Public review" }
+    ]);
+    const screen = render(
+      <CourseDetailScreen route={{ params: { id: "requested-course-alias" } }} />
+    );
+
+    await screen.findByText("Public course description");
+    expect(screen.getByText("$25.00 | published")).toBeTruthy();
+    expect(screen.getByText("Public review")).toBeTruthy();
+    expect(screen.getByText("Build the mix")).toBeTruthy();
+    expect(screen.queryByText("Start Checkout")).toBeNull();
+    expect(screen.queryByText("Enroll")).toBeNull();
+    expect(screen.queryByText("Purchase Status")).toBeNull();
+    expect(screen.queryByText("Your progress")).toBeNull();
+    expect(screen.queryByText("Creator pricing")).toBeNull();
+    expect(screen.queryByText("Ask AI About This Course")).toBeNull();
+    expect(screen.queryByText("Report Course")).toBeNull();
+    expect(screen.queryByText("Worksheet")).toBeNull();
+    expect(screen.queryByText("Living Soil Q&A")).toBeNull();
+    const locked = screen.getByLabelText(
+      "Lesson Build the mix locked until payment is confirmed"
+    );
+    expect(locked).toBeDisabled();
+    fireEvent.press(locked);
+    expect(screen.queryByText("Mix it.")).toBeNull();
+    expectNoPrivateReads();
+
+    fireEvent.press(screen.getByLabelText("Sign in to continue with this course"));
+    expect(mockPush).toHaveBeenCalledWith(
+      `/login?next=${encodeURIComponent(`/courses?courseId=${publicCourseId}`)}`
+    );
+    expectNoLearnerMutations();
+  });
+
+  it("retains an intentionally public free preview without learner controls or private reads", async () => {
+    signOut();
+    mockGetCourse.mockResolvedValue(publishedCourse());
+    const screen = render(
+      <CourseDetailScreen route={{ params: { id: publicCourseId } }} />
+    );
+    await screen.findByText("Living Soil Course");
+    expect(screen.getByText("Worksheet")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Open lesson Build the mix"));
+    expect(await screen.findByText("Mix it.")).toBeTruthy();
+    expect(screen.queryByLabelText("Private lesson notes")).toBeNull();
+    expect(screen.queryByText("Mark Complete")).toBeNull();
+    expect(screen.queryByText("Ask AI About This Lesson")).toBeNull();
+    expect(screen.queryByText("Save Note")).toBeNull();
+    expect(screen.queryByText("Report Course")).toBeNull();
+    expect(screen.queryByLabelText("RSVP to Living Soil Q&A")).toBeNull();
+    expect(
+      screen.queryByLabelText("Add Living Soil Q&A reminder to My Tasks")
+    ).toBeNull();
+    expect(screen.queryByText("Open Discussion")).toBeNull();
+    expectNoPrivateReads();
+    expectNoLearnerMutations();
+  });
+
+  it.each([
+    undefined,
+    "friendly-course",
+    [publicCourseId],
+    `${publicCourseId}&admin=true`
+  ])("falls back to plain login for an invalid saved identity: %p", async (id) => {
+    signOut();
+    mockGetCourse.mockResolvedValue(publishedCourse({ id }));
+    const screen = render(
+      <CourseDetailScreen route={{ params: { id: publicCourseId } }} />
+    );
+    fireEvent.press(await screen.findByLabelText("Sign in to continue with this course"));
+    expect(mockPush).toHaveBeenCalledWith("/login");
+    expectNoPrivateReads();
+    expectNoLearnerMutations();
+  });
+
+  it("waits for hydration and does not enroll or buy when authentication settles", async () => {
+    mockAuthState.isHydrating = true;
+    mockGetCourse.mockResolvedValue(publishedCourse({ priceCents: 2500 }));
+    mockGetEnrollmentStatus.mockResolvedValue({ enrolled: false });
+    const screen = render(
+      <CourseDetailScreen route={{ params: { id: publicCourseId } }} />
+    );
+    expect(screen.getByText("Loading course...")).toBeTruthy();
+    expect(screen.queryByLabelText("Sign in to continue with this course")).toBeNull();
+    expect(mockGetCourse).not.toHaveBeenCalled();
+    expectNoPrivateReads();
+
+    mockAuthState.isHydrating = false;
+    await act(async () => {
+      screen.rerender(<CourseDetailScreen route={{ params: { id: publicCourseId } }} />);
+    });
+    expect(await screen.findByText("Start Checkout")).toBeTruthy();
+    expect(mockGetEnrollmentStatus).toHaveBeenCalledWith(publicCourseId);
+    expectNoLearnerMutations();
+  });
+
+  it.each([0, 2500])(
+    "does not replay enrollment or checkout after sign-in for a %p-cent course",
+    async (priceCents) => {
+      signOut();
+      mockGetCourse.mockResolvedValue(publishedCourse({ priceCents }));
+      mockGetEnrollmentStatus.mockResolvedValue({ enrolled: false });
+      const screen = render(
+        <CourseDetailScreen route={{ params: { id: publicCourseId } }} />
+      );
+      fireEvent.press(
+        await screen.findByLabelText("Sign in to continue with this course")
+      );
+      mockViewerId = "new-learner";
+      Object.assign(mockAuthState, { isAuthed: true, token: "new-learner-token" });
+      await act(async () => {
+        screen.rerender(
+          <CourseDetailScreen route={{ params: { id: publicCourseId } }} />
+        );
+      });
+      expect(
+        await screen.findByText(priceCents ? "Start Checkout" : "Enroll")
+      ).toBeTruthy();
+      expectNoLearnerMutations();
+      expect(mockPush).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it.each(["sign-out", "viewer", "token", "course"])(
+    "discards an old authenticated load after a %s boundary change",
+    async (boundary) => {
+      const oldLoad = deferred();
+      mockGetCourse.mockReturnValueOnce(oldLoad.promise);
+      mockGetEnrollmentStatus
+        .mockResolvedValueOnce({
+          enrolled: true,
+          progress: { completedLessonIds: ["lesson-1"] }
+        })
+        .mockResolvedValue({ enrolled: false });
+      mockGetCourseLearnerNotes
+        .mockResolvedValueOnce({
+          notes: [{ lessonId: "lesson-1", note: "Old private note" }]
+        })
+        .mockResolvedValue({ notes: [] });
+      const screen = render(
+        <CourseDetailScreen route={{ params: { id: publicCourseId } }} />
+      );
+      await waitFor(() => expect(mockGetCourse).toHaveBeenCalledTimes(1));
+      const nextId = boundary === "course" ? secondPublicCourseId : publicCourseId;
+      if (boundary === "sign-out") signOut();
+      if (boundary === "viewer") mockViewerId = "learner-2";
+      if (boundary === "token") mockAuthState.token = "renewed-token";
+      mockGetCourse.mockResolvedValue(
+        publishedCourse({
+          id: nextId,
+          title: "Current public course",
+          priceCents: 2500,
+          lessons: [{ id: "current-lesson", title: "Current lesson" }]
+        })
+      );
+      await act(async () => {
+        screen.rerender(<CourseDetailScreen route={{ params: { id: nextId } }} />);
+      });
+      expect(await screen.findByText("Current public course")).toBeTruthy();
+      await act(async () => {
+        oldLoad.resolve(
+          publishedCourse({
+            title: "Old private course",
+            _viewerHasAccess: true,
+            _viewerOwnsCourse: true,
+            priceCents: 2500
+          })
+        );
+      });
+      expect(screen.queryByText("Old private course")).toBeNull();
+      expect(screen.queryByText("Creator pricing")).toBeNull();
+      expect(screen.queryByDisplayValue("Old private note")).toBeNull();
+      expect(screen.queryByText("1 of 1 lessons complete")).toBeNull();
+      expect(
+        screen.getByLabelText("Lesson Current lesson locked until payment is confirmed")
+      ).toBeDisabled();
+      expectNoLearnerMutations();
+    }
+  );
+
+  it("clears an open private lesson on sign-out and ignores stale handlers and payment refresh", async () => {
+    mockGetCourse.mockResolvedValue(publishedCourse({ priceCents: 2500 }));
+    const screen = render(
+      <CourseDetailScreen route={{ params: { id: publicCourseId } }} />
+    );
+    await screen.findByText("Living Soil Course");
+    fireEvent.press(screen.getByLabelText("Open lesson Build the mix"));
+    await screen.findByDisplayValue("Existing note");
+    let noteButton: any = screen.getByText("Save Note");
+    while (noteButton && typeof noteButton.props.onPress !== "function") {
+      noteButton = noteButton.parent;
+    }
+    const noteHandler = noteButton?.props.onPress;
+    expect(noteHandler).toEqual(expect.any(Function));
+    const oldPayment = deferred();
+    const oldStatus = deferred();
+    mockGetCoursePaymentStatus.mockReturnValueOnce(oldPayment.promise);
+    mockGetEnrollmentStatus.mockReturnValueOnce(oldStatus.promise);
+    fireEvent.press(screen.getByText("Refresh Status"));
+    signOut();
+    await act(async () => {
+      screen.rerender(<CourseDetailScreen route={{ params: { id: publicCourseId } }} />);
+    });
+    await screen.findByLabelText("Sign in to continue with this course");
+    await act(async () => {
+      await noteHandler();
+      oldPayment.resolve({ paymentStatus: "paid" });
+      oldStatus.resolve({
+        enrolled: true,
+        progress: { completedLessonIds: ["lesson-1"] }
+      });
+    });
+    expect(screen.queryByDisplayValue("Existing note")).toBeNull();
+    expect(screen.queryByText("Mix it.")).toBeNull();
+    expect(screen.queryByText("Purchase Status")).toBeNull();
+    expect(screen.queryByText("Your progress")).toBeNull();
+    expect(
+      screen.getByLabelText("Lesson Build the mix locked until payment is confirmed")
+    ).toBeDisabled();
+    expectNoLearnerMutations();
+  });
+
+  it("never trusts privileged embedded catalog hints when the fresh detail cannot load", async () => {
+    mockGetCourse.mockRejectedValue(new Error("Fresh course denied"));
+    const screen = render(
+      <CourseDetailScreen
+        route={{
+          params: {
+            id: publicCourseId,
+            course: publishedCourse({ _viewerOwnsCourse: true, _viewerHasAccess: true })
+          }
+        }}
+      />
+    );
+    expect(await screen.findByText("Course unavailable")).toBeTruthy();
+    expect(screen.queryByText("Living Soil Course")).toBeNull();
+    expect(screen.queryByText("Creator pricing")).toBeNull();
+    expect(screen.queryByText("Mix it.")).toBeNull();
+  });
+
+  it("rejects an ID-less privileged initial course instead of displaying unverified content", async () => {
+    const screen = render(
+      <CourseDetailScreen
+        route={{
+          params: {
+            course: {
+              title: "Unverified private draft",
+              isPublished: false,
+              priceCents: 2500,
+              _viewerOwnsCourse: true,
+              _viewerHasAccess: true,
+              lessons: [
+                {
+                  id: "private-lesson",
+                  title: "Private lesson",
+                  content: "Protected text"
+                }
+              ]
+            }
+          }
+        }}
+      />
+    );
+    expect(await screen.findByText("Course unavailable")).toBeTruthy();
+    expect(screen.queryByText("Unverified private draft")).toBeNull();
+    expect(screen.queryByText("Private lesson")).toBeNull();
+    expect(screen.queryByText("Protected text")).toBeNull();
+    expect(screen.queryByText("Creator pricing")).toBeNull();
+    expect(screen.queryByLabelText("Sign in to continue with this course")).toBeNull();
+    expect(mockGetCourse).not.toHaveBeenCalled();
+    expect(mockGetReviews).not.toHaveBeenCalled();
+    expect(mockApiRequest).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+    expectNoPrivateReads();
+    expectNoLearnerMutations();
+  });
+
+  it.each([0, 2500])(
+    "enforces the real catalog-to-embedded-detail anonymous boundary for a %p-cent course",
+    async (priceCents) => {
+      signOut();
+      const course = publishedCourse({ priceCents });
+      mockApiRequest.mockImplementation((path: string) =>
+        Promise.resolve(path === "/api/courses" ? [course] : [])
+      );
+      mockGetCourse.mockResolvedValue(course);
+      const screen = render(<CoursesScreen />);
+      expect(await screen.findByText("Published course catalog")).toBeTruthy();
+      fireEvent.press(await screen.findByText("Open details"));
+      expect(
+        await screen.findByLabelText("Sign in to continue with this course")
+      ).toBeTruthy();
+      expect(screen.getByText("Back to courses")).toBeTruthy();
+      expect(screen.queryByText("Start Checkout")).toBeNull();
+      expect(screen.queryByText("Enroll")).toBeNull();
+      expect(screen.queryByText("Purchase Status")).toBeNull();
+      expect(screen.queryByText("Report Course")).toBeNull();
+      expect(screen.queryByText("Your progress")).toBeNull();
+      expect(mockGetCourse).toHaveBeenCalledWith(publicCourseId);
+      expect(mockApiRequest.mock.calls.some(([path]) => /\/mine/.test(path))).toBe(false);
+      expectNoPrivateReads();
+      expectNoLearnerMutations();
+      fireEvent.press(screen.getByLabelText("Sign in to continue with this course"));
+      expect(mockPush).toHaveBeenCalledWith(
+        `/login?next=${encodeURIComponent(`/courses?courseId=${publicCourseId}`)}`
+      );
+    }
+  );
 
   it("renders a loaded course with Night palette surfaces and keeps Day styles palette-driven", async () => {
     const nightPalette = getThemePalette("night", "dark");

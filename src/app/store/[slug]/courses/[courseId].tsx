@@ -10,7 +10,7 @@ import {
   Text,
   View
 } from "react-native";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 
 import {
   recordCommercialAnalyticsEvent,
@@ -18,6 +18,7 @@ import {
 } from "@/api/commercialAnalytics";
 import { pollCourseAccessStatus, startCourseCheckout } from "@/api/coursePayments";
 import { fetchPublicStorefront } from "@/api/storefront";
+import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import {
@@ -28,6 +29,7 @@ import {
   publicItemTitle
 } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
+import { parsePublicCourseReturnPath, safeLoginPath } from "@/utils/authReturnPath";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -143,6 +145,8 @@ export default function PublicStorefrontCourseRoute() {
     checkout?: string;
     course?: string;
   }>();
+  const auth = useAuth();
+  const router = useRouter();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
   const requestedCourseId = useMemo(
     () => String(params.courseId || params.course || "").trim(),
@@ -246,6 +250,8 @@ export default function PublicStorefrontCourseRoute() {
   ].slice(0, 4);
   const priceLabel = money(course);
   const paid = isPaidCourse(course);
+  const awaitingBuyAuth =
+    paid && checkoutState !== "confirmed" && !checkoutPending && auth.isHydrating;
   const courseHeroImage = resolveImageUri(
     String(course?.bannerUrl || course?.thumbnailUrl || course?.imageUrl || "")
   );
@@ -333,6 +339,17 @@ export default function PublicStorefrontCourseRoute() {
     }
     if (paid && checkoutPending) {
       await reconcileCourseCheckout();
+      return;
+    }
+    if (paid && auth.isHydrating) return;
+    if (paid && !auth.isAuthed) {
+      const savedId = course?.id || course?._id || course?.courseId;
+      const savedSlug = storefront?.slug;
+      const next =
+        typeof savedId === "string" && typeof savedSlug === "string"
+          ? parsePublicCourseReturnPath(`/store/${savedSlug}/courses/${savedId}`)
+          : "";
+      router.push(safeLoginPath(undefined, next) as any);
       return;
     }
     checkoutStartRef.current = true;
@@ -521,6 +538,7 @@ export default function PublicStorefrontCourseRoute() {
             </View>
             <View style={styles.actionRow}>
               <Pressable
+                accessibilityRole="button"
                 accessibilityLabel={
                   paid && checkoutState === "confirmed"
                     ? "Open enrolled storefront course"
@@ -530,8 +548,12 @@ export default function PublicStorefrontCourseRoute() {
                         ? "Buy storefront course"
                         : "Open storefront course"
                 }
-                style={[styles.primaryButton, busy && styles.disabled]}
-                disabled={busy}
+                accessibilityState={{ disabled: busy || awaitingBuyAuth, busy }}
+                style={[
+                  styles.primaryButton,
+                  (busy || awaitingBuyAuth) && styles.disabled
+                ]}
+                disabled={busy || awaitingBuyAuth}
                 onPress={startCheckout}
               >
                 <Text style={styles.primaryButtonText}>

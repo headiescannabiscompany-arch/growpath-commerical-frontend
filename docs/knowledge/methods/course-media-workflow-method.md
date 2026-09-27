@@ -56,6 +56,10 @@ Draft courses, lessons, media metadata, summaries, documents, and authoring fiel
 
 The signed-out course catalog is discovery-only. It may request published public catalogs and show sign-in or registration actions, but it must not request an owned-course collection or expose Course Builder, create, invite, analytics, publish, unpublish, enrollment, purchase, or learner-progress controls before authentication.
 
+The same discovery boundary applies to the embedded course detail, not just its catalog. Before authentication settles, do not start personal learner requests. Signed-out details retain public descriptions, reviews, lesson titles and intentionally public free previews, but not personal payment/progress, notes, reports, AI, task or RSVP controls. Paid lessons and resources remain locked until current access is verified. A named sign-in action carries only the exact saved course identity through a validated same-origin course return. Login alone never enrolls, purchases or replays a learner action. Registration and email-verification continuity remain a separate workflow.
+
+Course-detail state is scoped to the current authenticated session, course and Facility workspace. Clear and revalidate it on sign-out, account/session, course or Facility changes, discard superseded requests, and do not reuse catalog ownership/access hints as a fallback after a failed detail load. Preserve existing authenticated owner and Facility permissions; a sign-in return does not grant paid content or workspace access.
+
 A signed-in learner may report a course. Persist the report and moderation case before
 attempting administrator-email delivery, and include both the exact course link and a
 focused moderation-review link. Email delivery is not the moderation record and its

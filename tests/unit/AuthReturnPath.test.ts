@@ -7,6 +7,7 @@ import {
   OFFERS_GIFT_RETURN_PATH,
   offersGiftReturnPath,
   parseAuthReturnPath,
+  parsePublicCourseReturnPath,
   parseSafeLoginReturnPath,
   resolveAuthReturnPath,
   safeLoginPath
@@ -15,6 +16,9 @@ import {
 const SESSION_ID = "cs_test_valid_session_123";
 const ATTEMPT_ID = "123e4567-e89b-42d3-a456-426614174000";
 const LIVE_SESSION_ID = "507f191e810c19729de86001";
+const COURSE_ID = "6aa2f5c5d339157652995f10";
+const SHARED_COURSE_PATH = `/courses?courseId=${COURSE_ID}`;
+const STOREFRONT_COURSE_PATH = `/store/growpathai/courses/${COURSE_ID}`;
 
 describe("internal authentication return allowlist", () => {
   it.each([
@@ -164,5 +168,71 @@ describe("internal authentication return allowlist", () => {
       "/home/commercial/products/new"
     ])
       expect(parseSafeLoginReturnPath(unsafe)).toBe("");
+  });
+
+  it.each([SHARED_COURSE_PATH, STOREFRONT_COURSE_PATH])(
+    "accepts the exact public course continuation %s without changing gift contracts",
+    (next) => {
+      expect(parsePublicCourseReturnPath(next)).toBe(next);
+      expect(parseSafeLoginReturnPath(next)).toBe(next);
+      expect(safeLoginPath("", next)).toBe(`/login?next=${encodeURIComponent(next)}`);
+      expect(parseAuthReturnPath(next)).toBe("");
+    }
+  );
+
+  it("preserves the existing lowercase storefront slug bounds for course returns", () => {
+    for (const slug of ["a", "saved-store-2", "a".repeat(100)]) {
+      const next = `/store/${slug}/courses/${COURSE_ID}`;
+      expect(parsePublicCourseReturnPath(next)).toBe(next);
+    }
+  });
+
+  it.each([
+    undefined,
+    null,
+    0,
+    {},
+    [SHARED_COURSE_PATH],
+    [STOREFRONT_COURSE_PATH, STOREFRONT_COURSE_PATH],
+    "/courses",
+    "/courses?courseId=",
+    `/courses?courseId=${COURSE_ID.toUpperCase()}`,
+    `/courses?courseId=${COURSE_ID.slice(1)}`,
+    `/courses?courseId=${COURSE_ID}0`,
+    `/courses?courseId=${COURSE_ID}&courseId=${COURSE_ID}`,
+    `${SHARED_COURSE_PATH}&extra=1`,
+    `/courses?extra=1&courseId=${COURSE_ID}`,
+    `/courses?courseId=${COURSE_ID}&`,
+    `/courses?%63ourseId=${COURSE_ID}`,
+    `/courses?courseId=%36${COURSE_ID.slice(1)}`,
+    `/courses?courseId[]=${COURSE_ID}`,
+    `/courses?courseid=${COURSE_ID}`,
+    `/courses/${COURSE_ID}`,
+    `${SHARED_COURSE_PATH}#lesson`,
+    ` ${SHARED_COURSE_PATH}`,
+    `${SHARED_COURSE_PATH}\n`,
+    `${SHARED_COURSE_PATH}\r`,
+    `https://evil.example${SHARED_COURSE_PATH}`,
+    `/${STOREFRONT_COURSE_PATH}`,
+    `${STOREFRONT_COURSE_PATH}?next=/admin`,
+    `${STOREFRONT_COURSE_PATH}#lesson`,
+    `${STOREFRONT_COURSE_PATH}/`,
+    `${STOREFRONT_COURSE_PATH}/../admin`,
+    `${STOREFRONT_COURSE_PATH}\n`,
+    STOREFRONT_COURSE_PATH.replace("growpathai", "GrowPathAI"),
+    STOREFRONT_COURSE_PATH.replace("growpathai", "%67rowpathai"),
+    STOREFRONT_COURSE_PATH.replace("growpathai", ".."),
+    STOREFRONT_COURSE_PATH.replace("growpathai", "-store"),
+    STOREFRONT_COURSE_PATH.replace("growpathai", "a".repeat(101)),
+    STOREFRONT_COURSE_PATH.replace(COURSE_ID, COURSE_ID.toUpperCase()),
+    STOREFRONT_COURSE_PATH.replace(COURSE_ID, "course-title"),
+    STOREFRONT_COURSE_PATH.replace("/store/", "/storefront/"),
+    STOREFRONT_COURSE_PATH.replace("/courses/", "\\courses\\"),
+    "/home/personal/courses",
+    "/admin"
+  ])("rejects noncanonical public course continuation %p", (next) => {
+    expect(parsePublicCourseReturnPath(next)).toBeNull();
+    expect(parseSafeLoginReturnPath(next)).toBe("");
+    expect(safeLoginPath("", next)).toBe("/login");
   });
 });

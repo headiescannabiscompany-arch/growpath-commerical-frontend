@@ -9,6 +9,10 @@ const mockRequestEmailVerification = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 let mockParams: Record<string, string> = {};
+const COURSE_RETURN_PATHS = [
+  "/courses?courseId=6aa2f5c5d339157652995f10",
+  "/store/growpathai/courses/6aa2f5c5d339157652995f10"
+];
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
@@ -169,6 +173,71 @@ describe("LoginScreen email verification", () => {
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/claim-gift"));
     expect(JSON.stringify(mockReplace.mock.calls)).not.toContain("gift-token-1");
   });
+
+  it.each(COURSE_RETURN_PATHS)(
+    "returns an existing learner only to the exact course detail after login: %s",
+    async (next) => {
+      mockParams = { next };
+      mockLogin.mockResolvedValueOnce({ ok: true });
+      const screen = render(<LoginScreen />);
+      expect(mockLogin).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+
+      fireEvent.changeText(screen.getByPlaceholderText("Email"), "learner@example.com");
+      fireEvent.changeText(
+        screen.getByPlaceholderText("Password"),
+        "synthetic-test-password"
+      );
+      fireEvent.press(screen.getByLabelText("Sign in"));
+
+      await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(next));
+      expect(mockReplace).toHaveBeenCalledTimes(1);
+      expect(mockPush).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(COURSE_RETURN_PATHS)(
+    "keeps failed course-return login on the login screen: %s",
+    async (next) => {
+      mockParams = { next };
+      mockLogin.mockRejectedValueOnce(
+        new ApiError("BAD_LOGIN", 401, { message: "Invalid email or password." })
+      );
+      const screen = render(<LoginScreen />);
+      fireEvent.changeText(screen.getByPlaceholderText("Email"), "learner@example.com");
+      fireEvent.changeText(screen.getByPlaceholderText("Password"), "wrong-password");
+      fireEvent.press(screen.getByLabelText("Sign in"));
+
+      await waitFor(() =>
+        expect(screen.getByText("Invalid email or password.")).toBeTruthy()
+      );
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(mockPush).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(COURSE_RETURN_PATHS)(
+    "preserves a validated course return through forgot-password: %s",
+    (next) => {
+      mockParams = { next };
+      const screen = render(<LoginScreen />);
+      fireEvent.press(screen.getByLabelText("Forgot password"));
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: "/forgot-password",
+        params: { next }
+      });
+    }
+  );
+
+  it.each(COURSE_RETURN_PATHS)(
+    "does not silently add course-registration continuity: %s",
+    (next) => {
+      mockParams = { next };
+      const screen = render(<LoginScreen />);
+      fireEvent.press(screen.getByLabelText("Create account"));
+      expect(mockPush).toHaveBeenCalledWith({ pathname: "/register", params: undefined });
+    }
+  );
 
   it("returns a purchaser login to one validated checkout identity", async () => {
     const next =

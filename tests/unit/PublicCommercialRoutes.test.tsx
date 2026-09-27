@@ -1,6 +1,7 @@
 import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Linking } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import PublicBrandProfileRoute, {
   createStyles as createBrandProfileStyles
@@ -1273,6 +1274,219 @@ describe("public commercial routes", () => {
       ).toBeTruthy()
     );
     expect(screen.queryByText("Continue to licensed provider")).toBeNull();
+  });
+
+  describe("storefront course Buy sign-in return", () => {
+    const savedCourseId = "507f191e810c19729de86002";
+    const savedStorefront = { ...publicPayload.storefront, slug: "living-soil-labs" };
+    const savedCourse = {
+      ...publicPayload.courses[0],
+      id: savedCourseId,
+      slug: "using-veg-mix"
+    };
+    const loginPath = `/login?next=${encodeURIComponent(
+      `/store/living-soil-labs/courses/${savedCourseId}`
+    )}`;
+
+    function expectNoCheckout() {
+      expect(mockStartCourseCheckout).not.toHaveBeenCalled();
+      expect(mockRecordCommercialAnalyticsEvent).not.toHaveBeenCalledWith(
+        expect.objectContaining({ eventType: "course_checkout_click" })
+      );
+    }
+
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ isAuthed: false, isHydrating: false, user: null });
+      mockRouteParams = { slug: "requested-store-alias", courseId: "using-veg-mix" };
+      mockFetchPublicStorefront.mockResolvedValue({
+        ...publicPayload,
+        storefront: savedStorefront,
+        courses: [savedCourse]
+      });
+    });
+
+    it.each(["id", "_id", "courseId"])(
+      "returns signed-out Buy to the stored %s detail instead of requested aliases",
+      async (field: string) => {
+        mockFetchPublicStorefront.mockResolvedValue({
+          ...publicPayload,
+          storefront: savedStorefront,
+          courses: [{ ...savedCourse, id: undefined, [field]: savedCourseId }]
+        });
+        const screen = render(<PublicStorefrontCourseAliasRoute />);
+        const buy = await screen.findByRole("button", { name: "Buy storefront course" });
+        expect(mockRouterPush).not.toHaveBeenCalled();
+        fireEvent.press(buy);
+
+        expect(mockRouterPush).toHaveBeenCalledTimes(1);
+        expect(mockRouterPush).toHaveBeenCalledWith(loginPath);
+        expectNoCheckout();
+        expect(mockPollCourseAccessStatus).not.toHaveBeenCalled();
+        expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each([
+      ["missing stored slug", undefined, savedCourseId],
+      ["unsafe stored slug", "../admin", savedCourseId],
+      ["noncanonical course id", "living-soil-labs", "course-1"],
+      ["array course id", "living-soil-labs", [savedCourseId]],
+      ["course slug without record id", "living-soil-labs", undefined]
+    ])(
+      "falls back to plain sign-in for %s without creating checkout",
+      async (_case: unknown, savedSlug: unknown, savedId: unknown) => {
+        mockFetchPublicStorefront.mockResolvedValue({
+          ...publicPayload,
+          storefront: { ...savedStorefront, slug: savedSlug },
+          courses: [{ ...savedCourse, id: savedId }]
+        });
+        const screen = render(<PublicStorefrontCourseRoute />);
+        fireEvent.press(
+          await screen.findByRole("button", { name: "Buy storefront course" })
+        );
+
+        expect(mockRouterPush).toHaveBeenCalledWith("/login");
+        expectNoCheckout();
+        expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each([false, true])(
+      "blocks new paid Buy during auth hydration when isAuthed is %s",
+      async (isAuthed: boolean) => {
+        mockUseAuth.mockReturnValue({ isAuthed, isHydrating: true, user: null });
+        const screen = render(<PublicStorefrontCourseRoute />);
+        const buy = await screen.findByRole("button", { name: "Buy storefront course" });
+        expect(buy).toBeDisabled();
+        expect(buy).toHaveProp("accessibilityState", { disabled: true, busy: false });
+        fireEvent.press(buy);
+        const handler = screen.UNSAFE_root.findAll(
+          (node: { props: { accessibilityLabel?: string; onPress?: unknown } }) =>
+            node.props.accessibilityLabel === "Buy storefront course" &&
+            typeof node.props.onPress === "function"
+        )[0].props.onPress;
+        await act(async () => handler());
+
+        expect(mockRouterPush).not.toHaveBeenCalled();
+        expectNoCheckout();
+        expect(mockPollCourseAccessStatus).not.toHaveBeenCalled();
+        expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+      }
+    );
+
+    it("does not auto-buy after login and retains signed-in checkout and recovery arguments", async () => {
+      mockStartCourseCheckout.mockResolvedValue({
+        url: "https://checkout.example.com/course"
+      });
+      const openUrlSpy = jest.spyOn(Linking, "openURL").mockResolvedValue(true as any);
+      const screen = render(<PublicStorefrontCourseRoute />);
+      fireEvent.press(
+        await screen.findByRole("button", { name: "Buy storefront course" })
+      );
+      expect(mockRouterPush).toHaveBeenCalledWith(loginPath);
+
+      mockUseAuth.mockReturnValue({
+        isAuthed: true,
+        isHydrating: false,
+        user: { id: "viewer-1" }
+      });
+      screen.rerender(<PublicStorefrontCourseRoute />);
+      expectNoCheckout();
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+      fireEvent.press(screen.getByRole("button", { name: "Buy storefront course" }));
+
+      await waitFor(() =>
+        expect(openUrlSpy).toHaveBeenCalledWith("https://checkout.example.com/course")
+      );
+      expect(mockStartCourseCheckout).toHaveBeenCalledTimes(1);
+      expect(mockStartCourseCheckout).toHaveBeenCalledWith(savedCourseId, {
+        returnPath: "/store/requested-store-alias/courses/using-veg-mix"
+      });
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        "@growpath/buyer-checkout-recovery/v1/course",
+        expect.any(String)
+      );
+      const stored = JSON.parse((AsyncStorage.setItem as jest.Mock).mock.calls[0][1]);
+      expect(stored).toEqual(
+        expect.objectContaining({
+          kind: "course",
+          itemId: savedCourseId,
+          returnPath: "/store/requested-store-alias/courses/using-veg-mix"
+        })
+      );
+      expect(mockRecordCommercialAnalyticsEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: "course_checkout_click",
+          courseId: savedCourseId,
+          storefrontSlug: "requested-store-alias",
+          source: "public_storefront_course"
+        })
+      );
+      expect(mockRouterPush).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps signed-out free Open as an explicit course-detail handoff", async () => {
+      mockFetchPublicStorefront.mockResolvedValue({
+        ...publicPayload,
+        storefront: savedStorefront,
+        courses: [{ ...savedCourse, access: "free", price: 0, stripePriceId: undefined }]
+      });
+      const openUrlSpy = jest.spyOn(Linking, "openURL").mockResolvedValue(true as any);
+      const screen = render(<PublicStorefrontCourseRoute />);
+      fireEvent.press(
+        await screen.findByRole("button", { name: "Open storefront course" })
+      );
+
+      await waitFor(() =>
+        expect(openUrlSpy).toHaveBeenCalledWith(`/courses?courseId=${savedCourseId}`)
+      );
+      expect(mockRouterPush).not.toHaveBeenCalled();
+      expectNoCheckout();
+    });
+
+    it.each(["confirmed", "pending"])(
+      "preserves signed-out %s recovery before the new-Buy sign-in guard",
+      async (state: string) => {
+        mockRouteParams = { ...mockRouteParams, checkout: "success" };
+        mockPollCourseAccessStatus.mockResolvedValue({
+          attempts: 1,
+          snapshot: { enrolled: state === "confirmed", paymentStatus: "paid" },
+          state
+        });
+        const openUrlSpy = jest.spyOn(Linking, "openURL").mockResolvedValue(true as any);
+        const screen = render(<PublicStorefrontCourseRoute />);
+        const label =
+          state === "confirmed"
+            ? "Open enrolled storefront course"
+            : "Check storefront course payment status";
+        await waitFor(() =>
+          expect(screen.getByRole("button", { name: label })).not.toBeDisabled()
+        );
+        fireEvent.press(screen.getByRole("button", { name: label }));
+
+        await waitFor(() => {
+          if (state === "confirmed") {
+            expect(openUrlSpy).toHaveBeenCalledWith(`/courses?courseId=${savedCourseId}`);
+          } else {
+            expect(mockPollCourseAccessStatus).toHaveBeenCalledTimes(2);
+          }
+        });
+        expect(mockRouterPush).not.toHaveBeenCalled();
+        expectNoCheckout();
+      }
+    );
+
+    it("preserves canceled recovery and requires sign-in only for a new paid Buy", async () => {
+      mockRouteParams = { ...mockRouteParams, checkout: "canceled" };
+      const screen = render(<PublicStorefrontCourseRoute />);
+      await screen.findByText("Checkout was canceled. Course access was not changed.");
+      expect(mockRouterPush).not.toHaveBeenCalled();
+      expectNoCheckout();
+      fireEvent.press(screen.getByRole("button", { name: "Buy storefront course" }));
+
+      expect(mockRouterPush).toHaveBeenCalledWith(loginPath);
+      expectNoCheckout();
+    });
   });
 
   it("loads a public storefront course detail with checkout and connected context", async () => {
