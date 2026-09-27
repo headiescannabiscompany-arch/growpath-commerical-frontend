@@ -150,7 +150,8 @@ export default function ProductCatalog() {
       ) : (
         <>
           <Text accessibilityLiveRegion="polite" style={styles.muted}>
-            {items.length} results{search ? ` for “${search}”` : ""}
+            {items.length} {items.length === 1 ? "result" : "results"}
+            {search ? ` for “${search}”` : ""}
           </Text>
           {!items.length ? (
             <Text style={styles.muted}>
@@ -169,7 +170,7 @@ export default function ProductCatalog() {
                   (trial ? "Concept trial" : "Product")
               );
               const href = trial
-                ? `/store/${encodeURIComponent(slug)}`
+                ? `/store/${encodeURIComponent(slug)}#product-trials`
                 : `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(id)}`;
               const uri = resolveImageUri(
                 item.imageUrl || item.coverImageUrl || item.thumbnailUrl || ""

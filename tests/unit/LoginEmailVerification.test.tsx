@@ -143,6 +143,20 @@ describe("LoginScreen email verification", () => {
     });
   });
 
+  it("returns an existing shopper to the validated public product after login", async () => {
+    const next = "/store/growpathai/products/6a90f76bf113936857750634";
+    mockParams = { next };
+    mockLogin.mockResolvedValueOnce({ ok: true });
+    const screen = render(<LoginScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText("Email"), "shopper@example.com");
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Password"),
+      "synthetic-test-password"
+    );
+    fireEvent.press(screen.getByLabelText("Sign in"));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(next));
+  });
+
   it("returns a successful gift-recipient login only to a validated claim path", async () => {
     mockParams = { next: "/claim-gift?token=gift-token-1" };
     mockLogin.mockResolvedValueOnce({ ok: true });

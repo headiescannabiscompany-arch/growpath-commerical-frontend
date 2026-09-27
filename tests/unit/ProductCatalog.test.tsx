@@ -94,3 +94,16 @@ it("deduplicates records without confusing a trial with a product", () => {
     })
   ).toHaveLength(2);
 });
+
+it("labels a single result and preserves the trial section destination", async () => {
+  mockDiscover.mockResolvedValue({
+    products: [],
+    trials: [{ ...hats[0], discoveryType: "trial" }]
+  });
+  const screen = render(<ProductCatalog />);
+  await waitFor(() => expect(screen.getByText("1 result")).toBeTruthy());
+  expect(screen.getByLabelText("Open Published hat 1").props.href).toBe(
+    "/store/growpathai#product-trials"
+  );
+  expect(screen.getByText("Concept trial · Not for sale")).toBeTruthy();
+});
