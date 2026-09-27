@@ -147,4 +147,22 @@ describe("internal authentication return allowlist", () => {
       `/login?next=%2Foffers%3Fgift%3D1%26liveSessionId%3D${LIVE_SESSION_ID}`
     );
   });
+
+  it("allows canonical public product returns without opening arbitrary redirects", () => {
+    const next = "/store/growpathai/products/6a90f76bf113936857750634";
+    expect(parseSafeLoginReturnPath(next)).toBe(next);
+    for (const unsafe of [
+      `https://evil.example${next}`,
+      `/${next}`,
+      `${next}?next=https://evil.example`,
+      `${next}#private`,
+      `${next}/../admin`,
+      next.replace("growpathai", "%2f%2fevil.example"),
+      next.replace("growpathai", ".."),
+      `${next}\n`,
+      "/admin",
+      "/home/commercial/products/new"
+    ])
+      expect(parseSafeLoginReturnPath(unsafe)).toBe("");
+  });
 });

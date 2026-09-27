@@ -200,10 +200,19 @@ export function isCanonicalLegacyCancelReturn(rawBrowserPath?: unknown): boolean
 
 export function parseSafeLoginReturnPath(value: unknown): string {
   return (
+    parsePublicProductReturnPath(value) ||
     parseAuthReturnPath(value) ||
     parseClaimReturnPath(value) ||
     (value === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "")
   );
+}
+
+// Only canonical public product routes; no arbitrary redirect, query or fragment.
+export function parsePublicProductReturnPath(value: unknown): string {
+  return typeof value === "string" &&
+    /^\/store\/[a-z0-9][a-z0-9-]{0,99}\/products\/[a-f0-9]{24}$/.test(value)
+    ? value
+    : "";
 }
 
 export function safeLoginPath(email: unknown, next: unknown): string {

@@ -5,6 +5,11 @@
     "index": true
   },
   "routes": {
+    "products": {
+      "title": "Products, Offers & Trials | GrowPathAI",
+      "description": "Find published products and concept trials, and browse their full public store collections.",
+      "index": false
+    },
     "": {
       "title": "GrowPath | Grow planning, tracking, and facility tools",
       "description": "Plan grows, track plants, diagnose issues, use cultivation calculators, run courses, and manage commercial or facility workflows with GrowPath."

@@ -521,6 +521,11 @@ export default function PublicProductRoute() {
             {product?.name || "Product"}
           </Text>
           <Text style={styles.subtitle}>{brandName}</Text>
+          <Link href={`/store/${encodeURIComponent(slug)}` as any} asChild>
+            <Pressable accessibilityRole="link" style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>All products from this store</Text>
+            </Pressable>
+          </Link>
         </View>
       }
     >
@@ -672,7 +677,10 @@ export default function PublicProductRoute() {
             ) : null}
 
             {product.purchaseIntentEnabled ? (
-              <ProductPurchaseIntentControl product={product} />
+              <ProductPurchaseIntentControl
+                product={product}
+                returnPath={`/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(productId)}`}
+              />
             ) : null}
 
             <View style={styles.actionRow}>

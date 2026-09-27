@@ -237,6 +237,8 @@ describe("Discover video search", () => {
     expect(mockPush).toHaveBeenCalledWith("/store/growpathai/products/hat-1");
     fireEvent.press(screen.getByLabelText("Open GrowPathAI Circuit Leaf — Midnight"));
     expect(mockPush).toHaveBeenCalledWith("/store/growpathai#product-trials");
+    fireEvent.press(screen.getByLabelText("View all Products, Offers & Trials"));
+    expect(mockPush).toHaveBeenCalledWith("/products");
   });
 
   it("keeps public trials inside the visible product rail when many products exist", async () => {

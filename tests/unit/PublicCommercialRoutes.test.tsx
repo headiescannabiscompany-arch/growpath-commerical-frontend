@@ -623,6 +623,8 @@ describe("public commercial routes", () => {
     );
     expect(screen.getByRole("header", { name: "Veg Mix" })).toHaveProp("aria-level", 1);
     expect(screen.getAllByText("Shared Back /store/living-soil-labs")).toHaveLength(1);
+    expect(screen.getByText("All products from this store")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/store/living-soil-labs");
     expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
     expect(screen.getByText("Interests: living soil, veg")).toBeTruthy();
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();

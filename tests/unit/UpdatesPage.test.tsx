@@ -68,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "shopping-browse-paths",
       "journal-large-photo-upload",
       "account-admin-controls",
       "admin-case-management",
@@ -94,7 +95,7 @@ describe("public Updates page", () => {
     ).toMatch(/two-person access acceptance are not yet complete/);
     expect(
       underway.find((entry) => entry.id === "final-web-acceptance")?.summary
-    ).toMatch(/not a redesign or a claim of completed legal review/);
+    ).toMatch(/broader review and final operational checks remain in progress/);
     const ids = PUBLIC_UPDATE_SECTIONS.flatMap((section) =>
       section.entries.map((entry) => entry.id)
     );

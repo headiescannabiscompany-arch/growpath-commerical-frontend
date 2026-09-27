@@ -68,4 +68,16 @@ describe("ProductPurchaseIntentControl", () => {
     expect(screen.getByText("Sign in to opt in")).toBeTruthy();
     expect(screen.getByRole("link").props.href).toBe("/login");
   });
+
+  it("returns existing customers to the exact public product after sign-in", () => {
+    mockUser = null;
+    const next = "/store/growpathai/products/6a90f76bf113936857750634";
+    const screen = render(
+      <ProductPurchaseIntentControl product={product} returnPath={next} />
+    );
+    expect(screen.getByRole("link").props.href).toBe(
+      `/login?next=${encodeURIComponent(next)}`
+    );
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
 });

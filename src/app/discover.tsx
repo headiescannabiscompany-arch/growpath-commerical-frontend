@@ -5,7 +5,6 @@ import {
   Image,
   type ImageSourcePropType,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -23,6 +22,7 @@ import { searchVideos } from "@/api/videos";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import ProductPurchaseIntentControl from "@/components/commercial/ProductPurchaseIntentControl";
+import BrowseRail from "@/components/commercial/BrowseRail";
 import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlobe";
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -383,7 +383,9 @@ export default function DiscoverDirectory() {
         ranking: "Recent & relevant",
         empty: "No matching products, offers, or trials.",
         results: [...catalogResults, ...feedResults(uniquePromotedProducts)],
-        browseHref: "/store"
+        browseHref: activeQuery
+          ? `/products?q=${encodeURIComponent(activeQuery)}`
+          : "/products"
       },
       {
         key: "marketplace",
@@ -650,11 +652,7 @@ export default function DiscoverDirectory() {
               </Pressable>
             ) : null}
             {section.results.length ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.rail}
-              >
+              <BrowseRail key={`${section.key}-${activeQuery}`} label={section.title}>
                 {section.results.slice(0, 12).map((result) => (
                   <View
                     key={`${section.key}-${result.id}`}
@@ -710,11 +708,12 @@ export default function DiscoverDirectory() {
                       <ProductPurchaseIntentControl
                         compact
                         product={result.purchaseIntentProduct}
+                        returnPath={result.href}
                       />
                     ) : null}
                   </View>
                 ))}
-              </ScrollView>
+              </BrowseRail>
             ) : (
               <Text style={[styles.empty, { color: palette.textMuted }]}>
                 {section.empty}
@@ -759,6 +758,8 @@ const styles = StyleSheet.create({
   sectionHeader: {
     alignItems: "center",
     flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
     justifyContent: "space-between",
     marginBottom: 8
   },

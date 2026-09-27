@@ -550,7 +550,11 @@ export default function PublicStorefrontRoute() {
                     </View>
                   </View>
                   {product?.purchaseIntentEnabled ? (
-                    <ProductPurchaseIntentControl compact product={product} />
+                    <ProductPurchaseIntentControl
+                      compact
+                      product={product}
+                      returnPath={`/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(String(product.id || product._id || ""))}`}
+                    />
                   ) : null}
                 </View>
               );

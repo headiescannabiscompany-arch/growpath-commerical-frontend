@@ -1,5 +1,13 @@
 # Commercial Workflow
 
+## Public shopping navigation
+
+- Discover previews have visible previous/next controls and a scrollbar; the preview is a bounded selection, not complete inventory.
+- View all Products, Offers & Trials opens `/products`, preserving the discovery query. Use only the existing public API and its published/visibility rules. Show the limit (up to 50 products and 50 trials per search), never invent totals or pagination.
+- Use the separate product/trial lists so reserved trial slots in the mixed preview do not hide returned products. Link each item to its canonical detail/store and the full owning store collection.
+- Product details expose All products from this store near the heading. Existing-customer purchase-interest sign-in preserves a strict canonical public product return path, never an arbitrary URL. This does not certify new-account email-verification return continuity.
+- Preserve purchase-interest disclosures, sale/regulated-product checks, and checkout rules. Navigation cannot place an order, submit interest, or expose seller management to shoppers.
+
 Feed campaign performance comes from recorded impressions, destination clicks, explicit downstream conversions, hides, and reports. Aggregate performance by campaign, eligible placement, and matched grow interest; never infer a conversion from an impression or claim causation from audience overlap.
 
 Feed campaign placement must preserve the primary job of each page. The Personal home command center uses no supplemental side rail: Free may show one clearly labeled promotion near the top and one after the workspace content, while paid plans show at most one clearly labeled promotion near the top. Never place a middle campaign on Personal home or let campaign density narrow or displace the grow, alert, task, and journal workspace.

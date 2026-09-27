@@ -6,15 +6,18 @@ import { submitProductPurchaseIntent } from "@/api/products";
 import { useOptionalAuth } from "@/auth/AuthContext";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { safeLoginPath } from "@/utils/authReturnPath";
 
 type Intent = "yes" | "maybe" | "no";
 
 export default function ProductPurchaseIntentControl({
   product,
-  compact = false
+  compact = false,
+  returnPath
 }: {
   product: any;
   compact?: boolean;
+  returnPath?: string;
 }) {
   const auth = useOptionalAuth();
   const { palette } = useAppTheme();
@@ -98,7 +101,7 @@ export default function ProductPurchaseIntentControl({
           ))}
         </View>
       ) : (
-        <Link href="/login" asChild>
+        <Link href={safeLoginPath(undefined, returnPath) as any} asChild>
           <Pressable accessibilityRole="link" style={styles.answer}>
             <Text style={styles.answerText}>Sign in to opt in</Text>
           </Pressable>

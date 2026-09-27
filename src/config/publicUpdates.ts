@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "shopping-browse-paths",
+        title: "Clearer product browsing and store links",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Discover rows now have visible previous/next controls. View all Products, Offers & Trials opens a searchable catalog, and product details link directly to the full owning store. Existing customers signing in to record product interest return to that product. Interest-only items remain separate from purchases; checkout and privacy rules are unchanged."
+      },
+      {
         id: "journal-large-photo-upload",
         title: "Larger journal photos and safer retries",
         date: "September 27, 2026",
@@ -135,7 +143,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "September 22, 2026",
         dateLabel: "Progress reviewed",
         summary:
-          "Saved-video automated regression checks are complete. Remaining work covers targeted mobile layouts, accessibility, permissions, and additional sharing and export checks, plus final contact and operational review. This is follow-up verification of existing features, not a redesign or a claim of completed legal review."
+          "Saved-video automated regression checks are complete. The full-app journey review covers visitors, personal customers, sellers, facility roles, and administrators: discovery, actions, return paths, mobile layouts, accessibility, permissions, sharing and exports. Focused shopping navigation fixes are listed as released separately; this broader review and final operational checks remain in progress."
       }
     ]
   },
@@ -155,11 +163,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "store-discovery-review",
-        title: "Easier store and product discovery",
+        title: "Further storefront experience improvements",
         date: "September 22, 2026",
         dateLabel: "Plan reviewed",
         summary:
-          "Review Discover scrolling, paths to full product catalogs, and commercial storefront navigation on desktop and phones. Investigate reported browsing friction before proposing focused fixes. The review is planned before course gifting; larger layout changes require separate approval."
+          "After the focused browsing and catalog fixes, review the broader shopping and seller journeys, collection organization, and campaign clarity. Any larger layout changes require separate approval and will be ordered against course gifting by estimated effort."
       },
       {
         id: "course-gifting",
