@@ -1082,6 +1082,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "linked workflow",
       "public product discovery with explicit horizontal browse controls, a searchable bounded catalog, and a direct full-store collection link from product details; existing-customer sign-in preserves only a validated canonical public product return path",
+      "public store directory begins with bounded non-dispensary browse results, URL-preserved search, clear/retry and stale-response protection without location requests; owner saves require a verified load and public previews use only the persisted slug",
       "server-returned Stripe payout links limited to exact HTTPS connect.stripe.com or accounts.stripe.com hosts without credentials or non-default ports; onboarding is not payout-readiness proof",
       "explicit first-time seller country choice with no inferred default, provider eligibility verification, immutable unresolved creation country and existing-account resume",
       "limitations",

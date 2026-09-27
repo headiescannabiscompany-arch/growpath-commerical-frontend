@@ -810,20 +810,57 @@ describe("Storefront route", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText("Add a public slug to create the public store URL.")
+        screen.getByText("Save a public slug to create the public store URL.")
       ).toBeTruthy()
     );
 
     expect(screen.queryByTestId("link-/store/your-brand")).toBeNull();
     expect(screen.queryByText("https://growpathai.com/store/your-brand")).toBeNull();
     expect(
-      screen.getByLabelText("View as User unavailable. Add a public slug first.").props
+      screen.getByLabelText("View as User unavailable. Save a public slug first.").props
         .accessibilityState?.disabled
     ).toBe(true);
     expect(
-      screen.getByLabelText("View Public Store unavailable. Add a public slug first.")
+      screen.getByLabelText("View Public Store unavailable. Save a public slug first.")
         .props.accessibilityState?.disabled
     ).toBe(true);
+
+    fireEvent.changeText(screen.getByLabelText("Storefront slug"), "unsaved-new-store");
+
+    expect(screen.queryByTestId("link-/store/unsaved-new-store")).toBeNull();
+    expect(
+      screen.getByLabelText("View as User unavailable. Save a public slug first.").props
+        .accessibilityState?.disabled
+    ).toBe(true);
+    expect(
+      screen.getByLabelText("View Public Store unavailable. Save a public slug first.")
+        .props.accessibilityState?.disabled
+    ).toBe(true);
+  });
+
+  it("keeps public and product-line previews on the saved slug until save succeeds", async () => {
+    const screen = render(<Storefront />);
+    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+
+    fireEvent.changeText(screen.getByLabelText("Storefront slug"), "renamed-grow-shop");
+
+    expect(screen.getAllByTestId("link-/store/grow-shop").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByTestId("link-/store/grow-shop?line=line-1").length
+    ).toBeGreaterThan(0);
+    expect(screen.queryByTestId("link-/store/renamed-grow-shop")).toBeNull();
+    expect(screen.queryByTestId("link-/store/renamed-grow-shop?line=line-1")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Save storefront settings"));
+    await waitFor(() => expect(screen.getByText("Storefront saved.")).toBeTruthy());
+
+    expect(screen.queryByTestId("link-/store/grow-shop")).toBeNull();
+    expect(screen.getAllByTestId("link-/store/renamed-grow-shop").length).toBeGreaterThan(
+      0
+    );
+    expect(
+      screen.getAllByTestId("link-/store/renamed-grow-shop?line=line-1").length
+    ).toBeGreaterThan(0);
   });
 
   it("redirects the legacy root storefront route to the commercial workspace", () => {
@@ -853,27 +890,67 @@ describe("Storefront route", () => {
     ).toBeTruthy();
   });
 
-  it("offers an in-page retry after the storefront workspace fails to load", async () => {
-    let storefrontAttempts = 0;
-    mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/commercial/storefront" && !options) {
-        storefrontAttempts += 1;
-        if (storefrontAttempts === 1) {
-          return Promise.reject(new Error("Storefront workspace unavailable"));
+  it.each(["/api/commercial/storefront", "/api/commercial/courses"])(
+    "blocks edits and writes after an initial %s failure, then retries the existing store",
+    async (failedPath) => {
+      let loadAttempts = 0;
+      mockApiRequest.mockImplementation((path: string, options?: any) => {
+        if (path === failedPath && !options) {
+          loadAttempts += 1;
+          if (loadAttempts === 1) {
+            return Promise.reject(new Error("Storefront workspace unavailable"));
+          }
         }
-      }
-      return apiResponseFor(path, options);
-    });
-    const screen = render(<Storefront />);
+        return apiResponseFor(path, options);
+      });
+      const screen = render(<Storefront />);
 
-    await waitFor(() =>
-      expect(screen.getByText("Storefront workspace unavailable")).toBeTruthy()
-    );
-    fireEvent.press(screen.getByLabelText("Retry commercial storefront workspace"));
+      await waitFor(() =>
+        expect(screen.getByText("Storefront workspace unavailable")).toBeTruthy()
+      );
+      expect(screen.getByLabelText("Storefront name").props.editable).toBe(false);
+      expect(screen.getByLabelText("Storefront slug").props.editable).toBe(false);
+      expect(screen.getByLabelText("Product name").props.editable).toBe(false);
+      expect(screen.getByLabelText("Save storefront settings")).toBeDisabled();
+      expect(screen.getByLabelText("Create storefront setup tasks")).toBeDisabled();
+      expect(screen.getByLabelText("Upload storefront logo")).toBeDisabled();
+      expect(
+        screen.getByLabelText("Retry commercial storefront workspace")
+      ).toBeEnabled();
+      fireEvent.press(screen.getByLabelText("Save storefront settings"));
+      fireEvent.press(screen.getByLabelText("Create storefront setup tasks"));
+      fireEvent.press(screen.getByLabelText("Upload storefront logo"));
+      expect(
+        mockApiRequest.mock.calls.filter(([, options]) => options?.method)
+      ).toHaveLength(0);
+      expect(mockPersistImageUri).not.toHaveBeenCalled();
 
-    await waitFor(() => expect(storefrontAttempts).toBe(2));
-    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
-  });
+      fireEvent.press(screen.getByLabelText("Retry commercial storefront workspace"));
+
+      await waitFor(() => expect(loadAttempts).toBe(2));
+      await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+      expect(screen.getByLabelText("Storefront name").props.editable).toBe(true);
+      fireEvent.changeText(
+        screen.getByLabelText("Storefront name"),
+        "Recovered Grow Shop"
+      );
+      fireEvent.press(screen.getByLabelText("Save storefront settings"));
+
+      await waitFor(() => expect(screen.getByText("Storefront saved.")).toBeTruthy());
+      expect(mockApiRequest.mock.calls.filter(([, options]) => options?.method)).toEqual([
+        [
+          "/api/commercial/storefront",
+          expect.objectContaining({
+            method: "PATCH",
+            body: expect.objectContaining({
+              name: "Recovered Grow Shop",
+              slug: "grow-shop"
+            })
+          })
+        ]
+      ]);
+    }
+  );
 
   it("rejects invalid storefront coordinates and product prices without writes", async () => {
     const screen = render(<Storefront />);

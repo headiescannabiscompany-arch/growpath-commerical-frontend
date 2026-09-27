@@ -52,43 +52,54 @@ export default function StoreIndex() {
   const queryParam = useMemo(() => String(params.q || "").trim(), [params.q]);
   const [slug, setSlug] = useState("");
   const [brandQuery, setBrandQuery] = useState(queryParam);
+  const [brandSearch, setBrandSearch] = useState({ q: queryParam, similarTo });
+  const [directoryRetry, setDirectoryRetry] = useState(0);
   const [brands, setBrands] = useState<any[]>([]);
   const [dispensaries, setDispensaries] = useState<any[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [searching, setSearching] = useState(true);
   const [searchingDispensaries, setSearchingDispensaries] = useState(false);
   const [directoryMessage, setDirectoryMessage] = useState("");
+  const [directoryFailed, setDirectoryFailed] = useState(false);
   const [dispensaryMessage, setDispensaryMessage] = useState("");
   const [dispensaryState, setDispensaryState] = useState("");
   const [radiusMiles, setRadiusMiles] = useState(25);
   const [coordinates, setCoordinates] = useState<PublicCoordinates | null>(null);
   const cleanSlug = slug.trim();
 
-  const loadBrands = useCallback(async (options?: { q?: string; similarTo?: string }) => {
-    const q = String(options?.q ?? "").trim();
-    const related = String(options?.similarTo ?? "").trim();
-    if (!q && !related) return;
-    setSearching(true);
-    setDirectoryMessage("");
-    try {
-      const payload = await searchPublicStorefronts({
-        q: q || undefined,
-        similarTo: related || undefined,
-        limit: 12
-      });
-      const rows = asArray(payload);
-      setBrands(rows);
-      if (!rows.length) setDirectoryMessage("No matching public brands found yet.");
-    } catch (error: any) {
-      setDirectoryMessage(error?.message || "Unable to load public brands.");
-    } finally {
-      setSearching(false);
-    }
-  }, []);
+  useEffect(() => {
+    setBrandQuery(queryParam);
+    setBrandSearch({ q: queryParam, similarTo });
+  }, [queryParam, similarTo]);
 
   useEffect(() => {
-    if (similarTo) void loadBrands({ similarTo });
-    else if (queryParam) void loadBrands({ q: queryParam });
-  }, [loadBrands, queryParam, similarTo]);
+    let current = true;
+    setSearching(true);
+    setDirectoryMessage("");
+    setDirectoryFailed(false);
+    setBrands([]);
+    searchPublicStorefronts({
+      q: brandSearch.q || undefined,
+      similarTo: brandSearch.q ? undefined : brandSearch.similarTo || undefined,
+      limit: 12
+    })
+      .then((payload) => {
+        if (!current) return;
+        const rows = asArray(payload);
+        setBrands(rows);
+        if (!rows.length) setDirectoryMessage("No matching public stores found yet.");
+      })
+      .catch(() => {
+        if (!current) return;
+        setDirectoryFailed(true);
+        setDirectoryMessage("Stores could not load. Please try again.");
+      })
+      .finally(() => {
+        if (current) setSearching(false);
+      });
+    return () => {
+      current = false;
+    };
+  }, [brandSearch.q, brandSearch.similarTo, directoryRetry]);
 
   function openPublicRoute(kind: "profile" | "store") {
     if (!cleanSlug) return;
@@ -97,7 +108,18 @@ export default function StoreIndex() {
   }
 
   function searchBrands() {
-    void loadBrands({ q: brandQuery });
+    if (searching) return;
+    const q = brandQuery.trim();
+    router.setParams({ q, similarTo: "" });
+    setBrandSearch({ q, similarTo: "" });
+    setDirectoryRetry((value) => value + 1);
+  }
+
+  function clearBrandSearch() {
+    router.setParams({ q: "", similarTo: "" });
+    setBrandQuery("");
+    setBrandSearch({ q: "", similarTo: "" });
+    setDirectoryRetry((value) => value + 1);
   }
 
   const loadDispensaries = useCallback(
@@ -207,7 +229,9 @@ export default function StoreIndex() {
 
       <AppCard>
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          {similarTo ? "Similar Storefronts" : "Find Storefronts"}
+          {brandSearch.similarTo && !brandSearch.q
+            ? "Similar Storefronts"
+            : "Find Storefronts"}
         </Text>
         <Text style={styles.cardText}>
           Search public commercial storefronts by brand, category, product line, or store
@@ -219,6 +243,8 @@ export default function StoreIndex() {
           autoCapitalize="none"
           autoCorrect={false}
           onChangeText={setBrandQuery}
+          onSubmitEditing={searchBrands}
+          returnKeyType="search"
           placeholder="soil, nutrients, seeds, garden center..."
           placeholderTextColor={palette.textMuted}
           style={styles.input}
@@ -226,18 +252,41 @@ export default function StoreIndex() {
         />
         <Pressable
           accessibilityRole="button"
-          disabled={!brandQuery.trim() || searching}
+          disabled={searching}
           onPress={searchBrands}
-          style={[
-            styles.secondaryButton,
-            (!brandQuery.trim() || searching) && styles.disabled
-          ]}
+          style={[styles.secondaryButton, searching && styles.disabled]}
         >
           <Text style={styles.secondaryButtonText}>
             {searching ? "Searching..." : "Search Storefronts"}
           </Text>
         </Pressable>
-        {directoryMessage ? <Text style={styles.meta}>{directoryMessage}</Text> : null}
+        {brandSearch.q || brandSearch.similarTo ? (
+          <Pressable
+            accessibilityRole="button"
+            disabled={searching}
+            onPress={clearBrandSearch}
+            style={[styles.secondaryButton, searching && styles.disabled]}
+          >
+            <Text style={styles.secondaryButtonText}>Clear store search</Text>
+          </Pressable>
+        ) : null}
+        <Text style={styles.meta}>
+          Showing up to 12 public stores. Search to narrow the results.
+        </Text>
+        {directoryMessage ? (
+          <Text accessibilityLiveRegion="polite" style={styles.meta}>
+            {directoryMessage}
+          </Text>
+        ) : null}
+        {directoryFailed ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setDirectoryRetry((value) => value + 1)}
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.secondaryButtonText}>Retry stores</Text>
+          </Pressable>
+        ) : null}
         {brands.map((brand) => {
           const publicSlug = rowSlug(brand);
           return (

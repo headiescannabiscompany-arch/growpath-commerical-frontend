@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "store-directory-recovery",
+        title: "Store discovery and safer seller setup",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "The store directory now shows public stores without requiring a search first, remembers your search when you return, and offers clear and retry controls. Seller setup prevents saving after a failed load, and public previews use the saved store address. Existing page layout, permissions, location choices and checkout rules are unchanged."
+      },
+      {
         id: "shopping-browse-paths",
         title: "Clearer product browsing and store links",
         date: "September 27, 2026",

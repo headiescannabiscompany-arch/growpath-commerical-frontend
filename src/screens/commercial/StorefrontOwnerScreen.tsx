@@ -291,13 +291,13 @@ function PublicPreviewLink({ href, label }: { href?: string; label: string }) {
     return (
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel={`${label} unavailable. Add a public slug first.`}
+        accessibilityLabel={`${label} unavailable. Save a public slug first.`}
         accessibilityState={{ disabled: true }}
         disabled
         style={[styles.previewButton, styles.disabled]}
       >
         <Text style={styles.previewButtonText}>{label}</Text>
-        <Text style={styles.previewDisabledText}>Add public slug first</Text>
+        <Text style={styles.previewDisabledText}>Save public slug first</Text>
       </Pressable>
     );
   }
@@ -410,6 +410,7 @@ export default function Storefront({
   const [campaigns, setCampaigns] = useState<AnyRec[]>([]);
   const [inventory, setInventory] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
+  const [storefrontLoaded, setStorefrontLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [savingStorefront, setSavingStorefront] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
@@ -521,6 +522,7 @@ export default function Storefront({
         setLives(asArray(liveRes, "lives").filter(liveIsPublic));
         setCampaigns(asArray(feedRes, "items").filter(campaignIsActive));
         setInventory(asArray(inventoryRes, "inventory"));
+        setStorefrontLoaded(true);
       } catch (e) {
         setLoadError(mapApiError(e) ?? e);
       } finally {
@@ -576,7 +578,7 @@ export default function Storefront({
     });
   }, [storefront]);
 
-  const publicSlug = storeDraft.slug.trim();
+  const publicSlug = String(storefront?.slug ?? "").trim();
   const isDispensary = storeDraft.storefrontType === "dispensary";
   const publicStorePath = publicSlug ? `/store/${encodeURIComponent(publicSlug)}` : "";
   const publishedProducts = useMemo(
@@ -737,12 +739,13 @@ export default function Storefront({
   });
   const publishDisabled = !storeDraft.isPublished && publishBlockers.length > 0;
   const writeBusy = savingStorefront || savingProduct || creatingSetupTasks;
-  const interactionBusy =
+  const requestBusy =
     loading ||
     writeBusy ||
     Boolean(uploadingImageField) ||
     locatingStorefront ||
     refreshing;
+  const interactionBusy = !storefrontLoaded || requestBusy;
   const actionProgressLabel = savingStorefront
     ? "Saving storefront settings"
     : savingProduct
@@ -758,6 +761,7 @@ export default function Storefront({
   async function saveStorefront() {
     if (
       !canEdit ||
+      !storefrontLoaded ||
       loadInFlightRef.current ||
       writeInFlightRef.current ||
       uploadInFlightRef.current ||
@@ -844,6 +848,7 @@ export default function Storefront({
   async function locateStorefront() {
     if (
       !canEdit ||
+      !storefrontLoaded ||
       loadInFlightRef.current ||
       writeInFlightRef.current ||
       uploadInFlightRef.current ||
@@ -879,6 +884,7 @@ export default function Storefront({
   async function createSetupTasks() {
     if (
       !canEdit ||
+      !storefrontLoaded ||
       !incompleteSetup.length ||
       loadInFlightRef.current ||
       writeInFlightRef.current ||
@@ -957,6 +963,7 @@ export default function Storefront({
   ) {
     if (
       !canEdit ||
+      !storefrontLoaded ||
       loadInFlightRef.current ||
       writeInFlightRef.current ||
       uploadInFlightRef.current ||
@@ -1007,6 +1014,7 @@ export default function Storefront({
   async function createProduct() {
     if (
       !canEdit ||
+      !storefrontLoaded ||
       !productDraft.name.trim() ||
       loadInFlightRef.current ||
       writeInFlightRef.current ||
@@ -1182,12 +1190,9 @@ export default function Storefront({
           <Pressable
             accessibilityLabel="Retry commercial storefront workspace"
             accessibilityRole="button"
-            disabled={loading || interactionBusy}
+            disabled={requestBusy}
             onPress={() => void load()}
-            style={[
-              styles.secondaryButton,
-              (loading || interactionBusy) && styles.disabled
-            ]}
+            style={[styles.secondaryButton, requestBusy && styles.disabled]}
           >
             <Text style={styles.secondaryText}>Retry</Text>
           </Pressable>
@@ -1912,7 +1917,7 @@ export default function Storefront({
             <Text selectable style={styles.publicLinkText}>
               {publicStorePath
                 ? currentPublicUrl(publicStorePath)
-                : "Add a public slug to create the public store URL."}
+                : "Save a public slug to create the public store URL."}
             </Text>
           </View>
           <View style={styles.previewActions}>

@@ -1,9 +1,10 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import StoreIndex, { createStyles } from "@/app/store";
 
 const mockPush = jest.fn();
+const mockSetParams = jest.fn();
 const mockSearchPublicStorefronts = jest.fn();
 const mockRequestCurrentCoordinates = jest.fn();
 const mockLinkHrefs: string[] = [];
@@ -18,7 +19,7 @@ jest.mock("expo-router", () => {
       return React.createElement(React.Fragment, null, children);
     },
     useLocalSearchParams: () => mockParams,
-    useRouter: () => ({ push: mockPush })
+    useRouter: () => ({ push: mockPush, setParams: mockSetParams })
   };
 });
 
@@ -49,6 +50,7 @@ jest.mock("@/components/layout/AppCard", () => {
 describe("StoreIndex", () => {
   beforeEach(() => {
     mockPush.mockReset();
+    mockSetParams.mockReset();
     mockSearchPublicStorefronts.mockReset();
     mockRequestCurrentCoordinates.mockReset();
     mockLinkHrefs.length = 0;
@@ -99,8 +101,9 @@ describe("StoreIndex", () => {
     expect(styles.radiusButtonSelected.backgroundColor).toBe(palette.accentSoft);
   });
 
-  it("opens public storefront first and keeps profile secondary from a slug", () => {
+  it("opens public storefront first and keeps profile secondary from a slug", async () => {
     const screen = render(<StoreIndex />);
+    await screen.findByText("Living Soil Labs");
 
     fireEvent.changeText(screen.getByLabelText("Public brand slug"), "living-soil-labs");
     fireEvent.press(screen.getByText("Open Storefront"));
@@ -130,6 +133,7 @@ describe("StoreIndex", () => {
 
   it("searches public brands by query", async () => {
     const screen = render(<StoreIndex />);
+    await screen.findByText("Living Soil Labs");
 
     fireEvent.changeText(screen.getByLabelText("Search public brands"), "soil");
     fireEvent.press(screen.getByText("Search Storefronts"));
@@ -141,9 +145,11 @@ describe("StoreIndex", () => {
       })
     );
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
+    expect(mockSetParams).toHaveBeenCalledWith({ q: "soil", similarTo: "" });
   });
 
   it("searches dispensaries by state without offering GrowPath checkout", async () => {
+    mockSearchPublicStorefronts.mockResolvedValueOnce({ storefronts: [] });
     mockSearchPublicStorefronts.mockResolvedValueOnce({
       storefronts: [
         {
@@ -180,6 +186,7 @@ describe("StoreIndex", () => {
   });
 
   it("uses current location for distance-ranked dispensary discovery", async () => {
+    mockSearchPublicStorefronts.mockResolvedValueOnce({ storefronts: [] });
     mockSearchPublicStorefronts.mockResolvedValueOnce({
       storefronts: [
         {
@@ -207,21 +214,94 @@ describe("StoreIndex", () => {
     expect(screen.getByText("4.3 miles away")).toBeTruthy();
   });
 
-  it("links commercial storefront management to the canonical commercial workspace", () => {
+  it("links commercial storefront management to the canonical commercial workspace", async () => {
     mockMode = "commercial";
-    render(<StoreIndex />);
+    const screen = render(<StoreIndex />);
+    await screen.findByText("Living Soil Labs");
 
     expect(mockLinkHrefs).toContain("/home/commercial/storefront");
     expect(mockLinkHrefs).not.toContain("/storefront");
   });
 
-  it("does not expose owner controls or GrowPath plan offers to personal users", () => {
+  it("does not expose owner controls or GrowPath plan offers to personal users", async () => {
     const screen = render(<StoreIndex />);
+    await screen.findByText("Living Soil Labs");
 
     expect(screen.queryByText("Storefront offers")).toBeNull();
     expect(screen.queryByText("View Offers")).toBeNull();
     expect(screen.queryByText("Manage Storefront")).toBeNull();
     expect(mockLinkHrefs).not.toContain("/offers");
     expect(mockLinkHrefs).not.toContain("/home/commercial/storefront");
+  });
+
+  it("loads public stores on entry without a query or requesting location", async () => {
+    const screen = render(<StoreIndex />);
+    await screen.findByText("Living Soil Labs");
+    expect(mockSearchPublicStorefronts).toHaveBeenCalledTimes(1);
+    expect(mockSearchPublicStorefronts).toHaveBeenCalledWith({
+      q: undefined,
+      similarTo: undefined,
+      limit: 12
+    });
+    expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("Showing up to 12 public stores. Search to narrow the results.")
+    ).toBeTruthy();
+  });
+
+  it("restores a URL search and clears it back to public browsing", async () => {
+    mockParams = { q: "soil" };
+    const screen = render(<StoreIndex />);
+    await screen.findByText("Living Soil Labs");
+    expect(screen.getByLabelText("Search public brands").props.value).toBe("soil");
+    fireEvent.press(screen.getByText("Clear store search"));
+    await waitFor(() =>
+      expect(mockSearchPublicStorefronts).toHaveBeenLastCalledWith({
+        q: undefined,
+        similarTo: undefined,
+        limit: 12
+      })
+    );
+    expect(mockSetParams).toHaveBeenCalledWith({ q: "", similarTo: "" });
+    expect(screen.getByLabelText("Search public brands").props.value).toBe("");
+    expect(screen.queryByText("Clear store search")).toBeNull();
+  });
+
+  it("supports keyboard search and distinguishes empty results from a failed request", async () => {
+    const screen = render(<StoreIndex />);
+    await screen.findByText("Living Soil Labs");
+    mockSearchPublicStorefronts.mockResolvedValueOnce({ storefronts: [] });
+    fireEvent.changeText(screen.getByLabelText("Search public brands"), "missing");
+    fireEvent(screen.getByLabelText("Search public brands"), "submitEditing");
+    await screen.findByText("No matching public stores found yet.");
+    expect(screen.queryByText("Living Soil Labs")).toBeNull();
+    mockSearchPublicStorefronts.mockRejectedValueOnce(
+      new Error("PRIVATE_TRANSPORT_DETAILS")
+    );
+    fireEvent.press(screen.getByText("Search Storefronts"));
+    await screen.findByText("Stores could not load. Please try again.");
+    expect(screen.queryByText("No matching public stores found yet.")).toBeNull();
+    expect(screen.queryByText("PRIVATE_TRANSPORT_DETAILS")).toBeNull();
+    fireEvent.press(screen.getByText("Retry stores"));
+    await screen.findByText("Living Soil Labs");
+    expect(screen.queryByText("Retry stores")).toBeNull();
+  });
+
+  it("ignores a late response when the route search changes", async () => {
+    let resolveOld: (value: any) => void = () => {};
+    mockSearchPublicStorefronts.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveOld = resolve;
+      })
+    );
+    const screen = render(<StoreIndex />);
+    mockParams = { q: "soil" };
+    screen.rerender(<StoreIndex />);
+    await screen.findByText("Living Soil Labs");
+    await act(async () =>
+      resolveOld({ storefronts: [{ name: "Stale store", slug: "stale" }] })
+    );
+    expect(screen.queryByText("Stale store")).toBeNull();
+    expect(screen.getByLabelText("Search public brands").props.value).toBe("soil");
   });
 });

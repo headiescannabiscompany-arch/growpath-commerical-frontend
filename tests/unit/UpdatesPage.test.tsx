@@ -68,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "store-directory-recovery",
       "shopping-browse-paths",
       "journal-large-photo-upload",
       "account-admin-controls",

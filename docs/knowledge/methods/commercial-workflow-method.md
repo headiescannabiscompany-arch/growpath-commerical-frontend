@@ -7,6 +7,8 @@
 - Use the separate product/trial lists so reserved trial slots in the mixed preview do not hide returned products. Link each item to its canonical detail/store and the full owning store collection.
 - Product details expose All products from this store near the heading. Existing-customer purchase-interest sign-in preserves a strict canonical public product return path, never an arbitrary URL. This does not certify new-account email-verification return continuity.
 - Preserve purchase-interest disclosures, sale/regulated-product checks, and checkout rules. Navigation cannot place an order, submit interest, or expose seller management to shoppers.
+- The public store directory loads its existing published, non-dispensary browse results on entry without requiring a known name or technical slug. Keep the bounded result limit explicit, preserve submitted searches in the URL, provide Clear and Retry, distinguish no matches from load failure, and ignore superseded responses. Dispensary/location search remains a separate deliberate action; default browsing never requests location or enables transactions.
+- Storefront owner mutations require a successful storefront load. A failed initial lookup or related load must not expose a savable blank create form. Public previews use only the persisted storefront slug; typing an unsaved slug never changes a public destination. Retry restores the verified saved record before enabling writes.
 
 Feed campaign performance comes from recorded impressions, destination clicks, explicit downstream conversions, hides, and reports. Aggregate performance by campaign, eligible placement, and matched grow interest; never infer a conversion from an impression or claim causation from audience overlap.
 
