@@ -12,7 +12,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 
 import {
   checkoutProduct,
@@ -39,6 +39,7 @@ import BuyerPaymentReviewCard from "@/components/commerce/BuyerPaymentReviewCard
 import ProductPurchaseIntentControl from "@/components/commercial/ProductPurchaseIntentControl";
 import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { publicGrowInterests } from "@/utils/publicCommerce";
+import { parsePublicProductReturnPath, safeLoginPath } from "@/utils/authReturnPath";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -201,6 +202,7 @@ export default function PublicProductRoute() {
     product?: string;
   }>();
   const auth = useAuth();
+  const router = useRouter();
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
   const requestedProductId = useMemo(
     () => String(params.productId || "").trim(),
@@ -425,8 +427,19 @@ export default function PublicProductRoute() {
   }, [product, slug]);
 
   async function buy() {
+    if (auth.isHydrating || !productCanCheckout(product, storefront)) return;
     const id = productKey(product);
     if (!id) return;
+    if (!auth.isAuthed) {
+      const savedId = product?.id || product?._id || product?.productId;
+      const savedSlug = storefront?.slug;
+      const next =
+        typeof savedId === "string" && typeof savedSlug === "string"
+          ? parsePublicProductReturnPath(`/store/${savedSlug}/products/${savedId}`)
+          : "";
+      router.push(safeLoginPath(undefined, next) as any);
+      return;
+    }
     setBusy(true);
     setFeedback("");
     trackCommercialClick({
@@ -686,9 +699,14 @@ export default function PublicProductRoute() {
             <View style={styles.actionRow}>
               {canCheckout ? (
                 <Pressable
+                  accessibilityRole="button"
                   accessibilityLabel={`Buy ${product?.name || "product"}`}
-                  style={[styles.primaryButton, busy && styles.disabled]}
-                  disabled={busy}
+                  accessibilityState={{ disabled: busy || auth.isHydrating, busy }}
+                  style={[
+                    styles.primaryButton,
+                    (busy || auth.isHydrating) && styles.disabled
+                  ]}
+                  disabled={busy || auth.isHydrating}
                   onPress={buy}
                 >
                   <Text style={styles.primaryButtonText}>

@@ -1084,6 +1084,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "public product discovery with explicit horizontal browse controls, a searchable bounded catalog, and a direct full-store collection link from product details; existing-customer sign-in preserves only a validated canonical public product return path",
       "public store directory begins with bounded non-dispensary browse results, URL-preserved search, clear/retry and stale-response protection without location requests; owner saves require a verified load and public previews use only the persisted slug",
       "Product Line editing requires a successfully loaded exact record identity, with safe unavailable/retry states and no stale-record writes; public collection filters include supported singular and plural product-line links without changing publication or transaction eligibility",
+      "ordinary product Buy waits for authentication hydration; signed-out shoppers go to sign-in with only a validated saved storefront/product return, without checkout creation or checkout-click analytics; returning never auto-buys and leaves signed-in checkout, purchase-interest and regulated rules unchanged",
       "server-returned Stripe payout links limited to exact HTTPS connect.stripe.com or accounts.stripe.com hosts without credentials or non-default ports; onboarding is not payout-readiness proof",
       "explicit first-time seller country choice with no inferred default, provider eligibility verification, immutable unresolved creation country and existing-account resume",
       "limitations",

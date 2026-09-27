@@ -29,9 +29,10 @@ const PAGE_CHANGE_BUDGETS = new Map([
   ["src/app/profile/index.tsx", 80],
   ["src/app/marketplace.tsx", 30],
   ["src/app/store/[slug].tsx", 120],
-  // Owner-approved 2026-09-27 full-store link and product sign-in return add
-  // 14 cumulative lines to this already-reviewed page; no layout/theme rewrite.
-  ["src/app/store/[slug]/products/[productId].tsx", 124],
+  // Owner-approved 2026-09-27 shopping continuation includes the full-store link,
+  // canonical signed-out Buy return, hydration guard and button accessibility.
+  // Reviewed cumulative total is 148 lines; no layout or theme/style rewrite.
+  ["src/app/store/[slug]/products/[productId].tsx", 148],
   ["src/screens/MarketplaceScreen.js", 120],
   ["src/screens/LiveSessionScreen.js", 80],
   ["src/screens/AdminPayoutsScreen.js", 260],
