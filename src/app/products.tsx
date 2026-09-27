@@ -1,4 +1,4 @@
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -39,6 +39,7 @@ export function publicCatalogRows(payload: any): any[] {
 }
 
 export default function ProductCatalog() {
+  const router = useRouter();
   const params = useLocalSearchParams<{ q?: string }>();
   const initialQuery = typeof params.q === "string" ? params.q : "";
   const { palette } = useAppTheme();
@@ -78,7 +79,9 @@ export default function ProductCatalog() {
     };
   }, [search, retry]);
   const submit = () => {
-    setSearch(query.trim());
+    const nextQuery = query.trim();
+    router.setParams({ q: nextQuery });
+    setSearch(nextQuery);
     setRetry((value) => value + 1);
   };
   return (
@@ -119,6 +122,7 @@ export default function ProductCatalog() {
               onPress={() => {
                 setQuery("");
                 setSearch("");
+                router.setParams({ q: "" });
               }}
               style={styles.button}
             >

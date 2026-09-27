@@ -5,11 +5,14 @@ import { getRoutePolicy } from "@/navigation/routeAccess";
 import { metadataForPathname } from "@/seo/publicRouteMetadata";
 
 const mockDiscover = jest.fn();
+const mockSetParams = jest.fn();
+let mockParams: Record<string, string> = {};
 jest.mock("@/api/storefront", () => ({
   discoverPublicProductsAndTrials: (...args: any[]) => mockDiscover(...args)
 }));
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({}),
+  useLocalSearchParams: () => mockParams,
+  useRouter: () => ({ setParams: mockSetParams }),
   Link: ({ children, href }: any) => require("react").cloneElement(children, { href })
 }));
 jest.mock("@/components/layout/AppPage", () => ({
@@ -42,6 +45,8 @@ const hats = Array.from({ length: 24 }, (_, index) => ({
 }));
 beforeEach(() => {
   mockDiscover.mockReset();
+  mockSetParams.mockReset();
+  mockParams = {};
 });
 
 it("is public without granting seller permissions", () => {
@@ -71,6 +76,23 @@ it("uses all returned public products rather than the shortened discovery mix", 
   fireEvent.press(screen.getByRole("button", { name: "Search products" }));
   await waitFor(() =>
     expect(mockDiscover).toHaveBeenLastCalledWith({ q: "sage", limit: 50 })
+  );
+  expect(mockSetParams).toHaveBeenLastCalledWith({ q: "sage" });
+  fireEvent.press(screen.getByText("Clear search"));
+  expect(mockSetParams).toHaveBeenLastCalledWith({ q: "" });
+  await waitFor(() => expect(screen.getByText("24 results")).toBeTruthy());
+});
+
+it("restores a catalog search from its navigation URL", async () => {
+  mockParams = { q: "sage" };
+  mockDiscover.mockResolvedValue({ products: [], trials: [] });
+  const screen = render(<ProductCatalog />);
+  expect(screen.getByDisplayValue("sage")).toBeTruthy();
+  await waitFor(() =>
+    expect(screen.getByText(/No matching products or trials/)).toBeTruthy()
+  );
+  await waitFor(() =>
+    expect(mockDiscover).toHaveBeenCalledWith({ q: "sage", limit: 50 })
   );
 });
 
