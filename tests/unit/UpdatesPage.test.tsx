@@ -140,6 +140,11 @@ describe("public Updates page", () => {
     expect(entry?.summary).toMatch(/same browser for up to one hour/);
     expect(entry?.summary).toMatch(/never purchases or records interest automatically/);
     expect(entry?.summary).toMatch(/paid-plan signup and course signup remain separate/);
+    expect(
+      PUBLIC_UPDATE_SECTIONS[0].entries.find(
+        (item) => item.id === "product-buy-signin-return"
+      )?.summary
+    ).not.toMatch(/New-account verification remains a separate follow-up/);
   });
 
   it("limits course release wording to discovery and existing-account continuation", () => {
