@@ -414,7 +414,7 @@ export default function NewGrowScreen({
       setCheckingLimit(true);
       setLimitCheckFailed(false);
       try {
-        const rows = await listWorkspaceGrows(workspace);
+        const rows = await listWorkspaceGrows(workspace, { throwOnError: true });
         if (alive) setExistingGrowCount(Array.isArray(rows) ? rows.length : 0);
       } catch {
         if (alive) setLimitCheckFailed(true);

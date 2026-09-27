@@ -154,7 +154,7 @@ export interface PersonalGrowTimelineEvent {
  * Personal mode is user-scoped; no facilityId parameter.
  */
 export async function listPersonalGrows(
-  options: { archived?: boolean } = {}
+  options: { archived?: boolean; throwOnError?: boolean } = {}
 ): Promise<PersonalGrow[]> {
   try {
     const personalRes = await apiRequest("/api/personal/grows", {
@@ -167,8 +167,11 @@ export async function listPersonalGrows(
       const nested = (personalRes as any).data?.grows;
       if (Array.isArray(nested)) return nested as PersonalGrow[];
     }
+    if (options.throwOnError)
+      throw new Error("Could not read your grow list. Try again.");
     return [];
   } catch (_err) {
+    if (options.throwOnError) throw _err;
     return [];
   }
 }

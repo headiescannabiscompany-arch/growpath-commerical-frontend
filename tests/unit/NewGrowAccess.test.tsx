@@ -163,6 +163,7 @@ describe("NewGrowScreen access", () => {
       fireEvent.press(screen.getByLabelText("Try checking grow limit again"));
       await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
       expect(mockListPersonalGrows).toHaveBeenCalledTimes(2);
+      expect(mockListPersonalGrows).toHaveBeenCalledWith({ throwOnError: true });
       expect(screen.queryByRole("alert")).toBeNull();
     }
   );

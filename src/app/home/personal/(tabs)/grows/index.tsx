@@ -198,8 +198,10 @@ export default function PersonalGrowsRoute({
     setError("");
     try {
       const [activeRows, archivedRows] = await Promise.all([
-        listWorkspaceGrows(workspace),
-        workspace === "personal" ? listPersonalGrows({ archived: true }) : []
+        listWorkspaceGrows(workspace, { throwOnError: true }),
+        workspace === "personal"
+          ? listPersonalGrows({ archived: true, throwOnError: true })
+          : []
       ]);
       const nextItems = Array.isArray(activeRows) ? activeRows : [];
       const nextArchivedItems = Array.isArray(archivedRows) ? archivedRows : [];

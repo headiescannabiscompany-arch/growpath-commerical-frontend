@@ -71,9 +71,10 @@ function commercialGrowChildPath(
 }
 
 export async function listWorkspaceGrows(
-  workspace: GrowWorkspace
+  workspace: GrowWorkspace,
+  options: { throwOnError?: boolean } = {}
 ): Promise<PersonalGrow[]> {
-  if (workspace === "personal") return listPersonalGrows();
+  if (workspace === "personal") return listPersonalGrows(options);
   const response = await apiRequest("/api/commercial/grows", {
     method: "GET",
     cache: "no-store",
