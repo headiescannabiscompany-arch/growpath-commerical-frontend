@@ -130,7 +130,8 @@ jest.mock("@/utils/photoUploads", () => ({
   persistImageUris: (...args: any[]) => mockPersistImageUris(...args),
   isPersistedImageUri: (uri: string) =>
     /^https?:\/\//.test(uri) || uri.startsWith("/uploads/"),
-  resolveImageUri: (uri: string) => uri
+  resolveImageUri: (uri: string) =>
+    uri.startsWith("/uploads/") ? `https://api.example.test${uri}` : uri
 }));
 
 jest.mock("@/api/logInsights", () => ({
@@ -226,6 +227,29 @@ describe("NewLogScreen plant/photo context", () => {
       summary: "Reviewed draft summary",
       provider: "test-provider"
     });
+  });
+
+  it("renders a persisted relative preview from the API host after a failed save", async () => {
+    mockPersistImageUris.mockImplementation(async (uris: string[], options: any) =>
+      uris.map((uri) => {
+        const url = "/uploads/prepared.jpg";
+        options.onUploaded(uri, url, { mimeType: "image/jpeg", sizeBytes: 2000000 });
+        return url;
+      })
+    );
+    mockCreatePersonalLog.mockRejectedValueOnce(new Error("Temporary save failure"));
+    const screen = render(<NewLogScreen />);
+    fillDraft(screen);
+    await attachPhoto(screen);
+    expect(screen.getByLabelText("Attached journal photo 1").props.source).toEqual({
+      uri: "file:///tmp/olive-leaf.jpg"
+    });
+    fireEvent.press(screen.getByLabelText("Create log"));
+    await screen.findByText("Temporary save failure");
+    expect(screen.getByLabelText("Attached journal photo 1").props.source).toEqual({
+      uri: "https://api.example.test/uploads/prepared.jpg"
+    });
+    expectRetainedDraft(screen);
   });
 
   it("retains prepared upload metadata and its URL when a failed journal save is retried", async () => {

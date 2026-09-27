@@ -30,6 +30,7 @@ import { radius } from "@/theme/theme";
 import {
   isPersistedImageUri,
   persistImageUris,
+  resolveImageUri,
   type UploadedPhotoMetadata
 } from "@/utils/photoUploads";
 import { createWorkspaceLog } from "@/features/grows/workspaceData";
@@ -457,7 +458,11 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           <View style={styles.photoGrid}>
             {photos.map((photo, index) => (
               <View key={`${photo.uri}-${index}`} style={styles.photoTile}>
-                <Image source={{ uri: photo.uri }} style={styles.photoThumb} />
+                <Image
+                  source={{ uri: resolveImageUri(photo.uri) }}
+                  style={styles.photoThumb}
+                  accessibilityLabel={`Attached journal photo ${index + 1}`}
+                />
                 <Pressable
                   style={styles.removePhoto}
                   disabled={saving}
