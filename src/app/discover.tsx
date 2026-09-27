@@ -27,6 +27,7 @@ import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlo
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { parsePublicProductReturnPath } from "@/utils/authReturnPath";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { purchaseIntentConceptById } from "@/config/commerceConceptTrials";
 import {
@@ -124,14 +125,29 @@ export function discoverLiveHref(row: any) {
   return `/live-session?sessionId=${encodeURIComponent(String(row?.linkedLiveId || ""))}`;
 }
 
+export function discoverProductHref(row: any): string {
+  if (row?.discoveryType !== "product" || typeof row?.storefrontSlug !== "string") {
+    return "";
+  }
+  const savedIds: unknown[] = [row.id, row._id, row.productId].filter(
+    (value) => value !== undefined && value !== null && value !== ""
+  );
+  if (
+    !savedIds.length ||
+    savedIds.some((value) => typeof value !== "string" || value !== savedIds[0])
+  ) {
+    return "";
+  }
+  return parsePublicProductReturnPath(
+    `/store/${row.storefrontSlug}/products/${savedIds[0]}`
+  );
+}
+
 export function discoverCatalogHref(row: any) {
+  if (row?.discoveryType === "product") return discoverProductHref(row) || "/products";
   const exact = String(row?.publicHref || "").trim();
   if (exact) return exact;
   const slug = storeSlug(row);
-  const id = idOf(row);
-  if (row?.discoveryType === "product" && slug && id) {
-    return `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(id)}`;
-  }
   return slug ? `/store/${encodeURIComponent(slug)}` : "/store";
 }
 
@@ -708,7 +724,7 @@ export default function DiscoverDirectory() {
                       <ProductPurchaseIntentControl
                         compact
                         product={result.purchaseIntentProduct}
-                        returnPath={result.href}
+                        returnPath={discoverProductHref(result.purchaseIntentProduct)}
                       />
                     ) : null}
                   </View>

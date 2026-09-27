@@ -9,12 +9,20 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "discover-product-destinations",
+        title: "Consistent product links in Discover",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Opening a product in Discover and signing in to record interest now use the same saved product address. Incomplete product details return safely to the catalog or plain sign-in instead of guessing a destination. Trial links and the existing browsing layout stay unchanged. Navigation never submits interest or starts a purchase."
+      },
+      {
         id: "product-interest-signin-return",
         title: "More reliable product-interest sign-in links",
         date: "September 27, 2026",
         dateLabel: "Released",
         summary:
-          "Product-interest links on storefront cards and product details now use the saved product address when sending you to sign in, even when you arrived through an alternate address. Invalid product details fall back safely to sign-in. Signing in never records an answer or makes a purchase automatically; you still choose your response. Discover's separate catalog links remain under review."
+          "Product-interest links on storefront cards and product details now use the saved product address when sending you to sign in, even when you arrived through an alternate address. Invalid product details fall back safely to sign-in. Signing in never records an answer or makes a purchase automatically; you still choose your response. Discover's product links are listed in their own release note."
       },
       {
         id: "free-product-signup-return",

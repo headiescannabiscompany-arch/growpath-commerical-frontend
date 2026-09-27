@@ -68,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "discover-product-destinations",
       "product-interest-signin-return",
       "free-product-signup-return",
       "course-discovery-signin",
@@ -129,8 +130,20 @@ describe("public Updates page", () => {
       /never records an answer or makes a purchase automatically/
     );
     expect(entry?.summary).toMatch(
-      /Discover's separate catalog links remain under review/
+      /Discover's product links are listed in their own release note/
     );
+  });
+
+  it("bounds Discover navigation claims without changing trials or transactions", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "discover-product-destinations"
+    );
+    expect(entry?.summary).toMatch(/same saved product address/);
+    expect(entry?.summary).toMatch(/catalog or plain sign-in/);
+    expect(entry?.summary).toMatch(
+      /Trial links and the existing browsing layout stay unchanged/
+    );
+    expect(entry?.summary).toMatch(/never submits interest or starts a purchase/);
   });
 
   it("bounds Free product signup claims to the same browser without transactions", () => {
