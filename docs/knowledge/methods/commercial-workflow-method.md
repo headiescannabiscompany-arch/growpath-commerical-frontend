@@ -31,6 +31,8 @@ Commercial Product Lines must use one level-one page heading, level-two headings
 
 Commercial Product Line creation and detail editing are single confirmed writes. Prevent duplicate load, create, and save requests; disable the edited fields while a write is active; preserve the owner's draft after failure; expose progress, success, retry, and error feedback inside the page; and keep a Commercial-safe back destination. Never clear an unsaved Product Line draft, submit it twice, or depend on a native-only alert for a create or update failure.
 
+Product Line detail editing requires a successfully loaded record whose saved identity matches the requested line. Missing, failed, malformed, mismatched, or superseded loads must not expose an editable blank record or permit Save; preserve safe list/storefront returns and a retry path. Public line browsing recognizes the supported singular and plural product-line link fields, including `productLineIds`, without adding unrelated products or relaxing public visibility and transaction rules.
+
 The Soil & Nutrient Batch Planner must use one level-one page heading, level-two headings for metrics, authoring, saved batches, and guidance sections, and level-three headings for individual saved batches. Keep Product Batches as the navigation destination label, preserve the user-facing planner name on the page, and hide the duplicate navigator header.
 
 Commercial Product Trials must use one level-one page heading, level-two headings for authoring, saved trials, evidence collection, claim guidance, and publishable-result guidance, and level-three headings for individual saved trials. Hide the duplicate navigator header when the page provides that hierarchy.

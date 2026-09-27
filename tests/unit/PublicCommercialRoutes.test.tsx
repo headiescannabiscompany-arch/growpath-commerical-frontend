@@ -614,6 +614,35 @@ describe("public commercial routes", () => {
     expect(screen.queryByText("Bloom Mix")).toBeNull();
   });
 
+  it.each([
+    ["productLineId", "line-1"],
+    ["linkedProductLineId", "line-1"],
+    ["productLineIds", ["line-other", "line-1"]],
+    ["linkedProductLineIds", ["line-other", "line-1"]]
+  ])("includes only matching public products linked by %s", async (field, value) => {
+    mockRouteParams = { slug: "living-soil-labs", line: "line-1" };
+    mockFetchPublicStorefront.mockResolvedValue({
+      ...publicPayload,
+      products: [
+        {
+          id: "family-product",
+          name: "Linked family item",
+          [field as string]: value
+        },
+        {
+          id: "unrelated-product",
+          name: "Unrelated family item",
+          productLineIds: ["line-other"]
+        }
+      ]
+    });
+    const screen = render(<PublicStorefrontRoute />);
+    await waitFor(() => expect(screen.getByText("Linked family item")).toBeTruthy());
+    expect(screen.queryByText("Unrelated family item")).toBeNull();
+    expect(screen.getByText("View All Products")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/store/living-soil-labs");
+  });
+
   it("loads a public product detail page with storefront navigation", async () => {
     const openUrlSpy = jest.spyOn(Linking, "openURL").mockResolvedValue(true as any);
     const screen = render(<PublicProductRoute />);

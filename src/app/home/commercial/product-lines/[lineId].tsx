@@ -42,6 +42,16 @@ function lineTitle(line: ProductLine | null) {
   return line?.name || "Commercial Product Line";
 }
 
+function lineMatchesId(line: ProductLine | null, lineId: string) {
+  if (!lineId || !line) return false;
+  const ids = [line.id, line._id].filter(
+    (id) => id !== undefined && id !== null && id !== ""
+  );
+  return (
+    ids.length > 0 && ids.every((id) => typeof id === "string" && id.trim() === lineId)
+  );
+}
+
 function splitList(value: string) {
   return value
     .split(/[\n,]+/)
@@ -122,8 +132,12 @@ export default function CommercialProductLineDetailRoute({
   const [saveError, setSaveError] = useState<any>(null);
   const [message, setMessage] = useState("");
   const loadInFlightRef = useRef(false);
+  const loadRequestRef = useRef(0);
   const saveInFlightRef = useRef(false);
-  const canSave = !!lineId && !loading && !saving;
+  const currentLineIdRef = useRef(lineId);
+  currentLineIdRef.current = lineId;
+  const lineAvailable = lineMatchesId(line, lineId);
+  const canSave = lineAvailable && !loadError && !loading && !saving;
 
   const hydrate = useCallback((next: ProductLine | null) => {
     setLine(next);
@@ -135,8 +149,13 @@ export default function CommercialProductLineDetailRoute({
   }, []);
 
   const load = useCallback(async () => {
-    if (!lineId || loadInFlightRef.current) return;
+    if (!lineId) {
+      setLoading(false);
+      return;
+    }
+    if (loadInFlightRef.current) return;
     loadInFlightRef.current = true;
+    const request = ++loadRequestRef.current;
     setLoading(true);
     setLoadError(null);
     try {
@@ -144,23 +163,44 @@ export default function CommercialProductLineDetailRoute({
         fetchProductLine(lineId),
         fetchProducts()
       ]);
+      if (request !== loadRequestRef.current || currentLineIdRef.current !== lineId)
+        return;
+      if (!lineMatchesId(nextLine, lineId)) {
+        throw new Error("This product line is unavailable. Open All Lines or retry.");
+      }
       hydrate(nextLine);
       setProducts(nextProducts.filter((product) => productMatchesLine(product, lineId)));
     } catch (err) {
-      setLoadError(err);
+      if (request === loadRequestRef.current && currentLineIdRef.current === lineId)
+        setLoadError(err);
     } finally {
-      loadInFlightRef.current = false;
-      setLoading(false);
+      if (request === loadRequestRef.current) {
+        loadInFlightRef.current = false;
+        setLoading(false);
+      }
     }
   }, [hydrate, lineId]);
 
   useEffect(() => {
-    load();
+    setMessage("");
+    setSaveError(null);
+    void load();
+    return () => {
+      loadRequestRef.current += 1;
+      loadInFlightRef.current = false;
+    };
   }, [load]);
 
   async function saveChanges() {
-    if (!lineId || saveInFlightRef.current) return;
+    if (
+      !canSave ||
+      currentLineIdRef.current !== lineId ||
+      loadInFlightRef.current ||
+      saveInFlightRef.current
+    )
+      return;
     saveInFlightRef.current = true;
+    const request = loadRequestRef.current;
     setSaving(true);
     setMessage("");
     setSaveError(null);
@@ -172,10 +212,18 @@ export default function CommercialProductLineDetailRoute({
         coverImageUrl: coverImageUrl.trim(),
         growInterests: splitList(growInterests)
       });
+      if (request !== loadRequestRef.current || currentLineIdRef.current !== lineId)
+        return;
+      if (!lineMatchesId(updated, lineId)) {
+        throw new Error(
+          "Unable to verify the saved product line. Your edits have been retained."
+        );
+      }
       hydrate(updated);
       setMessage("Product line updated.");
     } catch (err) {
-      setSaveError(err);
+      if (request === loadRequestRef.current && currentLineIdRef.current === lineId)
+        setSaveError(err);
     } finally {
       saveInFlightRef.current = false;
       setSaving(false);
@@ -191,7 +239,7 @@ export default function CommercialProductLineDetailRoute({
         <View style={styles.header}>
           <Text style={styles.kicker}>Commercial product family</Text>
           <Text accessibilityRole="header" aria-level={1} style={styles.title}>
-            {lineTitle(line)}
+            {lineTitle(lineAvailable ? line : null)}
           </Text>
           <Text style={styles.subtitle}>
             Manage the private product-family record that feeds storefront sections,
@@ -218,13 +266,21 @@ export default function CommercialProductLineDetailRoute({
       ) : null}
       {loadError ? (
         <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
-          <InlineError error={loadError} />
+          <InlineError
+            error={loadError}
+            title="Unable to load product line"
+            message={
+              [403, 404].includes(Number(loadError?.status))
+                ? "This product line is unavailable or you do not have access. Open All Lines or Storefront to continue."
+                : undefined
+            }
+          />
           <Pressable
             accessibilityLabel="Retry commercial product line"
             accessibilityRole="button"
-            disabled={loading}
+            disabled={loading || saving}
             onPress={load}
-            style={[styles.action, loading && styles.disabled]}
+            style={[styles.action, (loading || saving) && styles.disabled]}
           >
             <Text style={styles.actionText}>Retry</Text>
           </Pressable>
@@ -240,184 +296,203 @@ export default function CommercialProductLineDetailRoute({
         </Text>
       ) : null}
 
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Line Record
+      {!lineAvailable && !loading && !loadError ? (
+        <Text style={styles.muted}>
+          This product line is unavailable. Open All Lines or Storefront to continue.
         </Text>
-        <Text style={styles.body}>
-          Product lines organize commercial products by purpose and brand family, not
-          inventory shelf location. They should make product pages easier to find and
-          explain.
-        </Text>
-        <View style={styles.detailGrid}>
-          <DetailRow label="Category" value={line?.category} />
-          <DetailRow label="Status" value={line?.status} />
-          <DetailRow label="Public summary" value={line?.publicSummary} />
-          <DetailRow label="Cover image" value={(line as any)?.coverImageUrl} />
-          <DetailRow label="Grow interests" value={line?.growInterests} />
-        </View>
-      </AppCard>
+      ) : null}
 
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Commercial Links
-        </Text>
-        <Text style={styles.body}>
-          A line should connect products, product formulas, batches, evidence runs,
-          courses, feed campaigns, storefront blocks, and forum support.
-        </Text>
-        <View style={styles.actions}>
-          <ActionLink href="/home/commercial/products" label="Product Catalog" />
-          <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
-          <ActionLink href="/home/commercial/trials" label="Product Trials" />
-          <ActionLink href="/home/commercial/courses" label="Courses" />
-          <ActionLink href="/home/commercial/feed" label="Feed" />
-          <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
-        </View>
-      </AppCard>
+      {lineAvailable ? (
+        <>
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Line Record
+            </Text>
+            <Text style={styles.body}>
+              Product lines organize commercial products by purpose and brand family, not
+              inventory shelf location. They should make product pages easier to find and
+              explain.
+            </Text>
+            <View style={styles.detailGrid}>
+              <DetailRow label="Category" value={line?.category} />
+              <DetailRow label="Status" value={line?.status} />
+              <DetailRow label="Public summary" value={line?.publicSummary} />
+              <DetailRow label="Cover image" value={(line as any)?.coverImageUrl} />
+              <DetailRow label="Grow interests" value={line?.growInterests} />
+            </View>
+          </AppCard>
 
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Products In This Line
-        </Text>
-        <Text style={styles.body}>
-          These products are attached to this storefront family and should appear together
-          in public line browsing, feed campaigns, batches, and product education.
-        </Text>
-        {products.length ? (
-          <View style={styles.productList}>
-            {products.map((product) => (
-              <View key={productId(product) || product.name} style={styles.productRow}>
-                <View style={styles.productCopy}>
-                  <Text style={styles.productTitle}>{product.name || "Product"}</Text>
-                  <Text style={styles.muted}>
-                    {[product.category, product.status || "draft"]
-                      .filter(Boolean)
-                      .join(" | ")}
-                  </Text>
-                  {product.shortDescription || product.description ? (
-                    <Text style={styles.body}>
-                      {product.shortDescription || product.description}
-                    </Text>
-                  ) : null}
-                  {Array.isArray(product.growInterests) &&
-                  product.growInterests.length ? (
-                    <Text style={styles.muted}>
-                      Interests {product.growInterests.join(", ")}
-                    </Text>
-                  ) : null}
-                </View>
-                {productId(product) ? (
-                  <ActionLink
-                    href={`/home/commercial/products/${encodeURIComponent(
-                      productId(product)
-                    )}`}
-                    label="Open Product"
-                  />
-                ) : null}
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Commercial Links
+            </Text>
+            <Text style={styles.body}>
+              A line should connect products, product formulas, batches, evidence runs,
+              courses, feed campaigns, storefront blocks, and forum support.
+            </Text>
+            <View style={styles.actions}>
+              <ActionLink href="/home/commercial/products" label="Product Catalog" />
+              <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
+              <ActionLink href="/home/commercial/trials" label="Product Trials" />
+              <ActionLink href="/home/commercial/courses" label="Courses" />
+              <ActionLink href="/home/commercial/feed" label="Feed" />
+              <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
+            </View>
+          </AppCard>
+
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Products In This Line
+            </Text>
+            <Text style={styles.body}>
+              These products are attached to this storefront family and should appear
+              together in public line browsing, feed campaigns, batches, and product
+              education.
+            </Text>
+            {products.length ? (
+              <View style={styles.productList}>
+                {products.map((product) => (
+                  <View
+                    key={productId(product) || product.name}
+                    style={styles.productRow}
+                  >
+                    <View style={styles.productCopy}>
+                      <Text style={styles.productTitle}>{product.name || "Product"}</Text>
+                      <Text style={styles.muted}>
+                        {[product.category, product.status || "draft"]
+                          .filter(Boolean)
+                          .join(" | ")}
+                      </Text>
+                      {product.shortDescription || product.description ? (
+                        <Text style={styles.body}>
+                          {product.shortDescription || product.description}
+                        </Text>
+                      ) : null}
+                      {Array.isArray(product.growInterests) &&
+                      product.growInterests.length ? (
+                        <Text style={styles.muted}>
+                          Interests {product.growInterests.join(", ")}
+                        </Text>
+                      ) : null}
+                    </View>
+                    {productId(product) ? (
+                      <ActionLink
+                        href={`/home/commercial/products/${encodeURIComponent(
+                          productId(product)
+                        )}`}
+                        label="Open Product"
+                      />
+                    ) : null}
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-        ) : (
-          <Text style={styles.muted}>
-            No products are attached to this line yet. Add or edit products and choose
-            this Product Line so the public storefront can group them.
-          </Text>
-        )}
-      </AppCard>
+            ) : (
+              <Text style={styles.muted}>
+                No products are attached to this line yet. Add or edit products and choose
+                this Product Line so the public storefront can group them.
+              </Text>
+            )}
+          </AppCard>
 
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Update Product Line
-        </Text>
-        <TextInput
-          accessibilityLabel="Commercial product line detail status"
-          editable={!saving}
-          onChangeText={setStatus}
-          placeholder="draft, testing, active, archived"
-          style={styles.input}
-          value={status}
-        />
-        <TextInput
-          accessibilityLabel="Commercial product line detail public summary"
-          editable={!saving}
-          onChangeText={setPublicSummary}
-          placeholder="Public summary"
-          style={styles.input}
-          value={publicSummary}
-        />
-        <TextInput
-          accessibilityLabel="Commercial product line detail cover image URL"
-          editable={!saving}
-          onChangeText={setCoverImageUrl}
-          placeholder="Cover image URL"
-          style={styles.input}
-          value={coverImageUrl}
-        />
-        <TextInput
-          accessibilityLabel="Commercial product line detail grow interests"
-          editable={!saving}
-          onChangeText={setGrowInterests}
-          placeholder="Grow interests, comma separated"
-          style={styles.input}
-          value={growInterests}
-        />
-        <TextInput
-          accessibilityLabel="Commercial product line detail description"
-          editable={!saving}
-          multiline
-          onChangeText={setDescription}
-          placeholder="Line description, use cases, products included, and evidence plan"
-          style={[styles.input, styles.textArea]}
-          value={description}
-        />
-        {saving ? (
-          <View
-            accessibilityLabel="Saving commercial product line in progress"
-            accessibilityLiveRegion="polite"
-            accessibilityRole="progressbar"
-            style={styles.progressRow}
-          >
-            <ActivityIndicator color={palette.accent} />
-            <Text style={styles.muted}>Saving product line...</Text>
-          </View>
-        ) : null}
-        {saveError ? (
-          <View accessible accessibilityLiveRegion="assertive" accessibilityRole="alert">
-            <InlineError error={saveError} />
-          </View>
-        ) : null}
-        <Pressable
-          accessibilityLabel="Save commercial product line detail"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canSave, busy: saving }}
-          disabled={!canSave}
-          onPress={saveChanges}
-          style={[styles.primaryAction, !canSave ? styles.disabled : null]}
-        >
-          <Text style={styles.primaryActionText}>
-            {saving ? "Saving..." : "Save Product Line"}
-          </Text>
-        </Pressable>
-      </AppCard>
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Update Product Line
+            </Text>
+            <TextInput
+              accessibilityLabel="Commercial product line detail status"
+              editable={canSave}
+              onChangeText={setStatus}
+              placeholder="draft, testing, active, archived"
+              style={styles.input}
+              value={status}
+            />
+            <TextInput
+              accessibilityLabel="Commercial product line detail public summary"
+              editable={canSave}
+              onChangeText={setPublicSummary}
+              placeholder="Public summary"
+              style={styles.input}
+              value={publicSummary}
+            />
+            <TextInput
+              accessibilityLabel="Commercial product line detail cover image URL"
+              editable={canSave}
+              onChangeText={setCoverImageUrl}
+              placeholder="Cover image URL"
+              style={styles.input}
+              value={coverImageUrl}
+            />
+            <TextInput
+              accessibilityLabel="Commercial product line detail grow interests"
+              editable={canSave}
+              onChangeText={setGrowInterests}
+              placeholder="Grow interests, comma separated"
+              style={styles.input}
+              value={growInterests}
+            />
+            <TextInput
+              accessibilityLabel="Commercial product line detail description"
+              editable={canSave}
+              multiline
+              onChangeText={setDescription}
+              placeholder="Line description, use cases, products included, and evidence plan"
+              style={[styles.input, styles.textArea]}
+              value={description}
+            />
+            {saving ? (
+              <View
+                accessibilityLabel="Saving commercial product line in progress"
+                accessibilityLiveRegion="polite"
+                accessibilityRole="progressbar"
+                style={styles.progressRow}
+              >
+                <ActivityIndicator color={palette.accent} />
+                <Text style={styles.muted}>Saving product line...</Text>
+              </View>
+            ) : null}
+            {saveError ? (
+              <View
+                accessible
+                accessibilityLiveRegion="assertive"
+                accessibilityRole="alert"
+              >
+                <InlineError error={saveError} />
+              </View>
+            ) : null}
+            <Pressable
+              accessibilityLabel="Save commercial product line detail"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canSave, busy: saving }}
+              disabled={!canSave}
+              onPress={saveChanges}
+              style={[styles.primaryAction, !canSave ? styles.disabled : null]}
+            >
+              <Text style={styles.primaryActionText}>
+                {saving ? "Saving..." : "Save Product Line"}
+              </Text>
+            </Pressable>
+          </AppCard>
 
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Public Use
-        </Text>
-        <Text style={styles.bullet}>
-          Feature this line on the storefront; legacy brand profile remains secondary.
-        </Text>
-        <Text style={styles.bullet}>
-          Link products to trial evidence before strong claims.
-        </Text>
-        <Text style={styles.bullet}>
-          Create a course or support thread explaining product-line use.
-        </Text>
-        <Text style={styles.bullet}>
-          Use feed campaigns to announce releases, trials, and seasonal recommendations.
-        </Text>
-      </AppCard>
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Public Use
+            </Text>
+            <Text style={styles.bullet}>
+              Feature this line on the storefront; legacy brand profile remains secondary.
+            </Text>
+            <Text style={styles.bullet}>
+              Link products to trial evidence before strong claims.
+            </Text>
+            <Text style={styles.bullet}>
+              Create a course or support thread explaining product-line use.
+            </Text>
+            <Text style={styles.bullet}>
+              Use feed campaigns to announce releases, trials, and seasonal
+              recommendations.
+            </Text>
+          </AppCard>
+        </>
+      ) : null}
     </AppPage>
   );
 }

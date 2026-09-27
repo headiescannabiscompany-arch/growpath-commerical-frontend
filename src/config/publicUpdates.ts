@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "product-line-safety",
+        title: "Reliable product collections and safer editing",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Public store collections now consistently include products assigned to the selected collection. Seller editing waits for the correct saved product line, with clear recovery when a record is unavailable. Existing storefront design, publication permissions and checkout rules stay unchanged."
+      },
+      {
         id: "store-directory-recovery",
         title: "Store discovery and safer seller setup",
         date: "September 27, 2026",

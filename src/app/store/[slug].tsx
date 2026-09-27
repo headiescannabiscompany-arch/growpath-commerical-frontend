@@ -286,6 +286,7 @@ export default function PublicStorefrontRoute() {
       const lineIds = [
         product?.productLineId,
         product?.linkedProductLineId,
+        ...(Array.isArray(product?.productLineIds) ? product.productLineIds : []),
         ...(Array.isArray(product?.linkedProductLineIds)
           ? product.linkedProductLineIds
           : [])
