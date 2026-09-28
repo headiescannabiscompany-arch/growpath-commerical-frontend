@@ -19,6 +19,7 @@ import {
   type CommercialAnalyticsEvent
 } from "@/api/commercialAnalytics";
 import { useAuth } from "@/auth/AuthContext";
+import { useCheckoutAttempt } from "@/hooks/useCheckoutAttempt";
 import AppPage from "@/components/layout/AppPage";
 import ProductPurchaseIntentControl from "@/components/commercial/ProductPurchaseIntentControl";
 import PurchaseIntentTrialCard from "@/components/commercial/PurchaseIntentTrialCard";
@@ -110,6 +111,17 @@ export default function PublicStorefrontRoute() {
     .trim()
     .toLowerCase();
   const checkoutProductId = String(params.product || "").trim();
+  const checkoutAttempt = useCheckoutAttempt([
+    auth.token,
+    auth.user?.id,
+    auth.isAuthed,
+    auth.isHydrating,
+    slug,
+    selectedLineId,
+    storefront?.id || storefront?._id,
+    storefront?.slug,
+    products
+  ]);
 
   const load = useCallback(async () => {
     if (!slug) return;
@@ -218,6 +230,8 @@ export default function PublicStorefrontRoute() {
       router.push(safeLoginPath(undefined, productReturnPath(product)) as any);
       return;
     }
+    const attempt = checkoutAttempt.begin();
+    if (!attempt) return;
     setBusyId(id);
     setFeedback("");
     trackCommercialClick({
@@ -233,6 +247,7 @@ export default function PublicStorefrontRoute() {
       const checkout: any = await checkoutProduct(id, {
         returnPath: `/store/${encodeURIComponent(slug)}`
       });
+      if (!checkoutAttempt.isCurrent(attempt)) return;
       const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
       if (!url) {
         setFeedback("Checkout unavailable. The backend did not return a checkout URL.");
@@ -240,12 +255,14 @@ export default function PublicStorefrontRoute() {
         return;
       }
       await openCheckoutUrl(url);
+      if (!checkoutAttempt.isCurrent(attempt)) return;
       setFeedback("Checkout started.");
     } catch (err: any) {
+      if (!checkoutAttempt.isCurrent(attempt)) return;
       setFeedback(err?.message || "Unable to start checkout.");
       Alert.alert("Checkout failed", err?.message || "Unable to start checkout.");
     } finally {
-      setBusyId("");
+      if (checkoutAttempt.finish(attempt)) setBusyId("");
     }
   }
 
@@ -545,14 +562,14 @@ export default function PublicStorefrontRoute() {
                           accessibilityRole="button"
                           accessibilityLabel={`Buy ${product?.name || "product"}`}
                           accessibilityState={{
-                            disabled: busyId === id || auth.isHydrating,
+                            disabled: Boolean(busyId) || auth.isHydrating,
                             busy: busyId === id
                           }}
                           style={[
                             styles.button,
-                            (busyId === id || auth.isHydrating) && styles.disabled
+                            (Boolean(busyId) || auth.isHydrating) && styles.disabled
                           ]}
-                          disabled={busyId === id || auth.isHydrating}
+                          disabled={Boolean(busyId) || auth.isHydrating}
                           onPress={() => buy(product)}
                         >
                           <Text style={styles.buttonText}>

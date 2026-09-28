@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "product-checkout-request-safety",
+        title: "Safer product checkout requests and retries",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Buy on storefront cards and product details now prevents overlapping checkout requests on the same page. Responses arriving after you leave or change accounts or products cannot open checkout or replace current feedback. Stock and service errors remain readable, with a deliberate retry after the request finishes. This does not cancel an existing checkout or claim stock is available; prices, payment and purchase-interest rules stay unchanged."
+      },
+      {
         id: "course-loading-readiness",
         title: "Clearer course loading and access messages",
         date: "September 27, 2026",

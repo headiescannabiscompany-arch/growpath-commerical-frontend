@@ -32,6 +32,7 @@ import {
   type CommercialAnalyticsEvent
 } from "@/api/commercialAnalytics";
 import { useAuth } from "@/auth/AuthContext";
+import { useCheckoutAttempt } from "@/hooks/useCheckoutAttempt";
 import ReportModal from "@/components/ReportModal";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -358,6 +359,17 @@ export default function PublicProductRoute() {
   const productId = productKey(product);
   const savedId = product?.id || product?._id || product?.productId;
   const savedSlug = storefront?.slug;
+  const checkoutAttempt = useCheckoutAttempt([
+    auth.token,
+    auth.user?.id,
+    auth.isAuthed,
+    auth.isHydrating,
+    slug,
+    requestedProductId,
+    storefront?.id || storefront?._id,
+    savedSlug,
+    product
+  ]);
   const productReturnPath =
     typeof savedId === "string" && typeof savedSlug === "string"
       ? parsePublicProductReturnPath(`/store/${savedSlug}/products/${savedId}`)
@@ -440,6 +452,8 @@ export default function PublicProductRoute() {
       router.push(safeLoginPath(undefined, productReturnPath) as any);
       return;
     }
+    const attempt = checkoutAttempt.begin();
+    if (!attempt) return;
     setBusy(true);
     setFeedback("");
     trackCommercialClick({
@@ -455,6 +469,7 @@ export default function PublicProductRoute() {
       const checkout: any = await checkoutProduct(id, {
         returnPath: publicProductUrl(slug, product)
       });
+      if (!checkoutAttempt.isCurrent(attempt)) return;
       const url = checkout?.url || checkout?.checkoutUrl || checkout?.data?.url;
       if (!url) {
         setFeedback("Checkout unavailable. The backend did not return a checkout URL.");
@@ -462,12 +477,14 @@ export default function PublicProductRoute() {
         return;
       }
       await openUrl(url);
+      if (!checkoutAttempt.isCurrent(attempt)) return;
       setFeedback("Checkout started.");
     } catch (err: any) {
+      if (!checkoutAttempt.isCurrent(attempt)) return;
       setFeedback(err?.message || "Unable to start checkout.");
       Alert.alert("Checkout failed", err?.message || "Unable to start checkout.");
     } finally {
-      setBusy(false);
+      if (checkoutAttempt.finish(attempt)) setBusy(false);
     }
   }
 

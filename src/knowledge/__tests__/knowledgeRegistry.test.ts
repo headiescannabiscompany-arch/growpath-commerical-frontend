@@ -618,6 +618,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "server-verified own-workspace Commercial evidence, Video Library, AI evidence review, Saved Runs, and Harvest Readiness access after a platform administrator explicitly selects Commercial"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "single-flight ordinary product checkout on storefront cards and product detail; retain the lock until settlement, permanently ignore results after route/catalog/account/session/hydration changes or unmount, preserve readable failures and deliberate retries, and leave inventory availability and reservations server-authoritative"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never use a platform Admin role to cross Commercial account boundaries, inherit Facility membership or credits, control another subscriber's billing, publish a draft, or grant regulated-transaction authority."
     );

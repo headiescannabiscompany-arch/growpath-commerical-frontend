@@ -68,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "product-checkout-request-safety",
       "course-loading-readiness",
       "free-course-signup-return",
       "product-description-display",
@@ -91,6 +92,21 @@ describe("public Updates page", () => {
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
+  });
+
+  it("bounds checkout safety to client request handling without availability promises", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "product-checkout-request-safety"
+    );
+    expect(entry?.summary).toMatch(/overlapping checkout requests on the same page/);
+    expect(entry?.summary).toMatch(/cannot open checkout or replace current feedback/);
+    expect(entry?.summary).toMatch(/deliberate retry after the request finishes/);
+    expect(entry?.summary).toMatch(
+      /does not cancel an existing checkout or claim stock is available/
+    );
+    expect(entry?.summary).not.toMatch(
+      /duplicate charges|guarantee|all shopping.*complete/i
+    );
   });
 
   it("identifies the next task without claiming unfinished security work is live", () => {

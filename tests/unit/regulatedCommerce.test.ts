@@ -89,6 +89,33 @@ describe("regulated storefront commerce", () => {
     expect(publicInventorySummary({})).toBe("Availability not reported");
   });
 
+  test.each([
+    {},
+    { inventoryItemId: null, inventoryItem: null },
+    { inventoryItemId: "inventory-1", inventoryItem: null },
+    { inventoryItemId: "inventory-1", inventoryItem: { quantity: null } },
+    { inventoryItemId: "inventory-1", inventoryItem: { quantity: 0, status: "active" } },
+    { inventoryItemId: "inventory-1", inventoryItem: { quantity: 3, status: "active" } },
+    { inventoryItemId: "inventory-1", inventoryItem: { quantity: 3, status: "held" } },
+    { inventoryItemId: "inventory-1", inventoryItem: { quantity: 3, status: "archived" } }
+  ])(
+    "keeps checkout configuration separate from server inventory readiness: %j",
+    (inventory) => {
+      const product = { status: "published", priceCents: 1000, ...inventory };
+      // A Buy affordance requests server verification; it is not a stock promise.
+      expect(publicProductCanCheckout(product)).toBe(true);
+      expect(publicProductCanCheckout({ ...product, purchaseIntentEnabled: true })).toBe(
+        false
+      );
+      expect(publicProductCanCheckout({ ...product, regulatedCannabis: true })).toBe(
+        false
+      );
+      expect(publicProductCanCheckout(product, { storefrontType: "dispensary" })).toBe(
+        false
+      );
+    }
+  );
+
   test("preserves ordinary non-cannabis commerce", () => {
     const product = {
       category: "soil_mix",

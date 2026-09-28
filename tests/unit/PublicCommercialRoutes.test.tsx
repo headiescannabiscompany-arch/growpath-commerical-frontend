@@ -1,6 +1,6 @@
 import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
-import { Linking } from "react-native";
+import { Alert, Linking } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import PublicBrandProfileRoute, {
@@ -1088,6 +1088,459 @@ describe("public commercial routes", () => {
       expect(mockRouterPush).toHaveBeenCalledTimes(1);
       expect(screen.getByText("Checkout started.")).toBeTruthy();
     });
+  });
+
+  describe.each([
+    {
+      surface: "storefront card",
+      Route: PublicStorefrontRoute,
+      returnPath: "/store/living-soil-labs"
+    },
+    {
+      surface: "product detail",
+      Route: PublicProductRoute,
+      returnPath: "/store/living-soil-labs/products/product-1"
+    }
+  ])(
+    "ordinary product checkout recovery on $surface",
+    ({ surface, Route, returnPath }) => {
+      let openUrlSpy: jest.SpyInstance;
+      let alertSpy: jest.SpyInstance;
+      const checkout = jest.requireMock("@/api/products").checkoutProduct as jest.Mock;
+
+      function deferredCheckout() {
+        let resolve!: (value: unknown) => void;
+        let reject!: (error: Error) => void;
+        const promise = new Promise((accept, fail) => {
+          resolve = accept;
+          reject = fail;
+        });
+        return { promise, resolve, reject };
+      }
+
+      function pressHandler(screen: ReturnType<typeof render>, label = "Buy Veg Mix") {
+        return screen.UNSAFE_root.findAll(
+          (node: { props: { accessibilityLabel?: string; onPress?: unknown } }) =>
+            node.props.accessibilityLabel === label &&
+            typeof node.props.onPress === "function"
+        )[0].props.onPress as () => Promise<void>;
+      }
+
+      function expectNoHandoff(screen: ReturnType<typeof render>) {
+        expect(screen.queryByText("Checkout started.")).toBeNull();
+        expect(openUrlSpy).not.toHaveBeenCalled();
+        expect(mockRouterPush).not.toHaveBeenCalled();
+        expect(mockSubmitProductPurchaseIntent).not.toHaveBeenCalled();
+        expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
+      }
+
+      beforeEach(() => {
+        openUrlSpy = jest
+          .spyOn(Linking, "openURL")
+          .mockReset()
+          .mockResolvedValue(true as any);
+        alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+        mockFetchPublicStorefront.mockResolvedValue({
+          ...publicPayload,
+          products: [
+            {
+              ...publicPayload.products[0],
+              status: "published",
+              inventoryItemId: "inventory-1",
+              inventoryItem: {
+                id: "inventory-1",
+                quantity: 3,
+                unit: "bags",
+                status: "active"
+              }
+            }
+          ]
+        });
+      });
+
+      afterEach(() => {
+        openUrlSpy.mockRestore();
+        alertSpy.mockRestore();
+      });
+
+      it.each([
+        { failure: "stock unavailable", message: "Product is out of stock", status: 400 },
+        {
+          failure: "reserved-stock conflict 409",
+          message:
+            "This product is out of stock or its remaining stock is held by another checkout.",
+          status: 409,
+          code: "STOREFRONT_STOCK_UNAVAILABLE"
+        },
+        {
+          failure: "linked-stock rollout 503",
+          message: "Linked-inventory checkout is temporarily unavailable. Retry later.",
+          status: 503
+        },
+        {
+          failure: "missing checkout URL",
+          message: "Checkout unavailable. The backend did not return a checkout URL.",
+          status: null
+        }
+      ])(
+        "retains the product and allows a deliberate retry after $failure",
+        async ({ message, status, code }) => {
+          if (status === null) checkout.mockResolvedValueOnce({ success: true });
+          else
+            checkout.mockRejectedValueOnce(
+              Object.assign(new Error(message), { status, code })
+            );
+          const screen = render(<Route />);
+          fireEvent.press(await screen.findByRole("button", { name: "Buy Veg Mix" }));
+          expect(await screen.findByText(message)).toBeTruthy();
+          expect(screen.getByRole("button", { name: "Buy Veg Mix" })).not.toBeDisabled();
+          expect(checkout).toHaveBeenCalledTimes(1);
+          expect(checkout).toHaveBeenLastCalledWith("product-1", { returnPath });
+          expectNoHandoff(screen);
+
+          const retryMessage = "Checkout is still temporarily unavailable. Retry later.";
+          checkout.mockRejectedValueOnce(
+            Object.assign(new Error(retryMessage), { status: 503 })
+          );
+          fireEvent.press(screen.getByRole("button", { name: "Buy Veg Mix" }));
+          expect(await screen.findByText(retryMessage)).toBeTruthy();
+          expect(screen.queryByText(message)).toBeNull();
+          expect(checkout).toHaveBeenCalledTimes(2);
+          expect(checkout).toHaveBeenLastCalledWith("product-1", { returnPath });
+          expectNoHandoff(screen);
+        }
+      );
+
+      it("keeps a delayed rejected attempt busy, then restores a deliberate retry", async () => {
+        const pending = deferredCheckout();
+        checkout.mockReturnValueOnce(pending.promise);
+        const screen = render(<Route />);
+        fireEvent.press(await screen.findByRole("button", { name: "Buy Veg Mix" }));
+        expect(screen.getByRole("button", { name: "Buy Veg Mix" })).toBeDisabled();
+        expect(screen.getByText("Opening...")).toBeTruthy();
+        expect(checkout).toHaveBeenCalledTimes(1);
+        expectNoHandoff(screen);
+        await act(async () =>
+          pending.reject(new Error("Delayed product service failure"))
+        );
+        expect(screen.getByText("Delayed product service failure")).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Buy Veg Mix" })).not.toBeDisabled();
+        expectNoHandoff(screen);
+        checkout.mockResolvedValueOnce({});
+        fireEvent.press(screen.getByRole("button", { name: "Buy Veg Mix" }));
+        expect(
+          await screen.findByText(
+            "Checkout unavailable. The backend did not return a checkout URL."
+          )
+        ).toBeTruthy();
+        expect(checkout).toHaveBeenCalledTimes(2);
+        expectNoHandoff(screen);
+      });
+
+      it("does not report success if the checkout URL cannot be opened", async () => {
+        checkout.mockResolvedValueOnce({ url: "https://checkout.example.com/session" });
+        openUrlSpy.mockRejectedValueOnce(new Error("Unable to open checkout link"));
+        const screen = render(<Route />);
+        fireEvent.press(await screen.findByRole("button", { name: "Buy Veg Mix" }));
+        expect(await screen.findByText("Unable to open checkout link")).toBeTruthy();
+        expect(screen.queryByText("Checkout started.")).toBeNull();
+        expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
+        expect(screen.getByRole("button", { name: "Buy Veg Mix" })).not.toBeDisabled();
+        expect(openUrlSpy).toHaveBeenCalledTimes(1);
+        expect(mockRouterPush).not.toHaveBeenCalled();
+        expect(checkout).toHaveBeenCalledTimes(1);
+
+        checkout.mockResolvedValueOnce({});
+        fireEvent.press(screen.getByRole("button", { name: "Buy Veg Mix" }));
+        expect(
+          await screen.findByText(
+            "Checkout unavailable. The backend did not return a checkout URL."
+          )
+        ).toBeTruthy();
+        expect(screen.queryByText("Unable to open checkout link")).toBeNull();
+        expect(screen.queryByText("Checkout started.")).toBeNull();
+        expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
+        expect(screen.getByRole("button", { name: "Buy Veg Mix" })).not.toBeDisabled();
+        expect(checkout).toHaveBeenCalledTimes(2);
+        expect(checkout).toHaveBeenLastCalledWith("product-1", { returnPath });
+        expect(openUrlSpy).toHaveBeenCalledTimes(1);
+        expect(mockRouterPush).not.toHaveBeenCalled();
+        expect(mockSubmitProductPurchaseIntent).not.toHaveBeenCalled();
+      });
+
+      it("single-flights simultaneous Buy handler invocations before a rerender", async () => {
+        const pending = deferredCheckout();
+        checkout.mockReturnValue(pending.promise);
+        const screen = render(<Route />);
+        await screen.findByRole("button", { name: "Buy Veg Mix" });
+        const handler = pressHandler(screen);
+        let first!: Promise<void>;
+        let repeated!: Promise<void>;
+        act(() => {
+          first = handler();
+          repeated = handler();
+        });
+        const callsWhilePending = checkout.mock.calls.length;
+        const clickEventsWhilePending =
+          mockRecordCommercialAnalyticsEvent.mock.calls.filter(
+            ([event]) => event.eventType === "product_checkout_click"
+          ).length;
+        await act(async () => {
+          pending.reject(new Error("Checkout rejected"));
+          await Promise.all([first, repeated]);
+        });
+        expect({ callsWhilePending, clickEventsWhilePending }).toEqual({
+          callsWhilePending: 1,
+          clickEventsWhilePending: 1
+        });
+        expectNoHandoff(screen);
+      });
+
+      it.each([
+        { transition: "token", outcome: "success" },
+        { transition: "account", outcome: "missing URL" },
+        { transition: "hydration A-to-B-to-A", outcome: "error" }
+      ])(
+        "ignores stale $outcome after a $transition change",
+        async ({ transition, outcome }) => {
+          const session = {
+            token: "session-a",
+            isAuthed: true,
+            isHydrating: false,
+            user: { id: "viewer-1" }
+          };
+          mockUseAuth.mockReturnValue(session);
+          const pending = deferredCheckout();
+          checkout.mockReturnValueOnce(pending.promise);
+          const screen = render(<Route />);
+          await screen.findByRole("button", { name: "Buy Veg Mix" });
+          let attempt!: Promise<void>;
+          act(() => {
+            attempt = pressHandler(screen)();
+          });
+          mockUseAuth.mockReturnValue({
+            ...session,
+            ...(transition === "token"
+              ? { token: "session-b" }
+              : transition === "account"
+                ? { user: { id: "viewer-2" } }
+                : { isHydrating: true })
+          });
+          screen.rerender(<Route />);
+          if (transition === "hydration A-to-B-to-A") {
+            mockUseAuth.mockReturnValue(session);
+            screen.rerender(<Route />);
+          }
+          expect(screen.getByRole("button", { name: "Buy Veg Mix" })).toBeDisabled();
+          await act(async () => pressHandler(screen)());
+          expect(checkout).toHaveBeenCalledTimes(1);
+          await act(async () => {
+            if (outcome === "error") pending.reject(new Error("Stale checkout failed"));
+            else
+              pending.resolve(
+                outcome === "success" ? { url: "https://checkout.example.com/stale" } : {}
+              );
+            await attempt;
+          });
+          expectNoHandoff(screen);
+          expect(alertSpy).not.toHaveBeenCalled();
+          expect(screen.queryByText("Stale checkout failed")).toBeNull();
+          expect(
+            screen.queryByText(
+              "Checkout unavailable. The backend did not return a checkout URL."
+            )
+          ).toBeNull();
+          expect(screen.getByRole("button", { name: "Buy Veg Mix" })).not.toBeDisabled();
+          expect(checkout).toHaveBeenCalledTimes(1);
+
+          checkout.mockRejectedValueOnce(new Error("Fresh deliberate attempt failed"));
+          fireEvent.press(screen.getByRole("button", { name: "Buy Veg Mix" }));
+          expect(await screen.findByText("Fresh deliberate attempt failed")).toBeTruthy();
+          expect(checkout).toHaveBeenCalledTimes(2);
+          expect(checkout).toHaveBeenLastCalledWith("product-1", { returnPath });
+          expectNoHandoff(screen);
+        }
+      );
+
+      it.each(["success", "missing URL", "error"])(
+        "ignores pending %s after unmount",
+        async (outcome) => {
+          const pending = deferredCheckout();
+          checkout.mockReturnValueOnce(pending.promise);
+          const screen = render(<Route />);
+          await screen.findByRole("button", { name: "Buy Veg Mix" });
+          let attempt!: Promise<void>;
+          act(() => {
+            attempt = pressHandler(screen)();
+          });
+          screen.unmount();
+          await act(async () => {
+            if (outcome === "error")
+              pending.reject(new Error("Unmounted checkout failed"));
+            else
+              pending.resolve(
+                outcome === "success"
+                  ? { url: "https://checkout.example.com/unmounted" }
+                  : {}
+              );
+            await attempt;
+          });
+          expect(openUrlSpy).not.toHaveBeenCalled();
+          expect(alertSpy).not.toHaveBeenCalled();
+          expect(mockRouterPush).not.toHaveBeenCalled();
+          expect(checkout).toHaveBeenCalledTimes(1);
+        }
+      );
+
+      it.each(["resolve", "reject"])(
+        "preserves current feedback when stale native openURL awaits %s",
+        async (outcome) => {
+          const pendingOpen = deferredCheckout();
+          checkout.mockResolvedValueOnce({ url: "https://checkout.example.com/started" });
+          openUrlSpy.mockReturnValueOnce(pendingOpen.promise);
+          const screen = render(<Route />);
+          await screen.findByRole("button", { name: "Buy Veg Mix" });
+          let attempt!: Promise<void>;
+          act(() => {
+            attempt = pressHandler(screen)();
+          });
+          await waitFor(() => expect(openUrlSpy).toHaveBeenCalledTimes(1));
+          mockUseAuth.mockReturnValue({
+            token: "new-session",
+            isAuthed: true,
+            isHydrating: false,
+            user: { id: "viewer-2" }
+          });
+          mockRouteParams = {
+            ...mockRouteParams,
+            checkout: "canceled",
+            product: "product-1"
+          };
+          screen.rerender(<Route />);
+          const currentFeedback = "Checkout canceled. No new payment was confirmed.";
+          expect(screen.getByText(currentFeedback)).toBeTruthy();
+          expect(screen.getByRole("button", { name: "Buy Veg Mix" })).toBeDisabled();
+          await act(async () => pressHandler(screen)());
+          expect(checkout).toHaveBeenCalledTimes(1);
+          await act(async () => {
+            if (outcome === "reject")
+              pendingOpen.reject(new Error("Stale native open failed"));
+            else pendingOpen.resolve(true);
+            await attempt;
+          });
+          expect(screen.getByText(currentFeedback)).toBeTruthy();
+          expect(screen.queryByText("Stale native open failed")).toBeNull();
+          expect(screen.queryByText("Checkout started.")).toBeNull();
+          expect(alertSpy).not.toHaveBeenCalled();
+          expect(screen.getByRole("button", { name: "Buy Veg Mix" })).not.toBeDisabled();
+          checkout.mockRejectedValueOnce(new Error("Current checkout failed"));
+          fireEvent.press(screen.getByRole("button", { name: "Buy Veg Mix" }));
+          expect(await screen.findByText("Current checkout failed")).toBeTruthy();
+          expect(checkout).toHaveBeenCalledTimes(2);
+          expect(openUrlSpy).toHaveBeenCalledTimes(1);
+          expect(mockRouterPush).not.toHaveBeenCalled();
+        }
+      );
+
+      it("invalidates an old attempt when the displayed product or storefront catalog changes", async () => {
+        const products = publicPayload.products.slice(0, 2).map((product) => ({
+          ...product,
+          status: "published",
+          checkoutEnabled: true
+        }));
+        mockFetchPublicStorefront.mockResolvedValue({ ...publicPayload, products });
+        const pending = deferredCheckout();
+        checkout.mockReturnValueOnce(pending.promise);
+        const screen = render(<Route />);
+        await screen.findByRole("button", { name: "Buy Veg Mix" });
+        let attempt!: Promise<void>;
+        act(() => {
+          attempt = pressHandler(screen)();
+        });
+        const isStore = surface === "storefront card";
+        if (isStore) {
+          mockFetchPublicStorefront.mockResolvedValue({
+            ...publicPayload,
+            storefront: { ...publicPayload.storefront, id: "store-2", slug: "new-store" },
+            products: [{ ...products[1], name: "New Store Bloom Mix" }]
+          });
+          mockRouteParams = { ...mockRouteParams, slug: "new-store" };
+        } else mockRouteParams = { ...mockRouteParams, productId: "product-2" };
+        screen.rerender(<Route />);
+        const label = isStore ? "Buy New Store Bloom Mix" : "Buy Bloom Mix";
+        const currentButton = await screen.findByRole("button", { name: label });
+        expect(currentButton).toBeDisabled();
+        await act(async () => pressHandler(screen, label)());
+        expect(checkout).toHaveBeenCalledTimes(1);
+        await act(async () => {
+          pending.resolve({ url: "https://checkout.example.com/old-product" });
+          await attempt;
+        });
+        expect(openUrlSpy).not.toHaveBeenCalled();
+        expect(alertSpy).not.toHaveBeenCalled();
+        expect(screen.queryByText("Checkout started.")).toBeNull();
+        expect(screen.getByRole("button", { name: label })).not.toBeDisabled();
+        checkout.mockRejectedValueOnce(new Error("New product checkout failed"));
+        fireEvent.press(screen.getByRole("button", { name: label }));
+        expect(await screen.findByText("New product checkout failed")).toBeTruthy();
+        expect(checkout).toHaveBeenCalledTimes(2);
+        expect(checkout).toHaveBeenLastCalledWith("product-2", {
+          returnPath: isStore
+            ? "/store/new-store"
+            : "/store/living-soil-labs/products/product-2"
+        });
+        expect(mockRouterPush).not.toHaveBeenCalled();
+      });
+    }
+  );
+
+  it("blocks another storefront card while the first checkout is pending", async () => {
+    const checkout = jest.requireMock("@/api/products").checkoutProduct as jest.Mock;
+    let reject!: (error: Error) => void;
+    const pending = new Promise((_resolve, fail) => {
+      reject = fail;
+    });
+    checkout.mockReturnValue(pending);
+    const openUrlSpy = jest
+      .spyOn(Linking, "openURL")
+      .mockReset()
+      .mockResolvedValue(true as any);
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    mockFetchPublicStorefront.mockResolvedValue({
+      ...publicPayload,
+      products: publicPayload.products
+        .slice(0, 2)
+        .map((product) => ({ ...product, status: "published", checkoutEnabled: true }))
+    });
+    const screen = render(<PublicStorefrontRoute />);
+    fireEvent.press(await screen.findByRole("button", { name: "Buy Veg Mix" }));
+    const secondButton = screen.getByRole("button", { name: "Buy Bloom Mix" });
+    const secondWasDisabled = secondButton.props.accessibilityState?.disabled;
+    fireEvent.press(secondButton);
+    const handler = screen.UNSAFE_root.findAll(
+      (node: { props: { accessibilityLabel?: string; onPress?: unknown } }) =>
+        node.props.accessibilityLabel === "Buy Bloom Mix" &&
+        typeof node.props.onPress === "function"
+    )[0].props.onPress;
+    let directAttempt!: Promise<void>;
+    act(() => {
+      directAttempt = handler();
+    });
+    const callsWhilePending = checkout.mock.calls.length;
+    await act(async () => {
+      reject(new Error("First checkout failed"));
+      await directAttempt;
+    });
+    openUrlSpy.mockRestore();
+    alertSpy.mockRestore();
+    expect({ secondWasDisabled, callsWhilePending }).toEqual({
+      secondWasDisabled: true,
+      callsWhilePending: 1
+    });
+    expect(screen.getByRole("button", { name: "Buy Veg Mix" })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Buy Bloom Mix" })).not.toBeDisabled();
+    expect(screen.queryByText("Checkout started.")).toBeNull();
+    expect(mockRouterPush).not.toHaveBeenCalled();
   });
 
   describe("public product description display", () => {
