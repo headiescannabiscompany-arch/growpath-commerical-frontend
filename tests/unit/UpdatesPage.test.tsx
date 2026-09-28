@@ -68,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "course-loading-readiness",
       "free-course-signup-return",
       "product-description-display",
       "discover-product-destinations",
@@ -148,6 +149,19 @@ describe("public Updates page", () => {
     );
     expect(entry?.summary).toMatch(
       /Saved product information, sharing, purchase-interest controls and checkout stay unchanged/
+    );
+  });
+
+  it("bounds course loading claims without promising broader access", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "course-loading-readiness"
+    );
+    expect(entry?.summary).toMatch(/wait for sign-in and access checks/);
+    expect(entry?.summary).toMatch(
+      /Failed access checks show a separate recovery message/
+    );
+    expect(entry?.summary).toMatch(
+      /permissions, enrollment and payment rules stay unchanged/
     );
   });
 

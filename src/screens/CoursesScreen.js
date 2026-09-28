@@ -172,11 +172,36 @@ export function isExplicitQaCourse(course) {
  *   facilityWorkspace?: any;
  * }} [props]
  */
-export default function CoursesScreen({
+export default function CoursesScreen(props = {}) {
+  const auth = useAuth();
+  const ent = useEntitlements();
+  const [session, setSession] = useState({ token: auth.token, generation: 0 });
+  if (session.token !== auth.token) {
+    setSession({ token: auth.token, generation: session.generation + 1 });
+    return null;
+  }
+  // Do not retain an earlier viewer's catalog or selected detail across bootstrap.
+  // Only a local generation, not the credential, is included in the React key.
+  const scopeKey = JSON.stringify([
+    entityId(auth.user),
+    auth.isAuthed,
+    Boolean(auth.isHydrating),
+    ent.ready === true,
+    session.generation,
+    ent.mode,
+    props.facilityWorkspace?.facilityId,
+    props.facilityWorkspace?.role
+  ]);
+  return <CoursesSession key={scopeKey} {...props} auth={auth} ent={ent} />;
+}
+
+function CoursesSession({
   navigation,
   onDetailVisibilityChange,
   catalogHref = "/courses",
-  facilityWorkspace = null
+  facilityWorkspace = null,
+  auth,
+  ent
 } = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -186,15 +211,17 @@ export default function CoursesScreen({
     ? params.moderationCaseId[0]
     : params?.moderationCaseId;
   const checkoutResult = firstRouteParam(params?.checkout).toLowerCase();
-  const ent = useEntitlements();
-  const auth = useAuth();
+  const accessReady = !auth.isHydrating && ent.ready === true;
   const { palette } = useAppTheme();
   const styles = useMemo(() => createCoursesScreenStyles(palette), [palette]);
   const access = getLearningAccess(ent);
   const facilityMode = Boolean(facilityWorkspace);
   const facilityScopeId = facilityMode ? entityId(facilityWorkspace?.facilityId) : "";
   const genericFacilityLearnerMode = ent.mode === "facility" && !facilityMode;
-  const isSignedIn = Boolean(auth.isAuthed || auth.user?.id);
+  const isSignedIn =
+    !auth.isHydrating &&
+    auth.isAuthed !== false &&
+    Boolean(auth.isAuthed || entityId(auth.user));
   const viewerId = entityId(auth.user);
   const [facilityPermissions, setFacilityPermissions] = useState({
     canCreateDraft: false,
@@ -284,9 +311,11 @@ export default function CoursesScreen({
     let alive = true;
 
     async function load() {
+      if (!accessReady) return;
       if (facilityMode) {
         if (
           !facilityWorkspace?.facilityId ||
+          !isSignedIn ||
           !facilityWorkspace?.role ||
           typeof facilityWorkspace?.api?.list !== "function" ||
           typeof facilityWorkspace?.api?.get !== "function"
@@ -374,6 +403,7 @@ export default function CoursesScreen({
             : Promise.resolve([]),
           courseCatalogRequest("/api/commercial/courses/public")
         ]);
+        if (!alive) return;
         if (
           publicResult.status === "rejected" &&
           ownedResult.status === "rejected" &&
@@ -453,6 +483,7 @@ export default function CoursesScreen({
       alive = false;
     };
   }, [
+    accessReady,
     access.canSeePaidCourses,
     access.canViewCourses,
     facilityMode,
@@ -599,6 +630,33 @@ export default function CoursesScreen({
     );
   }
 
+  if (!accessReady) {
+    return (
+      <View style={styles.container}>
+        {ent.bootstrapError && !auth.isHydrating ? (
+          <>
+            <Text style={styles.error}>
+              Unable to verify course access. Please try again.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry course access"
+              onPress={() => auth.retryMe?.().catch(() => {})}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryBtnText}>Retry course access</Text>
+            </Pressable>
+          </>
+        ) : (
+          <View style={styles.row}>
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.meta}>Loading courses...</Text>
+          </View>
+        )}
+      </View>
+    );
+  }
+
   if (selectedCourse && selectedCourseMatchesScope) {
     const selectedId = String(selectedCourse?._id || selectedCourse?.id || "");
     return (
@@ -670,7 +728,9 @@ export default function CoursesScreen({
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             Courses unavailable
           </Text>
-          <Text style={styles.meta}>This account does not have `COURSES_VIEW`.</Text>
+          <Text style={styles.meta}>
+            Course access is not available for this account.
+          </Text>
         </View>
       ) : null}
 

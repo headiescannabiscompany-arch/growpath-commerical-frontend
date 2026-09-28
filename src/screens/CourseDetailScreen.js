@@ -169,6 +169,7 @@ export default function CourseDetailScreen(props) {
     viewerId,
     signedIn,
     Boolean(auth.isHydrating),
+    entitlements.ready === true,
     session.generation,
     entitlements.mode,
     props.facilityWorkspace?.facilityId,
@@ -196,6 +197,7 @@ function CourseDetailSession({
 }) {
   const router = useRouter();
   const access = getLearningAccess(entitlements);
+  const accessReady = !auth.isHydrating && entitlements.ready === true;
   const facilityMode = Boolean(facilityWorkspace);
   const genericFacilityLearnerMode = entitlements.mode === "facility" && !facilityMode;
   const { palette } = useAppTheme();
@@ -415,7 +417,7 @@ function CourseDetailSession({
   }, [course]);
 
   const load = useCallback(async () => {
-    if (!mountedRef.current || auth.isHydrating || (facilityMode && !signedIn)) return;
+    if (!mountedRef.current || !accessReady || (facilityMode && !signedIn)) return;
     if (!facilityMode && !access.canViewCourses) {
       setLoading(false);
       return;
@@ -509,7 +511,7 @@ function CourseDetailSession({
     }
   }, [
     access.canViewCourses,
-    auth.isHydrating,
+    accessReady,
     signedIn,
     courseId,
     facilityMode,
@@ -1238,14 +1240,30 @@ function CourseDetailSession({
     }
   }
 
-  if (!auth.isHydrating && !facilityMode && !access.canViewCourses) {
+  if (!accessReady && entitlements.bootstrapError && !auth.isHydrating) {
+    return (
+      <View style={styles.loading}>
+        <Text style={styles.meta}>Unable to verify course access. Please try again.</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Retry course access"
+          onPress={() => auth.retryMe?.().catch(() => {})}
+          style={styles.secondaryBtn}
+        >
+          <Text style={styles.secondaryText}>Retry course access</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (accessReady && !facilityMode && !access.canViewCourses) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.title}>Course unavailable</Text>
         {!facilityMode ? (
           <PersonalFeedPlacement placement="top" routeKey="personal_course_detail" />
         ) : null}
-        <Text style={styles.meta}>This account does not have `COURSES_VIEW`.</Text>
+        <Text style={styles.meta}>Course access is not available for this account.</Text>
         {!facilityMode ? (
           <PersonalFeedPlacement placement="bottom" routeKey="personal_course_detail" />
         ) : null}
@@ -1253,7 +1271,7 @@ function CourseDetailSession({
     );
   }
 
-  if (loading || auth.isHydrating) {
+  if (loading || !accessReady) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={palette.accent} />

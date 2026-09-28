@@ -1014,6 +1014,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "owner-only draft preview and published-only public detail access",
       "learner preview without authoring controls",
       "signed-out published catalog without owned-course or authoring controls",
+      "shared catalog and detail wait for settled authentication and entitlements before course requests or access denial; distinguish recoverable bootstrap failure from loading, hide earlier course state and reject superseded responses without changing public, owner or Facility permissions",
       "shared course detail preserves public previews but suppresses personal learner/payment requests and actions until authentication settles; exact saved-course sign-in return without automatic enrollment or purchase, with session/course/Facility-scoped state and stale-response rejection",
       "default Free-account signup preserves a strict public course destination through same-browser verification and deliberate matching ready sign-in for up to one hour; share the product-or-course revision-safe continuation slot and normal guild onboarding without course-content storage, automatic enrollment, purchase or paid access; paid-plan signup, cross-device continuation and course gifting remain separate",
       "one provider-aware media contract shared by initial course creation and later lesson editing",

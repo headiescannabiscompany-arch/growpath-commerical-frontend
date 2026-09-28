@@ -952,6 +952,9 @@ describe("GrowPath knowledge registries", () => {
       "owner-controlled publish and private-draft unpublish"
     );
     expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
+      "shared catalog and detail wait for settled authentication and entitlements before course requests or access denial; distinguish recoverable bootstrap failure from loading, hide earlier course state and reject superseded responses without changing public, owner or Facility permissions"
+    );
+    expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
       "optional removable course thumbnail for compact cards and optional single learner-page banner"
     );
     expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(

@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "course-loading-readiness",
+        title: "Clearer course loading and access messages",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Course catalogs and details now wait for sign-in and access checks before showing an access-denied message. Failed access checks show a separate recovery message instead of an endless loading state. Public previews, owner and Facility permissions, enrollment and payment rules stay unchanged."
+      },
+      {
         id: "free-course-signup-return",
         title: "Keep your course link through Free signup",
         date: "September 27, 2026",

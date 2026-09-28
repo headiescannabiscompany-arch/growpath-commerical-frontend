@@ -32,6 +32,7 @@ const mockPublishCourse = jest.fn();
 const mockSubmitReport = jest.fn();
 const mockUnpublishCourse = jest.fn();
 const mockUpdateCourse = jest.fn();
+const mockRetryMe = jest.fn();
 const mockLearningAccess = {
   canViewCourses: true,
   canSeePaidCourses: true,
@@ -44,14 +45,17 @@ const mockLearningAccess = {
 const mockEntitlements = {
   mode: "personal",
   ready: true,
+  bootstrapError: null as string | null,
   facilityId: "facility-1",
   facilityRole: "MANAGER"
 };
 let mockViewerId = "learner-1";
-const mockAuthState: { isAuthed: boolean; isHydrating: boolean; token: string | null } = {
+const mockAuthState = {
   isAuthed: true,
   isHydrating: false,
-  token: "learner-1-token"
+  token: "learner-1-token" as string | null,
+  meStatus: "ready",
+  retryMe: mockRetryMe
 };
 const mockFacility = { selectedId: "facility-1", selected: null };
 const mockFacilityList = jest.fn();
@@ -179,6 +183,9 @@ describe("CourseDetailScreen learner player", () => {
       maxLessonsPerCourse: 12
     });
     mockEntitlements.mode = "personal";
+    mockEntitlements.ready = true;
+    mockEntitlements.bootstrapError = null;
+    mockRetryMe.mockResolvedValue(undefined);
     mockEntitlements.facilityId = "facility-1";
     mockEntitlements.facilityRole = "MANAGER";
     mockFacility.selectedId = "facility-1";
@@ -186,6 +193,7 @@ describe("CourseDetailScreen learner player", () => {
     Object.assign(mockAuthState, {
       isAuthed: true,
       isHydrating: false,
+      meStatus: "ready",
       token: "learner-1-token"
     });
     mockApiRequest.mockResolvedValue({ sessionIds: [] });
@@ -261,6 +269,100 @@ describe("CourseDetailScreen learner player", () => {
     expect(mockOpenCourseDispute).not.toHaveBeenCalled();
     expect(mockRequestCourseRefund).not.toHaveBeenCalled();
   }
+
+  it.each(["auth", "entitlements", "both"])(
+    "waits for %s readiness without a false detail denial or learner request",
+    async (pending) => {
+      mockAuthState.isHydrating = pending !== "entitlements";
+      mockEntitlements.ready = pending === "auth";
+      mockLearningAccess.canViewCourses = false;
+      const route = { params: { id: "course-1" } };
+      const screen = render(<CourseDetailScreen route={route} />);
+      expect(screen.getByText("Loading course...")).toBeTruthy();
+      expect(screen.queryByText("Course unavailable")).toBeNull();
+      expect(mockGetCourse).not.toHaveBeenCalled();
+      expect(mockGetEnrollmentStatus).not.toHaveBeenCalled();
+      expect(mockGetCoursePaymentStatus).not.toHaveBeenCalled();
+      expect(mockGetCourseLearnerNotes).not.toHaveBeenCalled();
+      mockAuthState.isHydrating = false;
+      mockEntitlements.ready = true;
+      mockLearningAccess.canViewCourses = true;
+      await act(async () => screen.rerender(<CourseDetailScreen route={route} />));
+      expect(await screen.findByText("Living Soil Course")).toBeTruthy();
+      expect(mockGetCourse).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it("retains a true settled denial and starts no detail requests", () => {
+    mockLearningAccess.canViewCourses = false;
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+    expect(
+      screen.getByText("Course access is not available for this account.")
+    ).toBeTruthy();
+    expect(screen.queryByText("Loading course...")).toBeNull();
+    expect(mockGetCourse).not.toHaveBeenCalled();
+    expect(mockGetEnrollmentStatus).not.toHaveBeenCalled();
+  });
+
+  it("shows an initial access-check failure and retries only on explicit request", async () => {
+    mockEntitlements.ready = false;
+    mockEntitlements.bootstrapError = "Unavailable account service";
+    const route = { params: { id: "course-1" } };
+    const screen = render(<CourseDetailScreen route={route} />);
+    expect(screen.getByText(/Unable to verify course access/)).toBeTruthy();
+    expect(screen.queryByText("Loading course...")).toBeNull();
+    expect(mockGetCourse).not.toHaveBeenCalled();
+    expect(mockRetryMe).not.toHaveBeenCalled();
+    await act(async () =>
+      fireEvent.press(screen.getByRole("button", { name: "Retry course access" }))
+    );
+    expect(mockRetryMe).toHaveBeenCalledTimes(1);
+    expect(mockGetCourse).not.toHaveBeenCalled();
+    mockEntitlements.ready = true;
+    mockEntitlements.bootstrapError = null;
+    await act(async () => screen.rerender(<CourseDetailScreen route={route} />));
+    expect(await screen.findByText("Living Soil Course")).toBeTruthy();
+  });
+
+  it.each(["loading", "error"])(
+    "does not erase ready detail during background account %s",
+    async (meStatus) => {
+      const route = { params: { id: "course-1" } };
+      const screen = render(<CourseDetailScreen route={route} />);
+      await screen.findByText("Living Soil Course");
+      const calls = mockGetCourse.mock.calls.length;
+      mockAuthState.meStatus = meStatus;
+      await act(async () => screen.rerender(<CourseDetailScreen route={route} />));
+      expect(screen.getByText("Living Soil Course")).toBeTruthy();
+      expect(screen.queryByText("Loading course...")).toBeNull();
+      expect(mockGetCourse).toHaveBeenCalledTimes(calls);
+    }
+  );
+
+  it("discards a late detail when entitlement readiness is lost", async () => {
+    let resolveCourse!: (value: unknown) => void;
+    mockGetCourse.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveCourse = resolve;
+        })
+    );
+    const route = { params: { id: "course-1" } };
+    const screen = render(<CourseDetailScreen route={route} />);
+    await waitFor(() => expect(mockGetCourse).toHaveBeenCalledTimes(1));
+    mockEntitlements.ready = false;
+    await act(async () => screen.rerender(<CourseDetailScreen route={route} />));
+    await act(async () =>
+      resolveCourse({ ...freeCourse, title: "Earlier private course" })
+    );
+    expect(screen.getByText("Loading course...")).toBeTruthy();
+    expect(screen.queryByText("Earlier private course")).toBeNull();
+    expect(mockGetCourse).toHaveBeenCalledTimes(1);
+    mockEntitlements.ready = true;
+    await act(async () => screen.rerender(<CourseDetailScreen route={route} />));
+    expect(await screen.findByText("Living Soil Course")).toBeTruthy();
+    expect(screen.queryByText("Earlier private course")).toBeNull();
+  });
 
   it("keeps anonymous paid discovery public and returns sign-in to the saved course identity", async () => {
     signOut();
@@ -1409,6 +1511,9 @@ describe("CourseDetailScreen learner player", () => {
       if (change === "facility") {
         expect(screen.queryByText(course.title)).toBeNull();
         fireEvent.press(await screen.findByText("Training for facility-2"));
+      } else {
+        // A changed viewer or Facility role must deliberately reopen a fresh selection.
+        fireEvent.press(await screen.findByText(course.title));
       }
       fireEvent.press(
         await screen.findByRole("button", { name: "Open lesson Safety lesson" })
