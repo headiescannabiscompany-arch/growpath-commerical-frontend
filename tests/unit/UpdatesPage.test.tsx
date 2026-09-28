@@ -98,6 +98,10 @@ describe("public Updates page", () => {
   });
 
   it("labels Live gift verification as a bounded Sandbox check, not a payment rollout", () => {
+    expect(PUBLIC_UPDATE_SECTIONS[0].title).toBe("Recent updates");
+    expect(PUBLIC_UPDATE_SECTIONS[0].description).toBe(
+      "Released changes and completed checks. Each note states its scope."
+    );
     const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (item) => item.id === "live-gift-follow-up"
     );

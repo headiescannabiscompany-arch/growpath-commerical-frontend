@@ -4,8 +4,8 @@ export const PUBLIC_UPDATES_REVIEWED = "September 28, 2026";
 export const PUBLIC_UPDATE_SECTIONS = [
   {
     id: "live",
-    title: "Recent updates · Live",
-    description: "Available on GrowPathAI now.",
+    title: "Recent updates",
+    description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
       {
