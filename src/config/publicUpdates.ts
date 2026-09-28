@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "September 27, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "September 28, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Available on GrowPathAI now.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "live-gift-follow-up",
+        title: "Live subscription gift announcements verified",
+        date: "September 28, 2026",
+        dateLabel: "Sandbox check completed",
+        summary:
+          "A Live-linked subscription gift passed Sandbox checks for one announcement visible to host and viewer, retained after reload without exposing recipient details. No real money moved, and existing payment and claim behavior is unchanged. Broadcast-provider and outside-picker checks remain separate; course gifting remains planned."
+      },
       {
         id: "product-checkout-request-safety",
         title: "Safer product checkout requests and retries",
@@ -208,14 +216,6 @@ export const PUBLIC_UPDATE_SECTIONS = [
         dateLabel: "Progress reviewed",
         summary:
           "The recovery improvements have passed automated checks and staging verification. Production integration, a fresh backup and isolated restore check, and release verification remain unfinished. Staging success is not a live release; completed tests are not being listed as unfinished features."
-      },
-      {
-        id: "live-gift-follow-up",
-        title: "Live gift follow-up",
-        date: "September 22, 2026",
-        dateLabel: "Progress reviewed",
-        summary:
-          "Subscription gifting and its payment checks are already implemented. Remaining work reconciles the Live/chat fulfillment checks with those completed payment results. Course gifting is separate planned work, not part of this release."
       },
       {
         id: "admin-passkey-protection",

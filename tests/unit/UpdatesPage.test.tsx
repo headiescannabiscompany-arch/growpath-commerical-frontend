@@ -25,7 +25,10 @@ describe("public Updates page", () => {
     for (const section of PUBLIC_UPDATE_SECTIONS) {
       expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
     }
-    expect(screen.getByText("Last updated September 27, 2026")).toBeTruthy();
+    expect(screen.getByText("Last updated September 28, 2026")).toBeTruthy();
+    expect(
+      screen.getByText("Live subscription gift announcements verified")
+    ).toBeTruthy();
     expect(screen.getByText("Larger journal photos and safer retries")).toBeTruthy();
     expect(screen.getByText("Timeline headings that fit on phones")).toBeTruthy();
     expect(screen.getByText("Account management and complimentary access")).toBeTruthy();
@@ -63,11 +66,11 @@ describe("public Updates page", () => {
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[1].entries.map((entry) => entry.id)).toEqual([
       "recovery-release",
-      "live-gift-follow-up",
       "admin-passkey-protection",
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "live-gift-follow-up",
       "product-checkout-request-safety",
       "course-loading-readiness",
       "free-course-signup-return",
@@ -92,6 +95,26 @@ describe("public Updates page", () => {
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
+  });
+
+  it("labels Live gift verification as a bounded Sandbox check, not a payment rollout", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "live-gift-follow-up"
+    );
+    expect(entry?.dateLabel).toBe("Sandbox check completed");
+    expect(entry?.summary).toMatch(/one announcement visible to host and viewer/);
+    expect(entry?.summary).toMatch(
+      /retained after reload without exposing recipient details/
+    );
+    expect(entry?.summary).toMatch(/No real money moved/);
+    expect(entry?.summary).toMatch(/existing payment and claim behavior is unchanged/);
+    expect(entry?.summary).toMatch(
+      /Broadcast-provider and outside-picker checks remain separate/
+    );
+    expect(entry?.summary).toMatch(/course gifting remains planned/);
+    expect(entry?.summary).not.toMatch(
+      /new payment rollout|all Live.*complete|production payment verified/i
+    );
   });
 
   it("bounds checkout safety to client request handling without availability promises", () => {
