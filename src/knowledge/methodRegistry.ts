@@ -505,6 +505,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not create a grow automatically from Plant ID, place exact location in the grow-draft URL, treat a crop-profile match as species confirmation, or apply cannabis-only lifecycle labels to a selected non-cannabis crop.",
       "Do not confuse plant lifespan with harvest pattern, promise productive years from species identity alone, or fill unknown lifecycle timing without reviewed crop, region, cultivar, and management evidence.",
       "Do not omit crop-neutral setup context from Facility grows or convert blank establishment and first-harvest timing into silent defaults or guarantees.",
+      "Do not gate the general Grow Planner / Auto Grow Calendar route or interest filter behind cannabis visibility; preserve selected-grow context, ownership, entitlements, and separate cannabis-only tool restrictions.",
       "Do not expose identity-only public pins; omit observations whose owned photo cannot produce a safe public derivative.",
       "Do not call a plant invasive without a jurisdiction and authoritative source record.",
       "Do not deliver cannabis or hemp pins without deliberate observation publication, separately confirmed public cannabis/hemp context, and matching viewer grow-interest or content controls.",

@@ -15,7 +15,8 @@ import React from "react";
 
 import {
   canOpenCannabisTool,
-  CannabisToolAccessNotice
+  CannabisToolAccessNotice,
+  isCannabisToolPath
 } from "@/app/home/personal/(tabs)/tools/_layout";
 
 describe("cannabis tool gate", () => {
@@ -52,11 +53,23 @@ describe("cannabis tool gate", () => {
     ).toBe(true);
   });
 
-  it("gates legacy harvest aliases, genetics, and calendar routes", () => {
+  it("keeps the crop-neutral calendar available without cannabis access", () => {
+    const pathname = "/home/personal/tools/auto-grow-calendar";
+    expect(isCannabisToolPath(pathname)).toBe(false);
+    expect(canOpenCannabisTool(pathname, {}, "hide")).toBe(true);
+    expect(
+      canOpenCannabisTool(pathname, { crops: ["Herbs"] }, "hide", {
+        id: "basil-grow",
+        cropCommonName: "Basil",
+        scientificName: "Ocimum basilicum"
+      } as any)
+    ).toBe(true);
+  });
+
+  it("still gates legacy harvest aliases and genetics routes", () => {
     for (const pathname of [
       "/home/personal/tools/harvest-estimator",
-      "/home/personal/tools/genetics-inventory",
-      "/home/personal/tools/auto-grow-calendar"
+      "/home/personal/tools/genetics-inventory"
     ]) {
       expect(canOpenCannabisTool(pathname, { crops: ["Vegetables"] })).toBe(false);
     }

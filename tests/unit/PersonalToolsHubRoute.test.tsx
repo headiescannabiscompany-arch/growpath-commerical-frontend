@@ -1,7 +1,9 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { render, waitFor } from "@testing-library/react-native";
 
 import ToolsHubScreen from "@/app/home/personal/(tabs)/tools";
+import * as featureStatus from "@/config/featureStatus";
+import { listPersonalGrows } from "@/api/grows";
 
 const mockCan = jest.fn();
 let mockPlan = "pro";
@@ -72,10 +74,39 @@ describe("personal tools hub", () => {
     mockSearchParams = {};
     mockGrowInterests = {};
     mockCannabisVisibility = undefined;
+    jest.mocked(listPersonalGrows).mockResolvedValue([]);
     Object.defineProperty(window, "location", {
       configurable: true,
       value: { hostname: "localhost", search: "" }
     });
+  });
+
+  it("does not classify the crop-neutral calendar as a cannabis-only workflow", async () => {
+    mockGrowInterests = { crops: ["Herbs"] };
+    mockCannabisVisibility = "hide";
+    mockSearchParams = { growId: "basil-grow" };
+    const calendar = featureStatus.personalToolFeatures.find(
+      (tool) => tool.key === "tools.auto_grow_calendar"
+    )!;
+    const harvest = featureStatus.personalToolFeatures.find(
+      (tool) => tool.key === "tools.harvest_readiness_ai"
+    )!;
+    // Exercise interest filtering independently of the unchanged hub-visibility policy.
+    expect(calendar.hubVisible).toBe(false);
+    jest
+      .spyOn(featureStatus, "getNavigablePersonalTools")
+      .mockReturnValue([calendar, harvest]);
+
+    const screen = render(<ToolsHubScreen />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText(
+          "link-/home/personal/tools/auto-grow-calendar?growId=basil-grow"
+        )
+      ).toBeTruthy()
+    );
+    expect(screen.queryByText("Harvest Readiness Calculator")).toBeNull();
   });
 
   it("removes cannabis-focused workflows for a fruit-tree grower", () => {

@@ -17,8 +17,7 @@ const CANNABIS_TOOL_PATHS = new Set([
   "/home/personal/tools/clone-rooting",
   "/home/personal/tools/genetics-inventory",
   "/home/personal/tools/harvest-estimator",
-  "/home/personal/tools/harvest-readiness",
-  "/home/personal/tools/auto-grow-calendar"
+  "/home/personal/tools/harvest-readiness"
 ]);
 
 export function isCannabisToolPath(pathname: string) {

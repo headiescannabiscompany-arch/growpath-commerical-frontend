@@ -8,6 +8,12 @@ Cannabis-specific surfaces include flower-day/flip language, trichome harvest re
 
 General users receive crop-neutral identification, plant care, watering, soil/fertility, IPM, logs, courses and community language. A crop-neutral question about visible plant sex or reproductive stage is general botany guidance and must not unlock cannabis-only tools or wording. Visibility controls presentation and discovery; it must not weaken data access control. Private cannabis media and records remain scoped to their owner/workspace.
 
+Grow Planner / Auto Grow Calendar is a general crop lifecycle workflow, not a
+cannabis-only tool. Its route and interest filter must remain available without
+enabling cannabis content. Selected grow identity controls crop-specific planning;
+opening the calendar never unlocks harvest, genetics, or other cannabis-only tools,
+changes account visibility, or bypasses normal ownership and entitlement checks.
+
 An existing account with genuinely missing age information may complete the same
 self-attested age step used at signup from its existing Profile content-controls
 section. This is not verified identity or proof of legal transaction eligibility.

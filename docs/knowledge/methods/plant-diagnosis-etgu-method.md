@@ -512,6 +512,11 @@ the calendar asks for it or leaves the milestone absent; it must not substitute 
 defaults or invent a biological date. Every generated date remains an editable planning
 anchor, not a guarantee.
 
+The shared Grow Planner / Auto Grow Calendar route and interest filter must therefore
+remain crop-neutral. A Basil or other non-cannabis grow must not require the account
+to enable cannabis content to open its calendar. Preserve the selected grow context,
+ordinary ownership and entitlement checks, and all separate cannabis-only tool gates.
+
 Crop identification must run without a grow. Grow and plant context are optional attachments used for private history, saving, logs, and follow-up tasks; they are not prerequisites for inspecting uploaded media or returning a draft identity. Collect photo evidence before presenting the image-analysis action. User confirmation is an explicit result action, not a free-form true/false input. The result must state whether image pixels were actually analyzed. A clear cannabis flower or harvested bud may support a draft crop-level identification when visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure are consistent. Do not require a fan-leaf photo when the flower is independently recognizable, and never infer a cultivar/strain from bud appearance.
 
 When exact species is unresolved but the evidence supports a defensible common, genus, or family-level working candidate, surface that candidate with its actual confidence and limitations instead of replacing it with a confirmation placeholder. `Not confirmed` is reserved for cases where no useful plant candidate is defensible; every candidate still remains a draft until the user confirms it.

@@ -70,6 +70,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "general-crop-calendar-access",
       "live-gift-follow-up",
       "product-checkout-request-safety",
       "course-loading-readiness",
@@ -95,6 +96,15 @@ describe("public Updates page", () => {
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
+  });
+
+  it("describes only the crop-calendar access correction", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "general-crop-calendar-access"
+    );
+    expect(entry?.summary).toContain("The selected grow stays attached");
+    expect(entry?.summary).toContain("opening the planner does not generate tasks");
+    expect(entry?.summary).not.toMatch(/all growers.*verified|all.*complete/i);
   });
 
   it("labels Live gift verification as a bounded Sandbox check, not a payment rollout", () => {

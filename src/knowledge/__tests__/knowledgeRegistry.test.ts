@@ -10,6 +10,12 @@ import {
 } from "@/knowledge";
 
 describe("GrowPath knowledge registries", () => {
+  it("keeps the general crop calendar separate from cannabis-only tool access", () => {
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not gate the general Grow Planner / Auto Grow Calendar route or interest filter behind cannabis visibility; preserve selected-grow context, ownership, entitlements, and separate cannabis-only tool restrictions."
+    );
+  });
+
   it("keeps stable, unique source and method IDs", () => {
     expect(new Set(sourceRegistry.map((entry) => entry.id)).size).toBe(
       sourceRegistry.length

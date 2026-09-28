@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "general-crop-calendar-access",
+        title: "Open the grow planner for general crops",
+        date: "September 28, 2026",
+        dateLabel: "Released",
+        summary:
+          "Grow Planner / Auto Grow Calendar no longer asks herb and other general-crop growers to enable cannabis content before opening their plan. The selected grow stays attached. Cannabis-only tools, account permissions, AI-credit rules, and the existing layout stay unchanged; opening the planner does not generate tasks."
+      },
+      {
         id: "live-gift-follow-up",
         title: "Live subscription gift announcements verified",
         date: "September 28, 2026",

@@ -133,7 +133,6 @@ const CANNABIS_FOCUSED_TOOL_KEYS = new Set([
   "tools.dry_cure_guard",
   "tools.clone_rooting",
   "tools.genetics_inventory",
-  "tools.auto_grow_calendar",
   "tools.harvest_readiness_ai"
 ]);
 const SOIL_FOCUSED_TOOL_KEYS = new Set([
