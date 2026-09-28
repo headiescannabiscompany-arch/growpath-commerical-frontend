@@ -1090,6 +1090,58 @@ describe("public commercial routes", () => {
     });
   });
 
+  describe("public product description display", () => {
+    const description = "Product copy: Soft cotton with an adjustable fit.";
+    const distinctShort = "Product copy: Hand-finished details.";
+
+    it.each([
+      ["identical descriptions once", description, description, [description]],
+      [
+        "distinct descriptions in their existing order",
+        description,
+        distinctShort,
+        [description, distinctShort]
+      ],
+      ["description only", description, undefined, [description]],
+      ["short description only", undefined, distinctShort, [distinctShort]],
+      ["neither description", undefined, undefined, []],
+      [
+        "whitespace-different descriptions",
+        description,
+        `${description} `,
+        [description, `${description} `]
+      ],
+      [
+        "case-different descriptions",
+        description,
+        description.toUpperCase(),
+        [description, description.toUpperCase()]
+      ]
+    ] as const)("renders %s", async (_case, full, short, expected) => {
+      mockFetchPublicStorefront.mockResolvedValue({
+        ...publicPayload,
+        products: [
+          { ...publicPayload.products[0], description: full, shortDescription: short }
+        ]
+      });
+      const screen = render(<PublicProductRoute />);
+      await screen.findByRole("header", { name: "Veg Mix" });
+
+      // Inspect the real rendered text in order without normalizing whitespace or case.
+      // Share-post payloads are deliberately outside this display-only assertion.
+      const visibleCopy = screen
+        .queryAllByText(/product copy:/i, {
+          normalizer: (value) => value
+        })
+        .map((node) => node.props.children);
+      expect(visibleCopy).toEqual(expected);
+      expect(screen.getByText("Share this product")).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Buy Veg Mix" })).toBeTruthy();
+      expect(jest.requireMock("@/api/products").checkoutProduct).not.toHaveBeenCalled();
+      expect(mockSubmitProductPurchaseIntent).not.toHaveBeenCalled();
+    });
+  });
+
   it("loads a public product detail page with storefront navigation", async () => {
     const openUrlSpy = jest.spyOn(Linking, "openURL").mockResolvedValue(true as any);
     const screen = render(<PublicProductRoute />);

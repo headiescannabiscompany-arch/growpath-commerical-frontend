@@ -1082,6 +1082,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ["commercial records", "verified claims"],
     [
       "linked workflow",
+      "public Product details suppress only an exactly identical short description; preserve distinct text and order including case/whitespace differences, without rewriting saved content or changing sharing, interest or checkout",
       "public product discovery with explicit horizontal browse controls, a searchable bounded catalog, and a direct full-store collection link from product details; existing-customer sign-in preserves only a validated canonical public product return path",
       "public store directory begins with bounded non-dispensary browse results, URL-preserved search, clear/retry and stale-response protection without location requests; owner saves require a verified load and public previews use only the persisted slug",
       "Product Line editing requires a successfully loaded exact record identity, with safe unavailable/retry states and no stale-record writes; public collection filters include supported singular and plural product-line links without changing publication or transaction eligibility",

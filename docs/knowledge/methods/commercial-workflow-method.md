@@ -2,6 +2,7 @@
 
 ## Public shopping navigation
 
+- Public Product details show the short description only when it differs exactly from the full description. Preserve both distinct values in their existing order, including case or whitespace differences. This is a display-only rule: never rewrite saved descriptions, the owner editor, sharing, purchase-interest or checkout behavior to remove repeated text.
 - Discover previews have visible previous/next controls and a scrollbar; the preview is a bounded selection, not complete inventory.
 - View all Products, Offers & Trials opens `/products`, preserving the discovery query. Use only the existing public API and its published/visibility rules. Show the limit (up to 50 products and 50 trials per search), never invent totals or pagination.
 - Use the separate product/trial lists so reserved trial slots in the mixed preview do not hide returned products. Link each item to its canonical detail/store and the full owning store collection.

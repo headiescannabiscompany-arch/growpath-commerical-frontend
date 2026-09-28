@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "product-description-display",
+        title: "Product descriptions without repeated text",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Product details now show identical description and short-description text only once. Different text remains visible in its original order. Saved product information, sharing, purchase-interest controls and checkout stay unchanged."
+      },
+      {
         id: "discover-product-destinations",
         title: "Consistent product links in Discover",
         date: "September 27, 2026",

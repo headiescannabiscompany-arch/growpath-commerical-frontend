@@ -584,7 +584,8 @@ export default function PublicProductRoute() {
             {product.description ? (
               <Text style={styles.bodyText}>{product.description}</Text>
             ) : null}
-            {product.shortDescription ? (
+            {product.shortDescription &&
+            product.shortDescription !== product.description ? (
               <Text style={styles.bodyText}>{product.shortDescription}</Text>
             ) : null}
             {publicGrowInterests(product).length ? (

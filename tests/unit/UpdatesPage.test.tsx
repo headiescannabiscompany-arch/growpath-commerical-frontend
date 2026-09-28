@@ -68,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "product-description-display",
       "discover-product-destinations",
       "product-interest-signin-return",
       "free-product-signup-return",
@@ -131,6 +132,21 @@ describe("public Updates page", () => {
     );
     expect(entry?.summary).toMatch(
       /Discover's product links are listed in their own release note/
+    );
+  });
+
+  it("limits description changes to duplicate display without changing saved information", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "product-description-display"
+    );
+    expect(entry?.summary).toMatch(
+      /identical description and short-description text only once/
+    );
+    expect(entry?.summary).toMatch(
+      /Different text remains visible in its original order/
+    );
+    expect(entry?.summary).toMatch(
+      /Saved product information, sharing, purchase-interest controls and checkout stay unchanged/
     );
   });
 
