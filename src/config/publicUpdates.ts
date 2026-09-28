@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "grow-list-readiness",
+        title: "Clearer grow loading and account-limit messages",
+        date: "September 28, 2026",
+        dateLabel: "Released",
+        summary:
+          "A failed grow-list request or expired sign-in no longer appears as a full or empty account. Loading and retries show their own status; grow counts, empty-state guidance, and limit warnings use successfully loaded records. Existing grow limits, permissions, saved records, and the normal page layout stay unchanged."
+      },
+      {
         id: "timeline-export-return",
         title: "Return to your timeline from export",
         date: "September 28, 2026",
@@ -134,7 +142,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "September 27, 2026",
         dateLabel: "Released",
         summary:
-          "Journal uploads now prepare oversized supported images to fit the upload limit without changing the original file on your device. Add photos to new or existing entries, and retry a failed save without uploading completed photos again. Grow-list connection errors now show a retry option instead of an incorrect limit-reached message. A 14 MB JPEG passed staging save, append, and recovery checks; format support still depends on your browser or device."
+          "Journal uploads now prepare oversized supported images to fit the upload limit without changing the original file on your device. Add photos to new or existing entries, and retry a failed save without uploading completed photos again. The New Grow screen distinguishes a failed count check from a reached limit; the separate grow-list display correction is listed in its own update. A 14 MB JPEG passed staging save, append, and recovery checks; format support still depends on your browser or device."
       },
       {
         id: "account-admin-controls",

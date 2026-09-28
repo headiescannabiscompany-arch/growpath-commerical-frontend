@@ -187,7 +187,11 @@ export default function PersonalGrowsRoute({
   const [changingGrowId, setChangingGrowId] = useState("");
   const [notice, setNotice] = useState("");
   const grows = items;
-  const [loading, setLoading] = useState(true);
+  const [growLoadState, setGrowLoadState] = useState<"loading" | "ready" | "error">(
+    "loading"
+  );
+  const loading = growLoadState === "loading";
+  const growsReady = growLoadState === "ready";
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
@@ -195,6 +199,7 @@ export default function PersonalGrowsRoute({
   const maxGrows = Number(ent.limits?.maxGrows ?? 0);
 
   const load = useCallback(async () => {
+    setGrowLoadState("loading");
     setError("");
     try {
       const [activeRows, archivedRows] = await Promise.all([
@@ -224,12 +229,13 @@ export default function PersonalGrowsRoute({
         })
       );
       setPhotoCounts(Object.fromEntries(countPairs));
+      setGrowLoadState("ready");
     } catch (e) {
       setError(String((e as any)?.message || e || "Failed to load grows"));
       setItems([]);
       setPhotoCounts({});
+      setGrowLoadState("error");
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   }, [workspace]);
@@ -305,6 +311,13 @@ export default function PersonalGrowsRoute({
   );
 
   const canCreateGrow = hasCreateCapability && (maxGrows <= 0 || grows.length < maxGrows);
+  const planReady = ent.ready && !ent.bootstrapError;
+  const growLimitReached =
+    growsReady &&
+    planReady &&
+    Number.isFinite(maxGrows) &&
+    maxGrows > 0 &&
+    grows.length >= maxGrows;
   const limitMessage =
     maxGrows === 1
       ? "Free includes one active grow. Upgrade to Pro to create up to 10 active grows."
@@ -457,16 +470,22 @@ export default function PersonalGrowsRoute({
             of a flat list.
           </Text>
           <View style={styles.heroActions}>
-            {canCreateGrow ? (
-              <ActionButton
-                href={`${basePath}/grows/new`}
-                label="Create Grow"
-                primary
-                testID="btn-new-grow"
-              />
-            ) : (
-              <ActionButton href={`${basePath}/profile`} label="Manage Billing" primary />
-            )}
+            {growsReady && planReady ? (
+              canCreateGrow ? (
+                <ActionButton
+                  href={`${basePath}/grows/new`}
+                  label="Create Grow"
+                  primary
+                  testID="btn-new-grow"
+                />
+              ) : (
+                <ActionButton
+                  href={`${basePath}/profile`}
+                  label="Manage Billing"
+                  primary
+                />
+              )
+            ) : null}
             <ActionButton href={`${basePath}/tools`} label="Open AI Tools" />
             <ActionButton
               href={
@@ -478,10 +497,10 @@ export default function PersonalGrowsRoute({
             />
             <ActionButton href={`${basePath}/tasks`} label="Open Tasks" />
           </View>
-          {!canCreateGrow ? (
+          {growLimitReached ? (
             <View>
               <Text style={[styles.limitHeading, { color: palette.warning }]}>
-                Free grow limit reached
+                {maxGrows === 1 ? "Free grow limit reached" : "Grow limit reached"}
               </Text>
               <Text style={[styles.limitText, { color: palette.textMuted }]}>
                 {limitMessage}
@@ -490,63 +509,71 @@ export default function PersonalGrowsRoute({
           ) : null}
         </AppCard>
 
-        <AppCard
-          style={[
-            styles.roadmapCard,
-            { backgroundColor: palette.surface, borderColor: palette.border }
-          ]}
-        >
-          <Text style={[styles.cardKicker, { color: palette.accent }]}>Grow roadmap</Text>
-          <Text style={[styles.roadmapTitle, { color: palette.text }]}>
-            {latestGrow
-              ? "Keep the current grow moving with a clear next step."
-              : "Turn a blank workspace into a real grow record."}
-          </Text>
-          <Text style={[styles.roadmapText, { color: palette.textMuted }]}>
-            {latestGrow
-              ? "Open the grow, then move through journal entries, tasks, timeline events, and AI tools as the plant changes."
-              : "Create the grow, add crop identity and photos, then use diagnosis, tasks, and AI tools to keep the record usable."}
-          </Text>
-          <View style={styles.roadmapActions}>
-            {roadmapActions.map((action) => (
-              <ActionButton
-                key={`roadmap-${action.label}-${action.href}`}
-                href={action.href}
-                label={action.label}
-                primary={Boolean(action.primary)}
-              />
-            ))}
-          </View>
-        </AppCard>
+        {growsReady ? (
+          <>
+            <AppCard
+              style={[
+                styles.roadmapCard,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.cardKicker, { color: palette.accent }]}>
+                Grow roadmap
+              </Text>
+              <Text style={[styles.roadmapTitle, { color: palette.text }]}>
+                {latestGrow
+                  ? "Keep the current grow moving with a clear next step."
+                  : "Turn a blank workspace into a real grow record."}
+              </Text>
+              <Text style={[styles.roadmapText, { color: palette.textMuted }]}>
+                {latestGrow
+                  ? "Open the grow, then move through journal entries, tasks, timeline events, and AI tools as the plant changes."
+                  : "Create the grow, add crop identity and photos, then use diagnosis, tasks, and AI tools to keep the record usable."}
+              </Text>
+              <View style={styles.roadmapActions}>
+                {roadmapActions.map((action) => (
+                  <ActionButton
+                    key={`roadmap-${action.label}-${action.href}`}
+                    href={action.href}
+                    label={action.label}
+                    primary={Boolean(action.primary)}
+                  />
+                ))}
+              </View>
+            </AppCard>
 
-        <AppCard
-          style={[
-            styles.roadmapCard,
-            { backgroundColor: palette.surface, borderColor: palette.border }
-          ]}
-        >
-          <Text style={[styles.cardKicker, { color: palette.accent }]}>Grow tools</Text>
-          <Text style={[styles.roadmapTitle, { color: palette.text }]}>
-            {latestGrow
-              ? "Jump into connected tools and exports for the current grow."
-              : "Create a grow first, then connect tools and export records from here."}
-          </Text>
-          <Text style={[styles.roadmapText, { color: palette.textMuted }]}>
-            {latestGrow
-              ? "Use the grow-specific integrations and PDF export links to keep the record connected to sensors, spreadsheets, and printable reports."
-              : "The tools are ready once a grow exists so the links can carry the right grow context."}
-          </Text>
-          <View style={styles.roadmapActions}>
-            {growToolsActions.map((action) => (
-              <ActionButton
-                key={`grow-tools-${action.label}-${action.href}`}
-                href={action.href}
-                label={action.label}
-                primary={Boolean(action.primary)}
-              />
-            ))}
-          </View>
-        </AppCard>
+            <AppCard
+              style={[
+                styles.roadmapCard,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <Text style={[styles.cardKicker, { color: palette.accent }]}>
+                Grow tools
+              </Text>
+              <Text style={[styles.roadmapTitle, { color: palette.text }]}>
+                {latestGrow
+                  ? "Jump into connected tools and exports for the current grow."
+                  : "Create a grow first, then connect tools and export records from here."}
+              </Text>
+              <Text style={[styles.roadmapText, { color: palette.textMuted }]}>
+                {latestGrow
+                  ? "Use the grow-specific integrations and PDF export links to keep the record connected to sensors, spreadsheets, and printable reports."
+                  : "The tools are ready once a grow exists so the links can carry the right grow context."}
+              </Text>
+              <View style={styles.roadmapActions}>
+                {growToolsActions.map((action) => (
+                  <ActionButton
+                    key={`grow-tools-${action.label}-${action.href}`}
+                    href={action.href}
+                    label={action.label}
+                    primary={Boolean(action.primary)}
+                  />
+                ))}
+              </View>
+            </AppCard>
+          </>
+        ) : null}
 
         <PersonalFeedPlacement placement="top" routeKey="personal_grows" longContent />
 
@@ -585,104 +612,119 @@ export default function PersonalGrowsRoute({
           </AppCard>
         ) : null}
 
-        <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Workspace summary</Text>
-          <Text style={styles.sectionCount}>{sortedGrows.length} total</Text>
-        </View>
-
-        <View style={styles.summaryGrid}>
-          {summaryCards.map((card, index) => (
-            <View key={card.label} style={[styles.metricCard, metricTone(index, styles)]}>
-              <Text style={styles.metricValue}>{card.value}</Text>
-              <Text style={styles.metricLabel}>{card.label}</Text>
+        {growsReady ? (
+          <>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Workspace summary</Text>
+              <Text style={styles.sectionCount}>{sortedGrows.length} total</Text>
             </View>
-          ))}
-        </View>
 
-        <AppCard
-          style={[
-            styles.featuredCard,
-            { backgroundColor: palette.surface, borderColor: palette.border }
-          ]}
-        >
-          <View style={styles.featuredTopRow}>
-            <View style={styles.featuredCopy}>
-              <Text style={styles.cardKicker}>Latest grow</Text>
-              <Text style={styles.featuredName}>
-                {latestGrow ? growName(latestGrow) : "No grow yet"}
-              </Text>
-              <Text style={styles.featuredMeta}>
-                {latestGrow
-                  ? growIdentity(latestGrow)
-                  : "Create a grow to start connecting logs, photos, tasks, and AI runs."}
-              </Text>
-              {latestGrow ? (
-                <Text style={styles.featuredMeta}>{growSummary(latestGrow)}</Text>
-              ) : null}
-            </View>
-            {latestGrow ? (
-              <View
-                style={[styles.statusChip, statusTone(growStatus(latestGrow), styles)]}
-              >
-                <Text style={styles.statusChipValue}>{growStatus(latestGrow)}</Text>
-                <Text style={styles.statusChipLabel}>
-                  {visiblePhotoCount(latestGrow)} photos
-                </Text>
-              </View>
-            ) : null}
-          </View>
-          {latestGrow && Array.isArray(latestGrow.photos) && latestGrow.photos.length ? (
-            <View
-              style={styles.timelinePreview}
-              accessibilityLabel="Latest grow visual timeline preview"
-            >
-              <View style={styles.timelinePreviewHeader}>
-                <View>
-                  <Text style={styles.cardKicker}>Visual timeline</Text>
-                  <Text style={styles.timelinePreviewText}>
-                    Photos and important notes across this grow
-                  </Text>
+            <View style={styles.summaryGrid}>
+              {summaryCards.map((card, index) => (
+                <View
+                  key={card.label}
+                  style={[styles.metricCard, metricTone(index, styles)]}
+                >
+                  <Text style={styles.metricValue}>{card.value}</Text>
+                  <Text style={styles.metricLabel}>{card.label}</Text>
                 </View>
-                <ActionButton
-                  href={growHref(basePath, id, "timeline")}
-                  label="Explore Timeline"
-                  primary
-                />
+              ))}
+            </View>
+
+            <AppCard
+              style={[
+                styles.featuredCard,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+            >
+              <View style={styles.featuredTopRow}>
+                <View style={styles.featuredCopy}>
+                  <Text style={styles.cardKicker}>Latest grow</Text>
+                  <Text style={styles.featuredName}>
+                    {latestGrow ? growName(latestGrow) : "No grow yet"}
+                  </Text>
+                  <Text style={styles.featuredMeta}>
+                    {latestGrow
+                      ? growIdentity(latestGrow)
+                      : "Create a grow to start connecting logs, photos, tasks, and AI runs."}
+                  </Text>
+                  {latestGrow ? (
+                    <Text style={styles.featuredMeta}>{growSummary(latestGrow)}</Text>
+                  ) : null}
+                </View>
+                {latestGrow ? (
+                  <View
+                    style={[
+                      styles.statusChip,
+                      statusTone(growStatus(latestGrow), styles)
+                    ]}
+                  >
+                    <Text style={styles.statusChipValue}>{growStatus(latestGrow)}</Text>
+                    <Text style={styles.statusChipLabel}>
+                      {visiblePhotoCount(latestGrow)} photos
+                    </Text>
+                  </View>
+                ) : null}
               </View>
-              <View style={styles.timelinePhotos}>
-                {latestGrow.photos.slice(0, 4).map((photo, index) => (
-                  <Image
-                    key={`${photo}-${index}`}
-                    source={{ uri: photo }}
-                    style={styles.timelinePhoto}
-                    resizeMode="cover"
-                    accessibilityLabel={`Grow timeline preview photo ${index + 1}`}
+              {latestGrow &&
+              Array.isArray(latestGrow.photos) &&
+              latestGrow.photos.length ? (
+                <View
+                  style={styles.timelinePreview}
+                  accessibilityLabel="Latest grow visual timeline preview"
+                >
+                  <View style={styles.timelinePreviewHeader}>
+                    <View>
+                      <Text style={styles.cardKicker}>Visual timeline</Text>
+                      <Text style={styles.timelinePreviewText}>
+                        Photos and important notes across this grow
+                      </Text>
+                    </View>
+                    <ActionButton
+                      href={growHref(basePath, id, "timeline")}
+                      label="Explore Timeline"
+                      primary
+                    />
+                  </View>
+                  <View style={styles.timelinePhotos}>
+                    {latestGrow.photos.slice(0, 4).map((photo, index) => (
+                      <Image
+                        key={`${photo}-${index}`}
+                        source={{ uri: photo }}
+                        style={styles.timelinePhoto}
+                        resizeMode="cover"
+                        accessibilityLabel={`Grow timeline preview photo ${index + 1}`}
+                      />
+                    ))}
+                  </View>
+                </View>
+              ) : null}
+              {latestGrow ? (
+                <View style={styles.featuredActions}>
+                  <ActionButton href={growHref(basePath, id)} label="Open Grow" primary />
+                  <ActionButton
+                    href={growHref(basePath, id, "journal")}
+                    label="Journal"
                   />
-                ))}
-              </View>
-            </View>
-          ) : null}
-          {latestGrow ? (
-            <View style={styles.featuredActions}>
-              <ActionButton href={growHref(basePath, id)} label="Open Grow" primary />
-              <ActionButton href={growHref(basePath, id, "journal")} label="Journal" />
-              <ActionButton href={growHref(basePath, id, "tasks")} label="Tasks" />
-              <ActionButton
-                href={growHref(basePath, id, "timeline")}
-                label="Visual Timeline"
-              />
-              <ActionButton href={growHref(basePath, id, "tools")} label="AI Tools" />
-            </View>
-          ) : (
-            <View style={styles.featuredActions}>
-              <ActionButton
-                href={`${basePath}/grows/new`}
-                label="Start First Grow"
-                primary
-              />
-            </View>
-          )}
-        </AppCard>
+                  <ActionButton href={growHref(basePath, id, "tasks")} label="Tasks" />
+                  <ActionButton
+                    href={growHref(basePath, id, "timeline")}
+                    label="Visual Timeline"
+                  />
+                  <ActionButton href={growHref(basePath, id, "tools")} label="AI Tools" />
+                </View>
+              ) : (
+                <View style={styles.featuredActions}>
+                  <ActionButton
+                    href={`${basePath}/grows/new`}
+                    label="Start First Grow"
+                    primary
+                  />
+                </View>
+              )}
+            </AppCard>
+          </>
+        ) : null}
 
         <PersonalFeedPlacement placement="middle" routeKey="personal_grows" longContent />
 
@@ -707,10 +749,12 @@ export default function PersonalGrowsRoute({
 
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitle}>Your grows</Text>
-          <Text style={styles.sectionCount}>{filteredGrows.length} shown</Text>
+          {growsReady ? (
+            <Text style={styles.sectionCount}>{filteredGrows.length} shown</Text>
+          ) : null}
         </View>
 
-        {loading && !sortedGrows.length ? (
+        {loading ? (
           <AppCard
             style={[
               styles.stateCard,
@@ -724,7 +768,7 @@ export default function PersonalGrowsRoute({
           </AppCard>
         ) : null}
 
-        {!loading && !filteredGrows.length ? (
+        {growsReady && !filteredGrows.length ? (
           <AppCard
             style={[
               styles.emptyCard,
@@ -740,20 +784,22 @@ export default function PersonalGrowsRoute({
                 : "Create a grow to connect photos, journal entries, tasks, tools, crop ID, and exportable records in one place."}
             </Text>
             <View style={styles.emptyActions}>
-              {canCreateGrow ? (
-                <ActionButton
-                  href={`${basePath}/grows/new`}
-                  label="New Grow"
-                  primary
-                  testID="btn-create-first-grow"
-                />
-              ) : (
-                <ActionButton
-                  href={`${basePath}/profile`}
-                  label="Manage Billing"
-                  primary
-                />
-              )}
+              {planReady ? (
+                canCreateGrow ? (
+                  <ActionButton
+                    href={`${basePath}/grows/new`}
+                    label="New Grow"
+                    primary
+                    testID="btn-create-first-grow"
+                  />
+                ) : (
+                  <ActionButton
+                    href={`${basePath}/profile`}
+                    label="Manage Billing"
+                    primary
+                  />
+                )
+              ) : null}
               <ActionButton href={`${basePath}/tools`} label="Open AI Tools" />
               <ActionButton
                 href={
@@ -767,90 +813,95 @@ export default function PersonalGrowsRoute({
           </AppCard>
         ) : null}
 
-        <View style={styles.growList}>
-          {filteredGrows.map((grow) => {
-            const id = String(grow?.id || (grow as any)?._id || "").trim();
-            if (!id) return null;
-            const status = growStatus(grow);
-            const growChips = [
-              safeText(grow?.location),
-              safeText(grow?.cropCommonName || grow?.scientificName),
-              safeText(grow?.cultivar || grow?.strain),
-              grow?.startDate ? `Started ${formatGrowStartDate(grow.startDate)}` : "",
-              grow?.updatedAt ? `Updated ${formatDate(grow.updatedAt)}` : ""
-            ].filter(Boolean);
-            const note = safeText(grow?.notes);
+        {growsReady ? (
+          <View style={styles.growList}>
+            {filteredGrows.map((grow) => {
+              const id = String(grow?.id || (grow as any)?._id || "").trim();
+              if (!id) return null;
+              const status = growStatus(grow);
+              const growChips = [
+                safeText(grow?.location),
+                safeText(grow?.cropCommonName || grow?.scientificName),
+                safeText(grow?.cultivar || grow?.strain),
+                grow?.startDate ? `Started ${formatGrowStartDate(grow.startDate)}` : "",
+                grow?.updatedAt ? `Updated ${formatDate(grow.updatedAt)}` : ""
+              ].filter(Boolean);
+              const note = safeText(grow?.notes);
 
-            return (
-              <AppCard
-                key={id}
-                style={[
-                  styles.growCard,
-                  { backgroundColor: palette.surface, borderColor: palette.border }
-                ]}
-              >
-                <View style={styles.growHeader}>
-                  <View style={styles.growCopy}>
-                    <Text style={styles.growName}>{growName(grow)}</Text>
-                    <Text style={styles.growIdentity}>{growIdentity(grow)}</Text>
-                    <Text style={styles.growMeta}>{growSummary(grow)}</Text>
-                  </View>
-                  <View style={[styles.statusChip, statusTone(status, styles)]}>
-                    <Text style={styles.statusChipValue}>{status}</Text>
-                    <Text style={styles.statusChipLabel}>
-                      {visiblePhotoCount(grow)} photos
-                    </Text>
-                  </View>
-                </View>
-
-                {growChips.length ? (
-                  <View style={styles.chipRow}>
-                    {growChips.slice(0, 4).map((chip) => (
-                      <View key={chip} style={styles.chip}>
-                        <Text style={styles.chipText}>{chip}</Text>
-                      </View>
-                    ))}
-                  </View>
-                ) : null}
-
-                {note ? <Text style={styles.note}>{note}</Text> : null}
-
-                <View style={styles.growActions}>
-                  <ActionButton href={growHref(basePath, id)} label="Open" primary />
-                  <ActionButton
-                    href={growHref(basePath, id, "journal")}
-                    label="Journal"
-                  />
-                  <ActionButton href={growHref(basePath, id, "tasks")} label="Tasks" />
-                  <ActionButton href={growHref(basePath, id, "tools")} label="AI Tools" />
-                  <ActionButton
-                    href={growHref(basePath, id, "timeline")}
-                    label="Timeline"
-                  />
-                  {workspace === "personal" ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={`Archive ${growName(grow)}`}
-                      disabled={changingGrowId === id}
-                      onPress={() => requestArchive(grow)}
-                      style={[
-                        styles.action,
-                        { borderColor: palette.warning },
-                        changingGrowId === id && { opacity: 0.6 }
-                      ]}
-                    >
-                      <Text style={[styles.actionText, { color: palette.warning }]}>
-                        {changingGrowId === id ? "Archiving..." : "Archive"}
+              return (
+                <AppCard
+                  key={id}
+                  style={[
+                    styles.growCard,
+                    { backgroundColor: palette.surface, borderColor: palette.border }
+                  ]}
+                >
+                  <View style={styles.growHeader}>
+                    <View style={styles.growCopy}>
+                      <Text style={styles.growName}>{growName(grow)}</Text>
+                      <Text style={styles.growIdentity}>{growIdentity(grow)}</Text>
+                      <Text style={styles.growMeta}>{growSummary(grow)}</Text>
+                    </View>
+                    <View style={[styles.statusChip, statusTone(status, styles)]}>
+                      <Text style={styles.statusChipValue}>{status}</Text>
+                      <Text style={styles.statusChipLabel}>
+                        {visiblePhotoCount(grow)} photos
                       </Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-              </AppCard>
-            );
-          })}
-        </View>
+                    </View>
+                  </View>
 
-        {workspace === "personal" ? (
+                  {growChips.length ? (
+                    <View style={styles.chipRow}>
+                      {growChips.slice(0, 4).map((chip) => (
+                        <View key={chip} style={styles.chip}>
+                          <Text style={styles.chipText}>{chip}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
+
+                  {note ? <Text style={styles.note}>{note}</Text> : null}
+
+                  <View style={styles.growActions}>
+                    <ActionButton href={growHref(basePath, id)} label="Open" primary />
+                    <ActionButton
+                      href={growHref(basePath, id, "journal")}
+                      label="Journal"
+                    />
+                    <ActionButton href={growHref(basePath, id, "tasks")} label="Tasks" />
+                    <ActionButton
+                      href={growHref(basePath, id, "tools")}
+                      label="AI Tools"
+                    />
+                    <ActionButton
+                      href={growHref(basePath, id, "timeline")}
+                      label="Timeline"
+                    />
+                    {workspace === "personal" ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Archive ${growName(grow)}`}
+                        disabled={changingGrowId === id}
+                        onPress={() => requestArchive(grow)}
+                        style={[
+                          styles.action,
+                          { borderColor: palette.warning },
+                          changingGrowId === id && { opacity: 0.6 }
+                        ]}
+                      >
+                        <Text style={[styles.actionText, { color: palette.warning }]}>
+                          {changingGrowId === id ? "Archiving..." : "Archive"}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                </AppCard>
+              );
+            })}
+          </View>
+        ) : null}
+
+        {growsReady && workspace === "personal" ? (
           <AppCard
             style={[
               styles.searchCard,

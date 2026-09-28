@@ -70,6 +70,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "grow-list-readiness",
       "timeline-export-return",
       "general-crop-calendar-access",
       "live-gift-follow-up",
@@ -97,6 +98,19 @@ describe("public Updates page", () => {
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
+  });
+
+  it("separates unavailable grow data from real account limits and earlier New Grow work", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "grow-list-readiness"
+    );
+    expect(entry?.summary).toContain("successfully loaded records");
+    expect(entry?.summary).toContain("Existing grow limits, permissions");
+    const photoEntry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "journal-large-photo-upload"
+    );
+    expect(photoEntry?.summary).toContain("New Grow screen");
+    expect(photoEntry?.summary).toContain("separate grow-list display correction");
   });
 
   it("describes the Personal timeline export return without claiming new export capability", () => {
