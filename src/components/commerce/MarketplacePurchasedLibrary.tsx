@@ -61,9 +61,15 @@ function MarketplacePurchasedSession({ onBack }: { onBack: () => void }) {
   const [refreshing, setRefreshing] = useState(false);
   const [downloadingId, setDownloadingId] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [loadFailure, setLoadFailure] = useState<{
+    page: number;
+    refresh: boolean;
+    message: string;
+  } | null>(null);
   const active = useRef(true);
   const controller = useRef<AbortController | null>(null);
   const action = useRef(false);
+  const loadingRequest = useRef(false);
   useEffect(() => {
     active.current = true;
     return () => {
@@ -73,8 +79,11 @@ function MarketplacePurchasedSession({ onBack }: { onBack: () => void }) {
   }, []);
 
   const load = useCallback(async (nextPage = 1, refresh = false) => {
+    if (loadingRequest.current || !active.current) return;
+    loadingRequest.current = true;
     if (refresh) setRefreshing(true);
     else setLoading(true);
+    setLoadFailure(null);
     setFeedback("");
     try {
       const response = await getMarketplacePurchases(nextPage, PAGE_SIZE);
@@ -87,10 +96,14 @@ function MarketplacePurchasedSession({ onBack }: { onBack: () => void }) {
     } catch (error) {
       if (!active.current) return;
       if (nextPage === 1) setPurchases([]);
-      setFeedback(
-        error instanceof Error ? error.message : "Unable to load purchased offers."
-      );
+      setLoadFailure({
+        page: nextPage,
+        refresh,
+        message:
+          error instanceof Error ? error.message : "Unable to load purchased offers."
+      });
     } finally {
+      loadingRequest.current = false;
       if (active.current) {
         setLoading(false);
         setRefreshing(false);
@@ -144,18 +157,33 @@ function MarketplacePurchasedSession({ onBack }: { onBack: () => void }) {
         Confirmed purchases stay in this library. Each download is authorized by the
         server when you open it.
       </Text>
+      {loadFailure ? (
+        <View style={styles.feedback}>
+          <Text accessibilityLiveRegion="polite" style={styles.meta}>
+            {loadFailure.message}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading purchased offers"
+            onPress={() => void load(loadFailure.page, loadFailure.refresh)}
+            style={styles.backButton}
+          >
+            <Text style={styles.backText}>Try again</Text>
+          </Pressable>
+        </View>
+      ) : null}
       {feedback ? (
         <Text accessibilityLiveRegion="polite" style={styles.feedback}>
           {feedback}
         </Text>
       ) : null}
-      {loading && !refreshing ? (
+      {(loading || refreshing) && (!refreshing || purchases.length === 0) ? (
         <View style={styles.emptyState}>
           <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading purchased offers...</Text>
         </View>
       ) : null}
-      {!loading && purchases.length === 0 ? (
+      {!loading && !refreshing && !loadFailure && purchases.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyTitle}>No purchased storefront offers found.</Text>
         </View>
@@ -165,7 +193,7 @@ function MarketplacePurchasedSession({ onBack }: { onBack: () => void }) {
           data={purchases}
           keyExtractor={(purchase) => purchase.purchaseId}
           onEndReached={() => {
-            if (more && !loading) void load(page + 1);
+            if (more && !loading && !refreshing && !loadFailure) void load(page + 1);
           }}
           onEndReachedThreshold={0.4}
           refreshControl={

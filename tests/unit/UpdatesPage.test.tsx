@@ -70,6 +70,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "purchased-library-readiness",
       "grow-list-readiness",
       "timeline-export-return",
       "general-crop-calendar-access",
@@ -98,6 +99,17 @@ describe("public Updates page", () => {
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
+  });
+
+  it("limits the purchased-library note to loading and deliberate read-only recovery", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "purchased-library-readiness"
+    );
+    expect(entry?.summary).toContain("confirmed-empty results stay separate");
+    expect(entry?.summary).toContain("Retrying does not buy or download anything");
+    expect(entry?.summary).toContain(
+      "Existing purchases, payment rules, authorized downloads"
+    );
   });
 
   it("separates unavailable grow data from real account limits and earlier New Grow work", () => {

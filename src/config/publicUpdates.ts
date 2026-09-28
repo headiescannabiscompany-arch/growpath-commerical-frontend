@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "purchased-library-readiness",
+        title: "Clearer purchased-library errors and retry",
+        date: "September 28, 2026",
+        dateLabel: "Released",
+        summary:
+          "A failed purchase-library request no longer says your library is empty. Loading, unavailable, and confirmed-empty results stay separate, with an explicit retry for failed reads. Retrying does not buy or download anything. Existing purchases, payment rules, authorized downloads, and the normal library layout stay unchanged."
+      },
+      {
         id: "grow-list-readiness",
         title: "Clearer grow loading and account-limit messages",
         date: "September 28, 2026",
