@@ -140,6 +140,12 @@ export default function PdfExportScreen({
     <ScreenBoundary
       title="Grow Reports & Export"
       showBack
+      preferBackFallback={
+        workspaceType === "personal" &&
+        Boolean(growId) &&
+        presentation === "timeline" &&
+        !backFallbackHref
+      }
       backFallbackHref={
         backFallbackHref ||
         (growId

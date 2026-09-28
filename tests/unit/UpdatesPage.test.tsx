@@ -70,6 +70,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "timeline-export-return",
       "general-crop-calendar-access",
       "live-gift-follow-up",
       "product-checkout-request-safety",
@@ -96,6 +97,18 @@ describe("public Updates page", () => {
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
+  });
+
+  it("describes the Personal timeline export return without claiming new export capability", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "timeline-export-return"
+    );
+    expect(entry?.summary).toContain("Personal grow");
+    expect(entry?.summary).toContain("export is locked by your plan");
+    expect(entry?.summary).toContain(
+      "published shares, and the existing layout stay unchanged"
+    );
+    expect(entry?.summary).not.toMatch(/unlocks|all exports.*verified/i);
   });
 
   it("describes only the crop-calendar access correction", () => {

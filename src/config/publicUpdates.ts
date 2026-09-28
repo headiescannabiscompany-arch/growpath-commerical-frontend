@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "timeline-export-return",
+        title: "Return to your timeline from export",
+        date: "September 28, 2026",
+        dateLabel: "Released",
+        summary:
+          "After opening Export Visual Timeline from a Personal grow, Back now returns to that same grow's timeline instead of unrelated navigation history. This also works when export is locked by your plan. Export permissions, downloads, published shares, and the existing layout stay unchanged."
+      },
+      {
         id: "general-crop-calendar-access",
         title: "Open the grow planner for general crops",
         date: "September 28, 2026",
