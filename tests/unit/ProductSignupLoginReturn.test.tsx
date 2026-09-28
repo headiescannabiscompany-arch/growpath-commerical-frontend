@@ -5,11 +5,13 @@ import { ApiError } from "@/api/apiRequest";
 import LoginScreen from "@/app/login";
 import VerifyEmailScreen from "@/app/verify-email";
 import {
-  readProductSignupContinuation,
-  rememberProductSignupContinuation
+  PRODUCT_SIGNUP_CONTINUATION_TTL_MS,
+  readShopperSignupContinuation,
+  rememberShopperSignupContinuation
 } from "@/utils/shopperProductContinuation";
 
 const mockLogin = jest.fn();
+const mockApiRequest = jest.fn();
 const mockConfirmEmailVerification = jest.fn();
 const mockRequestEmailVerification = jest.fn();
 const mockReplace = jest.fn();
@@ -32,6 +34,10 @@ let mockAuth: {
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({ ...mockAuth, login: mockLogin })
 }));
+jest.mock("@/api/apiRequest", () => ({
+  ...jest.requireActual("@/api/apiRequest"),
+  apiRequest: (...args: any[]) => mockApiRequest(...args)
+}));
 jest.mock("@/api/auth", () => ({
   requestEmailVerification: (...args: any[]) => mockRequestEmailVerification(...args),
   confirmEmailVerification: (...args: any[]) => mockConfirmEmailVerification(...args)
@@ -42,7 +48,9 @@ jest.mock("expo-router", () => ({
 }));
 
 const email = "shopper@example.com";
-const product = "/store/growpathai/products/6aa5967eb77d250e5aecf795";
+const PRODUCT_PATH = "/store/growpathai/products/6aa5967eb77d250e5aecf795";
+const SHARED_COURSE = "/courses?courseId=6aa2f5c5d339157652995f10";
+const STOREFRONT_COURSE = "/store/growpathai/courses/6aa2f5c5d339157652995f10";
 const nextProduct = "/store/growpathai/products/6aa5967eb77d250e5aecf796";
 const originalWindow = (globalThis as any).window;
 let localValues = new Map<string, string>();
@@ -100,7 +108,11 @@ async function showCurrentAuth(screen: ReturnType<typeof render>) {
   });
 }
 
-describe("product signup continuation through existing login", () => {
+describe.each([
+  ["product", PRODUCT_PATH],
+  ["shared course", SHARED_COURSE],
+  ["storefront course", STOREFRONT_COURSE]
+])("%s signup continuation through existing login", (_kind, destination) => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLogin.mockReset().mockResolvedValue(undefined);
@@ -123,22 +135,29 @@ describe("product signup continuation through existing login", () => {
     (globalThis as any).window = originalWindow;
   });
 
-  it("passes only a canonical product destination from login into account creation", () => {
-    mockParams = { next: product };
+  afterEach(() => {
+    // Login/verification are mocked explicitly; returning must not invoke any
+    // course enrollment, purchase, access, or product-interest API as a side effect.
+    expect(mockApiRequest).not.toHaveBeenCalled();
+    jest.restoreAllMocks();
+  });
+
+  it("passes the exact canonical shopper destination from login into account creation", () => {
+    mockParams = { next: destination };
     const screen = render(<LoginScreen />);
     fireEvent.press(screen.getByLabelText("Create account"));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: "/register",
-      params: { next: product }
+      params: { next: destination }
     });
     expect(mockLogin).not.toHaveBeenCalled();
   });
 
   it.each([
-    { next: [product] },
-    { next: `${product}?quantity=2` },
+    { next: [destination] },
+    { next: `${destination}?quantity=2` },
     { next: "https://elsewhere.example/product" },
-    { next: "/courses?courseId=6aa2f5c5d339157652995f10" },
+    { next: `${SHARED_COURSE}&courseId=6aa2f5c5d339157652995f10` },
     { next: "/account/gift-checkout/success?session_id=cs_test_valid_session" }
   ])("does not add unsupported registration continuity for $next", ({ next }) => {
     mockParams = { next };
@@ -151,28 +170,28 @@ describe("product signup continuation through existing login", () => {
     "preserves the existing claim registration destination %s",
     (next) => {
       mockParams = { next };
-      rememberProductSignupContinuation(email, product);
+      rememberShopperSignupContinuation(email, destination);
       const screen = render(<LoginScreen />);
       fireEvent.press(screen.getByLabelText("Create account"));
       expect(mockPush).toHaveBeenCalledWith({ pathname: "/register", params: { next } });
-      expect(readProductSignupContinuation(email)).not.toBeNull();
+      expect(readShopperSignupContinuation(email)).not.toBeNull();
     }
   );
 
   it("does not consume or navigate from stored state merely by rendering login", () => {
-    rememberProductSignupContinuation(email, product);
+    rememberShopperSignupContinuation(email, destination);
     readyAccount();
     render(<LoginScreen />);
     expect(mockLogin).not.toHaveBeenCalled();
     expect(mockReplace).not.toHaveBeenCalled();
-    expect(readProductSignupContinuation(email)).not.toBeNull();
+    expect(readShopperSignupContinuation(email)).not.toBeNull();
   });
 
   it("captures the continuation at deliberate submit and waits for matching settled session readiness", async () => {
     const login = deferred();
     mockLogin.mockReturnValueOnce(login.promise);
     const screen = render(<LoginScreen />);
-    rememberProductSignupContinuation(email, product);
+    rememberShopperSignupContinuation(email, destination);
     submit(screen, " Shopper@Example.com ");
     expect(mockLogin).toHaveBeenCalledWith(email, "synthetic-password");
     readyAccount(" SHOPPER@example.com ");
@@ -182,23 +201,23 @@ describe("product signup continuation through existing login", () => {
       login.resolve();
     });
     expect(mockReplace).not.toHaveBeenCalled();
-    expect(readProductSignupContinuation(email)).not.toBeNull();
+    expect(readShopperSignupContinuation(email)).not.toBeNull();
     mockAuth.meStatus = "ready";
     mockAuth.isHydrating = true;
     await showCurrentAuth(screen);
     expect(mockReplace).not.toHaveBeenCalled();
     mockAuth.isHydrating = false;
     await showCurrentAuth(screen);
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(product));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(destination));
     expect(mockReplace).toHaveBeenCalledTimes(1);
-    expect(readProductSignupContinuation(email)).toBeNull();
+    expect(readShopperSignupContinuation(email)).toBeNull();
     expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("does not resume from a ready session until this login promise also succeeds", async () => {
     const login = deferred();
     mockLogin.mockReturnValueOnce(login.promise);
-    rememberProductSignupContinuation(email, product);
+    rememberShopperSignupContinuation(email, destination);
     const screen = render(<LoginScreen />);
     submit(screen);
     readyAccount();
@@ -207,14 +226,14 @@ describe("product signup continuation through existing login", () => {
     await act(async () => {
       login.resolve();
     });
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(product));
-    expect(readProductSignupContinuation(email)).toBeNull();
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(destination));
+    expect(readShopperSignupContinuation(email)).toBeNull();
   });
 
   it.each(["error", "idle"] as const)(
     "retains the continuation when resolved login leaves session %s",
     async (meStatus) => {
-      rememberProductSignupContinuation(email, product);
+      rememberShopperSignupContinuation(email, destination);
       mockLogin.mockImplementationOnce(async () => {
         readyAccount();
         mockAuth.meStatus = meStatus;
@@ -225,13 +244,13 @@ describe("product signup continuation through existing login", () => {
       submit(screen);
       await act(async () => {});
       await showCurrentAuth(screen);
-      expect(mockReplace).not.toHaveBeenCalledWith(product);
-      expect(readProductSignupContinuation(email)).not.toBeNull();
+      expect(mockReplace).not.toHaveBeenCalledWith(destination);
+      expect(readShopperSignupContinuation(email)).not.toBeNull();
     }
   );
 
   it("preserves a failed-login continuation and consumes it only after a later verified successful attempt", async () => {
-    rememberProductSignupContinuation(email, product);
+    rememberShopperSignupContinuation(email, destination);
     mockLogin.mockRejectedValueOnce(
       new ApiError("BAD_LOGIN", 401, { message: "Invalid email or password." })
     );
@@ -239,19 +258,19 @@ describe("product signup continuation through existing login", () => {
     submit(screen);
     await screen.findByText("Invalid email or password.");
     expect(mockReplace).not.toHaveBeenCalled();
-    expect(readProductSignupContinuation(email)).not.toBeNull();
+    expect(readShopperSignupContinuation(email)).not.toBeNull();
     mockLogin.mockImplementationOnce(async () => {
       readyAccount();
     });
     submit(screen);
     await act(async () => {});
     await showCurrentAuth(screen);
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(product));
-    expect(readProductSignupContinuation(email)).toBeNull();
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(destination));
+    expect(readShopperSignupContinuation(email)).toBeNull();
   });
 
-  it("does not consume or resume a product when the authenticated email differs", async () => {
-    rememberProductSignupContinuation(email, product);
+  it("does not consume or resume a destination when the authenticated email differs", async () => {
+    rememberShopperSignupContinuation(email, destination);
     mockLogin.mockImplementationOnce(async () => {
       readyAccount("other@example.com");
     });
@@ -259,14 +278,14 @@ describe("product signup continuation through existing login", () => {
     submit(screen);
     await act(async () => {});
     await showCurrentAuth(screen);
-    expect(mockReplace).not.toHaveBeenCalledWith(product);
-    expect(readProductSignupContinuation(email)).not.toBeNull();
+    expect(mockReplace).not.toHaveBeenCalledWith(destination);
+    expect(readShopperSignupContinuation(email)).not.toBeNull();
   });
 
   it("does not consume or navigate after this login screen is unmounted", async () => {
     const login = deferred();
     mockLogin.mockReturnValueOnce(login.promise);
-    rememberProductSignupContinuation(email, product);
+    rememberShopperSignupContinuation(email, destination);
     const screen = render(<LoginScreen />);
     submit(screen);
     screen.unmount();
@@ -275,13 +294,13 @@ describe("product signup continuation through existing login", () => {
       login.resolve();
     });
     expect(mockReplace).not.toHaveBeenCalled();
-    expect(readProductSignupContinuation(email)).not.toBeNull();
+    expect(readShopperSignupContinuation(email)).not.toBeNull();
   });
 
   it("prevents a second login submission from superseding an in-flight attempt", async () => {
     const login = deferred();
     mockLogin.mockReturnValueOnce(login.promise);
-    rememberProductSignupContinuation(email, product);
+    rememberShopperSignupContinuation(email, destination);
     const screen = render(<LoginScreen />);
     submit(screen);
     fireEvent(screen.getByLabelText("Password"), "submitEditing");
@@ -291,7 +310,7 @@ describe("product signup continuation through existing login", () => {
     await act(async () => {
       login.resolve();
     });
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(product));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(destination));
     expect(mockReplace).toHaveBeenCalledTimes(1);
   });
 
@@ -300,7 +319,7 @@ describe("product signup continuation through existing login", () => {
     async (change) => {
       const login = deferred();
       mockLogin.mockReturnValueOnce(login.promise);
-      rememberProductSignupContinuation(email, product);
+      rememberShopperSignupContinuation(email, destination);
       const screen = render(<LoginScreen />);
       submit(screen);
       readyAccount();
@@ -324,54 +343,114 @@ describe("product signup continuation through existing login", () => {
       await showCurrentAuth(screen);
       readyAccount();
       await showCurrentAuth(screen);
-      expect(mockReplace).not.toHaveBeenCalledWith(product);
-      expect(readProductSignupContinuation(email)).not.toBeNull();
+      expect(mockReplace).not.toHaveBeenCalledWith(destination);
+      expect(readShopperSignupContinuation(email)).not.toBeNull();
     }
   );
 
-  it("does not erase or adopt another tab's newer product while login is in flight", async () => {
-    const login = deferred();
-    mockLogin.mockReturnValueOnce(login.promise);
-    rememberProductSignupContinuation(email, product);
-    const screen = render(<LoginScreen />);
-    submit(screen);
-    rememberProductSignupContinuation(email, nextProduct);
-    const replacement = readProductSignupContinuation(email);
-    readyAccount();
-    await showCurrentAuth(screen);
-    await act(async () => {
-      login.resolve();
-    });
-    expect(mockReplace).not.toHaveBeenCalledWith(product);
-    expect(mockReplace).not.toHaveBeenCalledWith(nextProduct);
-    expect(readProductSignupContinuation(email)).toEqual(replacement);
-  });
-
-  it("gives an explicit safe next destination precedence without consuming stored signup state", async () => {
-    rememberProductSignupContinuation(email, product);
-    mockParams = { next: "/claim-complimentary-access" };
-    mockLogin.mockImplementationOnce(async () => {
+  it.each([nextProduct, SHARED_COURSE, STOREFRONT_COURSE])(
+    "does not erase or adopt another tab's newer destination %s while login is in flight",
+    async (newerDestination) => {
+      const login = deferred();
+      mockLogin.mockReturnValueOnce(login.promise);
+      rememberShopperSignupContinuation(email, destination);
+      const screen = render(<LoginScreen />);
+      submit(screen);
+      rememberShopperSignupContinuation(email, newerDestination);
+      const replacement = readShopperSignupContinuation(email);
       readyAccount();
-    });
+      await showCurrentAuth(screen);
+      await act(async () => {
+        login.resolve();
+      });
+      expect(mockReplace).not.toHaveBeenCalledWith(destination);
+      expect(mockReplace).not.toHaveBeenCalledWith(newerDestination);
+      expect(mockReplace).toHaveBeenCalledWith("/account/workspace");
+      expect(readShopperSignupContinuation(email)).toEqual(replacement);
+    }
+  );
+
+  it.each([
+    "/claim-complimentary-access",
+    "/claim-gift",
+    nextProduct,
+    SHARED_COURSE,
+    STOREFRONT_COURSE
+  ])(
+    "gives explicit safe next %s precedence without consuming stored signup state",
+    async (next) => {
+      rememberShopperSignupContinuation(email, destination);
+      mockParams = { next };
+      mockLogin.mockImplementationOnce(async () => {
+        readyAccount();
+      });
+      const screen = render(<LoginScreen />);
+      submit(screen);
+      await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(next));
+      expect(mockReplace).toHaveBeenCalledTimes(1);
+      expect(readShopperSignupContinuation(email)).not.toBeNull();
+    }
+  );
+
+  it("retains saved continuity after unverified login and does not silently send email", async () => {
+    rememberShopperSignupContinuation(email, destination);
+    const snapshot = readShopperSignupContinuation(email);
+    mockLogin.mockRejectedValueOnce(
+      new ApiError("EMAIL_NOT_VERIFIED", 403, {
+        error: {
+          code: "EMAIL_NOT_VERIFIED",
+          message: "Please verify your email address before signing in."
+        }
+      })
+    );
     const screen = render(<LoginScreen />);
     submit(screen);
-    await waitFor(() =>
-      expect(mockReplace).toHaveBeenCalledWith("/claim-complimentary-access")
-    );
-    expect(readProductSignupContinuation(email)).not.toBeNull();
-    expect(mockReplace).not.toHaveBeenCalledWith(product);
+    await screen.findByLabelText("Resend verification email");
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockRequestEmailVerification).not.toHaveBeenCalled();
+    expect(readShopperSignupContinuation(email)).toEqual(snapshot);
   });
 
-  it("does not use another signup email's stored product destination", async () => {
-    rememberProductSignupContinuation("different@example.com", product);
+  it.each(["expiry", "opposite-kind replacement"])(
+    "fails safely on %s while the successful login waits for session readiness",
+    async (change) => {
+      const start = Date.now();
+      const clock = jest.spyOn(Date, "now").mockReturnValue(start);
+      rememberShopperSignupContinuation(email, destination);
+      mockLogin.mockImplementationOnce(async () => {
+        readyAccount();
+        mockAuth.meStatus = "loading";
+      });
+      const screen = render(<LoginScreen />);
+      submit(screen);
+      await act(async () => {});
+      await showCurrentAuth(screen);
+      expect(mockReplace).not.toHaveBeenCalled();
+      const newerDestination = destination === PRODUCT_PATH ? SHARED_COURSE : nextProduct;
+      if (change === "expiry")
+        clock.mockReturnValue(start + PRODUCT_SIGNUP_CONTINUATION_TTL_MS);
+      else rememberShopperSignupContinuation(email, newerDestination);
+      const savedValues = new Map(localValues);
+      mockAuth.meStatus = "ready";
+      await showCurrentAuth(screen);
+      expect(mockReplace).toHaveBeenCalledTimes(1);
+      expect(mockReplace).toHaveBeenCalledWith("/account/workspace");
+      expect(localValues).toEqual(savedValues);
+      if (change !== "expiry")
+        expect(readShopperSignupContinuation(email)?.path).toBe(newerDestination);
+    }
+  );
+
+  it("does not use another signup email's stored destination", async () => {
+    rememberShopperSignupContinuation("different@example.com", destination);
     mockLogin.mockImplementationOnce(async () => {
       readyAccount();
     });
     const screen = render(<LoginScreen />);
     submit(screen);
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/account/workspace"));
-    expect(mockReplace).not.toHaveBeenCalledWith(product);
-    expect(readProductSignupContinuation("different@example.com")).not.toBeNull();
+    expect(mockReplace).not.toHaveBeenCalledWith(destination);
+    expect(readShopperSignupContinuation("different@example.com")).not.toBeNull();
   });
 
   it("degrades unavailable storage to the normal workspace handoff without blocking login", async () => {
@@ -387,11 +466,11 @@ describe("product signup continuation through existing login", () => {
     const screen = render(<LoginScreen />);
     submit(screen);
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/account/workspace"));
-    expect(mockReplace).not.toHaveBeenCalledWith(product);
+    expect(mockReplace).not.toHaveBeenCalledWith(destination);
   });
 
   it("resumes token-only verification in a new same-origin tab only after verified login", async () => {
-    rememberProductSignupContinuation(email, product);
+    rememberShopperSignupContinuation(email, destination);
     freshBrowserTab();
     mockParams = { token: "synthetic-verification-token" };
     const verification = render(<VerifyEmailScreen />);
@@ -399,7 +478,7 @@ describe("product signup continuation through existing login", () => {
     expect(mockConfirmEmailVerification).toHaveBeenCalledWith(
       "synthetic-verification-token"
     );
-    expect(readProductSignupContinuation(email)).not.toBeNull();
+    expect(readShopperSignupContinuation(email)).not.toBeNull();
     fireEvent.press(verification.getByLabelText("Go to sign in"));
     expect(mockReplace).toHaveBeenCalledWith("/login?email=shopper%40example.com");
     verification.unmount();
@@ -413,8 +492,8 @@ describe("product signup continuation through existing login", () => {
     submit(login);
     await act(async () => {});
     await showCurrentAuth(login);
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(product));
-    expect(readProductSignupContinuation(email)).toBeNull();
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(destination));
+    expect(readShopperSignupContinuation(email)).toBeNull();
     expect(mockPush).not.toHaveBeenCalled();
   });
 });

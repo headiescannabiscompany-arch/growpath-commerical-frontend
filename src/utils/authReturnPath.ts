@@ -225,6 +225,12 @@ export function parsePublicCourseReturnPath(value: unknown): string | null {
     : null;
 }
 
+// Signup continuation is narrower than the general login return allowlist.
+export function parseShopperSignupReturnPath(value: unknown): string {
+  if (typeof value !== "string" || value !== value.trim()) return "";
+  return parsePublicProductReturnPath(value) || parsePublicCourseReturnPath(value) || "";
+}
+
 export function safeLoginPath(email: unknown, next: unknown): string {
   const params = new URLSearchParams();
   const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";

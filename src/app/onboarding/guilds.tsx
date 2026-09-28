@@ -17,7 +17,7 @@ import { INTEREST_TIERS } from "@/config/interests";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { parseClaimReturnPath } from "@/utils/claimReturnPath";
-import { parsePublicProductReturnPath } from "@/utils/authReturnPath";
+import { parseShopperSignupReturnPath } from "@/utils/authReturnPath";
 
 type InterestMap = Record<string, string[]>;
 
@@ -50,10 +50,10 @@ export default function GuildOnboardingScreen() {
   }>();
   const requestedNext = singleParam(params.next);
   const claimNext = parseClaimReturnPath(requestedNext);
-  const productNext = parsePublicProductReturnPath(params.next);
+  const shopperNext = parseShopperSignupReturnPath(params.next);
   const next = claimNext
     ? claimNext
-    : productNext ||
+    : shopperNext ||
       (["/", "/home/personal", "/onboarding/walkthroughs"].includes(requestedNext)
         ? requestedNext
         : "/");

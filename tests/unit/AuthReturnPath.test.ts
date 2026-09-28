@@ -9,6 +9,7 @@ import {
   parseAuthReturnPath,
   parsePublicCourseReturnPath,
   parseSafeLoginReturnPath,
+  parseShopperSignupReturnPath,
   resolveAuthReturnPath,
   safeLoginPath
 } from "@/utils/authReturnPath";
@@ -19,6 +20,80 @@ const LIVE_SESSION_ID = "507f191e810c19729de86001";
 const COURSE_ID = "6aa2f5c5d339157652995f10";
 const SHARED_COURSE_PATH = `/courses?courseId=${COURSE_ID}`;
 const STOREFRONT_COURSE_PATH = `/store/growpathai/courses/${COURSE_ID}`;
+const PRODUCT_PATH = "/store/growpathai/products/6a90f76bf113936857750634";
+
+describe("shopper signup return allowlist", () => {
+  it.each([PRODUCT_PATH, SHARED_COURSE_PATH, STOREFRONT_COURSE_PATH])(
+    "accepts only the exact canonical shopper destination %s",
+    (path) => {
+      expect(parseShopperSignupReturnPath(path)).toBe(path);
+    }
+  );
+
+  it.each(
+    [PRODUCT_PATH, SHARED_COURSE_PATH, STOREFRONT_COURSE_PATH].flatMap((path) =>
+      [
+        [path],
+        [path, path],
+        ` ${path}`,
+        `${path} `,
+        `${path}\n`,
+        `${path}\r\n`,
+        `${path}\t`,
+        `${path}\u0000`,
+        `${path}#lesson`,
+        `https://evil.example${path}`,
+        `/${path}`
+      ].map((value) => ({ value }))
+    )
+  )("rejects raw, noncanonical shopper input $value", ({ value }) => {
+    expect(parseShopperSignupReturnPath(value)).toBe("");
+  });
+
+  it.each(
+    [
+      undefined,
+      null,
+      0,
+      {},
+      new String(PRODUCT_PATH),
+      [],
+      "",
+      "/products",
+      "/courses",
+      "/courses?courseId=course-title",
+      `/courses?courseId=${COURSE_ID.toUpperCase()}`,
+      `/courses?%63ourseId=${COURSE_ID}`,
+      `/courses?courseId=%36${COURSE_ID.slice(1)}`,
+      `${SHARED_COURSE_PATH}&courseId=${COURSE_ID}`,
+      `${SHARED_COURSE_PATH}&extra=1`,
+      `/courses?extra=1&courseId=${COURSE_ID}`,
+      `${STOREFRONT_COURSE_PATH}?extra=1`,
+      STOREFRONT_COURSE_PATH.replace("growpathai", "GrowPathAI"),
+      STOREFRONT_COURSE_PATH.replace("growpathai", "%67rowpathai"),
+      STOREFRONT_COURSE_PATH.replace(COURSE_ID, "course-title"),
+      `${PRODUCT_PATH}?extra=1`,
+      PRODUCT_PATH.replace("growpathai", ".."),
+      PRODUCT_PATH.replace("growpathai", "-store"),
+      PRODUCT_PATH.replace("growpathai", "a".repeat(101)),
+      PRODUCT_PATH.replace("6a90f76bf113936857750634", "product-title"),
+      "/claim-gift",
+      "/claim-gift?token=secret",
+      "/claim-complimentary-access",
+      GIFT_CHECKOUT_RECOVERY_PATH,
+      `${GIFT_CHECKOUT_SUCCESS_PATH}?session_id=${SESSION_ID}`,
+      GIFT_CHECKOUT_CANCEL_PATH,
+      OFFERS_GIFT_RETURN_PATH,
+      offersGiftReturnPath(LIVE_SESSION_ID),
+      "/home/personal/courses",
+      "/home/commercial",
+      "/home/facility",
+      "/admin"
+    ].map((value) => ({ value }))
+  )("does not broaden signup to other login or private returns $value", ({ value }) => {
+    expect(parseShopperSignupReturnPath(value)).toBe("");
+  });
+});
 
 describe("internal authentication return allowlist", () => {
   it.each([

@@ -20,13 +20,13 @@ import LegalLinks from "@/components/LegalLinks";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
-  parsePublicProductReturnPath,
+  parseShopperSignupReturnPath,
   parseSafeLoginReturnPath,
   safeLoginPath
 } from "@/utils/authReturnPath";
 import { parseClaimReturnPath } from "@/utils/claimReturnPath";
 import { COMPLIMENTARY_CLAIM_PATH } from "@/utils/complimentaryClaimTokenStore";
-import { rememberProductSignupContinuation } from "@/utils/shopperProductContinuation";
+import { rememberShopperSignupContinuation } from "@/utils/shopperProductContinuation";
 
 type AccountChoice = {
   key: "free" | "pro" | "commercial" | "facility";
@@ -98,7 +98,7 @@ export default function RegisterScreen() {
   const safeNext = parseSafeLoginReturnPath(params.next);
   const entitlementClaimNext =
     claimNext || (safeNext === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "");
-  const productNext = parsePublicProductReturnPath(params.next);
+  const shopperNext = parseShopperSignupReturnPath(params.next);
   const isComplimentaryClaim = entitlementClaimNext === COMPLIMENTARY_CLAIM_PATH;
   const giftSignupChoice = ACCOUNT_CHOICES[0];
 
@@ -122,7 +122,7 @@ export default function RegisterScreen() {
       mountedRef.current = false;
       submitGeneration.current += 1;
     };
-  }, [entitlementClaimNext, productNext]);
+  }, [entitlementClaimNext, shopperNext]);
 
   const canSubmit = useMemo(() => {
     const age = ageFromDate(dateOfBirth);
@@ -163,8 +163,8 @@ export default function RegisterScreen() {
       const signupResult = await auth.signup(payload);
       if (!isCurrent()) return;
       if (signupResult.emailVerificationRequired && !signupResult.token) {
-        if (signupChoice.key === "free" && productNext && !entitlementClaimNext) {
-          rememberProductSignupContinuation(normalizedEmail, productNext);
+        if (signupChoice.key === "free" && shopperNext && !entitlementClaimNext) {
+          rememberShopperSignupContinuation(normalizedEmail, shopperNext);
         }
         setPassword("");
         setInfoMsg(
@@ -181,7 +181,7 @@ export default function RegisterScreen() {
       router.replace({
         pathname: "/onboarding/guilds",
         params: {
-          next: choice.key === "free" && productNext ? productNext : choice.afterSignup,
+          next: choice.key === "free" && shopperNext ? shopperNext : choice.afterSignup,
           mode: choice.mode,
           plan: choice.key
         }
@@ -372,7 +372,7 @@ export default function RegisterScreen() {
           <Pressable
             onPress={() =>
               router.replace(
-                safeLoginPath(email, entitlementClaimNext || productNext) as any
+                safeLoginPath(email, entitlementClaimNext || shopperNext) as any
               )
             }
             accessibilityRole="button"

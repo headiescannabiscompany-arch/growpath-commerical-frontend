@@ -1,10 +1,14 @@
 import {
   consumeProductSignupContinuation,
+  consumeShopperSignupContinuation,
   PRODUCT_SIGNUP_CONTINUATION_STORAGE_KEY as STORAGE_KEY,
   PRODUCT_SIGNUP_CONTINUATION_TTL_MS as TTL_MS,
   readProductSignupContinuation,
+  readShopperSignupContinuation,
   rememberProductSignupContinuation,
-  type ProductSignupContinuation
+  rememberShopperSignupContinuation,
+  type ProductSignupContinuation,
+  type ShopperSignupContinuation
 } from "@/utils/shopperProductContinuation";
 
 const originalWindow = (globalThis as any).window;
@@ -12,6 +16,13 @@ const NOW = 1800000000000;
 const EMAIL = "shopper@example.com";
 const PRODUCT = "/store/saved-store/products/6a90f76bf113936857750634";
 const OTHER_PRODUCT = "/store/another-store/products/6aa5967eb77d250e5aecf795";
+const SHARED_COURSE = "/courses?courseId=6aa2f5c5d339157652995f10";
+const STOREFRONT_COURSE = "/store/saved-store/courses/6aa2f5c5d339157652995f10";
+const COURSE_PATHS = [SHARED_COURSE, STOREFRONT_COURSE];
+const CROSS_KIND_PATHS = COURSE_PATHS.flatMap((course) => [
+  { previous: PRODUCT, next: course },
+  { previous: course, next: PRODUCT }
+]);
 let localValues: Map<string, string>;
 let randomSequence = 0;
 
@@ -42,8 +53,14 @@ function snapshot(): ProductSignupContinuation {
   return result!;
 }
 
-function recordKey(record: ProductSignupContinuation): string {
+function recordKey(record: ShopperSignupContinuation): string {
   return `${STORAGE_KEY}:${record.revision}`;
+}
+
+function shopperSnapshot(): ShopperSignupContinuation {
+  const result = readShopperSignupContinuation(EMAIL);
+  expect(result).not.toBeNull();
+  return result!;
 }
 
 describe("product-only Free-signup continuation", () => {
@@ -470,4 +487,361 @@ describe("product-only Free-signup continuation", () => {
     expect(rememberProductSignupContinuation(EMAIL, OTHER_PRODUCT)).toBe(false);
     expect(localValues.get(STORAGE_KEY)).toBe(raw);
   });
+});
+
+describe("product and course Free-signup continuation", () => {
+  beforeEach(() => {
+    localValues = new Map();
+    randomSequence = 0;
+    (globalThis as any).window = tab();
+    jest.spyOn(Date, "now").mockReturnValue(NOW);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    (globalThis as any).window = originalWindow;
+  });
+
+  it("reads an existing five-field product record without migration or new storage", () => {
+    const existing: ProductSignupContinuation = {
+      version: 1,
+      email: EMAIL,
+      path: PRODUCT,
+      expiresAt: NOW + TTL_MS,
+      revision: "a".repeat(32)
+    };
+    localValues.set(STORAGE_KEY, existing.revision);
+    localValues.set(recordKey(existing), JSON.stringify(existing));
+    const before = new Map(localValues);
+    expect(readShopperSignupContinuation(EMAIL)).toEqual(existing);
+    expect(readProductSignupContinuation(EMAIL)).toEqual(existing);
+    expect(localValues).toEqual(before);
+    expect(window.localStorage.setItem).not.toHaveBeenCalled();
+    expect(window.localStorage.removeItem).not.toHaveBeenCalled();
+    expect(consumeShopperSignupContinuation(existing)).toBe(true);
+    expect(readProductSignupContinuation(EMAIL)).toBeNull();
+  });
+
+  it("lets product and neutral APIs read and consume each other's product records", () => {
+    expect(rememberProductSignupContinuation(EMAIL, PRODUCT)).toBe(true);
+    const first = shopperSnapshot();
+    expect(first).toEqual(snapshot());
+    expect(consumeShopperSignupContinuation(first)).toBe(true);
+    expect(rememberShopperSignupContinuation(EMAIL, OTHER_PRODUCT)).toBe(true);
+    expect(snapshot()).toEqual(shopperSnapshot());
+    expect(consumeProductSignupContinuation(shopperSnapshot())).toBe(true);
+  });
+
+  it.each(COURSE_PATHS)("stores the exact five-field course record for %s", (path) => {
+    expect(rememberShopperSignupContinuation(" Shopper@Example.COM ", path)).toBe(true);
+    const record = shopperSnapshot();
+    expect(record).toEqual({
+      version: 1,
+      email: EMAIL,
+      path,
+      expiresAt: NOW + TTL_MS,
+      revision: expect.stringMatching(/^[a-f0-9]{32}$/)
+    });
+    expect([...localValues.keys()]).toEqual([recordKey(record), STORAGE_KEY]);
+    expect(localValues.get(STORAGE_KEY)).toBe(record.revision);
+    expect(JSON.parse(localValues.get(recordKey(record))!)).toEqual(record);
+    expect(readShopperSignupContinuation(" SHOPPER@example.com ")).toEqual(record);
+    record.path = PRODUCT;
+    expect(shopperSnapshot().path).toBe(path);
+    expect(consumeShopperSignupContinuation(record)).toBe(false);
+    expect(window.sessionStorage.setItem).not.toHaveBeenCalled();
+  });
+
+  it.each(COURSE_PATHS)(
+    "keeps product wrappers from writing or consuming a course record: %s",
+    (path) => {
+      rememberShopperSignupContinuation(EMAIL, path);
+      const record = shopperSnapshot();
+      const before = new Map(localValues);
+      jest.clearAllMocks();
+      expect(rememberProductSignupContinuation(EMAIL, path)).toBe(false);
+      expect(readProductSignupContinuation(EMAIL)).toBeNull();
+      expect(consumeProductSignupContinuation(record)).toBe(false);
+      expect(localValues).toEqual(before);
+      expect(window.localStorage.setItem).not.toHaveBeenCalled();
+      expect(window.localStorage.removeItem).not.toHaveBeenCalled();
+      expect(readShopperSignupContinuation(EMAIL)).toEqual(record);
+    }
+  );
+
+  it.each(COURSE_PATHS)(
+    "keeps course inputs to product wrappers from altering a product record: %s",
+    (path) => {
+      rememberProductSignupContinuation(EMAIL, PRODUCT);
+      const record = snapshot();
+      const before = new Map(localValues);
+      jest.clearAllMocks();
+      expect(rememberProductSignupContinuation(EMAIL, path)).toBe(false);
+      expect(consumeProductSignupContinuation({ ...record, path })).toBe(false);
+      expect(localValues).toEqual(before);
+      expect(window.localStorage.setItem).not.toHaveBeenCalled();
+      expect(window.localStorage.removeItem).not.toHaveBeenCalled();
+      expect(snapshot()).toEqual(record);
+    }
+  );
+
+  it.each(COURSE_PATHS)("rejects the exact course expiry without cleanup: %s", (path) => {
+    rememberShopperSignupContinuation(EMAIL, path);
+    const record = shopperSnapshot();
+    const before = new Map(localValues);
+    jest.spyOn(Date, "now").mockReturnValue(NOW + TTL_MS - 1);
+    expect(readShopperSignupContinuation(EMAIL)).toEqual(record);
+    jest.spyOn(Date, "now").mockReturnValue(NOW + TTL_MS);
+    expect(readShopperSignupContinuation(EMAIL)).toBeNull();
+    expect(consumeShopperSignupContinuation(record)).toBe(false);
+    expect(localValues).toEqual(before);
+    expect(window.localStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  it.each(COURSE_PATHS)("requires the matching course signup email: %s", (path) => {
+    rememberShopperSignupContinuation(EMAIL, path);
+    const record = shopperSnapshot();
+    const before = new Map(localValues);
+    jest.clearAllMocks();
+    for (const email of ["another@example.com", [EMAIL], null, "bad-email"]) {
+      expect(readShopperSignupContinuation(email)).toBeNull();
+    }
+    expect(rememberShopperSignupContinuation([EMAIL], path)).toBe(false);
+    expect(
+      consumeShopperSignupContinuation({ ...record, email: "another@example.com" })
+    ).toBe(false);
+    expect(localValues).toEqual(before);
+    expect(window.localStorage.setItem).not.toHaveBeenCalled();
+    expect(window.localStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  it.each(COURSE_PATHS)("consumes a course once across same-origin tabs: %s", (path) => {
+    rememberShopperSignupContinuation(EMAIL, path);
+    const record = shopperSnapshot();
+    (globalThis as any).window = tab();
+    expect(shopperSnapshot()).toEqual(record);
+    expect(consumeShopperSignupContinuation(record)).toBe(true);
+    expect(consumeShopperSignupContinuation(record)).toBe(false);
+    expect(localValues.get(STORAGE_KEY)).toBe(record.revision);
+    expect(localValues.has(recordKey(record))).toBe(false);
+    expect(window.sessionStorage.getItem).not.toHaveBeenCalled();
+    expect(window.sessionStorage.setItem).not.toHaveBeenCalled();
+    (globalThis as any).window = tab();
+    expect(readShopperSignupContinuation(EMAIL)).toBeNull();
+  });
+
+  it.each(COURSE_PATHS)(
+    "does not cross origins or fall back to native memory: %s",
+    (path) => {
+      rememberShopperSignupContinuation(EMAIL, path);
+      const record = shopperSnapshot();
+      const before = new Map(localValues);
+      (globalThis as any).window = tab(new Map());
+      expect(readShopperSignupContinuation(EMAIL)).toBeNull();
+      expect(consumeShopperSignupContinuation(record)).toBe(false);
+      (globalThis as any).window = undefined;
+      expect(rememberShopperSignupContinuation(EMAIL, path)).toBe(false);
+      expect(readShopperSignupContinuation(EMAIL)).toBeNull();
+      expect(consumeShopperSignupContinuation(record)).toBe(false);
+      expect(localValues).toEqual(before);
+      (globalThis as any).window = tab();
+      expect(shopperSnapshot()).toEqual(record);
+    }
+  );
+
+  it.each(CROSS_KIND_PATHS)(
+    "replaces $previous with $next at the same clock without consuming the new revision",
+    ({ previous, next }) => {
+      rememberShopperSignupContinuation(EMAIL, previous);
+      const oldRecord = shopperSnapshot();
+      expect(rememberShopperSignupContinuation(EMAIL, next)).toBe(true);
+      const replacement = shopperSnapshot();
+      expect(replacement.path).toBe(next);
+      expect(replacement.expiresAt).toBe(oldRecord.expiresAt);
+      expect(replacement.revision).not.toBe(oldRecord.revision);
+      expect(consumeShopperSignupContinuation(oldRecord)).toBe(false);
+      expect(shopperSnapshot()).toEqual(replacement);
+      expect([...localValues.keys()].sort()).toEqual(
+        [STORAGE_KEY, recordKey(replacement)].sort()
+      );
+      expect(window.localStorage.removeItem).not.toHaveBeenCalledWith(STORAGE_KEY);
+    }
+  );
+
+  it.each(CROSS_KIND_PATHS)(
+    "does not adopt $next if it replaces $previous during a snapshot read",
+    ({ previous, next }) => {
+      rememberShopperSignupContinuation(EMAIL, previous);
+      const oldRecord = shopperSnapshot();
+      let interleaved = false;
+      (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) => {
+        const raw = localValues.get(key) ?? null;
+        if (key === recordKey(oldRecord) && !interleaved) {
+          interleaved = true;
+          expect(rememberShopperSignupContinuation(EMAIL, next)).toBe(true);
+        }
+        return raw;
+      });
+      expect(readShopperSignupContinuation(EMAIL)).toBeNull();
+      expect(shopperSnapshot().path).toBe(next);
+    }
+  );
+
+  it.each(CROSS_KIND_PATHS)(
+    "does not consume $next if it replaces $previous during record validation",
+    ({ previous, next }) => {
+      rememberShopperSignupContinuation(EMAIL, previous);
+      const oldRecord = shopperSnapshot();
+      let interleaved = false;
+      (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) => {
+        const raw = localValues.get(key) ?? null;
+        if (key === recordKey(oldRecord) && !interleaved) {
+          interleaved = true;
+          expect(rememberShopperSignupContinuation(EMAIL, next)).toBe(true);
+        }
+        return raw;
+      });
+      expect(consumeShopperSignupContinuation(oldRecord)).toBe(false);
+      expect(shopperSnapshot().path).toBe(next);
+      expect(window.localStorage.removeItem).not.toHaveBeenCalledWith(STORAGE_KEY);
+    }
+  );
+
+  it.each(CROSS_KIND_PATHS)(
+    "cannot erase $next remembered during the final removal of $previous",
+    ({ previous, next }) => {
+      rememberShopperSignupContinuation(EMAIL, previous);
+      const oldRecord = shopperSnapshot();
+      let interleaved = false;
+      (window.localStorage.removeItem as jest.Mock).mockImplementation((key: string) => {
+        if (key === recordKey(oldRecord) && !interleaved) {
+          interleaved = true;
+          expect(rememberShopperSignupContinuation(EMAIL, next)).toBe(true);
+        }
+        localValues.delete(key);
+      });
+      expect(consumeShopperSignupContinuation(oldRecord)).toBe(true);
+      const replacement = shopperSnapshot();
+      expect(replacement.path).toBe(next);
+      expect(localValues.get(STORAGE_KEY)).toBe(replacement.revision);
+      expect(localValues.get(recordKey(replacement))).toBe(JSON.stringify(replacement));
+      expect(window.localStorage.removeItem).not.toHaveBeenCalledWith(STORAGE_KEY);
+      expect(window.localStorage.removeItem).not.toHaveBeenCalledWith(
+        recordKey(replacement)
+      );
+    }
+  );
+
+  it.each(CROSS_KIND_PATHS)(
+    "failed publication of $previous cannot clear a concurrently remembered $next",
+    ({ previous, next }) => {
+      rememberShopperSignupContinuation(EMAIL, previous);
+      let interleaved = false;
+      (window.localStorage.setItem as jest.Mock).mockImplementation(
+        (key: string, value: string) => {
+          if (key === STORAGE_KEY && !interleaved) {
+            interleaved = true;
+            expect(rememberShopperSignupContinuation(EMAIL, next)).toBe(true);
+            throw new Error("earlier pointer write failed");
+          }
+          localValues.set(key, value);
+        }
+      );
+      expect(rememberShopperSignupContinuation(EMAIL, previous)).toBe(false);
+      const replacement = shopperSnapshot();
+      expect(replacement.path).toBe(next);
+      expect([...localValues.keys()].sort()).toEqual(
+        [STORAGE_KEY, recordKey(replacement)].sort()
+      );
+      expect(window.localStorage.removeItem).not.toHaveBeenCalledWith(STORAGE_KEY);
+    }
+  );
+
+  it.each(COURSE_PATHS)(
+    "rejects random collisions without altering a course: %s",
+    (path) => {
+      rememberShopperSignupContinuation(EMAIL, path);
+      const before = new Map(localValues);
+      (window.crypto.getRandomValues as jest.Mock).mockImplementation(
+        (values: Uint32Array) => values.fill(1)
+      );
+      expect(rememberShopperSignupContinuation(EMAIL, PRODUCT)).toBe(false);
+      expect(localValues).toEqual(before);
+    }
+  );
+
+  it.each(
+    COURSE_PATHS.flatMap((path) =>
+      ["getItem", "setItem", "removeItem"].map((method) => ({ path, method }))
+    )
+  )("fails safely for course $path when storage.$method throws", ({ path, method }) => {
+    rememberShopperSignupContinuation(EMAIL, path);
+    const record = shopperSnapshot();
+    const before = new Map(localValues);
+    (window.localStorage[method as keyof Storage] as jest.Mock).mockImplementation(() => {
+      throw new Error("storage denied");
+    });
+    if (method === "setItem") {
+      expect(rememberShopperSignupContinuation(EMAIL, PRODUCT)).toBe(false);
+    } else {
+      if (method === "getItem") expect(readShopperSignupContinuation(EMAIL)).toBeNull();
+      expect(consumeShopperSignupContinuation(record)).toBe(false);
+    }
+    expect(localValues).toEqual(before);
+  });
+
+  it.each(COURSE_PATHS)(
+    "preserves a course when storage or randomness is inaccessible: %s",
+    (path) => {
+      rememberShopperSignupContinuation(EMAIL, path);
+      const record = shopperSnapshot();
+      const before = new Map(localValues);
+      (globalThis as any).window.crypto = undefined;
+      expect(rememberShopperSignupContinuation(EMAIL, PRODUCT)).toBe(false);
+      expect(localValues).toEqual(before);
+      (globalThis as any).window = Object.defineProperty({}, "localStorage", {
+        get() {
+          throw new Error("storage denied");
+        }
+      });
+      expect(rememberShopperSignupContinuation(EMAIL, PRODUCT)).toBe(false);
+      expect(readShopperSignupContinuation(EMAIL)).toBeNull();
+      expect(consumeShopperSignupContinuation(record)).toBe(false);
+      expect(localValues).toEqual(before);
+    }
+  );
+
+  it.each(
+    [
+      [SHARED_COURSE],
+      [STOREFRONT_COURSE, STOREFRONT_COURSE],
+      `${SHARED_COURSE}&extra=1`,
+      `${STOREFRONT_COURSE}\n`,
+      `${PRODUCT}\n`,
+      " /courses?courseId=6aa2f5c5d339157652995f10",
+      "/claim-gift",
+      "/claim-complimentary-access",
+      "/offers?gift=1",
+      "/account/gift-checkout/recover",
+      "/home/facility"
+    ].map((path) => ({ path }))
+  )(
+    "rejects noncanonical stored/input shopper paths without mutation: $path",
+    ({ path }) => {
+      rememberShopperSignupContinuation(EMAIL, STOREFRONT_COURSE);
+      const record = shopperSnapshot();
+      const before = new Map(localValues);
+      jest.clearAllMocks();
+      expect(rememberShopperSignupContinuation(EMAIL, path)).toBe(false);
+      expect(localValues).toEqual(before);
+      const malformed = { ...record, path } as ShopperSignupContinuation;
+      localValues.set(recordKey(record), JSON.stringify(malformed));
+      expect(readShopperSignupContinuation(EMAIL)).toBeNull();
+      expect(consumeShopperSignupContinuation(malformed)).toBe(false);
+      expect(localValues.get(recordKey(record))).toBe(JSON.stringify(malformed));
+      expect(localValues.get(STORAGE_KEY)).toBe(record.revision);
+      expect(window.localStorage.setItem).not.toHaveBeenCalled();
+      expect(window.localStorage.removeItem).not.toHaveBeenCalled();
+    }
+  );
 });

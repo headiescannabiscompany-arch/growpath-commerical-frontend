@@ -4,9 +4,10 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import RegisterScreen from "@/app/register";
 import GuildOnboardingScreen from "@/app/onboarding/guilds";
 
-const PRODUCT_NEXT = "/store/growpathai/products/6a90f76bf113936857750634";
+const PRODUCT_PATH = "/store/growpathai/products/6a90f76bf113936857750634";
 const OTHER_PRODUCT = "/store/growpathai/products/6a90f76bf113936857750635";
 const mockSignup = jest.fn();
+const mockApiRequest = jest.fn();
 const mockRemember = jest.fn();
 const mockReplace = jest.fn();
 const mockListGuilds = jest.fn();
@@ -24,9 +25,13 @@ jest.mock("expo-router", () => ({
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => mockAuthState
 }));
+jest.mock("@/api/apiRequest", () => ({
+  ...jest.requireActual("@/api/apiRequest"),
+  apiRequest: (...args: any[]) => mockApiRequest(...args)
+}));
 
 jest.mock("@/utils/shopperProductContinuation", () => ({
-  rememberProductSignupContinuation: (...args: any[]) => mockRemember(...args)
+  rememberShopperSignupContinuation: (...args: any[]) => mockRemember(...args)
 }));
 
 jest.mock("@/api/communitySocial", () => ({
@@ -72,10 +77,18 @@ function pressHandler(screen: ReturnType<typeof render>, label: string) {
   )[0].props.onPress;
 }
 
-describe("product-only Free signup handoff", () => {
+describe.each([
+  ["product", PRODUCT_PATH],
+  ["shared course", "/courses?courseId=6aa2f5c5d339157652995f10"],
+  ["storefront course", "/store/growpathai/courses/6aa2f5c5d339157652995f10"]
+])("%s Free signup handoff", (_kind, destination) => {
+  const otherDestination =
+    destination === PRODUCT_PATH
+      ? OTHER_PRODUCT
+      : destination.replace("6aa2f5c5d339157652995f10", "6aa2f5c5d339157652995f11");
   beforeEach(() => {
     jest.resetAllMocks();
-    mockParams = { next: PRODUCT_NEXT };
+    mockParams = { next: destination };
     mockAuthState = {
       signup: (...args: any[]) => mockSignup(...args),
       retryMe: (...args: any[]) => mockRetryMe(...args),
@@ -92,6 +105,12 @@ describe("product-only Free signup handoff", () => {
     mockRetryMe.mockResolvedValue({});
   });
 
+  afterEach(() => {
+    // Only the separately mocked signup and deliberate guild saves are allowed;
+    // no course enrollment/checkout or interest API is part of this handoff.
+    expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
   it.each([true, false])(
     "remembers only a successful Free verification-required signup when emailSent is %s",
     async (emailSent: boolean) => {
@@ -101,7 +120,7 @@ describe("product-only Free signup handoff", () => {
       fireEvent.press(screen.getByLabelText("Create Free account"));
 
       await waitFor(() => expect(mockRemember).toHaveBeenCalledTimes(1));
-      expect(mockRemember).toHaveBeenCalledWith("shopper@example.com", PRODUCT_NEXT);
+      expect(mockRemember).toHaveBeenCalledWith("shopper@example.com", destination);
       expect(mockSignup).toHaveBeenCalledWith({
         name: "Shopper User",
         displayName: "Shopper User",
@@ -115,6 +134,10 @@ describe("product-only Free signup handoff", () => {
       expect(screen.getByLabelText("Register password")).toHaveProp("value", "");
       expect(screen.getByText(/Account created\./)).toBeTruthy();
       expect(mockReplace).not.toHaveBeenCalled();
+      fireEvent.press(screen.getByLabelText("Back to login"));
+      expect(mockReplace).toHaveBeenCalledWith(
+        `/login?email=shopper%40example.com&next=${encodeURIComponent(destination)}`
+      );
     }
   );
 
@@ -127,7 +150,7 @@ describe("product-only Free signup handoff", () => {
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
-  it("does not remember failed signup and retains the product on Back to login", async () => {
+  it("does not remember failed signup and retains the destination on Back to login", async () => {
     mockSignup.mockRejectedValue(new Error("Signup unavailable"));
     const screen = render(<RegisterScreen />);
     fillSignup(screen);
@@ -137,11 +160,11 @@ describe("product-only Free signup handoff", () => {
     expect(mockReplace).not.toHaveBeenCalled();
     fireEvent.press(screen.getByLabelText("Back to login"));
     expect(mockReplace).toHaveBeenCalledWith(
-      `/login?email=shopper%40example.com&next=${encodeURIComponent(PRODUCT_NEXT)}`
+      `/login?email=shopper%40example.com&next=${encodeURIComponent(destination)}`
     );
   });
 
-  it("keeps immediate-token Free signup on guild onboarding before returning to the product", async () => {
+  it("keeps immediate-token Free signup on guild onboarding before returning to the destination", async () => {
     mockSignup.mockResolvedValue({
       token: "new-session",
       emailVerificationRequired: true
@@ -152,7 +175,7 @@ describe("product-only Free signup handoff", () => {
     await waitFor(() =>
       expect(mockReplace).toHaveBeenCalledWith({
         pathname: "/onboarding/guilds",
-        params: { next: PRODUCT_NEXT, mode: "personal", plan: "free" }
+        params: { next: destination, mode: "personal", plan: "free" }
       })
     );
     expect(mockRemember).not.toHaveBeenCalled();
@@ -174,13 +197,13 @@ describe("product-only Free signup handoff", () => {
     await act(async () => pending.resolve({ token: "new-session" }));
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: "/onboarding/guilds",
-      params: { next: PRODUCT_NEXT, mode: "personal", plan: "free" }
+      params: { next: destination, mode: "personal", plan: "free" }
     });
     expect(mockRemember).not.toHaveBeenCalled();
   });
 
-  it.each([{}, { next: "/courses?courseId=6aa2f5c5d339157652995f10" }])(
-    "keeps ordinary Free onboarding when no valid product continuation exists: %p",
+  it.each([{}, { next: "/courses?courseId=6aa2f5c5d339157652995f10&buy=true" }])(
+    "keeps ordinary Free onboarding when no valid shopper continuation exists: %p",
     async (params) => {
       mockParams = params.next ? { next: params.next } : {};
       mockSignup.mockResolvedValue({ token: "new-session" });
@@ -202,7 +225,7 @@ describe("product-only Free signup handoff", () => {
     ["Commercial", "commercial", "commercial"],
     ["Facility", "facility", "facility"]
   ])(
-    "preserves %s signup and walkthrough routing without a product record",
+    "preserves %s signup and walkthrough routing without a shopper record",
     async (label, plan, mode) => {
       const screen = render(<RegisterScreen />);
       fillSignup(screen);
@@ -227,10 +250,10 @@ describe("product-only Free signup handoff", () => {
   );
 
   it.each([
-    { next: [PRODUCT_NEXT] },
-    { next: `${PRODUCT_NEXT}?buy=true` },
+    { next: [destination] },
+    { next: `${destination}?buy=true` },
     { next: "https://example.com/product" },
-    { next: "/courses?courseId=6aa2f5c5d339157652995f10" },
+    { next: "/courses?courseId=6aa2f5c5d339157652995f10&buy=true" },
     { next: "/home/commercial/storefront" },
     { next: "/subscribe/success?session_id=cs_123" }
   ])("does not persist or forward an unsupported signup return %p", async ({ next }) => {
@@ -245,7 +268,7 @@ describe("product-only Free signup handoff", () => {
   });
 
   it.each(["/claim-gift?token=private-gift-token", "/claim-complimentary-access"])(
-    "preserves claim precedence for %s without writing product continuation",
+    "preserves claim precedence for %s without writing shopper continuation",
     async (next: string) => {
       mockParams = { next };
       const expected = next.split("?")[0];
@@ -286,7 +309,7 @@ describe("product-only Free signup handoff", () => {
     expect(mockRemember).toHaveBeenCalledTimes(1);
   });
 
-  it.each(["unmount", "destination"])(
+  it.each(["unmount", "destination", "opposite-kind destination"])(
     "ignores a stale signup completion after %s",
     async (change: string) => {
       const pending = deferred();
@@ -296,7 +319,14 @@ describe("product-only Free signup handoff", () => {
       fireEvent.press(screen.getByLabelText("Create Free account"));
       if (change === "unmount") screen.unmount();
       else {
-        mockParams = { next: OTHER_PRODUCT };
+        mockParams = {
+          next:
+            change === "opposite-kind destination" && destination === PRODUCT_PATH
+              ? "/courses?courseId=6aa2f5c5d339157652995f10"
+              : change === "opposite-kind destination"
+                ? OTHER_PRODUCT
+                : otherDestination
+        };
         screen.rerender(<RegisterScreen />);
       }
       await act(async () =>
@@ -308,10 +338,14 @@ describe("product-only Free signup handoff", () => {
   );
 
   describe("guild onboarding", () => {
-    it("returns to the product only after all existing saves succeed", async () => {
+    it("returns to the destination only after all existing saves succeed", async () => {
       const pendingJoin = deferred();
       mockJoinGuild.mockReturnValue(pendingJoin.promise);
       const screen = render(<GuildOnboardingScreen />);
+      expect(mockUpdateInterests).not.toHaveBeenCalled();
+      expect(mockRetryMe).not.toHaveBeenCalled();
+      expect(mockJoinGuild).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
       fireEvent.press(await screen.findByLabelText("Join Herbs group"));
       fireEvent.press(screen.getByLabelText("Continue after selecting forum groups"));
       await waitFor(() => expect(mockJoinGuild).toHaveBeenCalledWith("herb-group"));
@@ -319,12 +353,12 @@ describe("product-only Free signup handoff", () => {
       expect(mockRetryMe).toHaveBeenCalledTimes(1);
       expect(mockReplace).not.toHaveBeenCalled();
       await act(async () => pendingJoin.resolve({}));
-      expect(mockReplace).toHaveBeenCalledWith(PRODUCT_NEXT);
+      expect(mockReplace).toHaveBeenCalledWith(destination);
       expect(mockRemember).not.toHaveBeenCalled();
     });
 
     it.each(["interests", "refresh", "membership"])(
-      "retains product continuation after a failed %s save and retries explicitly",
+      "retains shopper continuation after a failed %s save and retries explicitly",
       async (stage: string) => {
         const operation =
           stage === "interests"
@@ -339,15 +373,15 @@ describe("product-only Free signup handoff", () => {
         await screen.findByText("Onboarding save failed");
         expect(mockReplace).not.toHaveBeenCalled();
         fireEvent.press(screen.getByLabelText("Continue after selecting forum groups"));
-        await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(PRODUCT_NEXT));
+        await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(destination));
       }
     );
 
     it.each([
-      { next: [PRODUCT_NEXT] },
-      { next: `${PRODUCT_NEXT}#buy` },
-      { next: "/courses?courseId=6aa2f5c5d339157652995f10" }
-    ])("rejects non-scalar or unsupported product return %p", async ({ next }) => {
+      { next: [destination] },
+      { next: `${destination}#buy` },
+      { next: "/courses?courseId=6aa2f5c5d339157652995f10&buy=true" }
+    ])("rejects non-scalar or unsupported shopper return %p", async ({ next }) => {
       mockParams = { next };
       const screen = render(<GuildOnboardingScreen />);
       await screen.findByLabelText("Join Herbs group");
@@ -398,7 +432,7 @@ describe("product-only Free signup handoff", () => {
       expect(mockReplace).toHaveBeenCalledTimes(1);
     });
 
-    it.each(["unmount", "session", "destination"])(
+    it.each(["unmount", "session", "destination", "opposite-kind destination"])(
       "stops remaining saves and navigation after %s changes",
       async (change: string) => {
         const pending = deferred();
@@ -410,7 +444,15 @@ describe("product-only Free signup handoff", () => {
         else {
           if (change === "session")
             mockAuthState = { ...mockAuthState, token: "different-session" };
-          else mockParams = { next: OTHER_PRODUCT };
+          else
+            mockParams = {
+              next:
+                change === "opposite-kind destination" && destination === PRODUCT_PATH
+                  ? "/courses?courseId=6aa2f5c5d339157652995f10"
+                  : change === "opposite-kind destination"
+                    ? OTHER_PRODUCT
+                    : otherDestination
+            };
           screen.rerender(<GuildOnboardingScreen />);
         }
         await act(async () => pending.resolve({}));

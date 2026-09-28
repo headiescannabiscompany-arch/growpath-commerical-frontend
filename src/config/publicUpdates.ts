@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "free-course-signup-return",
+        title: "Keep your course link through Free signup",
+        date: "September 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Free-account signup from a public course now keeps that course destination through email verification and matching sign-in in the same browser for up to one hour, including another tab. Immediate sign-in still completes normal onboarding first. Returning never enrolls, purchases or unlocks paid lessons automatically. Other browsers, paid-plan signup and course gifting remain separate work."
+      },
+      {
         id: "product-description-display",
         title: "Product descriptions without repeated text",
         date: "September 27, 2026",
@@ -38,7 +46,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "September 27, 2026",
         dateLabel: "Released",
         summary:
-          "Free-account signup from a saved product can now retain that destination through email verification and matching sign-in in the same browser for up to one hour, including another tab. Immediate sign-in still completes normal onboarding first. Returning never purchases or records interest automatically. Other browsers, paid-plan signup and course signup remain separate follow-ups."
+          "Free-account signup from a saved product can now retain that destination through email verification and matching sign-in in the same browser for up to one hour, including another tab. Immediate sign-in still completes normal onboarding first. Returning never purchases or records interest automatically. Other browsers and paid-plan signup remain separate follow-ups. Course signup is covered in its own release note."
       },
       {
         id: "course-discovery-signin",
@@ -46,7 +54,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "September 27, 2026",
         dateLabel: "Released",
         summary:
-          "Signed-out course visitors now see public previews and a clear sign-in action instead of personal payment and progress controls. Existing-account sign-in returns to the saved course without automatically enrolling or opening checkout. Account and course changes clear earlier learner state. Paid content, seller permissions and payment rules stay protected; new-account verification and course gifting remain separate work."
+          "Signed-out course visitors now see public previews and a clear sign-in action instead of personal payment and progress controls. Existing-account sign-in returns to the saved course without automatically enrolling or opening checkout. Account and course changes clear earlier learner state. Paid content, seller permissions and payment rules stay protected; course gifting remains separate work. Free-account course signup is covered in its own release note."
       },
       {
         id: "product-buy-signin-return",

@@ -20,15 +20,15 @@ import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
-  parsePublicProductReturnPath,
+  parseShopperSignupReturnPath,
   parseSafeLoginReturnPath
 } from "@/utils/authReturnPath";
 import { parseClaimReturnPath } from "@/utils/claimReturnPath";
 import { COMPLIMENTARY_CLAIM_PATH } from "@/utils/complimentaryClaimTokenStore";
 import {
-  consumeProductSignupContinuation,
-  readProductSignupContinuation,
-  type ProductSignupContinuation
+  consumeShopperSignupContinuation,
+  readShopperSignupContinuation,
+  type ShopperSignupContinuation
 } from "@/utils/shopperProductContinuation";
 
 export default function LoginScreen() {
@@ -46,7 +46,7 @@ export default function LoginScreen() {
   const entitlementClaimNext =
     claimNext || (safeNext === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "");
   const registrationNext =
-    entitlementClaimNext || parsePublicProductReturnPath(params.next);
+    entitlementClaimNext || parseShopperSignupReturnPath(params.next);
   const initialEmail = String(
     Array.isArray(params.email) ? params.email[0] || "" : params.email || ""
   );
@@ -59,10 +59,10 @@ export default function LoginScreen() {
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
   const [verificationMsg, setVerificationMsg] = useState<string | null>(null);
-  const [productResume, setProductResume] = useState<{
+  const [shopperResume, setShopperResume] = useState<{
     attempt: number;
     email: string;
-    snapshot: ProductSignupContinuation;
+    snapshot: ShopperSignupContinuation;
   } | null>(null);
   const mounted = useRef(true);
   const attempt = useRef(0);
@@ -78,7 +78,7 @@ export default function LoginScreen() {
   }, []);
 
   useEffect(() => {
-    if (!productResume || productResume.attempt !== attempt.current) return;
+    if (!shopperResume || shopperResume.attempt !== attempt.current) return;
     // login() can resolve even when /me fails. A saved destination is not proof
     // of authentication; wait for this deliberate sign-in's verified session.
     const changedSession =
@@ -91,8 +91,8 @@ export default function LoginScreen() {
       auth.isAuthed &&
       Boolean(auth.token) &&
       auth.meStatus === "ready" &&
-      auth.user?.email?.trim().toLowerCase() === productResume.email;
-    setProductResume(null);
+      auth.user?.email?.trim().toLowerCase() === shopperResume.email;
+    setShopperResume(null);
     inFlight.current = false;
     setSubmitting(false);
     if (!verified) {
@@ -100,12 +100,12 @@ export default function LoginScreen() {
       return;
     }
     // A newer signup in another tab must not be consumed by this attempt.
-    const destination = consumeProductSignupContinuation(productResume.snapshot)
-      ? productResume.snapshot.path
+    const destination = consumeShopperSignupContinuation(shopperResume.snapshot)
+      ? shopperResume.snapshot.path
       : "/account/workspace";
     router.replace(destination as any);
   }, [
-    productResume,
+    shopperResume,
     auth.isHydrating,
     auth.isAuthed,
     auth.meStatus,
@@ -131,12 +131,12 @@ export default function LoginScreen() {
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      const snapshot = !safeNext ? readProductSignupContinuation(normalizedEmail) : null;
+      const snapshot = !safeNext ? readShopperSignupContinuation(normalizedEmail) : null;
       await auth.login(normalizedEmail, password);
       if (!mounted.current || currentAttempt !== attempt.current) return;
       if (snapshot) {
         awaitingSession = true;
-        setProductResume({ attempt: currentAttempt, email: normalizedEmail, snapshot });
+        setShopperResume({ attempt: currentAttempt, email: normalizedEmail, snapshot });
         return;
       }
       router.replace((safeNext || "/account/workspace") as any);

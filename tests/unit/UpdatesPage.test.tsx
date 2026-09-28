@@ -68,6 +68,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "free-course-signup-return",
       "product-description-display",
       "discover-product-destinations",
       "product-interest-signin-return",
@@ -168,7 +169,8 @@ describe("public Updates page", () => {
     );
     expect(entry?.summary).toMatch(/same browser for up to one hour/);
     expect(entry?.summary).toMatch(/never purchases or records interest automatically/);
-    expect(entry?.summary).toMatch(/paid-plan signup and course signup remain separate/);
+    expect(entry?.summary).toMatch(/Other browsers and paid-plan signup remain separate/);
+    expect(entry?.summary).toMatch(/Course signup is covered in its own release note/);
     expect(
       PUBLIC_UPDATE_SECTIONS[0].entries.find(
         (item) => item.id === "product-buy-signin-return"
@@ -182,7 +184,25 @@ describe("public Updates page", () => {
     );
     expect(entry?.summary).toMatch(/public previews/);
     expect(entry?.summary).toMatch(/without automatically enrolling or opening checkout/);
-    expect(entry?.summary).toMatch(/course gifting remain separate work/);
+    expect(entry?.summary).toMatch(/course gifting remains separate work/);
+    expect(entry?.summary).toMatch(
+      /Free-account course signup is covered in its own release note/
+    );
+  });
+
+  it("bounds course signup to the same browser without promising paid access", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "free-course-signup-return"
+    );
+    expect(entry?.summary).toMatch(/Free-account signup/);
+    expect(entry?.summary).toMatch(/same browser for up to one hour/);
+    expect(entry?.summary).toMatch(/matching sign-in/);
+    expect(entry?.summary).toMatch(
+      /never enrolls, purchases or unlocks paid lessons automatically/
+    );
+    expect(entry?.summary).toMatch(
+      /Other browsers, paid-plan signup and course gifting remain separate work/
+    );
   });
 
   it.each(["day", "night"] as const)(

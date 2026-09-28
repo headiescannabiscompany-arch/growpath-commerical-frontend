@@ -1,17 +1,22 @@
-import { parsePublicProductReturnPath } from "@/utils/authReturnPath";
+import {
+  parsePublicProductReturnPath,
+  parseShopperSignupReturnPath
+} from "@/utils/authReturnPath";
 
 // This key stores only the latest revision; immutable records use `key:revision`.
 export const PRODUCT_SIGNUP_CONTINUATION_STORAGE_KEY =
   "shopper_product_signup_continuation_v1";
 export const PRODUCT_SIGNUP_CONTINUATION_TTL_MS = 60 * 60 * 1000;
 
-export type ProductSignupContinuation = {
+export type ShopperSignupContinuation = {
   version: 1;
   email: string;
   path: string;
   expiresAt: number;
   revision: string;
 };
+
+export type ProductSignupContinuation = ShopperSignupContinuation;
 
 function browserStorage(): Storage | null {
   if (typeof window === "undefined") return null;
@@ -40,16 +45,16 @@ function canonicalProductPath(value: unknown): string {
   return path && path === path.trim() ? path : "";
 }
 
-function validRecord(value: unknown, now: number): ProductSignupContinuation | null {
+function validRecord(value: unknown, now: number): ShopperSignupContinuation | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  const record = value as Partial<ProductSignupContinuation>;
+  const record = value as Partial<ShopperSignupContinuation>;
   if (
     Object.keys(record).length !== 5 ||
     record.version !== 1 ||
     !record.email ||
     normalizedEmail(record.email) !== record.email ||
     !record.path ||
-    canonicalProductPath(record.path) !== record.path ||
+    parseShopperSignupReturnPath(record.path) !== record.path ||
     typeof record.expiresAt !== "number" ||
     !Number.isSafeInteger(record.expiresAt) ||
     record.expiresAt <= now ||
@@ -80,13 +85,13 @@ function revisionKey(revision: string): string {
   return `${PRODUCT_SIGNUP_CONTINUATION_STORAGE_KEY}:${revision}`;
 }
 
-export function rememberProductSignupContinuation(
+export function rememberShopperSignupContinuation(
   email: unknown,
   path: unknown
 ): boolean {
   const storage = browserStorage();
   const safeEmail = normalizedEmail(email);
-  const safePath = canonicalProductPath(path);
+  const safePath = parseShopperSignupReturnPath(path);
   if (!storage || !safeEmail || !safePath) return false;
   let createdKey = "";
   try {
@@ -96,7 +101,7 @@ export function rememberProductSignupContinuation(
     // A revision is a correlation identifier, never an auth or verification token.
     const random = new Uint32Array(4);
     window.crypto.getRandomValues(random);
-    const record: ProductSignupContinuation = {
+    const record: ShopperSignupContinuation = {
       version: 1,
       email: safeEmail,
       path: safePath,
@@ -133,9 +138,9 @@ export function rememberProductSignupContinuation(
   }
 }
 
-export function readProductSignupContinuation(
+export function readShopperSignupContinuation(
   email: unknown
-): ProductSignupContinuation | null {
+): ShopperSignupContinuation | null {
   const storage = browserStorage();
   const safeEmail = normalizedEmail(email);
   if (!storage || !safeEmail) return null;
@@ -156,8 +161,8 @@ export function readProductSignupContinuation(
   }
 }
 
-export function consumeProductSignupContinuation(
-  snapshot: ProductSignupContinuation
+export function consumeShopperSignupContinuation(
+  snapshot: ShopperSignupContinuation
 ): boolean {
   const storage = browserStorage();
   if (!storage) return false;
@@ -187,6 +192,33 @@ export function consumeProductSignupContinuation(
     // The dangling consumed pointer is harmless; this is not an atomic claim lock.
     storage.removeItem(key);
     return true;
+  } catch {
+    return false;
+  }
+}
+
+// Legacy product-only callers must never adopt or mutate a course continuation.
+export function rememberProductSignupContinuation(
+  email: unknown,
+  path: unknown
+): boolean {
+  return !!canonicalProductPath(path) && rememberShopperSignupContinuation(email, path);
+}
+
+export function readProductSignupContinuation(
+  email: unknown
+): ProductSignupContinuation | null {
+  const record = readShopperSignupContinuation(email);
+  return record && canonicalProductPath(record.path) ? record : null;
+}
+
+export function consumeProductSignupContinuation(
+  snapshot: ProductSignupContinuation
+): boolean {
+  try {
+    return (
+      !!canonicalProductPath(snapshot?.path) && consumeShopperSignupContinuation(snapshot)
+    );
   } catch {
     return false;
   }

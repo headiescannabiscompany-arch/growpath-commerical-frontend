@@ -230,12 +230,14 @@ describe("LoginScreen email verification", () => {
   );
 
   it.each(COURSE_RETURN_PATHS)(
-    "does not silently add course-registration continuity: %s",
+    "preserves the exact course destination into registration: %s",
     (next) => {
       mockParams = { next };
       const screen = render(<LoginScreen />);
       fireEvent.press(screen.getByLabelText("Create account"));
-      expect(mockPush).toHaveBeenCalledWith({ pathname: "/register", params: undefined });
+      expect(mockPush).toHaveBeenCalledWith({ pathname: "/register", params: { next } });
+      expect(mockLogin).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
     }
   );
 
