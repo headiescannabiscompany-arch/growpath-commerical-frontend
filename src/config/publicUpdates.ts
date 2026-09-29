@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-dashboard-readiness",
+        title: "Clearer Commercial dashboard loading and retry",
+        date: "September 29, 2026",
+        dateLabel: "Released",
+        summary:
+          "Loading or unavailable dashboard data no longer appears as an empty, unpublished store. Saved status and counts appear after a successful read, and failed reads offer Retry dashboard while navigation stays available. Account changes discard old results. Store records, checkout rules, and the existing layout stay unchanged."
+      },
+      {
         id: "storefront-dashboard-publication",
         title: "Accurate storefront publication status",
         date: "September 29, 2026",

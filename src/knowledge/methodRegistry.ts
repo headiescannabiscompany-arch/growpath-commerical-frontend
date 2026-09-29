@@ -1086,6 +1086,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ["commercial records", "verified claims"],
     [
       "linked workflow",
+      "Commercial dashboard pending and failed reads use unknown placeholders rather than missing setup, Draft or zero activity; preserve navigation, provide single-flight retry, invalidate late account/session/unmount results and never reuse another session's cached dashboard; successful empty records remain distinct and no saved records or checkout eligibility change",
       "Commercial dashboard publication summary uses saved boolean isPublished before legacy status fields, matching Storefront settings without publishing records or granting checkout eligibility",
       "public Product details suppress only an exactly identical short description; preserve distinct text and order including case/whitespace differences, without rewriting saved content or changing sharing, interest or checkout",
       "public product discovery with explicit horizontal browse controls, a searchable bounded catalog, and a direct full-store collection link from product details; existing-customer sign-in preserves only a validated canonical public product return path",

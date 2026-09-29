@@ -1,5 +1,5 @@
 import { Redirect, Link, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
@@ -48,44 +48,21 @@ type DashboardModel = {
   guidance?: string[];
 };
 
-let commercialDashboardCache: DashboardModel | null = null;
-let commercialDashboardPromise: Promise<DashboardModel> | null = null;
-let commercialDashboardFetchedAt = 0;
-const COMMERCIAL_DASHBOARD_CACHE_MS = 30000;
-
 async function loadCommercialDashboard() {
-  const now = Date.now();
+  const res: any = await apiRequest("/api/commercial/dashboard");
+  const dashboard = res?.dashboard ?? res?.data?.dashboard ?? res;
   if (
-    commercialDashboardCache &&
-    now - commercialDashboardFetchedAt < COMMERCIAL_DASHBOARD_CACHE_MS
+    !dashboard ||
+    typeof dashboard !== "object" ||
+    Array.isArray(dashboard) ||
+    res?.success === false ||
+    res?.error ||
+    ("dashboard" in res && !res.dashboard) ||
+    (res?.data && "dashboard" in res.data && !res.data.dashboard)
   ) {
-    return commercialDashboardCache;
+    throw new Error("Dashboard data could not be verified. Please retry.");
   }
-
-  if (!commercialDashboardPromise) {
-    commercialDashboardPromise = apiRequest("/api/commercial/dashboard")
-      .then((res: any) => res?.dashboard ?? res?.data?.dashboard ?? res ?? {})
-      .catch((error: any) => {
-        if (error?.status === 404) return {};
-        throw error;
-      })
-      .then((dashboard: DashboardModel) => {
-        commercialDashboardCache = dashboard;
-        commercialDashboardFetchedAt = Date.now();
-        return dashboard;
-      })
-      .finally(() => {
-        commercialDashboardPromise = null;
-      });
-  }
-
-  return commercialDashboardPromise;
-}
-
-export function resetCommercialDashboardCacheForTests() {
-  commercialDashboardCache = null;
-  commercialDashboardPromise = null;
-  commercialDashboardFetchedAt = 0;
+  return dashboard as DashboardModel;
 }
 
 const SHARED_CORE_ACTIONS: Action[] = [
@@ -350,10 +327,12 @@ function dashboardActionTaskMetadata(sourceType: string) {
 
 function DashboardCard({
   section,
-  counts
+  counts,
+  ready
 }: {
   section: DashboardSection;
   counts: Record<string, number>;
+  ready: boolean;
 }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createCommercialDashboardStyles(palette), [palette]);
@@ -370,7 +349,7 @@ function DashboardCard({
           {section.metrics.map((metric) => (
             <View key={metric.key} style={styles.metric}>
               <Text style={styles.metricValue}>
-                {(counts[metric.key] ?? 0).toLocaleString()}
+                {ready ? (counts[metric.key] ?? 0).toLocaleString() : "—"}
               </Text>
               <Text style={styles.metricLabel}>{metric.label}</Text>
             </View>
@@ -393,9 +372,39 @@ export default function CommercialHome() {
   const auth = useAuth();
   const ent = useEntitlements();
   const plan = ent.plan || "commercial";
-  const [dashboard, setDashboard] = useState<DashboardModel>({});
-  const [loadingDashboard, setLoadingDashboard] = useState(false);
-  const [dashboardError, setDashboardError] = useState<any>(null);
+  // Each mounted/account session gets a fresh read, never another owner's module cache.
+  const context = useMemo(
+    () => ({
+      userId: auth.user?.id,
+      email: auth.user?.email,
+      token: auth.token,
+      hydrating: auth.isHydrating,
+      authed: auth.isAuthed,
+      ready: ent.ready,
+      mode: ent.mode
+    }),
+    [
+      auth.user?.id,
+      auth.user?.email,
+      auth.token,
+      auth.isHydrating,
+      auth.isAuthed,
+      ent.ready,
+      ent.mode
+    ]
+  );
+  const [result, setResult] = useState<{
+    context: object;
+    dashboard?: DashboardModel;
+    error?: any;
+  } | null>(null);
+  const [retryVersion, setRetryVersion] = useState(0);
+  const requestPending = useRef(false);
+  const currentResult = result?.context === context ? result : null;
+  const dashboard = currentResult?.dashboard;
+  const dashboardReady = dashboard !== undefined;
+  const dashboardError = currentResult?.error;
+  const loadingDashboard = !dashboardReady && !dashboardError;
   const [creatingActionTask, setCreatingActionTask] = useState("");
   const [taskFeedback, setTaskFeedback] = useState("");
 
@@ -405,24 +414,38 @@ export default function CommercialHome() {
   }, [auth, router]);
 
   useEffect(() => {
-    if (!ent?.ready || ent.mode !== "commercial") return;
+    if (
+      !context.ready ||
+      context.mode !== "commercial" ||
+      (!context.userId && !context.email) ||
+      context.hydrating ||
+      context.authed === false
+    )
+      return;
     let mounted = true;
-    setLoadingDashboard(true);
-    setDashboardError(null);
+    requestPending.current = true;
+    setResult(null);
     loadCommercialDashboard()
       .then((nextDashboard) => {
-        if (mounted) setDashboard(nextDashboard);
+        if (mounted) setResult({ context, dashboard: nextDashboard });
       })
       .catch((error) => {
-        if (mounted) setDashboardError(error);
+        if (mounted) setResult({ context, error });
       })
       .finally(() => {
-        if (mounted) setLoadingDashboard(false);
+        if (mounted) requestPending.current = false;
       });
     return () => {
       mounted = false;
     };
-  }, [ent?.ready, ent.mode]);
+  }, [context, retryVersion]);
+
+  function retryDashboard() {
+    if (requestPending.current || !dashboardError) return;
+    requestPending.current = true;
+    setResult(null);
+    setRetryVersion((version) => version + 1);
+  }
 
   const counts = useMemo<Record<string, number>>(() => {
     const raw = (dashboard?.counts || dashboard?.metrics || {}) as Record<string, number>;
@@ -593,14 +616,20 @@ export default function CommercialHome() {
               <Text style={styles.dashboardMeta}>
                 {loadingDashboard
                   ? "Loading dashboard data..."
-                  : "Storefront not configured yet."}
+                  : dashboardError
+                    ? "Dashboard unavailable. Your saved store has not been changed."
+                    : "Storefront not configured yet."}
               </Text>
             )}
-            <Text style={styles.dashboardLaunchCopy}>{storefrontLaunchCopy}</Text>
+            {dashboardReady ? (
+              <Text style={styles.dashboardLaunchCopy}>{storefrontLaunchCopy}</Text>
+            ) : null}
             <View style={styles.launchChecklist}>
               {storefrontLaunchChecklist.map((item) => (
                 <View key={item.label} style={styles.launchChecklistItem}>
-                  <Text style={styles.launchChecklistValue}>{item.value}</Text>
+                  <Text style={styles.launchChecklistValue}>
+                    {dashboardReady ? item.value : "—"}
+                  </Text>
                   <Text style={styles.launchChecklistLabel}>{item.label}</Text>
                 </View>
               ))}
@@ -608,18 +637,32 @@ export default function CommercialHome() {
           </View>
           <View style={styles.pulseStack}>
             <View style={styles.pulse}>
-              <Text style={styles.pulseValue}>{storefrontIsLive ? "Live" : "Draft"}</Text>
+              <Text style={styles.pulseValue}>
+                {dashboardReady ? (storefrontIsLive ? "Live" : "Draft") : "—"}
+              </Text>
               <Text style={styles.pulseLabel}>Storefront</Text>
             </View>
             <View style={styles.pulse}>
               <Text style={styles.pulseValue}>
-                {(counts.products ?? 0).toLocaleString()}
+                {dashboardReady ? (counts.products ?? 0).toLocaleString() : "—"}
               </Text>
               <Text style={styles.pulseLabel}>Products</Text>
             </View>
           </View>
         </View>
-        {dashboardError ? <InlineError error={dashboardError} /> : null}
+        {dashboardError ? (
+          <>
+            <InlineError error={dashboardError} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry dashboard"
+              onPress={retryDashboard}
+              style={styles.action}
+            >
+              <Text style={styles.actionText}>Retry dashboard</Text>
+            </Pressable>
+          </>
+        ) : null}
         <View style={styles.storefrontPrimaryActions}>
           {storefrontPrimaryActions.map((action) => (
             <Link key={`storefront-${action.label}`} href={action.href as any} asChild>
@@ -732,7 +775,12 @@ export default function CommercialHome() {
 
       <View style={styles.sectionGrid}>
         {DASHBOARD_SECTIONS.map((section) => (
-          <DashboardCard key={section.title} section={section} counts={counts} />
+          <DashboardCard
+            key={section.title}
+            section={section}
+            counts={counts}
+            ready={dashboardReady}
+          />
         ))}
       </View>
     </AppPage>

@@ -4,9 +4,7 @@ import path from "path";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 
-import CommercialHome, {
-  resetCommercialDashboardCacheForTests
-} from "@/app/home/commercial";
+import CommercialHome from "@/app/home/commercial";
 import CommercialCommunityRoute from "@/app/home/commercial/community";
 import CommercialCoursesRoute from "@/app/home/commercial/courses";
 import CommercialCourseDetailRoute from "@/app/home/commercial/courses/[courseId]";
@@ -111,7 +109,6 @@ describe("commercial workflow pages", () => {
       user: { email: "brand@example.com", role: "user" },
       logout: jest.fn()
     });
-    resetCommercialDashboardCacheForTests();
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/dashboard") {
         return Promise.resolve({
@@ -1059,6 +1056,132 @@ describe("commercial workflow pages", () => {
         })
       )
     );
+  });
+
+  it("does not claim missing setup or zero activity while the dashboard is pending", async () => {
+    let resolve!: (value: any) => void;
+    mockApiRequest.mockReturnValue(
+      new Promise((done) => {
+        resolve = done;
+      })
+    );
+    const screen = render(<CommercialHome />);
+    expect(screen.getByText("Loading dashboard data...")).toBeTruthy();
+    expect(screen.queryByText(/Draft shell:/)).toBeNull();
+    expect(screen.queryByText("Missing")).toBeNull();
+    expect(screen.queryByText("No products yet")).toBeNull();
+    expect(screen.queryByText("Draft")).toBeNull();
+    expect(screen.queryByText("0")).toBeNull();
+    expect(screen.getByLabelText("Open Storefront")).toBeTruthy();
+    await act(async () =>
+      resolve({
+        dashboard: {
+          storefront: { slug: "saved", isPublished: true },
+          counts: { products: 2 }
+        }
+      })
+    );
+    expect(screen.getByText("Storefront is live at /saved.")).toBeTruthy();
+    expect(screen.getByText("2 ready")).toBeTruthy();
+  });
+
+  it.each([404, 500])(
+    "keeps dashboard failure %s distinct from empty and retries once",
+    async (status) => {
+      mockApiRequest.mockRejectedValueOnce(
+        Object.assign(new Error("Request failed"), { status })
+      );
+      const screen = render(<CommercialHome />);
+      await waitFor(() => expect(screen.getByLabelText("Retry dashboard")).toBeTruthy());
+      expect(
+        screen.getByText("Dashboard unavailable. Your saved store has not been changed.")
+      ).toBeTruthy();
+      expect(screen.queryByText(/Draft shell:/)).toBeNull();
+      expect(screen.queryByText("0")).toBeNull();
+      let resolve!: (value: any) => void;
+      mockApiRequest.mockReturnValueOnce(
+        new Promise((done) => {
+          resolve = done;
+        })
+      );
+      const retry = screen.getByLabelText("Retry dashboard");
+      act(() => {
+        fireEvent.press(retry);
+        fireEvent.press(retry);
+      });
+      expect(mockApiRequest).toHaveBeenCalledTimes(2);
+      expect(screen.getByText("Loading dashboard data...")).toBeTruthy();
+      await act(async () => resolve({ dashboard: { counts: { products: 0 } } }));
+      expect(screen.getByText("No products yet")).toBeTruthy();
+      expect(screen.queryByLabelText("Retry dashboard")).toBeNull();
+      expect(mockApiRequest.mock.calls.every((call) => call.length === 1)).toBe(true);
+    }
+  );
+
+  it.each([null, [], "invalid", { dashboard: null }, { success: false }])(
+    "rejects an unverifiable dashboard response %j",
+    async (response) => {
+      mockApiRequest.mockResolvedValue(response);
+      const screen = render(<CommercialHome />);
+      await waitFor(() => expect(screen.getByLabelText("Retry dashboard")).toBeTruthy());
+      expect(screen.queryByText("No products yet")).toBeNull();
+    }
+  );
+
+  it("ignores a previous account's late dashboard and clears saved state on session change", async () => {
+    let oldResolve!: (value: any) => void;
+    let currentResolve!: (value: any) => void;
+    mockApiRequest
+      .mockReturnValueOnce(
+        new Promise((done) => {
+          oldResolve = done;
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise((done) => {
+          currentResolve = done;
+        })
+      );
+    const screen = render(<CommercialHome />);
+    mockUseAuth.mockReturnValue({
+      user: { email: "other@example.com" },
+      token: "other-session"
+    });
+    screen.rerender(<CommercialHome />);
+    await act(async () =>
+      oldResolve({
+        dashboard: { storefront: { slug: "old-private", isPublished: true } }
+      })
+    );
+    expect(screen.queryByText(/old-private/)).toBeNull();
+    expect(screen.getByText("Loading dashboard data...")).toBeTruthy();
+    await act(async () =>
+      currentResolve({
+        dashboard: { storefront: { slug: "current-store", isPublished: true } }
+      })
+    );
+    expect(screen.getByText("Storefront is live at /current-store.")).toBeTruthy();
+    mockApiRequest.mockReturnValueOnce(new Promise(() => {}));
+    mockUseAuth.mockReturnValue({
+      user: { email: "other@example.com" },
+      token: "renewed-session"
+    });
+    screen.rerender(<CommercialHome />);
+    expect(screen.queryByText(/current-store/)).toBeNull();
+    expect(screen.getByText("Loading dashboard data...")).toBeTruthy();
+  });
+
+  it("does not reuse a dashboard after leaving and remounting", async () => {
+    const first = render(<CommercialHome />);
+    await waitFor(() =>
+      expect(first.getByText(/Storefront: Living Soil Labs/)).toBeTruthy()
+    );
+    first.unmount();
+    mockApiRequest.mockReturnValueOnce(new Promise(() => {}));
+    const second = render(<CommercialHome />);
+    expect(second.getByText("Loading dashboard data...")).toBeTruthy();
+    expect(second.queryByText(/Storefront: Living Soil Labs/)).toBeNull();
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
   });
 
   it.each([
