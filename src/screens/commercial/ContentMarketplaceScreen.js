@@ -106,7 +106,8 @@ export default function ContentMarketplaceScreen({
   const [activeTab, setActiveTab] = useState(initialTab);
   const [category, setCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState("");
   const [content, setContent] = useState([]);
   const [uploads, setUploads] = useState([]);
@@ -157,15 +158,17 @@ export default function ContentMarketplaceScreen({
         getMyUploads(),
         getSalesData("monthly")
       ]);
+      if (!mountedRef.current) return;
       setContent(browseRes?.data || browseRes?.uploads || []);
       setUploads(uploadsRes?.data || uploadsRes?.uploads || []);
       setSalesData(salesRes?.data || null);
+      setHasLoaded(true);
     } catch (err) {
       const message = err?.message || "Failed to load storefront offer data.";
-      setError(message);
+      if (mountedRef.current) setError(message);
     } finally {
       loadRef.current = false;
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }, [category]);
 
@@ -430,13 +433,14 @@ export default function ContentMarketplaceScreen({
   }
 
   function renderUploads() {
+    if (!hasLoaded) return null;
     if (!uploads.length) {
       return (
         <EmptyState
           icon="cloud-upload-outline"
           title="No offers yet"
           subtitle="Create a storefront offer, course resource, or downloadable guide draft."
-          actionLabel="Create Offer"
+          actionLabel={!busy && !loading ? "Create Offer" : undefined}
           onAction={() => {
             if (!busy && !loading) setShowUploadModal(true);
           }}
@@ -600,6 +604,16 @@ export default function ContentMarketplaceScreen({
             />
           ) : null}
           {loading ? <ActivityIndicator size="small" /> : null}
+          {loading && !hasLoaded ? (
+            <Text accessibilityLiveRegion="polite" style={styles.muted}>
+              Loading storefront offers...
+            </Text>
+          ) : null}
+          {hasLoaded && (loading || error) ? (
+            <Text style={styles.muted}>
+              Showing the last successfully loaded offers and summaries.
+            </Text>
+          ) : null}
 
           {activeTab === "browse" ? (
             <>
@@ -633,13 +647,13 @@ export default function ContentMarketplaceScreen({
               </ScrollView>
               {filteredContent.length ? (
                 filteredContent.map(renderContentCard)
-              ) : (
+              ) : hasLoaded ? (
                 <EmptyState
                   icon="inbox-multiple"
                   title="No offers found"
                   subtitle="Try a different category"
                 />
-              )}
+              ) : null}
             </>
           ) : null}
 
@@ -651,7 +665,7 @@ export default function ContentMarketplaceScreen({
                   style={styles.primaryBtn}
                   onPress={() => setShowUploadModal(true)}
                   accessibilityRole="button"
-                  disabled={busy || loading}
+                  disabled={busy || loading || !hasLoaded}
                 >
                   <MaterialCommunityIcons
                     name="plus"

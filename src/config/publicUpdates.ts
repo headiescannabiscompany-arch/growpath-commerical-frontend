@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "seller-offers-readiness",
+        title: "Clearer seller offer loading and recovery",
+        date: "September 29, 2026",
+        dateLabel: "Released",
+        summary:
+          "My Storefront Offers no longer says there are no offers before loading succeeds. Failed reads keep a retry path, refresh failures retain clearly labeled saved results, and Create Offer waits for the initial load. Existing offer publication, prices, downloads and checkout rules stay unchanged."
+      },
+      {
         id: "commercial-dashboard-readiness",
         title: "Clearer Commercial dashboard loading and retry",
         date: "September 29, 2026",

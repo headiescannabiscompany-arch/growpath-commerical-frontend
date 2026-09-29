@@ -156,6 +156,88 @@ describe("ContentMarketplaceScreen storefront offers", () => {
     isPublished: false
   };
 
+  it("keeps pending owner and browse lists unknown rather than empty", async () => {
+    let resolveUploads!: (value: any) => void;
+    mockGetMyUploads.mockReturnValue(
+      new Promise((resolve) => {
+        resolveUploads = resolve;
+      })
+    );
+    const Screen = require("@/screens/commercial/ContentMarketplaceScreen").default;
+    const screen = render(<Screen initialTab="uploads" />);
+    expect(screen.getByText("Loading storefront offers...")).toBeTruthy();
+    expect(screen.queryByText("No offers yet")).toBeNull();
+    expect(screen.getAllByText("Create Offer")).toHaveLength(1);
+    expect(
+      screen.getByRole("button", { name: "Create Offer" }).props.accessibilityState
+        .disabled
+    ).toBe(true);
+    fireEvent.press(screen.getByText("Create Offer"));
+    expect(screen.queryByPlaceholderText("Title")).toBeNull();
+    fireEvent.press(screen.getByText("Browse"));
+    expect(screen.queryByText("No offers found")).toBeNull();
+    fireEvent.press(screen.getByText("My Offers"));
+    await act(async () => resolveUploads({ data: [draft] }));
+    expect(screen.getByText("Saved guide")).toBeTruthy();
+    expect(screen.queryByText("Loading storefront offers...")).toBeNull();
+  });
+
+  it("keeps failed initial reads unavailable and retries into a truthful empty result", async () => {
+    mockGetMyUploads.mockRejectedValueOnce(new Error("Connection failed"));
+    const Screen = require("@/screens/commercial/ContentMarketplaceScreen").default;
+    const screen = render(<Screen initialTab="uploads" />);
+    await waitFor(() =>
+      expect(screen.getByText("Failed to load storefront offers")).toBeTruthy()
+    );
+    expect(screen.queryByText("No offers yet")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Create Offer" }).props.accessibilityState
+        .disabled
+    ).toBe(true);
+    let resolveUploads!: (value: any) => void;
+    mockGetMyUploads.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveUploads = resolve;
+      })
+    );
+    const retry = screen.getByRole("button", { name: "Try Again" });
+    act(() => {
+      fireEvent.press(retry);
+      fireEvent.press(retry);
+    });
+    expect(mockGetMyUploads).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText("No offers yet")).toBeNull();
+    await act(async () => resolveUploads({ data: [] }));
+    expect(screen.getByText("No offers yet")).toBeTruthy();
+    expect(screen.getAllByText("Create Offer")).toHaveLength(2);
+    expect(mockUploadContent).not.toHaveBeenCalled();
+    expect(mockSetMarketplacePublication).not.toHaveBeenCalled();
+  });
+
+  it("retains and labels saved offers after a failed refresh", async () => {
+    mockGetMyUploads.mockResolvedValueOnce({ data: [draft] });
+    const screen = await renderLoadedUploads();
+    mockGetMyUploads.mockRejectedValueOnce(new Error("Refresh failed"));
+    fireEvent.press(screen.getByText("Refresh offers"));
+    await waitFor(() => expect(screen.getByText("Refresh failed")).toBeTruthy());
+    expect(screen.getByText("Saved guide")).toBeTruthy();
+    expect(
+      screen.getByText("Showing the last successfully loaded offers and summaries.")
+    ).toBeTruthy();
+    expect(screen.queryByText("No offers yet")).toBeNull();
+  });
+
+  it("hides the empty-state Create action while a known-empty list refreshes", async () => {
+    const screen = await renderLoadedUploads();
+    mockGetMyUploads.mockReturnValueOnce(new Promise(() => {}));
+    fireEvent.press(screen.getByText("Refresh offers"));
+    expect(screen.getAllByText("Create Offer")).toHaveLength(1);
+    expect(
+      screen.getByRole("button", { name: "Create Offer" }).props.accessibilityState
+        .disabled
+    ).toBe(true);
+  });
+
   it("requires confirmation, publishes the exact saved offer once, and shows persisted visibility", async () => {
     mockGetMyUploads.mockResolvedValue({ data: [draft] });
     let resolveSave: (value: any) => void = () => {};

@@ -2,6 +2,8 @@
 
 ## Public shopping navigation
 
+The Storefront Offers owner screen must not label a pending or failed initial read as No offers yet or No offers found. Keep creation controls unavailable until a successful initial load, provide error/retry feedback, and retain explicitly labeled last-successful records after refresh failure. Refreshing or writing disables the duplicate empty-state Create action as well as the primary control. Preserve existing publication, delivery, price and checkout rules.
+
 The Commercial dashboard distinguishes pending reads, retryable failures (including not found), and successfully loaded empty or configured workspaces. Do not show missing setup, Draft, or zero activity before a valid response. Preserve static navigation while unknown values use placeholders. Retry is single-flight; session/account changes and unmount invalidate old results. Do not reuse another session's dashboard cache. This read-only presentation does not change saved records or checkout eligibility.
 
 The Commercial dashboard's publication summary uses the saved boolean `isPublished`, matching Storefront settings and public reads. A conflicting legacy `status` or `storefrontStatus` cannot override that boolean; legacy status is a compatibility fallback only when the boolean is absent. Displaying this state never publishes a record or establishes checkout eligibility.
