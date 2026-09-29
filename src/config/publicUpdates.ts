@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "September 28, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "September 29, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "hosted-private-preview-replay",
+        title: "Private hosted Live previews and reliable replay status",
+        date: "September 29, 2026",
+        dateLabel: "Released",
+        summary:
+          "Hosts can now watch authorized video in an unpublished hosted session. Stopping OBS keeps the ended or replay state instead of reverting to connecting. A private synthetic broadcast replay played through to the end on the live website. Drafts remain private; viewer permissions and the existing layout stay unchanged. Separate audience-access checks remain part of the final app review."
+      },
       {
         id: "purchased-library-readiness",
         title: "Clearer purchased-library errors and retry",

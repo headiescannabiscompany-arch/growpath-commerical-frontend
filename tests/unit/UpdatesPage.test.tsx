@@ -25,7 +25,7 @@ describe("public Updates page", () => {
     for (const section of PUBLIC_UPDATE_SECTIONS) {
       expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
     }
-    expect(screen.getByText("Last updated September 28, 2026")).toBeTruthy();
+    expect(screen.getByText("Last updated September 29, 2026")).toBeTruthy();
     expect(
       screen.getByText("Live subscription gift announcements verified")
     ).toBeTruthy();
@@ -70,6 +70,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "hosted-private-preview-replay",
       "purchased-library-readiness",
       "grow-list-readiness",
       "timeline-export-return",
@@ -99,6 +100,16 @@ describe("public Updates page", () => {
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
+  });
+
+  it("bounds hosted replay evidence to the private host without claiming audience acceptance", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "hosted-private-preview-replay"
+    );
+    expect(entry?.summary).toContain("Drafts remain private");
+    expect(entry?.summary).toContain("replay played through to the end");
+    expect(entry?.summary).toContain("Separate audience-access checks remain");
+    expect(entry?.summary).not.toMatch(/all Live.*complete|public broadcast verified/i);
   });
 
   it("limits the purchased-library note to loading and deliberate read-only recovery", () => {
