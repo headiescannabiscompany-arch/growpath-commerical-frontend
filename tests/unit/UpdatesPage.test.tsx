@@ -102,13 +102,15 @@ describe("public Updates page", () => {
     ]);
   });
 
-  it("bounds hosted replay evidence to the private host without claiming audience acceptance", () => {
+  it("records private-host and signed-out replay proof without claiming the whole app complete", () => {
     const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (item) => item.id === "hosted-private-preview-replay"
     );
     expect(entry?.summary).toContain("Drafts remain private");
     expect(entry?.summary).toContain("replay played through to the end");
-    expect(entry?.summary).toContain("Separate audience-access checks remain");
+    expect(entry?.summary).toContain("played in a signed-out private browser");
+    expect(entry?.summary).toContain("chat still required sign-in");
+    expect(entry?.summary).toContain("the broader app review continues");
     expect(entry?.summary).not.toMatch(/all Live.*complete|public broadcast verified/i);
   });
 

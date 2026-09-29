@@ -14,7 +14,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "September 29, 2026",
         dateLabel: "Released",
         summary:
-          "Hosts can now watch authorized video in an unpublished hosted session. Stopping OBS keeps the ended or replay state instead of reverting to connecting. A private synthetic broadcast replay played through to the end on the live website. Drafts remain private; viewer permissions and the existing layout stay unchanged. Separate audience-access checks remain part of the final app review."
+          "Hosts can now watch authorized video in an unpublished hosted session. Stopping OBS keeps the ended or replay state instead of reverting to connecting. A private synthetic broadcast replay played through to the end on the live website. An existing public test replay also played in a signed-out private browser; chat still required sign-in. Drafts remain private; viewer permissions and the existing layout stay unchanged. These hosted replay checks are complete; the broader app review continues."
       },
       {
         id: "purchased-library-readiness",
