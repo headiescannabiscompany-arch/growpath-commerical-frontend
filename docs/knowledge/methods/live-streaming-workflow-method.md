@@ -84,6 +84,12 @@ The secret is shown only to the host, stored encrypted, never placed in public s
 data, and rotated after disclosure or suspected compromise. Starting an encoder does not
 publish a draft session; the host explicitly takes the reviewed session live.
 
+The host's private draft preview must render the existing hosted player after the
+server authorizes playback and the provider reports connected/degraded video or a
+ready replay. Keep the private-draft badge and label the player as an unpublished
+host preview. Do not require publication merely to inspect the encoder output;
+preview never grants another viewer access or triggers publication or sharing.
+
 The first-party path requires authenticated RTMP or SRT ingest, bounded transcoding into
 adaptive viewer playback, health/state reporting, in-app play/pause/volume/mute/fullscreen,
 GrowPath chat beside the player, explicit end-of-stream handling, and a reviewed replay

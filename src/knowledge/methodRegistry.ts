@@ -956,6 +956,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "private account-owned reusable encoder channel with revocable ingest secret, explicit saved-channel default or deliberate new-channel choice, draft/live control, stream health states, GrowPath chat, and reviewed replay retention",
       "provider-confirmed ready recording discovery after hosted encoder disconnect with newly authorized playback against the recording video identifier",
       "server-enforced private draft creation and explicit reviewed publish action shared by Live Studio and Commercial Lives",
+      "owner-only unpublished hosted-video preview using server-authorized playback without publication or sharing",
       "worker-driven OBS connect, disconnect, ended, and idempotent replay transitions bounded to the exact session recording window",
       "atomic retained session end before hosted-input shutdown with explicit provider-stop retry state",
       "host-owned session manager for opening drafts, scheduled sessions, active broadcasts, and replays with confirmed draft deletion",

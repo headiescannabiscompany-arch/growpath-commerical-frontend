@@ -65,6 +65,7 @@ jest.mock("../src/components/FollowButton", () => {
 
 // Avoid rendering the real embed in tests
 jest.mock("../src/screens/LiveSessionTwitchEmbed", () => "LiveSessionTwitchEmbed");
+jest.mock("../src/screens/GrowPathHostedLivePlayer", () => "GrowPathHostedLivePlayer");
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -247,6 +248,67 @@ describe("LiveSessionScreen QA", () => {
     expect(queryByText("public")).toBeNull();
     expect(queryByText("Share this stream")).toBeNull();
   });
+
+  it.each([
+    ["host connected draft", "host-1", "draft", false, "connected", true, true],
+    ["host degraded draft", "host-1", "draft", false, "degraded", true, true],
+    ["host ready replay draft", "host-1", "draft", false, "replay", true, true],
+    ["unrelated viewer draft", "viewer-1", "draft", false, "connected", true, false],
+    ["host not connected", "host-1", "draft", false, "ready", true, false],
+    ["host denied playback", "host-1", "draft", false, "connected", false, false],
+    ["published live viewer", "viewer-1", "live", true, "connected", true, true],
+    ["published replay viewer", "viewer-1", "ended", true, "replay", true, true]
+  ])(
+    "renders only authorized available hosted playback: %s",
+    async (_label, userId, status, isPublished, lifecycle, hasGrant, expectedPlayer) => {
+      mockUseAuth.mockReturnValue({ user: { _id: userId }, isAuthed: true });
+      mockUseEntitlements.mockReturnValue({ can: () => false });
+      mockApiRequest.mockImplementation((url) => {
+        if (url === "/api/lives/preview-check")
+          return Promise.resolve({
+            _id: "preview-check",
+            owner: { id: "host-1" },
+            title: "Private preview",
+            status,
+            isPublished,
+            broadcastMode: "growpath",
+            chatEnabled: false
+          });
+        if (url.endsWith("/hosted-status"))
+          return Promise.resolve({ lifecycle, sessionStatus: status });
+        if (url.endsWith("/playback"))
+          return hasGrant
+            ? Promise.resolve({ playerUrl: "https://example.com/authorized-test-player" })
+            : Promise.reject(new Error("Playback unavailable"));
+        return Promise.resolve({});
+      });
+      const { queryByText, UNSAFE_queryByType } = renderWithNav({
+        sessionId: "preview-check"
+      });
+      await act(async () => {});
+      await waitFor(() =>
+        expect(mockApiRequest).toHaveBeenCalledWith(
+          "/api/lives/preview-check/hosted-status"
+        )
+      );
+      expect(Boolean(UNSAFE_queryByType("GrowPathHostedLivePlayer"))).toBe(
+        expectedPlayer
+      );
+      if (!isPublished) {
+        expect(queryByText("private draft")).toBeTruthy();
+        expect(queryByText("Share this stream")).toBeNull();
+        expect(queryByText("End broadcast")).toBeNull();
+      }
+      expect(
+        mockApiRequest.mock.calls.every(
+          ([url, options]) =>
+            !options?.method ||
+            options.method === "GET" ||
+            (url === "/api/lives/preview-check/playback" && options.method === "POST")
+        )
+      ).toBe(true);
+    }
+  );
 
   it("shows an attached premiere video without claiming its destination is missing", async () => {
     mockUseAuth.mockReturnValue({ user: { _id: "host-1" } });

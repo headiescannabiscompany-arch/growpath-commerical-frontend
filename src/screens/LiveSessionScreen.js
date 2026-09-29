@@ -398,6 +398,11 @@ export default function LiveSessionScreen({ route }) {
   const isHost = Boolean(signedInUserId && ownerId === signedInUserId);
   const canEditThumbnail = auth.isAuthed && isHost;
   const sessionStatus = String(session?.status || "").toLowerCase();
+  const isPrivateHostedPreview =
+    isHost &&
+    session?.isPublished === false &&
+    sessionStatus === "draft" &&
+    ["connected", "degraded", "ended", "replay"].includes(hostedLifecycle);
   const canStartExternalSession =
     isHost &&
     session?.isPublished !== false &&
@@ -868,8 +873,13 @@ export default function LiveSessionScreen({ route }) {
 
           {session.sessionType === "premiere" ? null : isGrowPathHosted &&
             hostedPlayback?.playerUrl &&
-            ["live", "ended"].includes(sessionStatus) ? (
+            (["live", "ended"].includes(sessionStatus) || isPrivateHostedPreview) ? (
             <View style={styles.embedWrap}>
+              {isPrivateHostedPreview ? (
+                <Text style={styles.meta}>
+                  Private host preview — this session is not published.
+                </Text>
+              ) : null}
               <GrowPathHostedLivePlayer playerUrl={String(hostedPlayback.playerUrl)} />
             </View>
           ) : isGrowPathHosted ? (
