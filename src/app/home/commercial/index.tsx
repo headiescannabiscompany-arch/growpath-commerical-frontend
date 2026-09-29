@@ -446,6 +446,16 @@ export default function CommercialHome() {
       { label: "Add Product", href: "/home/commercial/products/new" }
     ];
   }, [dashboard?.storefront?.slug]);
+  // Publication uses the same saved flag as Storefront settings and public reads.
+  // Legacy status fields can remain "draft" after publication.
+  const storefrontStatus =
+    typeof dashboard?.storefront?.isPublished === "boolean"
+      ? dashboard.storefront.isPublished
+        ? "published"
+        : "draft"
+      : String(
+          dashboard?.storefront?.status || dashboard?.storefront?.storefrontStatus || ""
+        ).trim();
   const storefrontLaunchChecklist = useMemo(
     () => [
       {
@@ -459,22 +469,11 @@ export default function CommercialHome() {
       },
       {
         label: "Storefront",
-        value:
-          String(
-            dashboard?.storefront?.status || dashboard?.storefront?.storefrontStatus || ""
-          ).trim() || "Draft"
+        value: storefrontStatus || "Draft"
       }
     ],
-    [
-      dashboard?.storefront?.slug,
-      dashboard?.storefront?.status,
-      dashboard?.storefront?.storefrontStatus,
-      productCount
-    ]
+    [dashboard?.storefront?.slug, storefrontStatus, productCount]
   );
-  const storefrontStatus = String(
-    dashboard?.storefront?.status || dashboard?.storefront?.storefrontStatus || ""
-  ).trim();
   const storefrontIsLive =
     Boolean(dashboard?.storefront?.slug) &&
     ["published", "active"].includes(storefrontStatus.toLowerCase());

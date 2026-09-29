@@ -1061,6 +1061,36 @@ describe("commercial workflow pages", () => {
     );
   });
 
+  it.each([
+    { isPublished: true, status: "draft", storefrontStatus: "draft", live: true },
+    { isPublished: false, status: "active", storefrontStatus: "published", live: false },
+    {
+      isPublished: undefined,
+      status: "published",
+      storefrontStatus: "draft",
+      live: true
+    },
+    { isPublished: undefined, status: undefined, storefrontStatus: "draft", live: false }
+  ])("uses saved publication state for dashboard visibility: %j", async (fixture) => {
+    mockApiRequest.mockResolvedValue({
+      dashboard: {
+        storefront: { name: "QA Store", slug: "qa-store", ...fixture },
+        counts: { products: 1 }
+      }
+    });
+    const screen = render(<CommercialHome />);
+    const expected = fixture.live
+      ? "Storefront is live at /qa-store."
+      : "Storefront slug is set, but the public brand home is still draft.";
+    await waitFor(() => expect(screen.getByText(expected)).toBeTruthy());
+    expect(screen.getByText(fixture.live ? "published" : "draft")).toBeTruthy();
+    expect(screen.getAllByText(fixture.live ? "Live" : "Draft").length).toBeGreaterThan(
+      0
+    );
+    if (fixture.live) expect(screen.queryByText("Draft")).toBeNull();
+    expect(mockApiRequest.mock.calls.every((call) => call.length === 1)).toBe(true);
+  });
+
   it("keeps platform governance reachable for an administrator in Commercial", async () => {
     mockUseAuth.mockReturnValue({
       user: { email: "admin@growpathai.com", role: "ADMIN" },

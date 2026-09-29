@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "storefront-dashboard-publication",
+        title: "Accurate storefront publication status",
+        date: "September 29, 2026",
+        dateLabel: "Released",
+        summary:
+          "The Commercial dashboard now uses the same saved publication flag as Storefront settings, so a published store is no longer incorrectly labeled draft. This is a status-display correction only: it does not publish stores, change checkout eligibility, or alter the existing layout."
+      },
+      {
         id: "hosted-private-preview-replay",
         title: "Private hosted Live previews and reliable replay status",
         date: "September 29, 2026",
