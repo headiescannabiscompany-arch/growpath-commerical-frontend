@@ -257,7 +257,16 @@ describe("LiveSessionScreen QA", () => {
     ["host not connected", "host-1", "draft", false, "ready", true, false],
     ["host denied playback", "host-1", "draft", false, "connected", false, false],
     ["published live viewer", "viewer-1", "live", true, "connected", true, true],
-    ["published replay viewer", "viewer-1", "ended", true, "replay", true, true]
+    ["published replay viewer", "viewer-1", "ended", true, "replay", true, true],
+    [
+      "canonical replay state",
+      "viewer-1",
+      "replay_available",
+      true,
+      "replay_available",
+      true,
+      true
+    ]
   ])(
     "renders only authorized available hosted playback: %s",
     async (_label, userId, status, isPublished, lifecycle, hasGrant, expectedPlayer) => {

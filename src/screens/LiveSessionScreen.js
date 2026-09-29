@@ -237,7 +237,9 @@ export default function LiveSessionScreen({ route }) {
         }
         if (
           !hasHostedPlayback &&
-          ["connected", "degraded", "ended", "replay"].includes(nextLifecycle)
+          ["connected", "degraded", "ended", "replay", "replay_available"].includes(
+            nextLifecycle
+          )
         ) {
           const playback = await getHostedLivePlayback(sessionId).catch(() => null);
           if (
@@ -402,7 +404,9 @@ export default function LiveSessionScreen({ route }) {
     isHost &&
     session?.isPublished === false &&
     sessionStatus === "draft" &&
-    ["connected", "degraded", "ended", "replay"].includes(hostedLifecycle);
+    ["connected", "degraded", "ended", "replay", "replay_available"].includes(
+      hostedLifecycle
+    );
   const canStartExternalSession =
     isHost &&
     session?.isPublished !== false &&
@@ -873,7 +877,8 @@ export default function LiveSessionScreen({ route }) {
 
           {session.sessionType === "premiere" ? null : isGrowPathHosted &&
             hostedPlayback?.playerUrl &&
-            (["live", "ended"].includes(sessionStatus) || isPrivateHostedPreview) ? (
+            (["live", "ended", "replay_available"].includes(sessionStatus) ||
+              isPrivateHostedPreview) ? (
             <View style={styles.embedWrap}>
               {isPrivateHostedPreview ? (
                 <Text style={styles.meta}>
