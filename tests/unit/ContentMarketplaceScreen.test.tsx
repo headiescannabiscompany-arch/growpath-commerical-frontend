@@ -238,6 +238,88 @@ describe("ContentMarketplaceScreen storefront offers", () => {
     ).toBe(true);
   });
 
+  it("keeps Sales and Analytics unknown until the initial offer requests finish", async () => {
+    let resolveUploads!: (value: any) => void;
+    mockGetMyUploads.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveUploads = resolve;
+      })
+    );
+    const Screen = require("@/screens/commercial/ContentMarketplaceScreen").default;
+    const screen = render(<Screen initialTab="analytics" />);
+    expect(screen.getByText("Loading storefront offers...")).toBeTruthy();
+    expect(screen.queryByText("Content Performance")).toBeNull();
+    expect(screen.queryByText("Create offers to build analytics.")).toBeNull();
+    fireEvent.press(screen.getByRole("tab", { name: "Sales" }));
+    expect(screen.queryByText("Total Earnings")).toBeNull();
+    expect(screen.queryByText("No sales yet")).toBeNull();
+    await act(async () => resolveUploads({ data: [draft] }));
+    expect(screen.getByText("Total Earnings")).toBeTruthy();
+    fireEvent.press(screen.getByRole("tab", { name: "Analytics" }));
+    expect(screen.getByText("Content Performance")).toBeTruthy();
+    expect(screen.getByText("Saved guide")).toBeTruthy();
+    expect(screen.queryByText("Create offers to build analytics.")).toBeNull();
+    expect(mockGetMyUploads).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps failed Analytics unavailable and shows an empty result only after retry succeeds", async () => {
+    mockGetMyUploads.mockRejectedValueOnce(new Error("Analytics read failed"));
+    const Screen = require("@/screens/commercial/ContentMarketplaceScreen").default;
+    const screen = render(<Screen initialTab="analytics" />);
+    await screen.findByText("Analytics read failed");
+    expect(screen.queryByText("Content Performance")).toBeNull();
+    expect(screen.queryByText("Create offers to build analytics.")).toBeNull();
+    fireEvent.press(screen.getByRole("tab", { name: "Sales" }));
+    expect(screen.queryByText("No sales yet")).toBeNull();
+    fireEvent.press(screen.getByRole("button", { name: "Try Again" }));
+    await screen.findByText("No sales yet");
+    fireEvent.press(screen.getByRole("tab", { name: "Analytics" }));
+    expect(screen.getByText("Create offers to build analytics.")).toBeTruthy();
+    expect(mockGetMyUploads).toHaveBeenCalledTimes(2);
+    expect(mockUploadContent).not.toHaveBeenCalled();
+    expect(mockSetMarketplacePublication).not.toHaveBeenCalled();
+  });
+
+  it("retains the recorded Sales and Analytics summaries through a failed refresh", async () => {
+    mockGetMyUploads.mockResolvedValueOnce({
+      data: [{ ...draft, downloads: 3, revenue: 24 }]
+    });
+    mockGetSalesData.mockResolvedValueOnce({
+      data: {
+        summary: { totalEarnings: 24, totalDownloads: 3, averageRating: 4 },
+        monthly: [{ month: "2026-09", earnings: 24 }],
+        recentSales: [
+          {
+            id: "offer-1",
+            title: "Saved guide",
+            date: "2026-09-01T12:00:00Z",
+            amount: 24
+          }
+        ]
+      }
+    });
+    const screen = await renderLoadedUploads();
+    fireEvent.press(screen.getByRole("tab", { name: "Sales" }));
+    expect(screen.getByText("Offer last updated 2026-09-01")).toBeTruthy();
+    expect(
+      screen.getByText(/not a payment-date ledger or payout statement/)
+    ).toBeTruthy();
+    mockGetSalesData.mockRejectedValueOnce(new Error("Summary refresh failed"));
+    fireEvent.press(screen.getByText("Refresh offers"));
+    await screen.findByText("Summary refresh failed");
+    expect(
+      screen.getByText("Showing the last successfully loaded offers and summaries.")
+    ).toBeTruthy();
+    expect(screen.getByText("Offer last updated 2026-09-01")).toBeTruthy();
+    expect(screen.getAllByText("$24.00")).toHaveLength(3);
+    fireEvent.press(screen.getByRole("tab", { name: "Analytics" }));
+    expect(screen.getByText("Saved guide")).toBeTruthy();
+    expect(screen.getByText("$10.00 - 3 downloads")).toBeTruthy();
+    expect(screen.getByText("$24.00")).toBeTruthy();
+    expect(mockUploadContent).not.toHaveBeenCalled();
+    expect(mockSetMarketplacePublication).not.toHaveBeenCalled();
+  });
+
   it("requires confirmation, publishes the exact saved offer once, and shows persisted visibility", async () => {
     mockGetMyUploads.mockResolvedValue({ data: [draft] });
     let resolveSave: (value: any) => void = () => {};

@@ -1086,6 +1086,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ["commercial records", "verified claims"],
     [
       "linked workflow",
+      "Storefront Offers Sales/Analytics summaries and analytics-empty guidance require a successful initial read; tab navigation does not reload or write records, failed refresh retains labeled prior summaries, and offer aggregates remain distinct from payment ledgers and payouts",
       "Storefront Offers owner initial loading/failure cannot claim empty lists or enable creation; retry explicitly, retain labeled last-successful records on refresh failure, and lock both primary and empty-state Create actions during loading/writes without changing publication, delivery or checkout rules",
       "Commercial dashboard pending and failed reads use unknown placeholders rather than missing setup, Draft or zero activity; preserve navigation, provide single-flight retry, invalidate late account/session/unmount results and never reuse another session's cached dashboard; successful empty records remain distinct and no saved records or checkout eligibility change",
       "Commercial dashboard publication summary uses saved boolean isPublished before legacy status fields, matching Storefront settings without publishing records or granting checkout eligibility",

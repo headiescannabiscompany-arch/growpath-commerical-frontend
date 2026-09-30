@@ -735,7 +735,7 @@ export default function ContentMarketplaceScreen({
             </>
           ) : null}
 
-          {activeTab === "analytics" ? (
+          {activeTab === "analytics" && hasLoaded ? (
             <Card style={styles.card}>
               <Text style={styles.sectionTitle}>Content Performance</Text>
               {uploads.length ? (

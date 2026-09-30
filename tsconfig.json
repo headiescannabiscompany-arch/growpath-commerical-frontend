@@ -13,6 +13,8 @@
     "forceConsistentCasingInFileNames": true
   },
   "exclude": [
+    "dist",
+    "dist-*",
     "node_modules",
     "backend",
     "backend-media-storage",
