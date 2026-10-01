@@ -19,6 +19,16 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("describes the bounded Commercial Analytics presentation correction", () => {
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "commercial-analytics-snapshot"
+    );
+    expect(note?.summary).toContain("previously loaded activity");
+    expect(note?.summary).toContain("recorded currencies stay separate");
+    expect(note?.summary).toContain(
+      "orders, payments, prices and the layout stay unchanged"
+    );
+  });
   it("keeps the later Lives roadmap after course gifting and out of released work", () => {
     const later = PUBLIC_UPDATE_SECTIONS[PUBLIC_UPDATE_SECTIONS.length - 1];
     expect(later.id).toBe("lives-planned");
@@ -118,6 +128,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "commercial-analytics-snapshot",
       "hosted-studio-readiness",
       "marketing-planner-readiness",
       "campaign-feed-readiness",

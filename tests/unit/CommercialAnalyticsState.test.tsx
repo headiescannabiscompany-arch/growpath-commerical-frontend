@@ -133,6 +133,9 @@ describe("Commercial Analytics request state", () => {
 
     expect(attempts).toBe(2);
     expect(screen.getByText("11")).toBeTruthy();
+    expect(
+      screen.getByText("Refreshing. Showing previously loaded activity.")
+    ).toBeTruthy();
 
     await act(async () => {
       rejectRefresh?.(new Error("refresh failed"));
@@ -140,6 +143,58 @@ describe("Commercial Analytics request state", () => {
 
     expect(await screen.findByText("Error: refresh failed")).toBeTruthy();
     expect(screen.getByText("11")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Refresh failed. Showing previously loaded activity; retry to update."
+      )
+    ).toBeTruthy();
+  });
+
+  it.each([
+    [
+      { orderCount: 0, orderRevenueCents: 0, orderRevenueByCurrency: {} },
+      "No recorded revenue"
+    ],
+    [
+      { orderCount: 1, orderRevenueCents: 0, orderRevenueByCurrency: {} },
+      "Recorded revenue unavailable"
+    ],
+    [
+      { orderCount: 0, orderRevenueCents: 500, orderRevenueByCurrency: {} },
+      "Recorded revenue unavailable"
+    ],
+    [{ orderCount: 1, orderRevenueCents: 500 }, "$5.00 recorded revenue"],
+    [
+      { orderCount: 2, orderRevenueByCurrency: { USD: 500, EUR: 700 } },
+      "$5.00 + €7.00 recorded revenue"
+    ],
+    [{ orderCount: 1, orderRevenueByCurrency: { USD: 0 } }, "$0.00 recorded revenue"]
+  ])(
+    "labels revenue evidence without a blank or combining currencies: %j",
+    async (overview, expected) => {
+      mockApiRequest.mockResolvedValue({ overview });
+      const screen = render(<CommercialAnalyticsRoute />);
+      expect(await screen.findByText(expected)).toBeTruthy();
+    }
+  );
+
+  it("clears retained-snapshot feedback after a successful retry", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({ overview: { productViews: 26 } })
+      .mockRejectedValueOnce(new Error("refresh unavailable"))
+      .mockResolvedValueOnce({ overview: { productViews: 27 } });
+    const screen = render(<CommercialAnalyticsRoute />);
+    expect(await screen.findByText("26")).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Refresh commercial analytics" }));
+    expect(
+      await screen.findByText(
+        "Refresh failed. Showing previously loaded activity; retry to update."
+      )
+    ).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Retry commercial analytics" }));
+    expect(await screen.findByText("27")).toBeTruthy();
+    expect(screen.queryByText(/Showing previously loaded activity/)).toBeNull();
+    expect(screen.queryByText("26")).toBeNull();
   });
 
   it("names its workflow links and exposes one page heading", async () => {

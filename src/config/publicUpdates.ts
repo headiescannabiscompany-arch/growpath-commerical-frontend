@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-analytics-snapshot",
+        title: "Clearer Commercial Analytics snapshots",
+        date: "October 1, 2026",
+        dateLabel: "Released",
+        summary:
+          "Commercial Analytics now labels previously loaded activity during a refresh or after failure. Empty revenue breakdowns show a clear no-revenue or unavailable message instead of a blank line, while recorded currencies stay separate. Retry updates the existing counts; orders, payments, prices and the layout stay unchanged."
+      },
+      {
         id: "hosted-studio-readiness",
         title: "Clearer Live Studio readiness and retry",
         date: "October 1, 2026",

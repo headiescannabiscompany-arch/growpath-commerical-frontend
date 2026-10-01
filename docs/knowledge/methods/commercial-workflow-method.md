@@ -2,6 +2,8 @@
 
 ## Public shopping navigation
 
+Commercial Analytics labels retained snapshots during refresh and after failure; successful retry clears that notice. An explicitly empty currency breakdown must not render a blank revenue line. With no recorded orders or amount, show No recorded revenue; if orders or a legacy amount exist but the explicit currency breakdown is empty, show Recorded revenue unavailable rather than invent a currency or zero. Preserve separate recorded currency amounts and existing legacy fallback when the currency map is absent. This is presentation only, not a payout calculation or ledger mutation.
+
 Marketing Planner totals are unknown until its existing plans/product-lines read succeeds. Never turn pending or failed data into zero plans or a create-first empty message. Provide a single-flight read retry that preserves the draft and labels retained previous plans/totals after refresh failure. Post-create refresh supersedes an older read. This does not execute ad spend or change plan payloads, prices, publication rules or navigation.
 
 The shared Feed/Campaigns list distinguishes pending, failed, successful-empty and filtered-no-match reads. An unavailable read never claims no campaigns or invites the first publication. Provide a visible single-flight read-only retry, preserve the unpublished form, and label previously loaded same-query results after refresh failure. Ignore superseded query and unmounted read completions; never display a prior query's list as the new filter's result. This does not change campaign publication, placements, prices or recorded analytics calculations.

@@ -179,6 +179,16 @@ export default function CommercialAnalyticsRoute() {
     }),
     [metrics]
   );
+  const revenueAmounts = Object.entries(
+    metrics.orderRevenueByCurrency || { USD: normalized.orderRevenueCents }
+  )
+    .map(([currency, cents]) => formatCurrency(Number(cents || 0), currency))
+    .join(" + ");
+  const revenueSummary = revenueAmounts
+    ? `${revenueAmounts} recorded revenue`
+    : normalized.orderCount === 0 && normalized.orderRevenueCents === 0
+      ? "No recorded revenue"
+      : "Recorded revenue unavailable";
   const hasRecordedActivity = useMemo(
     () =>
       Object.values(normalized).some((value) => Number(value || 0) > 0) ||
@@ -244,6 +254,13 @@ export default function CommercialAnalyticsRoute() {
                 <Text style={styles.refreshText}>{loading ? "Loading" : "Refresh"}</Text>
               </Pressable>
             </View>
+            {loading || error ? (
+              <Text style={styles.body}>
+                {loading
+                  ? "Refreshing. Showing previously loaded activity."
+                  : "Refresh failed. Showing previously loaded activity; retry to update."}
+              </Text>
+            ) : null}
             {!loading && !error && !hasRecordedActivity ? (
               <View accessibilityRole="summary" style={styles.emptyNotice}>
                 <Text style={styles.emptyNoticeTitle}>No recorded activity yet</Text>
@@ -313,13 +330,7 @@ export default function CommercialAnalyticsRoute() {
               <MetricCard
                 label="Paid orders"
                 value={normalized.orderCount}
-                helper={`${Object.entries(
-                  metrics.orderRevenueByCurrency || { USD: normalized.orderRevenueCents }
-                )
-                  .map(([currency, cents]) =>
-                    formatCurrency(Number(cents || 0), currency)
-                  )
-                  .join(" + ")} recorded revenue`}
+                helper={revenueSummary}
               />
             </View>
           </AppCard>
