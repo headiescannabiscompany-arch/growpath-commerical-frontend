@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-products-readiness",
+        title: "Reliable product catalog loading and retry",
+        date: "October 1, 2026",
+        dateLabel: "Released",
+        summary:
+          "Commercial Products no longer shows zero products or an empty store while its catalog is unavailable. Refresh and Retry preserve your unfinished form, label previously loaded products, and restore current records before creation or catalog actions resume. Prices, publication rules and the existing layout stay unchanged."
+      },
+      {
         id: "commercial-analytics-snapshot",
         title: "Clearer Commercial Analytics snapshots",
         date: "October 1, 2026",

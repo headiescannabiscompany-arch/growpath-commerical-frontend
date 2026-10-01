@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   Pressable,
@@ -217,7 +217,11 @@ export default function CommercialProductsRoute({
   const [products, setProducts] = useState<Product[]>([]);
   const [storefrontSlug, setStorefrontSlug] = useState("");
   const [form, setForm] = useState<ProductForm>(EMPTY_FORM);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<any>(null);
+  const readInFlight = useRef(false);
+  const readGeneration = useRef(0);
   const [saving, setSaving] = useState(false);
   const [creatingTaskForProductId, setCreatingTaskForProductId] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -226,6 +230,12 @@ export default function CommercialProductsRoute({
   const [publishingReady, setPublishingReady] = useState(false);
   const [confirmInterestMode, setConfirmInterestMode] = useState(false);
   const [enablingInterestMode, setEnablingInterestMode] = useState(false);
+  const writing =
+    saving ||
+    publishingReady ||
+    enablingInterestMode ||
+    Boolean(creatingTaskForProductId);
+  const catalogReady = hasLoaded && !loading && !loadError;
 
   const publishedCount = useMemo(
     () => products.filter((product) => product.status === "published").length,
@@ -275,28 +285,44 @@ export default function CommercialProductsRoute({
   );
 
   async function loadProducts() {
+    if (readInFlight.current) return;
+    readInFlight.current = true;
+    const generation = ++readGeneration.current;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       const [nextProducts, storefront] = await Promise.all([
         fetchProducts(),
         fetchStorefront().catch(() => null)
       ]);
+      if (generation !== readGeneration.current) return;
       setProducts(nextProducts);
       setStorefrontSlug(String(storefront?.slug || ""));
+      setHasLoaded(true);
     } catch (err) {
-      setError(err);
+      if (generation === readGeneration.current) setLoadError(err);
     } finally {
-      setLoading(false);
+      if (generation === readGeneration.current) {
+        readInFlight.current = false;
+        setLoading(false);
+      }
     }
   }
 
+  function refreshProducts() {
+    if (!writing) void loadProducts();
+  }
+
   useEffect(() => {
-    loadProducts();
+    void loadProducts();
+    return () => {
+      readGeneration.current += 1;
+      readInFlight.current = false;
+    };
   }, []);
 
   async function submitProduct() {
-    if (!form.name.trim()) return;
+    if (!form.name.trim() || !catalogReady || writing || readInFlight.current) return;
     const price = parsePrice(form.price);
     setSaving(true);
     setError(null);
@@ -365,7 +391,8 @@ export default function CommercialProductsRoute({
 
   async function createProductSetupTask(product: Product, missing: string[]) {
     const id = productId(product);
-    if (!id || !missing.length || creatingTaskForProductId) return;
+    if (!id || !missing.length || !catalogReady || writing || readInFlight.current)
+      return;
     setCreatingTaskForProductId(String(id));
     setFeedback("");
     setError(null);
@@ -409,7 +436,7 @@ export default function CommercialProductsRoute({
   }
 
   async function publishAllReadyDrafts() {
-    if (!readyDrafts.length || publishingReady) return;
+    if (!readyDrafts.length || !catalogReady || writing || readInFlight.current) return;
     setPublishingReady(true);
     setFeedback("");
     setError(null);
@@ -438,7 +465,8 @@ export default function CommercialProductsRoute({
   }
 
   async function enableHatInterestMode() {
-    if (!eligibleHatProducts.length || enablingInterestMode) return;
+    if (!eligibleHatProducts.length || !catalogReady || writing || readInFlight.current)
+      return;
     setEnablingInterestMode(true);
     setFeedback("");
     setError(null);
@@ -504,27 +532,54 @@ export default function CommercialProductsRoute({
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{products.length}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? products.length : "—"}</Text>
             <Text style={styles.metricLabel}>Products</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{publishedCount}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? publishedCount : "—"}</Text>
             <Text style={styles.metricLabel}>Published</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{draftCount}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? draftCount : "—"}</Text>
             <Text style={styles.metricLabel}>Draft/private</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{externalLinkCount}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? externalLinkCount : "—"}</Text>
             <Text style={styles.metricLabel}>External links</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{missingSetupCount}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? missingSetupCount : "—"}</Text>
             <Text style={styles.metricLabel}>Missing setup</Text>
           </View>
         </View>
-        {loading ? <Text style={styles.muted}>Loading products...</Text> : null}
+        {loading ? (
+          <Text style={styles.muted}>
+            {hasLoaded
+              ? "Refreshing products. Showing previously loaded products."
+              : "Loading products..."}
+          </Text>
+        ) : null}
+        {loadError && hasLoaded ? (
+          <Text style={styles.muted}>
+            Refresh failed. Showing previously loaded products.
+          </Text>
+        ) : null}
+        {loadError ? (
+          <InlineError
+            title="Products unavailable"
+            error={loadError}
+            onRetry={!loading && !writing ? refreshProducts : undefined}
+          />
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Refresh products"
+          onPress={refreshProducts}
+          disabled={loading || writing}
+          style={[styles.action, (loading || writing) && styles.disabled]}
+        >
+          <Text style={styles.actionText}>Refresh products</Text>
+        </Pressable>
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
         {error ? <InlineError error={error} /> : null}
       </AppCard>
@@ -755,11 +810,11 @@ export default function CommercialProductsRoute({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Create commercial product"
-            disabled={saving || !form.name.trim()}
+            disabled={!catalogReady || writing || !form.name.trim()}
             onPress={submitProduct}
             style={[
               styles.primaryAction,
-              saving || !form.name.trim() ? styles.disabled : null
+              !catalogReady || writing || !form.name.trim() ? styles.disabled : null
             ]}
           >
             <Text style={styles.primaryActionText}>
@@ -800,59 +855,68 @@ export default function CommercialProductsRoute({
           state here before publication. Draft/private products remain owner-only and
           cannot be opened or shared from the public storefront.
         </Text>
-        <View style={styles.publicationBox}>
-          <Text style={styles.conceptTrialTitle}>Publish completed products</Text>
-          <Text style={styles.conceptTrialText}>
-            {readyDrafts.length
-              ? `${readyDrafts.length} private draft${readyDrafts.length === 1 ? " is" : "s are"} fully configured and ready. Incomplete drafts will not be changed.`
-              : "No fully configured private drafts are waiting to publish."}
-          </Text>
-          {readyDrafts.length ? (
-            confirmPublishReady ? (
-              <View style={styles.confirmBox}>
-                <Text style={styles.warningText}>
-                  Publish all {readyDrafts.length} ready drafts now? This makes their
-                  public pages and social share links available.
-                </Text>
-                <View style={styles.actions}>
-                  <Pressable
-                    accessibilityLabel="Confirm publish all ready commercial products"
-                    accessibilityRole="button"
-                    disabled={publishingReady}
-                    onPress={() => void publishAllReadyDrafts()}
-                    style={[styles.primaryAction, publishingReady && styles.disabled]}
-                  >
-                    <Text style={styles.primaryActionText}>
-                      {publishingReady
-                        ? "Publishing..."
-                        : "Confirm Publish Ready Products"}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    accessibilityLabel="Cancel publish all ready commercial products"
-                    accessibilityRole="button"
-                    disabled={publishingReady}
-                    onPress={() => setConfirmPublishReady(false)}
-                    style={styles.action}
-                  >
-                    <Text style={styles.actionText}>Cancel</Text>
-                  </Pressable>
+        {hasLoaded ? (
+          <View style={styles.publicationBox}>
+            <Text style={styles.conceptTrialTitle}>Publish completed products</Text>
+            <Text style={styles.conceptTrialText}>
+              {readyDrafts.length
+                ? `${readyDrafts.length} private draft${readyDrafts.length === 1 ? " is" : "s are"} fully configured and ready. Incomplete drafts will not be changed.`
+                : "No fully configured private drafts are waiting to publish."}
+            </Text>
+            {readyDrafts.length ? (
+              confirmPublishReady ? (
+                <View style={styles.confirmBox}>
+                  <Text style={styles.warningText}>
+                    Publish all {readyDrafts.length} ready drafts now? This makes their
+                    public pages and social share links available.
+                  </Text>
+                  <View style={styles.actions}>
+                    <Pressable
+                      accessibilityLabel="Confirm publish all ready commercial products"
+                      accessibilityRole="button"
+                      disabled={!catalogReady || writing}
+                      onPress={() => void publishAllReadyDrafts()}
+                      style={[
+                        styles.primaryAction,
+                        (!catalogReady || writing) && styles.disabled
+                      ]}
+                    >
+                      <Text style={styles.primaryActionText}>
+                        {publishingReady
+                          ? "Publishing..."
+                          : "Confirm Publish Ready Products"}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityLabel="Cancel publish all ready commercial products"
+                      accessibilityRole="button"
+                      disabled={publishingReady}
+                      onPress={() => setConfirmPublishReady(false)}
+                      style={styles.action}
+                    >
+                      <Text style={styles.actionText}>Cancel</Text>
+                    </Pressable>
+                  </View>
                 </View>
-              </View>
-            ) : (
-              <Pressable
-                accessibilityLabel="Publish all ready commercial products"
-                accessibilityRole="button"
-                onPress={() => setConfirmPublishReady(true)}
-                style={styles.primaryAction}
-              >
-                <Text style={styles.primaryActionText}>
-                  Publish All {readyDrafts.length} Ready Drafts
-                </Text>
-              </Pressable>
-            )
-          ) : null}
-        </View>
+              ) : (
+                <Pressable
+                  accessibilityLabel="Publish all ready commercial products"
+                  accessibilityRole="button"
+                  disabled={!catalogReady || writing}
+                  onPress={() => setConfirmPublishReady(true)}
+                  style={[
+                    styles.primaryAction,
+                    (!catalogReady || writing) && styles.disabled
+                  ]}
+                >
+                  <Text style={styles.primaryActionText}>
+                    Publish All {readyDrafts.length} Ready Drafts
+                  </Text>
+                </Pressable>
+              )
+            ) : null}
+          </View>
+        ) : null}
         <View style={styles.conceptTrialNotice}>
           <Text style={styles.conceptTrialTitle}>25-person hat interest goal</Text>
           <Text style={styles.conceptTrialText}>
@@ -877,11 +941,11 @@ export default function CommercialProductsRoute({
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Confirm enable purchase interest for all eligible hats"
-                    disabled={enablingInterestMode}
+                    disabled={!catalogReady || writing}
                     onPress={() => void enableHatInterestMode()}
                     style={[
                       styles.primaryAction,
-                      enablingInterestMode && styles.disabled
+                      (!catalogReady || writing) && styles.disabled
                     ]}
                   >
                     <Text style={styles.primaryActionText}>
@@ -904,8 +968,12 @@ export default function CommercialProductsRoute({
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Enable 25-customer purchase interest on all eligible hats"
+                disabled={!catalogReady || writing}
                 onPress={() => setConfirmInterestMode(true)}
-                style={styles.primaryAction}
+                style={[
+                  styles.primaryAction,
+                  (!catalogReady || writing) && styles.disabled
+                ]}
               >
                 <Text style={styles.primaryActionText}>
                   Enable Interest on All {eligibleHatProducts.length} Hats
@@ -986,10 +1054,10 @@ export default function CommercialProductsRoute({
                           accessibilityRole="button"
                           accessibilityLabel={`Create setup task for ${product.name || "product"}`}
                           onPress={() => createProductSetupTask(product, missing)}
-                          disabled={creatingTaskForProductId === String(id)}
+                          disabled={!catalogReady || writing}
                           style={[
                             styles.miniAction,
-                            creatingTaskForProductId === String(id) && styles.disabled
+                            (!catalogReady || writing) && styles.disabled
                           ]}
                         >
                           <Text style={styles.miniActionText}>
@@ -1029,9 +1097,9 @@ export default function CommercialProductsRoute({
               );
             })}
           </View>
-        ) : (
+        ) : hasLoaded ? (
           <Text style={styles.muted}>No products yet.</Text>
-        )}
+        ) : null}
       </AppCard>
 
       <AppCard>

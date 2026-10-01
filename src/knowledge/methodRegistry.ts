@@ -1087,6 +1087,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ["commercial records", "verified claims"],
     [
       "linked workflow",
+      "Commercial Products counts and saved-product empty/publication guidance require a successful read. Single-flight read-only Refresh/Retry preserves the unsaved form, ignores unmounted completions, and labels retained products during refresh/failure. Gate creation and catalog-derived writes while the read is unresolved; no payload, price, publication or purchase-interest rule changes.",
       "Commercial Analytics labels retained snapshots during refresh/failure. An empty currency map shows no recorded revenue only when orders and amount are zero, otherwise revenue unavailable; preserve separate currencies and absent-map legacy fallback without changing ledger or payout calculations.",
       "Marketing Planner totals and empty messages require a successful plans/product-lines read. Failed reads offer a single-flight draft-preserving retry, with labeled previous results after refresh failure; post-create refresh supersedes older reads. No ad-spend execution, price or plan-payload change.",
       "Feed/Campaigns reads distinguish loading, retryable failure, verified empty and filtered no-match results; retry is read-only and single-flight, preserves the form and labeled same-query prior results, and ignores superseded/unmounted responses without changing publication, placements or financial rules",

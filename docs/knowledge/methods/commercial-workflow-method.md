@@ -2,6 +2,8 @@
 
 ## Public shopping navigation
 
+The Commercial Products catalog distinguishes an unknown initial read from a successful empty catalog. Counts remain unknown and saved-product empty/publication guidance stays hidden until a successful read. Provide a single-flight read-only Refresh/Retry that preserves unsaved form values, ignores unmounted read completions, and labels retained saved products during refresh and after failure. Product creation and catalog-derived writes wait for a successful current read; refresh cannot overlap an active write. Preserve existing product payloads, prices, publication and purchase-interest rules. This read-recovery check is not acceptance of the whole product-authoring workflow.
+
 Commercial Analytics labels retained snapshots during refresh and after failure; successful retry clears that notice. An explicitly empty currency breakdown must not render a blank revenue line. With no recorded orders or amount, show No recorded revenue; if orders or a legacy amount exist but the explicit currency breakdown is empty, show Recorded revenue unavailable rather than invent a currency or zero. Preserve separate recorded currency amounts and existing legacy fallback when the currency map is absent. This is presentation only, not a payout calculation or ledger mutation.
 
 Marketing Planner totals are unknown until its existing plans/product-lines read succeeds. Never turn pending or failed data into zero plans or a create-first empty message. Provide a single-flight read retry that preserves the draft and labels retained previous plans/totals after refresh failure. Post-create refresh supersedes an older read. This does not execute ad spend or change plan payloads, prices, publication rules or navigation.
