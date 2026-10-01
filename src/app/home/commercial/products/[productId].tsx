@@ -1,6 +1,6 @@
 import { Link, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   Pressable,
@@ -44,6 +44,18 @@ function cleanId(value: unknown) {
 
 function productTitle(product: Product | null) {
   return product?.name || "Commercial Product";
+}
+
+function matchesProductId(product: Product | null, expectedId: string) {
+  const ids = [
+    product?.id,
+    (product as (Product & { _id?: unknown }) | null)?._id
+  ].filter((id) => id !== undefined && id !== null);
+  return (
+    Boolean(expectedId) &&
+    ids.length > 0 &&
+    ids.every((id) => typeof id === "string" && id === expectedId)
+  );
 }
 
 function hasText(value: unknown) {
@@ -198,7 +210,10 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const [stripeProductId, setStripeProductId] = useState("");
   const [stripePriceId, setStripePriceId] = useState("");
   const [regulatedCannabis, setRegulatedCannabis] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadedProductId, setLoadedProductId] = useState("");
+  const readInFlight = useRef(false);
+  const readGeneration = useRef(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
   const [message, setMessage] = useState("");
@@ -231,8 +246,16 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   }, []);
 
   const load = useCallback(async () => {
-    if (!productId) return;
+    if (readInFlight.current) return;
+    if (!productId) {
+      setError(new Error("Select a saved product from All Products."));
+      setLoading(false);
+      return;
+    }
+    readInFlight.current = true;
+    const generation = ++readGeneration.current;
     setLoading(true);
+    setLoadedProductId("");
     setError(null);
     try {
       const [productResult, effectivenessResult, productLineResult] = await Promise.all([
@@ -240,22 +263,42 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         fetchProductEffectiveness(productId).catch(() => null),
         fetchProductLines().catch(() => [])
       ]);
+      if (generation !== readGeneration.current) return;
+      if (!matchesProductId(productResult, productId)) {
+        throw new Error(
+          "The saved product could not be verified. Retry or return to All Products."
+        );
+      }
       hydrate(productResult);
+      setLoadedProductId(productId);
       setEffectiveness(effectivenessResult || null);
       setProductLines(Array.isArray(productLineResult) ? productLineResult : []);
     } catch (err) {
-      setError(err);
+      if (generation === readGeneration.current) setError(err);
     } finally {
-      setLoading(false);
+      if (generation === readGeneration.current) {
+        readInFlight.current = false;
+        setLoading(false);
+      }
     }
   }, [hydrate, productId]);
 
   useEffect(() => {
-    load();
+    void load();
+    return () => {
+      readGeneration.current += 1;
+      readInFlight.current = false;
+    };
   }, [load]);
 
   async function saveChanges(statusOverride?: Product["status"]) {
-    if (!productId) return;
+    if (
+      loading ||
+      readInFlight.current ||
+      loadedProductId !== productId ||
+      !matchesProductId(product, productId)
+    )
+      return;
     const nextStatus = statusOverride || product?.status || "draft";
     let persistedImageUrl = imageUrl.trim() || null;
     const nextProduct = {
@@ -396,7 +439,7 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const specs = (product as any)?.specs || {};
   const missingSetup = productMissingSetup(product);
 
-  if (!loading && error && !product) {
+  if (loading || loadedProductId !== productId || !matchesProductId(product, productId)) {
     return (
       <AppPage
         routeKey="commercial-product-detail-missing"
@@ -405,15 +448,26 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
         header={
           <View style={styles.header}>
             <Text style={styles.kicker}>Commercial product workspace</Text>
-            <Text style={styles.title}>Product unavailable</Text>
+            <Text style={styles.title}>
+              {loading ? "Loading product..." : "Product unavailable"}
+            </Text>
             <Text style={styles.subtitle}>
-              This product is missing, archived, or no longer available in this Commercial
-              workspace.
+              {loading
+                ? "Checking the saved product before enabling editing."
+                : error?.code === "NOT_FOUND"
+                  ? "This product is missing, archived, or no longer available in this Commercial workspace."
+                  : "The saved product could not be loaded. Retry or return to your product list."}
             </Text>
           </View>
         }
       >
-        <InlineError error={error} />
+        {!loading && error ? (
+          <InlineError
+            title="Product unavailable"
+            error={error}
+            onRetry={productId ? () => void load() : undefined}
+          />
+        ) : null}
         <AppCard>
           <Text style={styles.cardTitle}>Choose a safe next step</Text>
           <Text style={styles.body}>

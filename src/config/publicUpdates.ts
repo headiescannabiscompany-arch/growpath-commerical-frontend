@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-product-editor-readiness",
+        title: "Safer loading before product editing",
+        date: "October 1, 2026",
+        dateLabel: "Released",
+        summary:
+          "The seller product editor now waits for the correct saved product before offering Save, Publish or record-specific tools. Unavailable records provide Retry and safe return links; late responses from a previous product cannot replace the current record. Prices, publication rules and the normal editor layout stay unchanged."
+      },
+      {
         id: "commercial-products-readiness",
         title: "Reliable product catalog loading and retry",
         date: "October 1, 2026",
