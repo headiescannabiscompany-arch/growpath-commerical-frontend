@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "hosted-studio-readiness",
+        title: "Clearer Live Studio readiness and retry",
+        date: "October 1, 2026",
+        dateLabel: "Released",
+        summary:
+          "Live Studio now distinguishes checking, unavailable hosting reads and a confirmed disabled configuration. Retry keeps your draft and saved channel choice without starting a broadcast. Hosted saving waits for a successful current-account check; account changes discard old readiness results. Stream limits, billing, publication rules and the existing layout stay unchanged. This does not add a guest waiting room."
+      },
+      {
         id: "marketing-planner-readiness",
         title: "Reliable Marketing Planner loading and retry",
         date: "October 1, 2026",

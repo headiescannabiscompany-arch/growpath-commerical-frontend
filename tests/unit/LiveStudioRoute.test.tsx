@@ -1,5 +1,6 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { createLive, provisionHostedLiveInput } from "@/api/lives";
 
 import LiveStudioRoute, { createLiveStudioStyles } from "@/app/live-studio";
 import { getThemePalette } from "@/theme/appTheme";
@@ -14,6 +15,7 @@ const mockGetLive = jest.fn();
 const mockPublishLive = jest.fn();
 const mockUpdateLive = jest.fn();
 let mockSearchParams: Record<string, string> = {};
+let mockHostId = "host-1";
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockSearchParams,
@@ -21,7 +23,7 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ isAuthed: true, user: { id: "host-1" } })
+  useAuth: () => ({ isAuthed: true, user: { id: mockHostId } })
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -56,6 +58,7 @@ describe("LiveStudioRoute", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSearchParams = {};
+    mockHostId = "host-1";
     mockListVideoLibrary.mockResolvedValue({ videos: [] });
     mockGetDiscordLiveConnection.mockResolvedValue({
       configured: false,
@@ -139,6 +142,166 @@ describe("LiveStudioRoute", () => {
     expect(
       screen.getByRole("radio", { name: "New channel" }).props.accessibilityState
     ).toEqual({ checked: false });
+  });
+
+  it("keeps pending hosting separate from disabled and blocks hosted saving", async () => {
+    let resolveStatus!: (value: any) => void;
+    mockGetHostedLiveStatus.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveStatus = resolve;
+      })
+    );
+    render(<LiveStudioRoute />);
+    fireEvent.press(screen.getByRole("radio", { name: "Broadcast live in GrowPath" }));
+    expect(screen.getByText("Checking hosted broadcasting...")).toBeTruthy();
+    expect(
+      screen.queryByText("GrowPath-hosted broadcasting is not activated yet")
+    ).toBeNull();
+    fireEvent.changeText(
+      screen.getByLabelText("Live session title"),
+      "Private readiness draft"
+    );
+    fireEvent.press(screen.getByRole("button", { name: "Save private draft" }));
+    expect(createLive).not.toHaveBeenCalled();
+    await act(async () => resolveStatus({ enabled: true }));
+    expect(await screen.findByText("Your reusable OBS connection")).toBeTruthy();
+  });
+
+  it.each(["status", "channels"])(
+    "recovers a failed %s read without losing the draft or writing",
+    async (failure) => {
+      (failure === "status"
+        ? mockGetHostedLiveStatus
+        : mockListHostedLiveChannels
+      ).mockRejectedValueOnce(new Error("Temporary failure"));
+      render(<LiveStudioRoute />);
+      fireEvent.press(screen.getByRole("radio", { name: "Broadcast live in GrowPath" }));
+      await screen.findByText("Hosted broadcasting readiness is unavailable");
+      expect(
+        screen.queryByText("GrowPath-hosted broadcasting is not activated yet")
+      ).toBeNull();
+      fireEvent.changeText(screen.getByLabelText("Live session title"), "Keep my show");
+      let resolveChannels!: (value: any) => void;
+      mockListHostedLiveChannels.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveChannels = resolve;
+        })
+      );
+      const retry = screen.getByRole("button", {
+        name: "Retry hosted broadcasting readiness"
+      });
+      act(() => {
+        fireEvent.press(retry);
+        fireEvent.press(retry);
+      });
+      await waitFor(() => expect(mockListHostedLiveChannels).toHaveBeenCalledTimes(2));
+      expect(screen.getByText("Checking hosted broadcasting...")).toBeTruthy();
+      await act(async () => resolveChannels([{ id: "saved", label: "Saved OBS" }]));
+      expect(await screen.findByRole("radio", { name: "Saved OBS" })).toBeTruthy();
+      expect(screen.getByLabelText("Live session title").props.value).toBe(
+        "Keep my show"
+      );
+      expect(createLive).not.toHaveBeenCalled();
+      expect(provisionHostedLiveInput).not.toHaveBeenCalled();
+      expect(mockUpdateLive).not.toHaveBeenCalled();
+      expect(mockPublishLive).not.toHaveBeenCalled();
+    }
+  );
+
+  it("only shows disabled after a successful disabled response and leaves outside URLs available", async () => {
+    mockGetHostedLiveStatus.mockResolvedValueOnce({ enabled: false });
+    render(<LiveStudioRoute />);
+    fireEvent.press(screen.getByRole("radio", { name: "Broadcast live in GrowPath" }));
+    expect(
+      await screen.findByText("GrowPath-hosted broadcasting is not activated yet")
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Save private draft" }).props.accessibilityState
+        .disabled
+    ).toBe(true);
+    fireEvent.press(screen.getByRole("radio", { name: "Use an outside live URL" }));
+    expect(screen.getByLabelText("Twitch channel viewers will watch")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Save private draft" }).props.accessibilityState
+        .disabled
+    ).toBe(false);
+  });
+
+  it("treats an incomplete status response as unavailable, not disabled", async () => {
+    mockGetHostedLiveStatus.mockResolvedValueOnce({});
+    render(<LiveStudioRoute />);
+    fireEvent.press(screen.getByRole("radio", { name: "Broadcast live in GrowPath" }));
+    expect(
+      await screen.findByText("Hosted broadcasting readiness is unavailable")
+    ).toBeTruthy();
+  });
+
+  it("ignores old-account readiness and channels after switching identity", async () => {
+    let resolveOld!: (value: any) => void;
+    mockGetHostedLiveStatus.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveOld = resolve;
+      })
+    );
+    mockListHostedLiveChannels.mockResolvedValueOnce([
+      { id: "old", label: "Old account OBS" }
+    ]);
+    const view = render(<LiveStudioRoute />);
+    fireEvent.press(screen.getByRole("radio", { name: "Broadcast live in GrowPath" }));
+    mockHostId = "host-2";
+    mockListHostedLiveChannels.mockResolvedValueOnce([
+      { id: "new", label: "Current account OBS" }
+    ]);
+    view.rerender(<LiveStudioRoute />);
+    await screen.findByRole("radio", { name: "Current account OBS" });
+    await act(async () => resolveOld({ enabled: false }));
+    expect(screen.queryByText("Old account OBS")).toBeNull();
+    expect(
+      screen.queryByText("GrowPath-hosted broadcasting is not activated yet")
+    ).toBeNull();
+    expect(screen.getByRole("radio", { name: "Current account OBS" })).toBeTruthy();
+  });
+
+  it("keeps an edited draft's saved channel through a failed check and retry", async () => {
+    mockSearchParams = { editSessionId: "draft-hosted" };
+    mockGetLive.mockResolvedValueOnce({
+      id: "draft-hosted",
+      title: "Saved draft",
+      broadcastMode: "growpath",
+      hostedLive: { channelId: "selected" }
+    });
+    mockListHostedLiveChannels.mockRejectedValueOnce(new Error("Temporary failure"));
+    render(<LiveStudioRoute />);
+    await screen.findByText("Hosted broadcasting readiness is unavailable");
+    mockListHostedLiveChannels.mockResolvedValueOnce([
+      { id: "first", label: "First OBS" },
+      { id: "selected", label: "Selected OBS" }
+    ]);
+    fireEvent.press(
+      screen.getByRole("button", { name: "Retry hosted broadcasting readiness" })
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("radio", { name: "Selected OBS" }).props.accessibilityState
+          .checked
+      ).toBe(true)
+    );
+    expect(screen.getByLabelText("Live session title").props.value).toBe("Saved draft");
+    expect(mockUpdateLive).not.toHaveBeenCalled();
+  });
+
+  it("does not perform work when a pending readiness request completes after unmount", async () => {
+    let resolveStatus!: (value: any) => void;
+    mockGetHostedLiveStatus.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveStatus = resolve;
+      })
+    );
+    const view = render(<LiveStudioRoute />);
+    view.unmount();
+    await act(async () => resolveStatus({ enabled: true }));
+    expect(createLive).not.toHaveBeenCalled();
+    expect(provisionHostedLiveInput).not.toHaveBeenCalled();
   });
 
   it("opens and safely deletes the host's private drafts", async () => {

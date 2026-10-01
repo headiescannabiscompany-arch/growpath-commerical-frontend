@@ -204,6 +204,14 @@ see which entries are feed-ready, relayed, failed, or require identity connectio
 
 ## Verification
 
+Hosted setup must distinguish loading, unavailable reads and a confirmed disabled
+configuration. A failed status OR saved-channel read is not evidence that hosting
+is disabled or that no saved channel exists. Retry is single-flight and read-only,
+preserves the same-account draft/channel choice, and must not provision, save or
+publish a session. Ignore responses after unmount or an account change; do not show
+another account's readiness/channels. Hosted saving waits for a successful current
+account read. Outside URLs and premieres keep their existing independent rules.
+
 Test role and visibility boundaries, slow mode, premiere ownership, token rotation,
 cross-session token isolation, no-store responses, overlay filtering, deletion propagation,
 one-entry behavior, JSON/CSV feed parity, linked-identity relay authorization, provider

@@ -954,6 +954,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "transparent configurable OBS Browser Source overlay that the host can preview without publishing the draft",
       "two explicit broadcast modes: outside provider URL with embed-or-handoff behavior, and first-party GrowPath encoder ingest with adaptive in-app playback",
       "private account-owned reusable encoder channel with revocable ingest secret, explicit saved-channel default or deliberate new-channel choice, draft/live control, stream health states, GrowPath chat, and reviewed replay retention",
+      "hosted setup separates loading, unavailable reads and confirmed disabled state; read-only single-flight retry preserves same-account draft/channel choice, ignores stale responses and gates hosted saving until current-account readiness succeeds",
       "provider-confirmed ready recording discovery after hosted encoder disconnect with newly authorized playback against the recording video identifier",
       "server-enforced private draft creation and explicit reviewed publish action shared by Live Studio and Commercial Lives",
       "owner-only unpublished hosted-video preview using server-authorized playback without publication or sharing",

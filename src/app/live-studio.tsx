@@ -96,6 +96,24 @@ export default function LiveStudioRoute() {
   const [discordSaving, setDiscordSaving] = useState(false);
   const [discordMessage, setDiscordMessage] = useState("");
   const [hostedStatus, setHostedStatus] = useState<any>(null);
+  const hostedOwnerId = auth.isAuthed ? String(auth.user?.id || "") : "";
+  const [hostedRead, setHostedRead] = useState<{
+    owner: string;
+    phase: "loading" | "ready" | "error";
+  }>({ owner: "", phase: "loading" });
+  const [hostedRetry, setHostedRetry] = useState(0);
+  const hostedReadInFlight = useRef(false);
+  const hostedReadOwner = useRef(hostedOwnerId);
+  const hostedReadReady =
+    Boolean(hostedOwnerId) &&
+    hostedRead.owner === hostedOwnerId &&
+    hostedRead.phase === "ready";
+  const hostedReadError =
+    hostedRead.owner === hostedOwnerId && hostedRead.phase === "error";
+  const hostedSaveBlocked =
+    sessionType === "live" &&
+    broadcastMode === "growpath" &&
+    (!hostedReadReady || !hostedStatus?.enabled);
   const [hostedChannels, setHostedChannels] = useState<HostedChannel[]>([]);
   const [hostedChannelId, setHostedChannelId] = useState("");
   const hostedChannelSelectionTouched = useRef(false);
@@ -219,21 +237,47 @@ export default function LiveStudioRoute() {
   }, [auth.isAuthed, editSessionId]);
 
   useEffect(() => {
-    if (!auth.isAuthed) return;
+    let alive = true;
+    if (hostedReadOwner.current !== hostedOwnerId) {
+      hostedReadOwner.current = hostedOwnerId;
+      hostedChannelSelectionTouched.current = false;
+      setHostedChannelId("");
+    }
+    setHostedStatus(null);
+    setHostedChannels([]);
+    setHostedRead({ owner: hostedOwnerId, phase: "loading" });
+    if (!hostedOwnerId) return;
+    hostedReadInFlight.current = true;
     Promise.all([getHostedLiveStatus(), listHostedLiveChannels()])
       .then(([status, channels]) => {
-        const availableChannels = Array.isArray(channels) ? channels : [];
+        if (!alive) return;
+        if (typeof status?.enabled !== "boolean" || !Array.isArray(channels)) {
+          throw new Error("Incomplete hosted readiness response");
+        }
+        const availableChannels = channels;
         setHostedStatus(status);
         setHostedChannels(availableChannels);
+        setHostedRead({ owner: hostedOwnerId, phase: "ready" });
         if (!hostedChannelSelectionTouched.current) {
           setHostedChannelId(availableChannels[0]?.id || "");
         }
       })
       .catch(() => {
-        setHostedStatus({ enabled: false });
-        setHostedChannels([]);
+        if (alive) setHostedRead({ owner: hostedOwnerId, phase: "error" });
+      })
+      .finally(() => {
+        if (alive) hostedReadInFlight.current = false;
       });
-  }, [auth.isAuthed]);
+    return () => {
+      alive = false;
+    };
+  }, [hostedOwnerId, hostedRetry]);
+
+  function retryHostedReadiness() {
+    if (hostedReadInFlight.current || !hostedOwnerId) return;
+    hostedReadInFlight.current = true;
+    setHostedRetry((value) => value + 1);
+  }
 
   async function removeDraft(sessionId: string) {
     setDeletingSessionId(sessionId);
@@ -331,22 +375,20 @@ export default function LiveStudioRoute() {
   }
 
   async function save() {
+    if (hostedSaveBlocked) {
+      setError(
+        hostedReadReady
+          ? "GrowPath-hosted broadcasting is not activated yet. Use an outside live URL for now."
+          : "Check hosted broadcasting readiness before saving. Your draft is still here."
+      );
+      return;
+    }
     if (!title.trim()) {
       setError("Add a title before saving this session.");
       return;
     }
     if (sessionType === "premiere" && !sourceVideoId) {
       setError("Choose one of your published videos for the premiere.");
-      return;
-    }
-    if (
-      sessionType === "live" &&
-      broadcastMode === "growpath" &&
-      !hostedStatus?.enabled
-    ) {
-      setError(
-        "GrowPath-hosted broadcasting is not activated yet. Use an outside live URL for now."
-      );
       return;
     }
     if (
@@ -800,6 +842,29 @@ export default function LiveStudioRoute() {
                   </>
                 )}
               </>
+            ) : !hostedReadReady ? (
+              <View style={styles.notice}>
+                <Text style={styles.settingTitle}>
+                  {hostedReadError
+                    ? "Hosted broadcasting readiness is unavailable"
+                    : "Checking hosted broadcasting..."}
+                </Text>
+                <Text style={styles.muted}>
+                  {hostedReadError
+                    ? "We could not load your hosting status or saved channels. This does not mean hosting is disabled. Retry keeps your draft and does not start a broadcast."
+                    : "Wait for your hosting status and saved channels before saving a hosted session."}
+                </Text>
+                {hostedReadError ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Retry hosted broadcasting readiness"
+                    onPress={retryHostedReadiness}
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryButtonText}>Retry hosting check</Text>
+                  </Pressable>
+                ) : null}
+              </View>
             ) : hostedStatus?.enabled ? (
               <View style={styles.hostedPanel}>
                 <Text style={styles.settingTitle}>Your reusable OBS connection</Text>
@@ -1125,11 +1190,14 @@ export default function LiveStudioRoute() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Pressable
         accessibilityRole="button"
-        disabled={saving || editingLoading || Boolean(hostedCredentials)}
+        disabled={
+          saving || editingLoading || Boolean(hostedCredentials) || hostedSaveBlocked
+        }
         onPress={save}
         style={[
           styles.primaryButton,
-          (saving || editingLoading || Boolean(hostedCredentials)) && styles.disabled
+          (saving || editingLoading || Boolean(hostedCredentials) || hostedSaveBlocked) &&
+            styles.disabled
         ]}
       >
         <Text style={styles.primaryButtonText}>
