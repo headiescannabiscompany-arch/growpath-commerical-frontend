@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "September 29, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "October 1, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "seller-summary-readiness",
+        title: "Clearer seller Analytics loading and recovery",
+        date: "October 1, 2026",
+        dateLabel: "Released",
+        summary:
+          "Storefront Offers Analytics now waits for a successful load before showing Content Performance or an empty-offers message. Failed reads remain retryable, and refresh failures keep labeled previous results. Sales and Analytics retain their existing summaries; offer revenue is not a payment-date ledger or payout statement. Prices, downloads, checkout rules and the existing layout stay unchanged."
+      },
       {
         id: "seller-offers-readiness",
         title: "Clearer seller offer loading and recovery",

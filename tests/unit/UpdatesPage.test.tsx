@@ -25,7 +25,7 @@ describe("public Updates page", () => {
     for (const section of PUBLIC_UPDATE_SECTIONS) {
       expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
     }
-    expect(screen.getByText("Last updated September 29, 2026")).toBeTruthy();
+    expect(screen.getByText("Last updated October 1, 2026")).toBeTruthy();
     expect(
       screen.getByText("Live subscription gift announcements verified")
     ).toBeTruthy();
@@ -70,6 +70,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "seller-summary-readiness",
       "seller-offers-readiness",
       "commercial-dashboard-readiness",
       "storefront-dashboard-publication",
@@ -103,6 +104,19 @@ describe("public Updates page", () => {
       "commerce-checkout",
       "commerce-refunds-sellers"
     ]);
+  });
+
+  it("bounds seller Analytics changes to read readiness without promising payouts", () => {
+    const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (item) => item.id === "seller-summary-readiness"
+    );
+    expect(entry?.summary).toContain("waits for a successful load");
+    expect(entry?.summary).toContain("refresh failures keep labeled previous results");
+    expect(entry?.summary).toContain("not a payment-date ledger or payout statement");
+    expect(entry?.summary).toContain(
+      "checkout rules and the existing layout stay unchanged"
+    );
+    expect(entry?.summary).not.toMatch(/all commerce.*complete|payouts verified/i);
   });
 
   it("records private-host and signed-out replay proof without claiming the whole app complete", () => {
