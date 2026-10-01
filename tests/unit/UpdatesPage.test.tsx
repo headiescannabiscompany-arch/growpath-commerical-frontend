@@ -19,6 +19,15 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("limits evidence-run readiness to reading and retrying saved records", () => {
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "commercial-evidence-readiness"
+    );
+    expect(note?.summary).toContain("Retry preserves the unfinished form");
+    expect(note?.summary).toContain(
+      "publication rules, AI credits and the existing layout stay unchanged"
+    );
+  });
   it("limits the diagnosis return note to standalone Commercial navigation", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "commercial-diagnosis-return"
@@ -148,6 +157,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "commercial-evidence-readiness",
       "commercial-diagnosis-return",
       "commercial-tasks-readiness",
       "commercial-product-editor-readiness",

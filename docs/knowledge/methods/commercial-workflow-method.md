@@ -2,6 +2,13 @@
 
 ## Public shopping navigation
 
+Commercial Evidence Run list counts and linked-record choices remain unknown until
+the combined runs/products/lines/batches read succeeds. Pending and failed initial
+reads must not claim zero runs, no saved records, or a create-first prerequisite.
+Keep the existing single-flight Retry and preserve the unfinished form. Creation
+still waits for a successful read; a read-only retry never creates or publishes
+evidence. Existing record payloads and public-share readiness rules are unchanged.
+
 Standalone Commercial Plant Diagnosis (without grow, plant, or saved-run retry context) returns Back to Commercial Tools explicitly rather than using unrelated tab history. Context-linked diagnosis and Personal/Facility navigation retain their existing history policy. This navigation does not run AI, save evidence, create a task, or change workspace access.
 
 Commercial Tasks keeps unknown initial reads separate from an empty queue. Pending or failed initial reads must not claim zero tasks or show empty sections. Failed reads offer single-flight read-only Retry without clearing the unfinished task form; failed later pages retain earlier tasks and retry the same offset. A failed post-write refresh retains explicitly labeled previous records and exposes its read error separately from successful write feedback. Post-write reads supersede earlier reads; unmounted results are ignored. Existing task payloads, scheduling, completion and source-link rules remain unchanged.

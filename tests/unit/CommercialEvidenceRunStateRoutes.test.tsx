@@ -42,26 +42,31 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/components/commercial/CommercialContextualTools", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return () => React.createElement(Text, null, "Evidence run AI tools");
+  return function MockContextualTools() {
+    return React.createElement(Text, null, "Evidence run AI tools");
+  };
 });
 
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
-  return ({ children, header, backFallbackHref, routeKey }: any) =>
-    React.createElement(
+  return function MockAppPage({ children, header, backFallbackHref, routeKey }: any) {
+    return React.createElement(
       View,
       { accessibilityLabel: `app-page-${routeKey}` },
       React.createElement(Text, null, `Shared Back ${backFallbackHref || "default"}`),
       header,
       children
     );
+  };
 });
 
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children }: any) => React.createElement(View, null, children);
+  return function MockAppCard({ children }: any) {
+    return React.createElement(View, null, children);
+  };
 });
 
 const evidenceRun = {
@@ -94,6 +99,80 @@ describe("Commercial Evidence Run workflow state", () => {
     mockFetchSoilNutrientBatches.mockResolvedValue([
       { id: "batch-1", batchName: "Batch One" }
     ]);
+  });
+
+  it("keeps pending evidence totals and record choices unknown", () => {
+    mockFetchCommercialGrows.mockReturnValue(new Promise(() => {}));
+    const screen = render(<CommercialEvidenceRunsRoute />);
+    expect(screen.getAllByText("—")).toHaveLength(3);
+    expect(screen.queryByText(/No saved .* yet\./)).toBeNull();
+    expect(screen.queryByText("No product trial evidence runs yet.")).toBeNull();
+    expect(screen.getByText("Linked records are loading.")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Create product trial evidence run").props.accessibilityState
+        .disabled
+    ).toBe(true);
+  });
+
+  it("retries unknown records once, preserving the draft before showing real empty results", async () => {
+    let resolveRetry: (value: any) => void = () => {};
+    mockFetchCommercialGrows
+      .mockRejectedValueOnce(new Error("Evidence list unavailable"))
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveRetry = resolve;
+          })
+      );
+    mockFetchProducts.mockResolvedValue([]);
+    mockFetchProductLines.mockResolvedValue([]);
+    mockFetchSoilNutrientBatches.mockResolvedValue([]);
+    const screen = render(<CommercialEvidenceRunsRoute />);
+    await waitFor(() =>
+      expect(screen.getByText("Evidence list unavailable")).toBeTruthy()
+    );
+    expect(screen.getAllByText("—")).toHaveLength(3);
+    expect(screen.queryByText("No product trial evidence runs yet.")).toBeNull();
+    expect(screen.queryByText(/No saved .* yet\./)).toBeNull();
+    expect(
+      screen.getByText("Linked records are unavailable. Retry the load above.")
+    ).toBeTruthy();
+    fireEvent.changeText(
+      screen.getByLabelText("Product trial evidence run name"),
+      "Keep draft"
+    );
+    const retry = screen.getByLabelText("Retry product trial evidence runs");
+    act(() => {
+      fireEvent.press(retry);
+      fireEvent.press(retry);
+    });
+    expect(mockFetchCommercialGrows).toHaveBeenCalledTimes(2);
+    await act(async () => resolveRetry([]));
+    await waitFor(() =>
+      expect(screen.getByText("No product trial evidence runs yet.")).toBeTruthy()
+    );
+    expect(screen.getAllByText("0")).toHaveLength(3);
+    expect(screen.getByLabelText("Product trial evidence run name").props.value).toBe(
+      "Keep draft"
+    );
+    expect(
+      screen.getByLabelText("Create product trial evidence run").props.accessibilityState
+        .disabled
+    ).toBe(false);
+    expect(mockCreateCommercialGrow).not.toHaveBeenCalled();
+  });
+
+  it("does not mistake a failed related-product read for an empty evidence workspace", async () => {
+    mockFetchProducts.mockRejectedValueOnce(new Error("Products unavailable"));
+    const screen = render(<CommercialEvidenceRunsRoute />);
+    await waitFor(() => expect(screen.getByText("Products unavailable")).toBeTruthy());
+    expect(screen.queryByText("Bloom Formula Trial")).toBeNull();
+    expect(screen.getAllByText("—")).toHaveLength(3);
+    expect(screen.queryByText(/No saved .* yet\./)).toBeNull();
+    expect(screen.queryByText("No product trial evidence runs yet.")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Retry product trial evidence runs"));
+    await waitFor(() => expect(screen.getByText("Bloom Formula Trial")).toBeTruthy());
+    expect(screen.getByLabelText("Evidence run product: Product One")).toBeTruthy();
   });
 
   it("rejects a fractional plant count and retains the Evidence Run draft", async () => {

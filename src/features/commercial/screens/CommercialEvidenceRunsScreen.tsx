@@ -238,6 +238,7 @@ export default function CommercialGrowsRoute({
   const [batches, setBatches] = useState<SoilNutrientBatch[]>([]);
   const [form, setForm] = useState<GrowForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<any>(null);
   const [createError, setCreateError] = useState<any>(null);
@@ -245,7 +246,7 @@ export default function CommercialGrowsRoute({
   const [showAdvancedRecordIds, setShowAdvancedRecordIds] = useState(false);
   const loadInFlightRef = useRef(false);
   const createInFlightRef = useRef(false);
-  const canCreate = !!form.name.trim() && !loading && !loadError && !saving;
+  const canCreate = hasLoaded && !!form.name.trim() && !loading && !loadError && !saving;
 
   const activeCount = useMemo(
     () => grows.filter((grow) => (grow.status || "active") === "active").length,
@@ -295,6 +296,7 @@ export default function CommercialGrowsRoute({
       setProducts(nextProducts);
       setProductLines(nextLines);
       setBatches(nextBatches);
+      setHasLoaded(true);
     } catch (err) {
       setLoadError(err);
     } finally {
@@ -397,15 +399,15 @@ export default function CommercialGrowsRoute({
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{grows.length}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? grows.length : "—"}</Text>
             <Text style={styles.metricLabel}>Evidence runs</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{activeCount}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? activeCount : "—"}</Text>
             <Text style={styles.metricLabel}>Active</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{publicReadyCount}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? publicReadyCount : "—"}</Text>
             <Text style={styles.metricLabel}>Public-ready</Text>
           </View>
         </View>
@@ -505,38 +507,48 @@ export default function CommercialGrowsRoute({
             style={styles.input}
           />
         </View>
-        <View style={styles.pickerGrid}>
-          <RecordPicker
-            disabled={saving || loading}
-            label="Evidence run product"
-            choices={productChoices}
-            selectedId={form.productId}
-            onChange={(productId) => setForm((prev) => ({ ...prev, productId }))}
-            emptyLabel="products"
-            createHref="/home/commercial/products/new"
-            createLabel="Create Product"
-          />
-          <RecordPicker
-            disabled={saving || loading}
-            label="Evidence run product line"
-            choices={productLineChoices}
-            selectedId={form.productLineId}
-            onChange={(productLineId) => setForm((prev) => ({ ...prev, productLineId }))}
-            emptyLabel="product lines"
-            createHref="/home/commercial/product-lines"
-            createLabel="Create Product Line"
-          />
-          <RecordPicker
-            disabled={saving || loading}
-            label="Evidence run product batch"
-            choices={batchChoices}
-            selectedId={form.batchId}
-            onChange={(batchId) => setForm((prev) => ({ ...prev, batchId }))}
-            emptyLabel="product batches"
-            createHref="/home/commercial/batch-planner"
-            createLabel="Create Product Batch"
-          />
-        </View>
+        {hasLoaded ? (
+          <View style={styles.pickerGrid}>
+            <RecordPicker
+              disabled={saving || loading || !!loadError}
+              label="Evidence run product"
+              choices={productChoices}
+              selectedId={form.productId}
+              onChange={(productId) => setForm((prev) => ({ ...prev, productId }))}
+              emptyLabel="products"
+              createHref="/home/commercial/products/new"
+              createLabel="Create Product"
+            />
+            <RecordPicker
+              disabled={saving || loading || !!loadError}
+              label="Evidence run product line"
+              choices={productLineChoices}
+              selectedId={form.productLineId}
+              onChange={(productLineId) =>
+                setForm((prev) => ({ ...prev, productLineId }))
+              }
+              emptyLabel="product lines"
+              createHref="/home/commercial/product-lines"
+              createLabel="Create Product Line"
+            />
+            <RecordPicker
+              disabled={saving || loading || !!loadError}
+              label="Evidence run product batch"
+              choices={batchChoices}
+              selectedId={form.batchId}
+              onChange={(batchId) => setForm((prev) => ({ ...prev, batchId }))}
+              emptyLabel="product batches"
+              createHref="/home/commercial/batch-planner"
+              createLabel="Create Product Batch"
+            />
+          </View>
+        ) : (
+          <Text style={styles.muted} accessibilityLiveRegion="polite">
+            {loading
+              ? "Linked records are loading."
+              : "Linked records are unavailable. Retry the load above."}
+          </Text>
+        )}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={
@@ -687,6 +699,10 @@ export default function CommercialGrowsRoute({
         </Text>
         {loading ? (
           <Text style={styles.muted}>Waiting for the evidence-run list...</Text>
+        ) : !hasLoaded ? (
+          <Text style={styles.muted}>
+            Evidence runs are unavailable. Retry the load above.
+          </Text>
         ) : grows.length ? (
           <View style={styles.list}>
             {grows.map((grow) => (

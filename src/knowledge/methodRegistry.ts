@@ -1136,6 +1136,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "mutually exclusive single-flight Product Batch detail and production-task writes with unknown-safe cost handling",
       "readable owner-scoped Product Trial Evidence Run record pickers and named share status choices with an explicit advanced ID fallback",
       "single-flight Product Trial Evidence Run loading, creation, and detail editing with positive whole-number plant counts and retained drafts",
+      "Evidence Run totals and linked-record choices remain unknown until the combined read succeeds; pending or failed reads never claim zero runs or missing saved records. Read-only Retry preserves the draft and does not create or publish evidence.",
       "named Inventory Support item types and readable Product or Evidence Run pickers with an explicit advanced fallback",
       "single-flight Commercial Inventory Support creation with non-negative stock validation and retained failed drafts",
       "single-flight Commercial Inventory Support loading and detail editing with non-negative stock validation and retained drafts",

@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-evidence-readiness",
+        title: "Clearer evidence-run loading and retry",
+        date: "October 1, 2026",
+        dateLabel: "Released",
+        summary:
+          "Commercial Evidence Runs no longer shows zero runs or missing linked products when its records cannot load. Retry preserves the unfinished form and restores saved choices before creation becomes available. Evidence, publication rules, AI credits and the existing layout stay unchanged."
+      },
+      {
         id: "commercial-diagnosis-return",
         title: "Diagnosis returns to Commercial Tools",
         date: "October 1, 2026",
