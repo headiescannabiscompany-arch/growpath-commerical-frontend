@@ -1123,6 +1123,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "one level-one Product Trial Evidence Runs heading with distinct level-two workflow sections and level-three saved-run headings",
       "ordinary crop-aware Commercial grows with exact crop identity, reviewed lifecycle planning, connected grow sections, and a separate Product Trial Evidence Runs destination",
       "Commercial-local Plant/Crop Identification, Plant Diagnosis, IPM Scout, environment review, mix builders, and Saved AI Runs with Commercial scope, credits, history, and back navigation",
+      "Standalone Commercial Plant Diagnosis returns explicitly to Commercial Tools when no grow, plant or saved-run retry context is supplied; preserve contextual and Personal/Facility history policies without AI execution, evidence or task writes, or access changes.",
       "one level-one Commercial Inventory Support heading with level-two workflow sections and level-three saved-record headings",
       "capability-gated Commercial inventory creation exposed as a named actionable control",
       "readable owner-scoped Product Trial record pickers with an explicit advanced ID fallback",

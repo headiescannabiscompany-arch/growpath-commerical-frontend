@@ -17,6 +17,7 @@ const mockCreateEvidenceAsset = jest.fn();
 const mockGetEvidenceAssetsByIds = jest.fn();
 const mockGetToolRun = jest.fn();
 const mockMediaEvidencePickerProps = jest.fn();
+const mockBoundaryProps = jest.fn();
 let mockSearchParams: Record<string, string> = { growId: "grow-1" };
 
 jest.mock("expo-device", () => ({ isDevice: false }));
@@ -42,7 +43,7 @@ jest.mock("@/api/diagnose", () => ({
 jest.mock("@/components/media/MediaEvidencePicker", () => {
   const React = require("react");
   const { Pressable, Text } = require("react-native");
-  return (props: any) => {
+  return function MockMediaEvidencePicker(props: any) {
     mockMediaEvidencePickerProps(props);
     return React.createElement(
       Pressable,
@@ -123,15 +124,21 @@ jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
   return {
-    ScreenBoundary: ({ children, showBack, backFallbackHref }: any) =>
-      React.createElement(
+    ScreenBoundary: (props: any) => {
+      mockBoundaryProps({
+        backFallbackHref: props.backFallbackHref,
+        preferBackFallback: props.preferBackFallback
+      });
+      const { children, showBack, backFallbackHref } = props;
+      return React.createElement(
         View,
         null,
         showBack
           ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
           : null,
         children
-      )
+      );
+    }
   };
 });
 
@@ -210,6 +217,59 @@ describe("DiagnoseRoute", () => {
       }
     });
   });
+
+  it("prefers Commercial Tools over unrelated tab history for standalone diagnosis", async () => {
+    mockSearchParams = {};
+    const screen = render(<DiagnoseRoute workspaceType="commercial" />);
+    await waitFor(() =>
+      expect(screen.getByText("Diagnosis provider needs verification")).toBeTruthy()
+    );
+    expect(mockBoundaryProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        backFallbackHref: "/home/commercial/tools",
+        preferBackFallback: true
+      })
+    );
+    expect(mockAnalyzeDiagnosis).not.toHaveBeenCalled();
+    expect(mockDiagnoseEvidence).not.toHaveBeenCalled();
+    expect(mockCreatePersonalTask).not.toHaveBeenCalled();
+  });
+
+  it.each<Record<string, string>>([
+    { growId: "grow-1" },
+    { plantId: "plant-1" },
+    { retryToolRunId: "run-1" }
+  ])("preserves contextual Commercial history for %j", async (params) => {
+    mockSearchParams = params;
+    mockGetToolRun.mockResolvedValue(null);
+    const screen = render(<DiagnoseRoute workspaceType="commercial" />);
+    await waitFor(() =>
+      expect(screen.getByText("Diagnosis provider needs verification")).toBeTruthy()
+    );
+    expect(mockBoundaryProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        preferBackFallback: false
+      })
+    );
+  });
+
+  it.each(["personal", "facility"] as const)(
+    "preserves %s navigation policy",
+    async (workspaceType) => {
+      mockSearchParams = {};
+      const screen = render(
+        <DiagnoseRoute workspaceType={workspaceType} facilityId="facility-1" />
+      );
+      await waitFor(() =>
+        expect(screen.getByText("Diagnosis provider needs verification")).toBeTruthy()
+      );
+      expect(mockBoundaryProps).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          preferBackFallback: false
+        })
+      );
+    }
+  );
 
   it("returns each workspace to its own AI tools hub", async () => {
     const personal = render(<DiagnoseRoute />);

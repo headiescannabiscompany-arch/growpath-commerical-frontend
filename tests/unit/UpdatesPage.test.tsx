@@ -19,6 +19,16 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("limits the diagnosis return note to standalone Commercial navigation", () => {
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "commercial-diagnosis-return"
+    );
+    expect(note?.summary).toContain("standalone Commercial Plant Diagnosis");
+    expect(note?.summary).toContain("saved-run-linked navigation stays unchanged");
+    expect(note?.summary).toContain(
+      "No AI execution, credit, permission or layout changes"
+    );
+  });
   it("limits the task-readiness note to read recovery rather than task execution", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "commercial-tasks-readiness"
@@ -138,6 +148,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "commercial-diagnosis-return",
       "commercial-tasks-readiness",
       "commercial-product-editor-readiness",
       "commercial-products-readiness",

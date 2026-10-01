@@ -751,6 +751,12 @@ export default function DiagnoseRoute({
       title="Plant Issue Diagnosis"
       showBack
       backFallbackHref={backFallbackHref}
+      preferBackFallback={
+        workspaceType === "commercial" &&
+        !routeGrowId &&
+        !initialPlantId &&
+        !retryToolRunId
+      }
     >
       <ScrollView contentContainerStyle={styles.container}>
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>

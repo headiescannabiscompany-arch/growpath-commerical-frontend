@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-diagnosis-return",
+        title: "Diagnosis returns to Commercial Tools",
+        date: "October 1, 2026",
+        dateLabel: "Released",
+        summary:
+          "Back from a standalone Commercial Plant Diagnosis now returns to Commercial Tools instead of jumping to the dashboard. Grow-, plant- and saved-run-linked navigation stays unchanged, as do Personal and Facility navigation. No AI execution, credit, permission or layout changes."
+      },
+      {
         id: "commercial-tasks-readiness",
         title: "Clearer task loading and retry",
         date: "October 1, 2026",

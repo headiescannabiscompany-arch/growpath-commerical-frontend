@@ -2,6 +2,8 @@
 
 ## Public shopping navigation
 
+Standalone Commercial Plant Diagnosis (without grow, plant, or saved-run retry context) returns Back to Commercial Tools explicitly rather than using unrelated tab history. Context-linked diagnosis and Personal/Facility navigation retain their existing history policy. This navigation does not run AI, save evidence, create a task, or change workspace access.
+
 Commercial Tasks keeps unknown initial reads separate from an empty queue. Pending or failed initial reads must not claim zero tasks or show empty sections. Failed reads offer single-flight read-only Retry without clearing the unfinished task form; failed later pages retain earlier tasks and retry the same offset. A failed post-write refresh retains explicitly labeled previous records and exposes its read error separately from successful write feedback. Post-write reads supersede earlier reads; unmounted results are ignored. Existing task payloads, scheduling, completion and source-link rules remain unchanged.
 
 Commercial Product detail editing and record-specific tools require a successfully loaded product with a saved scalar identity matching the requested product. Pending, missing, malformed, mismatched, and superseded reads must not expose blank Save/Publish controls or infer draft/readiness state. Initial failures retain safe list/storefront returns and a single-flight read-only Retry. Ignore late reads after navigation or unmount. These guards do not change product payloads, prices, publication rules, or seller permissions.
