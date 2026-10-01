@@ -19,6 +19,46 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("keeps the later Lives roadmap after course gifting and out of released work", () => {
+    const later = PUBLIC_UPDATE_SECTIONS[PUBLIC_UPDATE_SECTIONS.length - 1];
+    expect(later.id).toBe("lives-planned");
+    expect(later.description).toContain(
+      "after current completion work and course gifting"
+    );
+    expect(later.description).toContain("not started or available yet");
+    expect(later.entries.map((entry) => entry.id)).toEqual([
+      "live-native-backstage",
+      "live-host-safety",
+      "live-creator-growth",
+      "live-creator-tips"
+    ]);
+    for (const entry of later.entries) {
+      expect(entry.dateLabel).toBe("Planned for later");
+      expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((item) => item.id)).not.toContain(
+        entry.id
+      );
+    }
+    const screen = render(<UpdatesPage />);
+    expect(screen.getByRole("header", { name: "Lives · Later roadmap" })).toBeTruthy();
+    expect(screen.getByText("Support a Live host")).toBeTruthy();
+  });
+
+  it("qualifies future tipping and keeps existing production tools", () => {
+    const later = PUBLIC_UPDATE_SECTIONS.find(
+      (section) => section.id === "lives-planned"
+    );
+    expect(
+      later?.entries.find((entry) => entry.id === "live-native-backstage")?.summary
+    ).toContain("does not replace OBS");
+    const tips = later?.entries.find(
+      (entry) => entry.id === "live-creator-tips"
+    )?.summary;
+    expect(tips).toContain("Payment-provider eligibility and approval");
+    expect(tips).toContain("Tips are not enabled");
+    expect(tips).toContain("would not buy giveaway eligibility");
+    expect(tips).toContain("No prepaid coins or wallet");
+  });
+
   it("describes campaign recovery without publication or pricing changes", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "campaign-feed-readiness"

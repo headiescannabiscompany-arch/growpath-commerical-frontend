@@ -354,5 +354,46 @@ export const PUBLIC_UPDATE_SECTIONS = [
           "Purchase a course for someone else. This remains planned after current completion work and the store-discovery review. Larger storefront changes may follow it if their estimated work is longer. Course gifting is not available as part of the completed subscription-gifting work."
       }
     ]
+  },
+  {
+    id: "lives-planned",
+    title: "Lives · Later roadmap",
+    description:
+      "Planned after current completion work and course gifting. These additions are not started or available yet; existing Live hosting and replay remain separate released features.",
+    emptyMessage: "No later Live enhancements are currently listed.",
+    entries: [
+      {
+        id: "live-native-backstage",
+        title: "Join a Live and wait backstage inside GrowPath",
+        date: "October 1, 2026",
+        dateLabel: "Planned for later",
+        summary:
+          "Request to join from the Live page, check camera and microphone, and wait privately for host review. Hosts would preview guests before bringing them on air, with up to six people on screen. The guest experience would stay inside GrowPath; this does not replace OBS or promise an entirely self-hosted video system."
+      },
+      {
+        id: "live-host-safety",
+        title: "Guest safety and easier show production",
+        date: "October 1, 2026",
+        dateLabel: "Planned for later",
+        summary:
+          "Private preview and clear Backstage / On air states, guest recording notices, delegated producer and moderator controls, mute/remove/block actions, an emergency host-only view, and reconnecting guests returned to backstage. Planned preparation checks and connection, duration and usage warnings would help hosts avoid interruptions."
+      },
+      {
+        id: "live-creator-growth",
+        title: "Creator showcases, audience return and sharing",
+        date: "October 1, 2026",
+        dateLabel: "Planned for later",
+        summary:
+          "Review and extend existing tools for phone rear-camera grow tours, guest names and approved grow/profile links, spotlight and group views, scheduled shows, opt-in reminders and replay sharing. Later options include creator referral links, highlight markers and clips, captions, reusable branding and sponsor cards, and audience/watch-time reporting. Reuse working features first; detailed scope and accessibility checks come before implementation."
+      },
+      {
+        id: "live-creator-tips",
+        title: "Support a Live host",
+        date: "October 1, 2026",
+        dateLabel: "Planned for later",
+        summary:
+          "Explore optional creator tips with suggested or custom amounts, optional messages and public thank-yous, confirmed-payment announcements, and clear earnings, fees, refunds and payout status. Payment-provider eligibility and approval, supported content, recipient verification and fee decisions are prerequisites. Tips are not enabled, are not charitable donations, and would not buy giveaway eligibility. No prepaid coins or wallet are planned."
+      }
+    ]
   }
 ];
