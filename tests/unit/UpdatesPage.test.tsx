@@ -19,6 +19,14 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("describes campaign recovery without publication or pricing changes", () => {
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "campaign-feed-readiness"
+    );
+    expect(note?.summary).toContain("Retry campaigns");
+    expect(note?.summary).toContain("does not publish anything");
+    expect(note?.summary).toContain("publishing rules stay unchanged");
+  });
   it("distinguishes released work, testing, and plans with readable fixed dates", () => {
     const screen = render(<UpdatesPage />);
     expect(screen.getByRole("header", { name: "Updates" })).toBeTruthy();
@@ -70,6 +78,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "campaign-feed-readiness",
       "seller-summary-readiness",
       "seller-offers-readiness",
       "commercial-dashboard-readiness",

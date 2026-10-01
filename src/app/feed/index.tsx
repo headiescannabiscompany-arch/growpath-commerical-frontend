@@ -587,11 +587,17 @@ export default function CommercialFeedRoute() {
     isFacility ? ["facility"] : ["feed"]
   );
   const [ctaLabel, setCtaLabel] = useState("Open");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
   const [creatingSetupTask, setCreatingSetupTask] = useState(false);
   const [error, setError] = useState<any>(null);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [loadedQuery, setLoadedQuery] = useState<string | null>(null);
+  const readSequence = useRef(0);
+  const activeRead = useRef<{ id: number; key: string } | null>(null);
+  const queryKey = JSON.stringify([ent.mode, ent.facilityId, filterType, q.trim()]);
+  const hasLoadedQuery = loadedQuery === queryKey;
   const [feedback, setFeedback] = useState("");
   const [analytics, setAnalytics] = useState<FeedCampaignAnalytics | null>(null);
   const [hiddenCampaignIds, setHiddenCampaignIds] = useState<string[]>([]);
@@ -647,37 +653,49 @@ export default function CommercialFeedRoute() {
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!canAccess) return;
+      if (!canAccess || activeRead.current?.key === queryKey) return;
+      const id = ++readSequence.current;
+      activeRead.current = { id, key: queryKey };
+      const isCurrent = () => readSequence.current === id;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
-      setError(null);
+      setLoadError(null);
       try {
         const res = await listCommercialFeedCampaigns({
           type: filterType,
           q: q.trim(),
           limit: 30
         });
+        if (!isCurrent()) return;
         setItems(res.items);
+        setLoadedQuery(queryKey);
         if (canManageCampaigns) {
           try {
             const campaignAnalytics = await fetchFeedCampaignAnalytics();
-            setAnalytics(campaignAnalytics);
+            if (isCurrent()) setAnalytics(campaignAnalytics);
           } catch {
-            setAnalytics(null);
+            if (isCurrent()) setAnalytics(null);
           }
         }
       } catch (e) {
-        setError(e);
+        if (isCurrent()) setLoadError(e);
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (isCurrent()) {
+          activeRead.current = null;
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [canAccess, canManageCampaigns, filterType, q]
+    [canAccess, canManageCampaigns, filterType, q, queryKey]
   );
 
   useEffect(() => {
     void load();
+    return () => {
+      readSequence.current += 1;
+      activeRead.current = null;
+    };
   }, [load]);
 
   const loadDestinationOptions = useCallback(async () => {
@@ -1528,7 +1546,7 @@ export default function CommercialFeedRoute() {
 
       {error ? <InlineError error={error} /> : null}
 
-      {canManageCampaigns && analytics ? (
+      {canManageCampaigns && hasLoadedQuery && analytics ? (
         <View style={styles.card} accessibilityLabel="Feed campaign analytics">
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             Campaign Analytics
@@ -1600,7 +1618,37 @@ export default function CommercialFeedRoute() {
           autoCapitalize="none"
           accessibilityLabel="Search campaigns"
         />
+        <Pressable
+          onPress={() => void load({ refresh: true })}
+          disabled={loading || refreshing}
+          accessibilityRole="button"
+          accessibilityLabel={loadError ? "Retry campaigns" : "Refresh campaigns"}
+          accessibilityState={{ disabled: loading || refreshing }}
+          style={[styles.chip, (loading || refreshing) && styles.disabled]}
+        >
+          <Text style={styles.chipText}>
+            {refreshing
+              ? "Refreshing campaigns..."
+              : loadError
+                ? "Retry campaigns"
+                : "Refresh campaigns"}
+          </Text>
+        </Pressable>
       </View>
+
+      {loadError ? (
+        <View style={styles.card}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Unable to load campaigns
+          </Text>
+          <InlineError error={loadError} />
+          <Text style={styles.muted}>
+            {hasLoadedQuery
+              ? "Showing previously loaded campaign results. Retry to check for updates."
+              : "Campaign results are unavailable. Retry to load this view."}
+          </Text>
+        </View>
+      ) : null}
 
       {loading ? (
         <View style={styles.loading}>
@@ -1609,18 +1657,24 @@ export default function CommercialFeedRoute() {
         </View>
       ) : null}
 
-      {!loading && items.length === 0 ? (
+      {hasLoadedQuery && !loading && !refreshing && !loadError && items.length === 0 ? (
         <View style={styles.card}>
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-            No campaigns yet
+            {filterType !== "all" || q.trim()
+              ? "No matching campaigns"
+              : "No campaigns yet"}
           </Text>
           <Text style={styles.muted}>
-            Publish the first {isFacility ? "facility outreach" : "feed campaign"}.
+            {filterType !== "all" || q.trim()
+              ? "Try a different search or filter."
+              : canManageCampaigns
+                ? `Publish the first ${isFacility ? "facility outreach" : "feed campaign"}.`
+                : "Campaigns will appear here when available."}
           </Text>
         </View>
       ) : null}
 
-      {items
+      {(hasLoadedQuery ? items : [])
         .filter((post) => !hiddenCampaignIds.includes(post.id))
         .map((post) => {
           const destination = campaignDestination(post);

@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CommercialFeedRoute from "@/app/feed";
 
@@ -114,6 +114,142 @@ describe("CommercialFeedRoute", () => {
       }
       return Promise.resolve({});
     });
+  });
+
+  it("does not call a pending initial feed empty", async () => {
+    mockApiRequest.mockImplementation(() => new Promise(() => {}));
+    const screen = render(<CommercialFeedRoute />);
+    expect(screen.getByText("Loading feed...")).toBeTruthy();
+    expect(screen.queryByText("No campaigns yet")).toBeNull();
+    expect(
+      screen.getByLabelText("Refresh campaigns").props.accessibilityState.disabled
+    ).toBe(true);
+    screen.unmount();
+  });
+
+  it("shows read failure rather than empty and retries without clearing a draft or publishing", async () => {
+    mockApiRequest.mockRejectedValueOnce(new Error("Synthetic feed failure"));
+    const screen = render(<CommercialFeedRoute />);
+    fireEvent.changeText(screen.getByLabelText("Feed campaign title"), "Keep my draft");
+    await waitFor(() =>
+      expect(screen.getByText("Unable to load campaigns")).toBeTruthy()
+    );
+    expect(screen.queryByText("No campaigns yet")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Retry campaigns"));
+    await waitFor(() => expect(screen.getByText("Live soil demo")).toBeTruthy());
+    expect(screen.queryByText("Unable to load campaigns")).toBeNull();
+    expect(screen.getByLabelText("Feed campaign title").props.value).toBe(
+      "Keep my draft"
+    );
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([path, options]) => path === "/api/commercial/feed" && options?.method === "POST"
+      )
+    ).toBe(false);
+  });
+
+  it("retains labeled saved results after a failed refresh", async () => {
+    const screen = render(<CommercialFeedRoute />);
+    await waitFor(() => expect(screen.getByText("Live soil demo")).toBeTruthy());
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Refresh campaigns").props.accessibilityState.disabled
+      ).toBe(false)
+    );
+    mockApiRequest.mockRejectedValueOnce(new Error("Synthetic refresh failure"));
+    fireEvent.press(screen.getByLabelText("Refresh campaigns"));
+    await waitFor(() =>
+      expect(screen.getByText("Unable to load campaigns")).toBeTruthy()
+    );
+    expect(screen.getByText("Live soil demo")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Showing previously loaded campaign results. Retry to check for updates."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText("No campaigns yet")).toBeNull();
+  });
+
+  it("does not present an old empty result as current after refresh failure", async () => {
+    mockApiRequest.mockResolvedValue({ items: [] });
+    const screen = render(<CommercialFeedRoute />);
+    await waitFor(() => expect(screen.getByText("No campaigns yet")).toBeTruthy());
+    mockApiRequest.mockRejectedValueOnce(new Error("Synthetic refresh failure"));
+    fireEvent.press(screen.getByLabelText("Refresh campaigns"));
+    await waitFor(() =>
+      expect(screen.getByText("Unable to load campaigns")).toBeTruthy()
+    );
+    expect(screen.queryByText("No campaigns yet")).toBeNull();
+  });
+
+  it("labels a successful filtered empty read as no matches", async () => {
+    mockApiRequest.mockResolvedValue({ items: [] });
+    const screen = render(<CommercialFeedRoute />);
+    await waitFor(() => expect(screen.getByText("No campaigns yet")).toBeTruthy());
+    fireEvent.changeText(
+      screen.getByLabelText("Search campaigns"),
+      "No matching synthetic title"
+    );
+    await waitFor(() => expect(screen.getByText("No matching campaigns")).toBeTruthy());
+    expect(screen.queryByText("No campaigns yet")).toBeNull();
+    expect(screen.getByText("Try a different search or filter.")).toBeTruthy();
+  });
+
+  it("keeps retry single-flight even for repeated immediate presses", async () => {
+    mockApiRequest.mockRejectedValueOnce(new Error("Synthetic feed failure"));
+    const screen = render(<CommercialFeedRoute />);
+    await waitFor(() =>
+      expect(screen.getByText("Unable to load campaigns")).toBeTruthy()
+    );
+    mockApiRequest.mockImplementation(() => new Promise(() => {}));
+    const before = mockApiRequest.mock.calls.length;
+    const retry = screen.getByLabelText("Retry campaigns");
+    act(() => {
+      fireEvent.press(retry);
+      fireEvent.press(retry);
+    });
+    expect(mockApiRequest.mock.calls.length).toBe(before + 1);
+    screen.unmount();
+  });
+
+  it("ignores a late result from an older filter", async () => {
+    let finishOld: (value: unknown) => void = () => {};
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/feed") {
+        if (!options?.params?.q)
+          return new Promise((resolve) => {
+            finishOld = resolve;
+          });
+        return Promise.resolve({ items: [] });
+      }
+      return Promise.resolve({});
+    });
+    const screen = render(<CommercialFeedRoute />);
+    fireEvent.changeText(screen.getByLabelText("Search campaigns"), "new query");
+    await waitFor(() => expect(screen.getByText("No matching campaigns")).toBeTruthy());
+    await act(async () =>
+      finishOld({ items: [{ id: "old", title: "Stale campaign", body: "Old result" }] })
+    );
+    expect(screen.queryByText("Stale campaign")).toBeNull();
+    expect(screen.getByText("No matching campaigns")).toBeTruthy();
+  });
+
+  it("does not start analytics after an unmounted read completes", async () => {
+    let finishRead: (value: unknown) => void = () => {};
+    mockApiRequest.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishRead = resolve;
+        })
+    );
+    const screen = render(<CommercialFeedRoute />);
+    screen.unmount();
+    await act(async () => finishRead({ items: [] }));
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([path]) => path === "/api/commercial/feed-analytics"
+      )
+    ).toBe(false);
   });
 
   it("keeps a visible Back control on the campaign workspace", async () => {

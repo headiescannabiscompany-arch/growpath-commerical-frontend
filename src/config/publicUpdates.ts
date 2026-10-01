@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "campaign-feed-readiness",
+        title: "Clearer campaign loading and retry",
+        date: "October 1, 2026",
+        dateLabel: "Released",
+        summary:
+          "Feed/Campaigns now separates unavailable results from an empty feed, provides Retry campaigns, and retains labeled previous results after a failed refresh. Searches with no matches are distinguished from feeds with no campaigns. Retrying keeps your unfinished form and does not publish anything. Campaign prices, placements and publishing rules stay unchanged."
+      },
+      {
         id: "seller-summary-readiness",
         title: "Clearer seller Analytics loading and recovery",
         date: "October 1, 2026",
