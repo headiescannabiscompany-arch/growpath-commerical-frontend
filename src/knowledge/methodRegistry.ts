@@ -1086,6 +1086,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ["commercial records", "verified claims"],
     [
       "linked workflow",
+      "Marketing Planner totals and empty messages require a successful plans/product-lines read. Failed reads offer a single-flight draft-preserving retry, with labeled previous results after refresh failure; post-create refresh supersedes older reads. No ad-spend execution, price or plan-payload change.",
       "Feed/Campaigns reads distinguish loading, retryable failure, verified empty and filtered no-match results; retry is read-only and single-flight, preserves the form and labeled same-query prior results, and ignores superseded/unmounted responses without changing publication, placements or financial rules",
       "Storefront Offers Sales/Analytics summaries and analytics-empty guidance require a successful initial read; tab navigation does not reload or write records, failed refresh retains labeled prior summaries, and offer aggregates remain distinct from payment ledgers and payouts",
       "Storefront Offers owner initial loading/failure cannot claim empty lists or enable creation; retry explicitly, retain labeled last-successful records on refresh failure, and lock both primary and empty-state Create actions during loading/writes without changing publication, delivery or checkout rules",

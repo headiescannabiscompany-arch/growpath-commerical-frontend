@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "marketing-planner-readiness",
+        title: "Reliable Marketing Planner loading and retry",
+        date: "October 1, 2026",
+        dateLabel: "Released",
+        summary:
+          "Marketing Planner no longer shows zero plans or an empty list when loading fails. Retry keeps your unfinished form, and a failed refresh labels previously loaded plans and totals. Existing plan creation, linked destinations, budgets and campaign publishing stay unchanged; GrowPath does not execute ad-platform spending."
+      },
+      {
         id: "campaign-feed-readiness",
         title: "Clearer campaign loading and retry",
         date: "October 1, 2026",

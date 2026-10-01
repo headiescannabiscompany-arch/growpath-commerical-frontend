@@ -78,6 +78,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "marketing-planner-readiness",
       "campaign-feed-readiness",
       "seller-summary-readiness",
       "seller-offers-readiness",

@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   Pressable,
@@ -149,7 +149,11 @@ export default function CommercialMarketingRoute() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [form, setForm] = useState<CampaignForm>(EMPTY_FORM);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<any>(null);
+  const readSequence = useRef(0);
+  const activeRead = useRef<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
 
@@ -176,26 +180,39 @@ export default function CommercialMarketingRoute() {
     [campaigns]
   );
 
-  async function loadCampaigns() {
+  const loadCampaigns = useCallback(async (replace = false) => {
+    if (activeRead.current !== null && !replace) return;
+    const id = ++readSequence.current;
+    activeRead.current = id;
+    const isCurrent = () => readSequence.current === id;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       const [nextCampaigns, nextLines] = await Promise.all([
         fetchCampaigns(),
         fetchProductLines()
       ]);
+      if (!isCurrent()) return;
       setCampaigns(nextCampaigns);
       setProductLines(nextLines);
+      setHasLoaded(true);
     } catch (err) {
-      setError(err);
+      if (isCurrent()) setLoadError(err);
     } finally {
-      setLoading(false);
+      if (isCurrent()) {
+        activeRead.current = null;
+        setLoading(false);
+      }
     }
-  }
+  }, []);
 
   useEffect(() => {
-    loadCampaigns();
-  }, []);
+    void loadCampaigns();
+    return () => {
+      readSequence.current += 1;
+      activeRead.current = null;
+    };
+  }, [loadCampaigns]);
 
   async function submitCampaign() {
     if (!form.name.trim()) return;
@@ -230,7 +247,7 @@ export default function CommercialMarketingRoute() {
         }
       });
       setForm(EMPTY_FORM);
-      await loadCampaigns();
+      await loadCampaigns(true);
     } catch (err) {
       setError(err);
     } finally {
@@ -287,23 +304,48 @@ export default function CommercialMarketingRoute() {
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{campaigns.length}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? campaigns.length : "—"}</Text>
             <Text style={styles.metricLabel}>Plans</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{activeCount}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? activeCount : "—"}</Text>
             <Text style={styles.metricLabel}>Scheduled / active</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{totalClicks}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? totalClicks : "—"}</Text>
             <Text style={styles.metricLabel}>Ad clicks tracked</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{linkedPlans}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? linkedPlans : "—"}</Text>
             <Text style={styles.metricLabel}>Linked plans</Text>
           </View>
         </View>
         {loading ? <Text style={styles.muted}>Loading marketing plans...</Text> : null}
+        {loadError ? (
+          <View>
+            <Text style={styles.cardTitle}>Unable to load marketing plans</Text>
+            <InlineError error={loadError} />
+            <Text style={styles.muted}>
+              {hasLoaded
+                ? "Showing previously loaded plans and totals. Retry to check for updates."
+                : "Plans and totals are unavailable until loading succeeds."}
+            </Text>
+          </View>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            loadError ? "Retry marketing plans" : "Refresh marketing plans"
+          }
+          accessibilityState={{ disabled: loading || saving }}
+          disabled={loading || saving}
+          onPress={() => void loadCampaigns()}
+          style={[styles.action, (loading || saving) && styles.submitDisabled]}
+        >
+          <Text style={styles.actionText}>
+            {loadError ? "Retry marketing plans" : "Refresh marketing plans"}
+          </Text>
+        </Pressable>
         {error ? <InlineError error={error} /> : null}
       </AppCard>
 
@@ -635,12 +677,12 @@ export default function CommercialMarketingRoute() {
               </View>
             ))}
           </View>
-        ) : (
+        ) : hasLoaded && !loading && !loadError ? (
           <Text style={styles.muted}>
             No marketing plans yet. Create one from a product, course, trial, or
             storefront link.
           </Text>
-        )}
+        ) : null}
       </AppCard>
     </AppPage>
   );
