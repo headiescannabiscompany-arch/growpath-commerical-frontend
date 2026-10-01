@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-tasks-readiness",
+        title: "Clearer task loading and retry",
+        date: "October 1, 2026",
+        dateLabel: "Released",
+        summary:
+          "Commercial Tasks no longer shows an empty queue when its list cannot load. Retry preserves your unfinished task, and failed refreshes label previously loaded records. A saved task and a failed list refresh now show separate feedback. Scheduling, completion, task links and the existing layout stay unchanged."
+      },
+      {
         id: "commercial-product-editor-readiness",
         title: "Safer loading before product editing",
         date: "October 1, 2026",

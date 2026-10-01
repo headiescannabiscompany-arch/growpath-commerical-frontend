@@ -19,6 +19,16 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("limits the task-readiness note to read recovery rather than task execution", () => {
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "commercial-tasks-readiness"
+    );
+    expect(note?.summary).toContain("Retry preserves your unfinished task");
+    expect(note?.summary).toContain("separate feedback");
+    expect(note?.summary).toContain(
+      "Scheduling, completion, task links and the existing layout stay unchanged"
+    );
+  });
   it("describes the bounded Commercial Analytics presentation correction", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "commercial-analytics-snapshot"
@@ -128,6 +138,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "commercial-tasks-readiness",
       "commercial-product-editor-readiness",
       "commercial-products-readiness",
       "commercial-analytics-snapshot",

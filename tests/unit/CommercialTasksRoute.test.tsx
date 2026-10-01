@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CommercialTasksRoute from "@/app/home/commercial/tasks";
 
@@ -158,6 +158,115 @@ describe("CommercialTasksRoute", () => {
       }
       return Promise.resolve({});
     });
+  });
+
+  it("keeps pending task counts unknown", () => {
+    mockApiRequest.mockReturnValue(new Promise(() => {}));
+    const screen = render(<CommercialTasksRoute />);
+    expect(screen.getAllByText("—")).toHaveLength(4);
+    expect(screen.queryByText("No tasks.")).toBeNull();
+  });
+
+  it("retries an unavailable list once without losing the unfinished task", async () => {
+    let resolveRead!: (value: any) => void;
+    mockApiRequest.mockRejectedValueOnce(new Error("offline"));
+    const screen = render(<CommercialTasksRoute />);
+    await waitFor(() =>
+      expect(screen.getByText("Unable to load commercial tasks.")).toBeTruthy()
+    );
+    expect(screen.queryByText("No tasks.")).toBeNull();
+    expect(screen.getAllByText("—")).toHaveLength(4);
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial task title"),
+      "Unsubmitted draft"
+    );
+    mockApiRequest.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRead = resolve;
+        })
+    );
+    const retry = screen.getByLabelText("Retry commercial tasks");
+    fireEvent.press(retry);
+    fireEvent.press(retry);
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
+    await act(async () => resolveRead({ tasks: [] }));
+    expect(screen.getAllByText("No tasks.")).toHaveLength(4);
+    expect(screen.getByLabelText("Commercial task title").props.value).toBe(
+      "Unsubmitted draft"
+    );
+    expect(
+      mockApiRequest.mock.calls.every(([, options]) => options.method === "GET")
+    ).toBe(true);
+  });
+
+  it("keeps prior tasks and separate success feedback when the post-write read fails", async () => {
+    const screen = render(<CommercialTasksRoute />);
+    await waitFor(() => expect(screen.getByText("Connect Stripe price")).toBeTruthy());
+    mockApiRequest
+      .mockResolvedValueOnce({ task: { id: "new-task" } })
+      .mockRejectedValueOnce(new Error("offline"));
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial task title"),
+      "Synthetic task"
+    );
+    fireEvent.press(screen.getByLabelText("Create commercial task"));
+    await waitFor(() =>
+      expect(screen.getByText("Commercial task created.")).toBeTruthy()
+    );
+    expect(screen.getByText("Unable to load commercial tasks.")).toBeTruthy();
+    expect(
+      screen.getByText("Showing previously loaded tasks; the queue may be out of date.")
+    ).toBeTruthy();
+    expect(screen.getByText("Connect Stripe price")).toBeTruthy();
+    expect(screen.getByLabelText("Retry commercial tasks")).toBeTruthy();
+  });
+
+  it("retries a failed later page at its original offset without dropping earlier tasks", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      tasks: [{ id: "first", title: "First page" }],
+      hasMore: true,
+      nextOffset: 100
+    });
+    const screen = render(<CommercialTasksRoute />);
+    await waitFor(() => expect(screen.getByText("First page")).toBeTruthy());
+    mockApiRequest.mockRejectedValueOnce(new Error("offline"));
+    fireEvent.press(screen.getByLabelText("Load more commercial tasks"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Retry commercial tasks")).toBeTruthy()
+    );
+    expect(screen.getByText("First page")).toBeTruthy();
+    mockApiRequest.mockResolvedValueOnce({
+      tasks: [{ id: "second", title: "Second page" }],
+      hasMore: false
+    });
+    fireEvent.press(screen.getByLabelText("Retry commercial tasks"));
+    await waitFor(() => expect(screen.getByText("Second page")).toBeTruthy());
+    expect(screen.getByText("First page")).toBeTruthy();
+    expect(mockApiRequest.mock.calls[2][1].params.offset).toBe(100);
+  });
+
+  it("ignores an older read after the post-create refresh has completed", async () => {
+    let resolveOld!: (value: any) => void;
+    mockApiRequest.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOld = resolve;
+        })
+    );
+    const screen = render(<CommercialTasksRoute />);
+    mockApiRequest
+      .mockResolvedValueOnce({ task: { id: "new" } })
+      .mockResolvedValueOnce({ tasks: [{ id: "new", title: "Current saved task" }] });
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial task title"),
+      "Current saved task"
+    );
+    fireEvent.press(screen.getByLabelText("Create commercial task"));
+    await waitFor(() => expect(screen.getByText("Current saved task")).toBeTruthy());
+    await act(async () => resolveOld({ tasks: [{ id: "old", title: "Outdated task" }] }));
+    expect(screen.queryByText("Outdated task")).toBeNull();
+    expect(screen.getByText("Current saved task")).toBeTruthy();
   });
 
   it("keeps a visible Back control on the task center", async () => {

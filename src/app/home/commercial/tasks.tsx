@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -323,6 +323,12 @@ export default function CommercialTasksRoute() {
   const [tasks, setTasks] = useState<CommercialTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [failedOffset, setFailedOffset] = useState<number | null>(null);
+  const readInFlight = useRef(false);
+  const readSequence = useRef(0);
+  const mounted = useRef(true);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -344,10 +350,20 @@ export default function CommercialTasksRoute() {
     append?: boolean;
     offset?: number;
   }) {
+    // A post-write reload supersedes an older read; ordinary retries are single-flight.
+    if (readInFlight.current && !opts?.preserveFeedback) return;
+    if (readInFlight.current && opts?.append) return;
+    const sequence = ++readSequence.current;
+    readInFlight.current = true;
     const append = opts?.append === true;
     const offset = append ? Math.max(0, opts?.offset || 0) : 0;
     if (append) setLoadingMore(true);
-    else setLoading(true);
+    else {
+      setLoading(true);
+      setLoadingMore(false);
+    }
+    setLoadError("");
+    setFailedOffset(null);
     if (!opts?.preserveFeedback) setFeedback("");
     try {
       const response = await apiRequest(endpoints.tasksGlobal, {
@@ -358,27 +374,36 @@ export default function CommercialTasksRoute() {
           offset
         }
       });
+      if (!mounted.current || sequence !== readSequence.current) return;
       const page = asArray(response);
       setTasks((current) => (append ? mergeTaskPages(current, page) : page));
       setNextOffset(nextTaskOffset(response));
+      setHasLoaded(true);
     } catch {
-      if (!append) {
-        setTasks([]);
-        setNextOffset(null);
-      }
-      setFeedback(
+      if (!mounted.current || sequence !== readSequence.current) return;
+      setFailedOffset(append ? offset : null);
+      setLoadError(
         append
           ? "Unable to load more commercial tasks."
           : "Unable to load commercial tasks."
       );
     } finally {
-      if (append) setLoadingMore(false);
-      else setLoading(false);
+      if (mounted.current && sequence === readSequence.current) {
+        readInFlight.current = false;
+        if (append) setLoadingMore(false);
+        else setLoading(false);
+      }
     }
   }
 
   useEffect(() => {
+    mounted.current = true;
     void loadTasks();
+    return () => {
+      mounted.current = false;
+      readSequence.current += 1;
+      readInFlight.current = false;
+    };
   }, []);
 
   const visibleTasks = useMemo(
@@ -579,7 +604,7 @@ export default function CommercialTasksRoute() {
               item.tone === "slate" && styles.slateMetric
             ]}
           >
-            <Text style={styles.metricValue}>{item.value}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? item.value : "—"}</Text>
             <Text style={styles.metricLabel}>{item.label}</Text>
           </View>
         ))}
@@ -731,13 +756,43 @@ export default function CommercialTasksRoute() {
       </View>
 
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      {loadError ? (
+        <View style={styles.taskCard}>
+          <Text accessibilityRole="alert" style={styles.feedback}>
+            {loadError}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry commercial tasks"
+            disabled={loading || loadingMore || creating}
+            style={styles.secondaryButton}
+            onPress={() =>
+              void loadTasks(
+                failedOffset === null
+                  ? undefined
+                  : {
+                      append: true,
+                      offset: failedOffset
+                    }
+              )
+            }
+          >
+            <Text style={styles.secondaryButtonText}>Retry tasks</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {hasLoaded && (loading || loadError) ? (
+        <Text style={styles.meta}>
+          Showing previously loaded tasks; the queue may be out of date.
+        </Text>
+      ) : null}
 
       {loading ? (
         <View style={styles.taskCard}>
           <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading commercial tasks...</Text>
         </View>
-      ) : (
+      ) : hasLoaded ? (
         <>
           {renderSection("overdue", "Overdue")}
           {renderSection("today", "Today")}
@@ -763,7 +818,7 @@ export default function CommercialTasksRoute() {
             </Pressable>
           ) : null}
         </>
-      )}
+      ) : null}
     </ScrollView>
   );
 }
