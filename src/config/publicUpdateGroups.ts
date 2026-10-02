@@ -144,7 +144,8 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     entryIds: [
       "hosted-studio-readiness",
       "hosted-private-preview-replay",
-      "live-gift-follow-up"
+      "live-gift-follow-up",
+      "live-directory-readiness"
     ]
   },
   {

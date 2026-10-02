@@ -204,6 +204,13 @@ see which entries are feed-ready, relayed, failed, or require identity connectio
 
 ## Verification
 
+The public Lives directory shows counts only after a successful, recognized list
+response. Pending, failed or malformed reads are not zero sessions. Wait for
+authentication hydration, clear earlier viewer results when account/session changes,
+and ignore superseded reads. Named read-only Retry is single-flight and preserves
+the current viewer's search/filter choices. These safeguards do not start, publish,
+RSVP, follow, change visibility or provision broadcast infrastructure.
+
 Hosted setup must distinguish loading, unavailable reads and a confirmed disabled
 configuration. A failed status OR saved-channel read is not evidence that hosting
 is disabled or that no saved channel exists. Retry is single-flight and read-only,

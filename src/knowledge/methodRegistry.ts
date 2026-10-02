@@ -948,6 +948,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "searchable live, upcoming, premiere, and replay directory",
+      "live-directory counts stay unknown until a valid read; authentication hydration and account/session changes clear prior viewer results, ignore stale reads, and retain same-viewer search/filter choices through single-flight read-only Retry",
       "saved-session labels that keep Live stream or Video premiere format distinct from draft, scheduled, live-now, ended, replay, and connection-health state",
       "RSVP and reminder state",
       "moderated GrowPath chat",

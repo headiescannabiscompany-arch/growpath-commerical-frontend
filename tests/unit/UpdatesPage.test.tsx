@@ -309,7 +309,8 @@ describe("public Updates page", () => {
       "subscription-checkout",
       "facility-billing",
       "commerce-checkout",
-      "commerce-refunds-sellers"
+      "commerce-refunds-sellers",
+      "live-directory-readiness"
     ]);
   });
 

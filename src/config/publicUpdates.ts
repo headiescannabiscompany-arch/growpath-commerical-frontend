@@ -407,6 +407,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
         dateLabel: "Released",
         summary:
           "Refund handling and Stripe seller allocation have been updated. Purchase, partial/full refund, and seller-allocation flows passed Sandbox checks; those checks did not move real money or verify a bank payout."
+      },
+      {
+        id: "live-directory-readiness",
+        title: "Clearer Lives directory loading and recovery",
+        date: "October 2, 2026",
+        dateLabel: "Released",
+        summary:
+          "Session counts stay unknown until the directory loads successfully. Failed or unexpected responses offer Retry without losing your search or filter, and changing accounts clears earlier results. This read-only correction does not start broadcasts, publish sessions, follow hosts or change playback, capacity, payments or the layout."
       }
     ]
   },

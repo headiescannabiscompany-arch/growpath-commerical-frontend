@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -36,7 +36,7 @@ function rows(payload: any): LiveSession[] {
   if (Array.isArray(payload?.items)) return payload.items;
   if (Array.isArray(payload?.data?.items)) return payload.data.items;
   if (Array.isArray(payload?.data)) return payload.data;
-  return [];
+  throw new Error("Live directory response unavailable. Please retry.");
 }
 
 function text(value: any) {
@@ -203,6 +203,18 @@ function cardLabelFor(item: LiveSession) {
 }
 
 export default function LiveSessionsListScreen() {
+  const auth = useAuth();
+  // Remount before rendering another viewer's results, not one effect later.
+  const scope = JSON.stringify([
+    auth?.user?.id || auth?.user?._id || "",
+    auth?.token || "",
+    Boolean(auth?.isAuthed),
+    Boolean(auth?.isHydrating)
+  ]);
+  return <LiveDirectory key={scope} />;
+}
+
+function LiveDirectory() {
   const router = useRouter();
   const auth = useAuth();
   const { palette } = useAppTheme();
@@ -211,14 +223,17 @@ export default function LiveSessionsListScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const readPending = useRef(true);
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] =
     useState<(typeof FILTERS)[number]["key"]>("all");
 
   useEffect(() => {
+    if (auth?.isHydrating) return;
     let alive = true;
 
     async function fetchSessions() {
+      readPending.current = true;
       setLoading(true);
       setError("");
       try {
@@ -229,7 +244,10 @@ export default function LiveSessionsListScreen() {
         if (!alive) return;
         setError(String(err?.message || err || "Failed to load live opportunities."));
       } finally {
-        if (alive) setLoading(false);
+        if (alive) {
+          readPending.current = false;
+          setLoading(false);
+        }
       }
     }
 
@@ -237,7 +255,15 @@ export default function LiveSessionsListScreen() {
     return () => {
       alive = false;
     };
-  }, [reloadKey]);
+  }, [reloadKey, auth?.isHydrating]);
+
+  function retryDirectory() {
+    if (readPending.current) return;
+    readPending.current = true;
+    setReloadKey((value) => value + 1);
+  }
+
+  const countsReady = !loading && !error;
 
   const filteredSessions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -440,24 +466,26 @@ export default function LiveSessionsListScreen() {
       <View style={styles.summaryCard}>
         <View style={styles.summaryRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{counts.total}</Text>
+            <Text style={styles.statValue}>{countsReady ? counts.total : "—"}</Text>
             <Text style={styles.statLabel}>Sessions</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{counts.campaigns}</Text>
+            <Text style={styles.statValue}>{countsReady ? counts.campaigns : "—"}</Text>
             <Text style={styles.statLabel}>Campaigns</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{counts.upcoming}</Text>
+            <Text style={styles.statValue}>{countsReady ? counts.upcoming : "—"}</Text>
             <Text style={styles.statLabel}>Upcoming</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{counts.live}</Text>
+            <Text style={styles.statValue}>{countsReady ? counts.live : "—"}</Text>
             <Text style={styles.statLabel}>Live now</Text>
           </View>
         </View>
         <Text style={styles.summaryMeta}>
-          Lives are surfaced as opportunities instead of a plain join list.
+          {countsReady
+            ? "Lives are surfaced as opportunities instead of a plain join list."
+            : "Session counts are unavailable until the directory loads."}
         </Text>
       </View>
 
@@ -477,6 +505,7 @@ export default function LiveSessionsListScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityState={{ selected: activeFilter === filter.key }}
+            aria-pressed={activeFilter === filter.key}
             key={filter.key}
             onPress={() => setActiveFilter(filter.key)}
             style={[
@@ -506,7 +535,7 @@ export default function LiveSessionsListScreen() {
           <Text style={styles.errorText}>{error}</Text>
           <Pressable
             accessibilityRole="button"
-            onPress={() => setReloadKey((value) => value + 1)}
+            onPress={retryDirectory}
             style={styles.actionButton}
           >
             <Text style={styles.actionButtonText}>Retry Lives</Text>
