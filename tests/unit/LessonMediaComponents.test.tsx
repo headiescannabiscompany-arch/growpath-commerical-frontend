@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import LessonMediaCard from "@/components/learning/LessonMediaCard";
 import LessonMediaSourceEditor, {
@@ -9,6 +9,11 @@ import { emptyLessonMediaDraft } from "@/features/learning/lessonMedia";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockGetVideoPlayback = jest.fn();
+let mockToken = "session-a";
+let mockFacility: string | null = null;
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ token: mockToken, user: { id: "learner" } })
+}));
 
 jest.mock("@/api/videos", () => ({
   getVideoPlayback: (...args: any[]) => mockGetVideoPlayback(...args)
@@ -17,7 +22,7 @@ jest.mock("@/api/videos", () => ({
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     mode: "personal",
-    facilityId: null
+    facilityId: mockFacility
   })
 }));
 
@@ -30,6 +35,111 @@ jest.mock("react-native-webview", () => {
 describe("lesson media authoring and playback", () => {
   beforeEach(() => {
     mockGetVideoPlayback.mockReset();
+    mockToken = "session-a";
+    mockFacility = null;
+  });
+
+  const providerLesson = (id: string) => ({
+    id,
+    title: "Provider lesson",
+    videoUrl: "https://youtu.be/QT7vv46368M",
+    mediaSource: {
+      sourceType: "youtube",
+      originalUrl: "https://youtu.be/QT7vv46368M",
+      availabilityStatus: "available",
+      allowEmbed: true,
+      textSummary: "Written summary"
+    }
+  });
+  const protectedLesson = (id: string) => ({
+    id,
+    title: "Protected lesson",
+    videoAssetId: id,
+    mediaSource: {
+      sourceType: "growpath_upload",
+      originalUrl: `/api/videos/uploads/${id}/object`,
+      availabilityStatus: "available",
+      textSummary: "Written summary"
+    }
+  });
+
+  it("requires fresh consent for another lesson, even with the same provider URL", () => {
+    const screen = render(<LessonMediaCard lesson={providerLesson("one")} />);
+    fireEvent.press(screen.getByLabelText("Load YouTube lesson video"));
+    screen.rerender(<LessonMediaCard lesson={providerLesson("two")} />);
+    expect(screen.queryByLabelText("Provider lesson player")).toBeNull();
+    expect(screen.getByLabelText("Load YouTube lesson video")).toBeTruthy();
+  });
+
+  it.each(["asset", "session", "workspace"])(
+    "clears protected playback on %s change",
+    async (change) => {
+      mockGetVideoPlayback.mockResolvedValueOnce({
+        playbackUrl: "https://example.test/old"
+      });
+      mockGetVideoPlayback.mockImplementationOnce(() => new Promise(() => {}));
+      const screen = render(<LessonMediaCard lesson={protectedLesson("one")} />);
+      await screen.findByLabelText("Protected lesson player");
+      if (change === "session") mockToken = "session-b";
+      if (change === "workspace") mockFacility = "facility-b";
+      screen.rerender(
+        <LessonMediaCard lesson={protectedLesson(change === "asset" ? "two" : "one")} />
+      );
+      expect(screen.queryByLabelText("Protected lesson player")).toBeNull();
+      expect(screen.getByLabelText("Preparing protected video playback")).toBeTruthy();
+      await waitFor(() => expect(mockGetVideoPlayback).toHaveBeenCalledTimes(2));
+    }
+  );
+
+  it("retries a failed protected read without changing the summary or lesson progress", async () => {
+    mockGetVideoPlayback.mockRejectedValueOnce(new Error("temporary failure"));
+    mockGetVideoPlayback.mockResolvedValueOnce({
+      playbackUrl: "https://example.test/current"
+    });
+    const screen = render(<LessonMediaCard lesson={protectedLesson("one")} />);
+    const retry = await screen.findByLabelText("Retry protected video playback");
+    expect(screen.getByText("Written summary")).toBeTruthy();
+    fireEvent.press(retry);
+    await screen.findByLabelText("Protected lesson player");
+    expect(mockGetVideoPlayback).toHaveBeenCalledTimes(2);
+    expect(
+      screen.getByText(/progress changes only when you choose Mark Complete/)
+    ).toBeTruthy();
+  });
+
+  it("ignores a superseded protected response", async () => {
+    let completeOld: (value: any) => void = () => {};
+    mockGetVideoPlayback.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          completeOld = resolve;
+        })
+    );
+    mockGetVideoPlayback.mockImplementationOnce(() => new Promise(() => {}));
+    const screen = render(<LessonMediaCard lesson={protectedLesson("one")} />);
+    await waitFor(() => expect(mockGetVideoPlayback).toHaveBeenCalledTimes(1));
+    screen.rerender(<LessonMediaCard lesson={protectedLesson("two")} />);
+    await waitFor(() => expect(mockGetVideoPlayback).toHaveBeenCalledTimes(2));
+    await act(async () => completeOld({ playbackUrl: "https://example.test/old" }));
+    expect(screen.queryByLabelText("Protected lesson player")).toBeNull();
+  });
+
+  it("retains consent on ordinary rerenders but resets it when the source changes", () => {
+    const screen = render(<LessonMediaCard lesson={providerLesson("one")} />);
+    fireEvent.press(screen.getByLabelText("Load YouTube lesson video"));
+    screen.rerender(<LessonMediaCard lesson={providerLesson("one")} />);
+    expect(screen.getByLabelText("Provider lesson player")).toBeTruthy();
+    const next = providerLesson("one");
+    next.mediaSource.originalUrl = "https://youtu.be/dQw4w9WgXcQ";
+    screen.rerender(<LessonMediaCard lesson={next} />);
+    expect(screen.queryByLabelText("Provider lesson player")).toBeNull();
+  });
+
+  it("treats an empty authorized response as recoverable instead of a blank player", async () => {
+    mockGetVideoPlayback.mockResolvedValue({});
+    const screen = render(<LessonMediaCard lesson={protectedLesson("one")} />);
+    expect(await screen.findByLabelText("Retry protected video playback")).toBeTruthy();
+    expect(screen.queryByLabelText("Protected lesson player")).toBeNull();
   });
 
   it("uses the active palette for authoring choices and fields", () => {

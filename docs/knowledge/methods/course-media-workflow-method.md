@@ -97,6 +97,8 @@ Use first-party playback for GrowPath uploads. Protected library videos retain o
 
 Before loading a third-party player, explain that the learner will connect to the provider and that provider cookies or viewing collection may apply. Require an explicit click to load. Always keep the provider link, text summary, captions/transcript status, lesson text, documents, audio, images, tasks, notes, and discussion usable when playback is unavailable.
 
+Playback state and provider consent belong to the current lesson/media, authenticated session and workspace. Changing that scope must remove the prior player immediately, require fresh third-party consent, and discard superseded protected-playback responses. A failed or empty protected-playback read offers an explicit Retry while retaining the written summary; recovery neither enrolls nor completes a lesson.
+
 GrowPath lesson progress changes only through the explicit lesson-completion action. Do not infer provider watch time, completion, or engagement from opening a link or loading an embed, and do not merge provider analytics into GrowPath progress unless a separately verified provider integration defines that contract.
 
 ## Evidence policy

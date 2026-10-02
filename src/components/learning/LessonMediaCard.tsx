@@ -17,6 +17,7 @@ import {
 } from "@/features/learning/lessonMedia";
 import { getVideoPlayback, VideoWorkspaceType } from "@/api/videos";
 import { useEntitlements } from "@/entitlements";
+import { useAuth } from "@/auth/AuthContext";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
@@ -62,11 +63,30 @@ function BrowserPlayer({
   });
 }
 
-export default function LessonMediaCard({
-  lesson,
-  compact = false,
-  context = "lesson"
-}: Props) {
+export default function LessonMediaCard(props: Props) {
+  const auth = useAuth();
+  const entitlements = useEntitlements();
+  const [session, setSession] = useState({ token: auth.token, generation: 0 });
+  if (session.token !== auth.token) {
+    setSession({ token: auth.token, generation: session.generation + 1 });
+    return null;
+  }
+  // Reset before rendering a new resource, not in an effect after the old player
+  // has already been painted. Never put the auth token into a rendered key.
+  const lesson = props.lesson;
+  const scope = JSON.stringify([
+    auth.user?._id || auth.user?.id,
+    session.generation,
+    entitlements.mode,
+    entitlements.facilityId,
+    lesson?._id || lesson?.id,
+    lesson?.videoAssetId,
+    lessonMediaDraftFromLesson(lesson)
+  ]);
+  return <LessonMediaSession key={scope} {...props} />;
+}
+
+function LessonMediaSession({ lesson, compact = false, context = "lesson" }: Props) {
   const entitlements = useEntitlements();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -74,6 +94,7 @@ export default function LessonMediaCard({
   const [protectedPlaybackUrl, setProtectedPlaybackUrl] = useState("");
   const [protectedPlaybackLoading, setProtectedPlaybackLoading] = useState(false);
   const [protectedPlaybackError, setProtectedPlaybackError] = useState("");
+  const [playbackAttempt, setPlaybackAttempt] = useState(0);
   const normalized = useMemo(
     () => normalizeLessonMediaDraft(lessonMediaDraftFromLesson(lesson)),
     [lesson]
@@ -91,6 +112,7 @@ export default function LessonMediaCard({
   useEffect(() => {
     let active = true;
     setProtectedPlaybackError("");
+    setProtectedPlaybackUrl("");
     if (!protectedGrowPathMedia) {
       setProtectedPlaybackUrl("");
       setProtectedPlaybackLoading(false);
@@ -116,12 +138,16 @@ export default function LessonMediaCard({
       };
     }
     setProtectedPlaybackLoading(true);
-    getVideoPlayback(
-      videoAssetId,
-      entitlements.mode as VideoWorkspaceType,
-      entitlements.facilityId || undefined
-    )
+    Promise.resolve()
+      .then(() =>
+        getVideoPlayback(
+          videoAssetId,
+          entitlements.mode as VideoWorkspaceType,
+          entitlements.facilityId || undefined
+        )
+      )
       .then((result) => {
+        if (!result?.playbackUrl) throw new Error("Missing playback URL");
         if (active) setProtectedPlaybackUrl(result.playbackUrl);
       })
       .catch(() => {
@@ -143,7 +169,8 @@ export default function LessonMediaCard({
     entitlements.mode,
     protectedGrowPathMedia,
     suppliedPlaybackUrl,
-    videoAssetId
+    videoAssetId,
+    playbackAttempt
   ]);
 
   if (!media) return null;
@@ -247,6 +274,20 @@ export default function LessonMediaCard({
         <View style={styles.warningBox}>
           <Text style={styles.warningTitle}>Video playback unavailable</Text>
           <Text style={styles.warningText}>{protectedPlaybackError}</Text>
+          {videoAssetId && !suppliedPlaybackUrl ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry protected video playback"
+              onPress={() => {
+                setProtectedPlaybackError("");
+                setProtectedPlaybackLoading(true);
+                setPlaybackAttempt((value) => value + 1);
+              }}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Retry video playback</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
 

@@ -1025,6 +1025,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "shared course detail preserves public previews but suppresses personal learner/payment requests and actions until authentication settles; exact saved-course sign-in return without automatic enrollment or purchase, with session/course/Facility-scoped state and stale-response rejection",
       "default Free-account signup preserves a strict public course destination through same-browser verification and deliberate matching ready sign-in for up to one hour; share the product-or-course revision-safe continuation slot and normal guild onboarding without course-content storage, automatic enrollment, purchase or paid access; paid-plan signup, cross-device continuation and course gifting remain separate",
       "one provider-aware media contract shared by initial course creation and later lesson editing",
+      "lesson/media, session and workspace-scoped player consent and protected playback; immediate stale-player removal, superseded-response rejection and explicit Retry for failed or empty reads without enrollment or completion",
       "optional removable course thumbnail for compact cards and optional single learner-page banner",
       "shared Full Course Builder creation routed into the active workspace's canonical course collection, including Commercial draft persistence in Commercial Courses",
       "flat canonical Commercial course grow-interest tags with separately retained structured builder selections and legacy-reader normalization",
