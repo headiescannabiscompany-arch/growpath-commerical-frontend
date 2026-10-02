@@ -12,6 +12,15 @@ account/session or workspace clears the previously mounted reader. Settled capab
 record-visibility and publication checks remain authoritative; no share action grants
 access, creates an account, posts a comment or publishes private content.
 
+Discussion-detail post and comment reads recover independently. Do not read comments
+or mount comment/share actions before the exact requested post is readable. A failed
+comment read must not hide a readable post or claim an empty discussion. Retry is
+read-only and single-flight; it must not resubmit a confirmed comment. Preserve an
+unsent draft during same-discussion recovery, but clear prior records, drafts and
+actions on discussion or linked-grow changes. Discard late superseded reads and
+reject mismatched post identities. Existing server visibility and moderation rules
+remain authoritative.
+
 The first public-copy workflow is a grow timeline. The owner opens the private visual
 timeline, chooses the visible date range/events and owned photos, reviews the exact title,
 description and public preview, then explicitly publishes. Cancel publishes nothing.

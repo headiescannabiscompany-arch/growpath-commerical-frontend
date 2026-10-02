@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import ForumPostDetailRoute from "@/app/home/personal/(tabs)/forum/post/[id]";
 
@@ -19,6 +19,8 @@ const mockCreatePersonalTask = jest.fn();
 let mockParams: Record<string, string> = { id: "post-1", growId: "grow-1" };
 let mockAccessReady = true;
 let mockCanView = true;
+let mockViewerId = "viewer-1";
+let mockFacilityId: string | undefined;
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -79,6 +81,7 @@ jest.mock("@/entitlements", () => ({
   },
   useEntitlements: () => ({
     ready: mockAccessReady,
+    facilityId: mockFacilityId,
     can: () => mockCanView
   })
 }));
@@ -87,7 +90,7 @@ jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
     isAuthed: true,
     user: {
-      id: "viewer-1",
+      id: mockViewerId,
       username: "EtGU_Jay",
       email: "viewer@example.com"
     }
@@ -119,6 +122,8 @@ describe("ForumPostDetailRoute", () => {
     mockParams = { id: "post-1", growId: "grow-1" };
     mockAccessReady = true;
     mockCanView = true;
+    mockViewerId = "viewer-1";
+    mockFacilityId = undefined;
     mockGetForumPost.mockResolvedValue({
       id: "post-1",
       title: "Leaf spot follow-up",
@@ -161,7 +166,9 @@ describe("ForumPostDetailRoute", () => {
     expect(mockListForumComments).not.toHaveBeenCalled();
     mockAccessReady = true;
     view.rerender(<ForumPostDetailRoute />);
-    expect(view.getByText("This account does not have Forum viewing access.")).toBeTruthy();
+    expect(
+      view.getByText("This account does not have Forum viewing access.")
+    ).toBeTruthy();
     expect(mockGetForumPost).not.toHaveBeenCalled();
   });
 
@@ -198,6 +205,170 @@ describe("ForumPostDetailRoute", () => {
     expect(screen.queryByLabelText("Forum comment")).toBeNull();
     expect(screen.getByTestId("forum-link-/forum")).toBeTruthy();
   });
+
+  it("offers read-only Retry for the post and defers comments until it succeeds", async () => {
+    mockGetForumPost.mockRejectedValueOnce(new Error("offline"));
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() =>
+      expect(screen.getByText("This discussion is unavailable.")).toBeTruthy()
+    );
+    expect(mockListForumComments).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Retry forum discussion"));
+    await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
+    expect(mockListForumComments).toHaveBeenCalledTimes(1);
+    expect(mockAddForumComment).not.toHaveBeenCalled();
+  });
+
+  it("keeps an accessible post and unsent draft when comments fail and retry", async () => {
+    mockListForumComments.mockRejectedValueOnce(new Error("offline"));
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() =>
+      expect(screen.getByText("Comments unavailable. Try again.")).toBeTruthy()
+    );
+    expect(screen.getByText("Leaf spot follow-up")).toBeTruthy();
+    expect(screen.getByText("Share this discussion")).toBeTruthy();
+    expect(screen.queryByText("No comments yet.")).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("Forum comment"), "Unsent draft");
+    fireEvent.press(screen.getByLabelText("Retry forum comments"));
+    await waitFor(() =>
+      expect(
+        screen.getByText("Inspect again in three days and compare photos.")
+      ).toBeTruthy()
+    );
+    expect(screen.getByLabelText("Forum comment").props.value).toBe("Unsent draft");
+    expect(mockAddForumComment).not.toHaveBeenCalled();
+  });
+
+  it("hides comment actions until the post itself is loaded", async () => {
+    mockGetForumPost.mockReturnValue(new Promise(() => {}));
+    const screen = render(<ForumPostDetailRoute />);
+    expect(screen.queryByLabelText("Forum comment")).toBeNull();
+    expect(mockListForumComments).not.toHaveBeenCalled();
+  });
+
+  it("rejects a mismatched post payload without sharing or comment reads", async () => {
+    mockGetForumPost.mockResolvedValueOnce({ id: "wrong-post", title: "Wrong post" });
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() =>
+      expect(screen.getByText("This discussion is unavailable.")).toBeTruthy()
+    );
+    expect(screen.queryByText("Wrong post")).toBeNull();
+    expect(screen.queryByText("Share this discussion")).toBeNull();
+    expect(mockListForumComments).not.toHaveBeenCalled();
+  });
+
+  it("clears the prior post, reply draft and actions when the route changes", async () => {
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Forum comment"), "Old draft");
+    mockGetForumPost.mockReturnValue(new Promise(() => {}));
+    mockParams = { id: "post-2" };
+    screen.rerender(<ForumPostDetailRoute />);
+    expect(screen.queryByText("Leaf spot follow-up")).toBeNull();
+    expect(screen.queryByText("Share this discussion")).toBeNull();
+    expect(screen.queryByLabelText("Forum comment")).toBeNull();
+  });
+
+  it("ignores late prior-route reads", async () => {
+    let resolveOld!: (value: any) => void;
+    mockGetForumPost.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveOld = resolve;
+      })
+    );
+    const screen = render(<ForumPostDetailRoute />);
+    mockParams = { id: "post-2" };
+    mockGetForumPost.mockResolvedValueOnce({ id: "post-2", title: "Current discussion" });
+    screen.rerender(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Current discussion")).toBeTruthy());
+    await act(async () => resolveOld({ id: "post-1", title: "Late old discussion" }));
+    expect(screen.queryByText("Late old discussion")).toBeNull();
+    expect(screen.getByText("Current discussion")).toBeTruthy();
+    expect(mockListForumComments).toHaveBeenCalledTimes(1);
+    expect(mockListForumComments).toHaveBeenCalledWith("post-2");
+  });
+
+  it("does not mix late comments or the prior draft into the next discussion", async () => {
+    let resolveOld!: (value: any) => void;
+    mockListForumComments.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveOld = resolve;
+      })
+    );
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
+    expect(screen.queryByText("No comments yet.")).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("Forum comment"), "Old draft");
+    mockParams = { id: "post-2" };
+    mockGetForumPost.mockResolvedValueOnce({ id: "post-2", title: "Current discussion" });
+    mockListForumComments.mockResolvedValueOnce([]);
+    screen.rerender(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("No comments yet.")).toBeTruthy());
+    await act(async () => resolveOld([{ id: "old-comment", body: "Late old comment" }]));
+    expect(screen.queryByText("Late old comment")).toBeNull();
+    expect(screen.getByLabelText("Forum comment").props.value).toBe("");
+  });
+
+  it("contains a post-write comments-read failure without submitting the comment again", async () => {
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() =>
+      expect(
+        screen.getByText("Inspect again in three days and compare photos.")
+      ).toBeTruthy()
+    );
+    mockListForumComments.mockRejectedValueOnce(new Error("offline"));
+    fireEvent.changeText(screen.getByLabelText("Forum comment"), "Confirmed once");
+    fireEvent.press(screen.getByLabelText("Submit forum comment"));
+    await waitFor(() =>
+      expect(screen.getByText("Comments unavailable. Try again.")).toBeTruthy()
+    );
+    expect(screen.getByLabelText("Forum comment").props.value).toBe("");
+    expect(screen.queryByText("Unable to add comment.")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Retry forum comments"));
+    await waitFor(() =>
+      expect(
+        screen.getByText("Inspect again in three days and compare photos.")
+      ).toBeTruthy()
+    );
+    expect(mockAddForumComment).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses one comments Retry request at a time and rejects malformed rows", async () => {
+    mockListForumComments.mockResolvedValueOnce({ invalid: true });
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() =>
+      expect(screen.getByText("Comments unavailable. Try again.")).toBeTruthy()
+    );
+    let resolveRetry!: (value: any) => void;
+    mockListForumComments.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRetry = resolve;
+      })
+    );
+    const retry = screen.getByLabelText("Retry forum comments");
+    fireEvent.press(retry);
+    fireEvent.press(retry);
+    expect(mockListForumComments).toHaveBeenCalledTimes(2);
+    await act(async () => resolveRetry([]));
+    expect(screen.getByText("No comments yet.")).toBeTruthy();
+  });
+
+  it.each(["account", "workspace", "linked grow"])(
+    "clears discussion actions and drafts after a %s change",
+    async (change) => {
+      const screen = render(<ForumPostDetailRoute />);
+      await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
+      fireEvent.changeText(screen.getByLabelText("Forum comment"), "Old context draft");
+      mockGetForumPost.mockReturnValue(new Promise(() => {}));
+      if (change === "account") mockViewerId = "viewer-2";
+      if (change === "workspace") mockFacilityId = "facility-2";
+      if (change === "linked grow") mockParams = { ...mockParams, growId: "grow-2" };
+      screen.rerender(<ForumPostDetailRoute />);
+      expect(screen.queryByText("Leaf spot follow-up")).toBeNull();
+      expect(screen.queryByText("Share this discussion")).toBeNull();
+      expect(screen.queryByLabelText("Forum comment")).toBeNull();
+    }
+  );
 
   it("creates a grow task from forum advice with the forum source link", async () => {
     const screen = render(<ForumPostDetailRoute />);

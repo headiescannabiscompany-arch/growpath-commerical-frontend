@@ -418,11 +418,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "forum-share-readiness",
-        title: "Clearer shared-discussion access checks",
+        title: "Clearer shared-discussion access and recovery",
         date: "October 2, 2026",
         dateLabel: "Released",
         summary:
-          "Forum pages now wait for account access to finish loading instead of briefly showing access denied. Failed access checks offer Retry. Video and discussion Copy Link, Copy Post and recipient landing paths were checked on the live site; external posting and device share sheets were not repeated. Existing privacy rules and layout stay unchanged."
+          "Forum pages wait for account access to finish loading instead of briefly showing access denied. Discussion and comment reads now recover separately with Retry; a failed comments request no longer hides a readable post or claims there are no comments. Same-discussion recovery preserves unfinished replies, while changing discussions clears prior content. Copy Link, Copy Post and recipient paths remain checked; privacy rules and layout stay unchanged."
       },
       {
         id: "live-directory-readiness",

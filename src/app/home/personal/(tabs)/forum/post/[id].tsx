@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
@@ -211,9 +211,12 @@ function ForumImage({ uri, style, label }: { uri: string; style: any; label: str
 }
 
 export default function ForumPostDetailRoute() {
+  const params = useLocalSearchParams();
+  const id = getId(params as any);
+  const growId = param((params as any).growId);
   return (
     <ForumReadinessBoundary showBack>
-      <ReadyForumPostDetailRoute />
+      <ReadyForumPostDetailRoute key={JSON.stringify([id, growId])} />
     </ForumReadinessBoundary>
   );
 }
@@ -250,9 +253,52 @@ function ReadyForumPostDetailRoute() {
   const [editBody, setEditBody] = useState("");
   const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState("");
   const [confirmingDeletePost, setConfirmingDeletePost] = useState(false);
+  const [readError, setReadError] = useState("");
+  const [commentsError, setCommentsError] = useState("");
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const mounted = useRef(false);
+  const postGeneration = useRef(0);
+  const commentsGeneration = useRef(0);
+  const postPending = useRef(false);
+  const commentsPending = useRef(false);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      postGeneration.current += 1;
+      commentsGeneration.current += 1;
+      postPending.current = false;
+      commentsPending.current = false;
+    };
+  }, []);
 
   const loadedId = useMemo(() => postId(post), [post]);
   const isPostOwner = useMemo(() => isOwnedBy(post, auth.user), [auth.user, post]);
+
+  const loadComments = useCallback(async () => {
+    if (!id || !canView || commentsPending.current) return;
+    commentsPending.current = true;
+    const generation = ++commentsGeneration.current;
+    const current = () => mounted.current && generation === commentsGeneration.current;
+    setCommentsLoading(true);
+    setCommentsError("");
+    try {
+      const nextComments = await listForumComments(id);
+      if (!Array.isArray(nextComments)) throw new Error("Invalid comments response");
+      if (current()) setComments(nextComments);
+    } catch {
+      if (current()) {
+        setComments([]);
+        setCommentsError("Comments unavailable. Try again.");
+      }
+    } finally {
+      if (current()) {
+        commentsPending.current = false;
+        setCommentsLoading(false);
+      }
+    }
+  }, [canView, id]);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -261,30 +307,44 @@ function ReadyForumPostDetailRoute() {
         setRefreshing(false);
         return;
       }
+      if (postPending.current) return;
+      postPending.current = true;
+      const generation = ++postGeneration.current;
+      const current = () => mounted.current && generation === postGeneration.current;
+      commentsGeneration.current += 1;
+      commentsPending.current = false;
+      setPost(null);
+      setComments([]);
+      setCommentsError("");
+      setReadError("");
 
       if (opts?.refresh) setRefreshing(true);
-      else setLoading(true);
+      setLoading(true);
       setFeedback("");
 
       try {
-        const [nextPost, nextComments] = await Promise.all([
-          getForumPost(id),
-          listForumComments(id)
-        ]);
+        const nextPost = await getForumPost(id);
+        if (!nextPost || postId(nextPost) !== id)
+          throw new Error("Invalid post response");
+        if (!current()) return;
         setPost(nextPost);
-        setComments(nextComments);
         setLiked(likedByViewer(nextPost));
         setLikes(likeTotal(nextPost));
+        void loadComments();
       } catch {
-        setFeedback("This discussion is unavailable.");
+        if (!current()) return;
+        setReadError("This discussion is unavailable.");
         setPost(null);
         setComments([]);
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (current()) {
+          postPending.current = false;
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [canView, id]
+    [canView, id, loadComments]
   );
 
   useEffect(() => {
@@ -314,7 +374,14 @@ function ReadyForumPostDetailRoute() {
   async function submitComment() {
     const targetId = loadedId || id;
     const text = commentText.trim();
-    if (!targetId || (!text && !commentPhotoUris.length) || !canPost) return;
+    if (
+      !targetId ||
+      (!text && !commentPhotoUris.length) ||
+      !canPost ||
+      saving ||
+      commentsLoading
+    )
+      return;
     setSaving(true);
     setFeedback("");
     try {
@@ -334,8 +401,8 @@ function ReadyForumPostDetailRoute() {
       setCommentText("");
       setCommentPhotoUris([]);
       setReplyingTo(null);
-      const nextComments = await listForumComments(targetId);
-      setComments(nextComments);
+      // A confirmed comment write must not be reported as failed if this read fails.
+      await loadComments();
     } catch (error: any) {
       setFeedback(error?.message || "Unable to add comment.");
     } finally {
@@ -576,7 +643,7 @@ function ReadyForumPostDetailRoute() {
       ? "This account does not have Forum viewing access."
       : !id
         ? "Choose a discussion from Forum / Q&A."
-        : feedback || "This discussion is unavailable.";
+        : readError || "This discussion is unavailable.";
 
     return (
       <ScreenBoundary name="personal.forum.postDetail" showBack backFallbackHref="/forum">
@@ -586,6 +653,16 @@ function ReadyForumPostDetailRoute() {
               {unavailableTitle}
             </Text>
             <Text style={styles.cardText}>{unavailableCopy}</Text>
+            {canView && id ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Retry forum discussion"
+                onPress={() => void load()}
+                style={styles.primaryBtn}
+              >
+                <Text style={styles.primaryText}>Retry</Text>
+              </Pressable>
+            ) : null}
             {canView ? (
               <Link href="/forum" asChild>
                 <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
@@ -865,11 +942,29 @@ function ReadyForumPostDetailRoute() {
           />
         ) : null}
 
-        {canView ? (
+        {canView && post ? (
           <View style={styles.card}>
             <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
               Comments
             </Text>
+            {commentsLoading ? (
+              <ActivityIndicator
+                accessibilityLabel="Loading forum comments"
+                color={palette.accent}
+              />
+            ) : commentsError ? (
+              <View>
+                <Text style={styles.cardText}>{commentsError}</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry forum comments"
+                  onPress={() => void loadComments()}
+                  style={styles.secondaryBtn}
+                >
+                  <Text style={styles.secondaryText}>Retry</Text>
+                </Pressable>
+              </View>
+            ) : null}
             {canPost ? (
               <View style={styles.commentComposer}>
                 {replyingTo ? (
@@ -931,11 +1026,17 @@ function ReadyForumPostDetailRoute() {
                   </View>
                 ) : null}
                 <Pressable
-                  disabled={(!commentText.trim() && !commentPhotoUris.length) || saving}
+                  disabled={
+                    (!commentText.trim() && !commentPhotoUris.length) ||
+                    saving ||
+                    commentsLoading
+                  }
                   onPress={submitComment}
                   style={[
                     styles.primaryBtn,
-                    ((!commentText.trim() && !commentPhotoUris.length) || saving) &&
+                    ((!commentText.trim() && !commentPhotoUris.length) ||
+                      saving ||
+                      commentsLoading) &&
                       styles.disabled
                   ]}
                   accessibilityRole="button"
@@ -1090,7 +1191,7 @@ function ReadyForumPostDetailRoute() {
                 </View>
               );
             })}
-            {!comments.length ? (
+            {!commentsLoading && !commentsError && !comments.length ? (
               <Text style={styles.cardText}>No comments yet.</Text>
             ) : null}
           </View>

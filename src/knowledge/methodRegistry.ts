@@ -62,6 +62,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "Never publish private data merely because Share was pressed.",
       "Forum directories and shared discussions must wait for account and entitlement readiness before capability denial or record reads; failed initial access checks offer Retry without granting permissions or publishing content.",
+      "Forum details read the exact post before comments/actions, recover post and comments independently without false empty results, preserve same-discussion drafts, clear state on discussion or linked-grow changes, and discard late or mismatched reads; Retry never resubmits a confirmed comment.",
       "Private Visual Flow and Detailed List attach photo events to the matching selected journal by source identity; preserve standalone photos and distinct same-date/title journals without changing stored activity or frozen snapshots.",
       "Never expose protected upload URLs, exact locations, operational payloads, AI receipts, credentials, or evidence permissions.",
       "Viewer-friendly downloads must replace raw JSON, provider payloads, evidence fingerprints, private IDs and oversized machine notes with a bounded readable summary and private-record handoff.",
