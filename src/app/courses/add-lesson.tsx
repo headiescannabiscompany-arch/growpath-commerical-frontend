@@ -4,6 +4,9 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import AddLessonScreen from "@/screens/AddLessonScreen";
+import CourseLessonReadGate, {
+  lessonEditorReturn
+} from "@/components/learning/CourseLessonReadGate";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -16,7 +19,11 @@ export default function AddLessonRoute() {
   const courseId = Array.isArray(rawCourseId) ? rawCourseId[0] : rawCourseId;
   const rawFrom = params.from;
   const from = Array.isArray(rawFrom) ? rawFrom[0] : rawFrom;
-  const backTarget = from || "/home/personal/courses";
+  const backTarget = lessonEditorReturn(
+    courseId || "",
+    from || "",
+    "/home/personal/courses"
+  );
 
   if (!courseId) {
     return (
@@ -43,11 +50,23 @@ export default function AddLessonRoute() {
   }
 
   return (
-    <ScreenBoundary title="Add Lesson" showBack backFallbackHref={backTarget}>
-      <AddLessonScreen
-        route={{ params: { courseId } }}
-        navigation={{ goBack: () => router.replace(backTarget) }}
-      />
+    <ScreenBoundary
+      title="Add Lesson"
+      showBack
+      backFallbackHref={backTarget}
+      preferBackFallback
+    >
+      <CourseLessonReadGate
+        courseId={courseId}
+        onBack={() => router.replace(backTarget as any)}
+      >
+        {() => (
+          <AddLessonScreen
+            route={{ params: { courseId } }}
+            navigation={{ goBack: () => router.replace(backTarget as any) }}
+          />
+        )}
+      </CourseLessonReadGate>
     </ScreenBoundary>
   );
 }

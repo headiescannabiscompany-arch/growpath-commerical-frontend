@@ -906,6 +906,24 @@ describe("CourseDetailScreen learner player", () => {
     );
   });
 
+  it("keeps published native lessons readable but requires unpublish before editing", async () => {
+    Object.assign(mockLearningAccess, {
+      canCreateCourses: true,
+      canPublishCourses: true
+    });
+    mockGetCourse.mockResolvedValue({
+      ...freeCourse,
+      _viewerOwnsCourse: true,
+      isPublished: true
+    });
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+    await screen.findByText("Unpublish this course before adding or editing lessons.");
+    expect(screen.queryByLabelText("Add course lesson")).toBeNull();
+    expect(screen.queryByLabelText("Edit lesson Build the mix")).toBeNull();
+    expect(screen.getByLabelText("Open lesson Build the mix")).toBeTruthy();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it.each([false, true])(
     "keeps native lesson authoring hidden from a capable buyer when enrolled=%p",
     async (enrolled) => {

@@ -348,7 +348,7 @@ function CourseDetailSession({
     : canManageNativeCourse;
   const canManageLessons = facilityMode
     ? facilityPermissions.canEditLessons === true
-    : canManageNativeCourse && access.canCreateCourses;
+    : canManageNativeCourse && access.canCreateCourses && !course?.isPublished;
   const canPublishManagedCourse = facilityMode
     ? course?.isPublished
       ? facilityPermissions.canUnpublish === true
@@ -1549,6 +1549,11 @@ function CourseDetailSession({
             </Text>
           ) : null}
         </View>
+        {canManageNativeCourse && course?.isPublished ? (
+          <Text style={styles.meta}>
+            Unpublish this course before adding or editing lessons.
+          </Text>
+        ) : null}
         {canManageLessons ? (
           <Pressable
             disabled={

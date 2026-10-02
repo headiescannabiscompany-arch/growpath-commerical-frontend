@@ -1016,6 +1016,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "GrowPath-only explicit completion state",
       "owner-only draft preview and published-only public detail access",
       "learner preview without authoring controls",
+      "saved native lesson editors verify exact course and server ownership, require unpublish before mutations, reject stale editor reads and atomic save races, offer read Retry and allow only explicit safe course return destinations without changing pricing or enrollment",
       "Commercial author-course list distinguishes unknown counts from zero, offers single-flight read Retry without clearing drafts, labels retained records during refresh/failure and reports optional Product Line choice failures independently without creating or publishing courses",
       "Course Analytics uses saved id or legacy _id, retries failed list/detail reads without false empty or zero results, rejects superseded selections, labels unavailable course totals for lesson-only responses and preserves the exact Commercial Courses Back origin without changing payments or calculations",
       "Full Course Builder Back prefers an exact supported Commercial Courses, Commercial Storefront or Personal Courses origin over router history; unsupported origins retain history with a safe Personal Courses fallback and never become arbitrary return destinations",
