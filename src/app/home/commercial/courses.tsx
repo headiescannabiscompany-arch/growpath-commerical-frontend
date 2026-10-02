@@ -964,7 +964,10 @@ export default function CommercialCoursesRoute() {
           relevant
         </Text>
         <View style={styles.actions}>
-          <ActionLink href="/courses/analytics" label="Course Analytics" />
+          <ActionLink
+            href="/courses/analytics?from=%2Fhome%2Fcommercial%2Fcourses"
+            label="Course Analytics"
+          />
           <ActionLink href="/courses" label="Open Course Catalog" />
         </View>
       </AppCard>

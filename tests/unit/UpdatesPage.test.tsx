@@ -177,6 +177,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "course-analytics-readiness",
       "commercial-course-list-readiness",
       "course-builder-source-return",
       "commercial-brand-profile-readiness",

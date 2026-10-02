@@ -155,4 +155,22 @@ describe("legacy course authoring route back behavior", () => {
     expect(screen.getAllByText("Shared Back /courses")).toHaveLength(1);
     expect(screen.getByText("Course analytics content")).toBeTruthy();
   });
+
+  it.each([
+    ["/home/commercial/courses", "/home/commercial/courses", "fallback"],
+    [
+      ["/home/commercial/courses", "https://example.com"],
+      "/home/commercial/courses",
+      "fallback"
+    ],
+    ["https://example.com", "/courses", "history"],
+    ["/home/commercial/courses?next=elsewhere", "/courses", "history"],
+    [["bad", "/home/commercial/courses"], "/courses", "history"]
+  ])("keeps analytics Back source strict: %p", (from, destination, mode) => {
+    mockSearchParams.from = from;
+    const Route = require("@/app/courses/analytics").default;
+    render(<Route />);
+    expect(screen.getAllByText(`Shared Back ${destination}`)).toHaveLength(1);
+    expect(screen.getByText(`Shared Back Mode ${mode}`)).toBeTruthy();
+  });
 });

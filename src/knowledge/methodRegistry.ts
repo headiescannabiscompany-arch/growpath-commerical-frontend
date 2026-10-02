@@ -1017,6 +1017,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "owner-only draft preview and published-only public detail access",
       "learner preview without authoring controls",
       "Commercial author-course list distinguishes unknown counts from zero, offers single-flight read Retry without clearing drafts, labels retained records during refresh/failure and reports optional Product Line choice failures independently without creating or publishing courses",
+      "Course Analytics uses saved id or legacy _id, retries failed list/detail reads without false empty or zero results, rejects superseded selections, labels unavailable course totals for lesson-only responses and preserves the exact Commercial Courses Back origin without changing payments or calculations",
       "Full Course Builder Back prefers an exact supported Commercial Courses, Commercial Storefront or Personal Courses origin over router history; unsupported origins retain history with a safe Personal Courses fallback and never become arbitrary return destinations",
       "signed-out published catalog without owned-course or authoring controls",
       "shared catalog and detail wait for settled authentication and entitlements before course requests or access denial; distinguish recoverable bootstrap failure from loading, hide earlier course state and reject superseded responses without changing public, owner or Facility permissions",

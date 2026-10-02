@@ -24,6 +24,8 @@ The Commercial author-course list distinguishes unknown counts from confirmed ze
 
 ## Source selection and normalization
 
+Course Analytics uses the creator API's saved `id` (or legacy `_id`) for selection. Failed or malformed list/detail reads offer named Retry controls and never imply an empty collection or zero totals. New selections clear old metrics and reject superseded responses; repeated selection during a pending read is single-flight. A lesson-only analytics response displays lesson metrics with course totals explicitly unavailable, not invented financial zeros. Back from the exact Commercial Courses entry returns there, including after reload; unsupported origins retain the shared safe fallback. These are read-only behaviors and do not alter payment, enrollment, or metric calculations.
+
 Authors choose one source type: GrowPath upload, YouTube, Rumble, Vimeo, or Other video URL. Detect YouTube, Vimeo, and Rumble from recognized video-page URLs even when the author initially chooses Other. Preserve the submitted URL for traceability and store a separate canonical URL, provider video ID, Vimeo unlisted privacy hash when present, provider label, thumbnail when deterministically available, embed capability, external-link fallback, privacy mode, and last availability-check time.
 
 The initial Course Builder and later Add/Edit Lesson screens use the same provider-aware media contract. Authors may attach and review lesson media while outlining a new draft or defer it until lesson editing; no initial-builder shortcut may bypass URL normalization, rights, availability, accessibility, learner-summary, embed, or fallback fields.

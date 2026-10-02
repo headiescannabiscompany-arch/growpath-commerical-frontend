@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "course-analytics-readiness",
+        title: "Reliable course analytics and return navigation",
+        date: "October 2, 2026",
+        dateLabel: "Released",
+        summary:
+          "Course Analytics now opens the selected saved course correctly, offers Retry when courses or metrics cannot load, and prevents older responses from replacing a newer selection. Lesson-only reports label course totals as unavailable instead of showing false zeros. Back returns to Commercial Courses when opened there. Payments, permissions, course content and the existing layout stay unchanged."
+      },
+      {
         id: "commercial-course-list-readiness",
         title: "Clearer Commercial course loading and retry",
         date: "October 2, 2026",
