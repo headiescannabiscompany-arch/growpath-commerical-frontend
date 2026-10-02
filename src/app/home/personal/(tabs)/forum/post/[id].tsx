@@ -36,6 +36,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
 import FollowButton from "@/components/FollowButton";
 import PublicShareActions from "@/components/sharing/PublicShareActions";
+import ForumReadinessBoundary from "@/components/forum/ForumReadinessBoundary";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
@@ -210,6 +211,14 @@ function ForumImage({ uri, style, label }: { uri: string; style: any; label: str
 }
 
 export default function ForumPostDetailRoute() {
+  return (
+    <ForumReadinessBoundary showBack>
+      <ReadyForumPostDetailRoute />
+    </ForumReadinessBoundary>
+  );
+}
+
+function ReadyForumPostDetailRoute() {
   const auth = useAuth();
   const router = useRouter();
   const [reportedComment, setReportedComment] = useState<CommentRow | null>(null);

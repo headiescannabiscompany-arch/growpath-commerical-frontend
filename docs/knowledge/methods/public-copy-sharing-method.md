@@ -5,6 +5,13 @@ journals, AI results and operational records do not become public when Share is 
 They require a reviewed public copy whose data, media and lifecycle are separate from the
 private source.
 
+Forum directory and shared-discussion readers wait for authentication and entitlement
+readiness before checking capability denial or mounting record readers. An initial
+access-check failure is recoverable with Retry, not proof of denied access. Changing
+account/session or workspace clears the previously mounted reader. Settled capability,
+record-visibility and publication checks remain authoritative; no share action grants
+access, creates an account, posts a comment or publishes private content.
+
 The first public-copy workflow is a grow timeline. The owner opens the private visual
 timeline, chooses the visible date range/events and owned photos, reviews the exact title,
 description and public preview, then explicitly publishes. Cancel publishes nothing.

@@ -18,6 +18,7 @@ import { useAuth } from "@/auth/AuthContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
 import InlineForumDiscussion from "@/components/forum/InlineForumDiscussion";
+import ForumReadinessBoundary from "@/components/forum/ForumReadinessBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { formatBytes, videoStorageFallback } from "@/features/videos/videoPresentation";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
@@ -114,6 +115,14 @@ function ForumPostImage({
 }
 
 export default function ForumRoute() {
+  return (
+    <ForumReadinessBoundary>
+      <ReadyForumRoute />
+    </ForumReadinessBoundary>
+  );
+}
+
+function ReadyForumRoute() {
   const auth = useAuth();
   const entitlements = useEntitlements();
   const { palette } = useAppTheme();

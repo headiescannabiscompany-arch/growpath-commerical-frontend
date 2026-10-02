@@ -310,6 +310,7 @@ describe("public Updates page", () => {
       "facility-billing",
       "commerce-checkout",
       "commerce-refunds-sellers",
+      "forum-share-readiness",
       "live-directory-readiness"
     ]);
   });

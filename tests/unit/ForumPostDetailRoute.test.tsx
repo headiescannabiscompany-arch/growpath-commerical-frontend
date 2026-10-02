@@ -17,6 +17,8 @@ const mockUpdateForumComment = jest.fn();
 const mockRouterReplace = jest.fn();
 const mockCreatePersonalTask = jest.fn();
 let mockParams: Record<string, string> = { id: "post-1", growId: "grow-1" };
+let mockAccessReady = true;
+let mockCanView = true;
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -76,7 +78,8 @@ jest.mock("@/entitlements", () => ({
     FORUM_POST: "forum_post"
   },
   useEntitlements: () => ({
-    can: () => true
+    ready: mockAccessReady,
+    can: () => mockCanView
   })
 }));
 
@@ -114,6 +117,8 @@ describe("ForumPostDetailRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockParams = { id: "post-1", growId: "grow-1" };
+    mockAccessReady = true;
+    mockCanView = true;
     mockGetForumPost.mockResolvedValue({
       id: "post-1",
       title: "Leaf spot follow-up",
@@ -144,6 +149,20 @@ describe("ForumPostDetailRoute", () => {
       id: "comment-owner",
       text
     }));
+  });
+
+  it("defers shared-discussion reads until access is ready, preserving genuine denial", () => {
+    mockAccessReady = false;
+    mockCanView = false;
+    const view = render(<ForumPostDetailRoute />);
+    expect(view.getByLabelText("Checking Forum access")).toBeTruthy();
+    expect(view.queryByText("Forum unavailable")).toBeNull();
+    expect(mockGetForumPost).not.toHaveBeenCalled();
+    expect(mockListForumComments).not.toHaveBeenCalled();
+    mockAccessReady = true;
+    view.rerender(<ForumPostDetailRoute />);
+    expect(view.getByText("This account does not have Forum viewing access.")).toBeTruthy();
+    expect(mockGetForumPost).not.toHaveBeenCalled();
   });
 
   it("shows an action-free handoff when no post id is present", async () => {

@@ -72,8 +72,10 @@ describe("buildPublicShareTargets", () => {
       expect(target.href).not.toMatch(/\.mp4|playback|uploads/);
     }
     expect(currentPublicUrl(preview)).toBe(preview);
-    expect(publicShareMessage("Garden video & questions", preview, {
-      description: "A saved public video."
-    })).toBe(`Garden video & questions\nA saved public video.\n${preview}`);
+    expect(
+      publicShareMessage("Garden video & questions", preview, {
+        description: "A saved public video."
+      })
+    ).toBe(`Garden video & questions\nA saved public video.\n${preview}`);
   });
 });

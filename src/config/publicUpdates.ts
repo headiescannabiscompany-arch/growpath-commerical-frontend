@@ -409,6 +409,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
           "Refund handling and Stripe seller allocation have been updated. Purchase, partial/full refund, and seller-allocation flows passed Sandbox checks; those checks did not move real money or verify a bank payout."
       },
       {
+        id: "forum-share-readiness",
+        title: "Clearer shared-discussion access checks",
+        date: "October 2, 2026",
+        dateLabel: "Released",
+        summary:
+          "Forum pages now wait for account access to finish loading instead of briefly showing access denied. Failed access checks offer Retry. Video and discussion Copy Link, Copy Post and recipient landing paths were checked on the live site; external posting and device share sheets were not repeated. Existing privacy rules and layout stay unchanged."
+      },
+      {
         id: "live-directory-readiness",
         title: "Clearer Lives directory loading and recovery",
         date: "October 2, 2026",
