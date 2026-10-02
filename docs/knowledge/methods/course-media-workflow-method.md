@@ -18,6 +18,8 @@ The shared course catalog loads public, owned, and Commercial-public sources ind
 
 Catalog loading depends on stable authenticated identity values, not a whole session-user object whose reference may change during rendering. Course-result state updates must not retrigger the same catalog load indefinitely.
 
+The Full Course Builder's single route-level Back returns to its explicitly supported entry point (Commercial Courses, Commercial Storefront, or Personal Courses), even when router history skips that page or the builder was reloaded. Accept only these exact source paths and the first query value. An absent or unsupported source retains ordinary history with the existing Personal Courses fallback; arbitrary URLs must not become return destinations. This navigation does not create, save or publish a course or change workspace authorization.
+
 ## Source selection and normalization
 
 Authors choose one source type: GrowPath upload, YouTube, Rumble, Vimeo, or Other video URL. Detect YouTube, Vimeo, and Rumble from recognized video-page URLs even when the author initially chooses Other. Preserve the submitted URL for traceability and store a separate canonical URL, provider video ID, Vimeo unlisted privacy hash when present, provider label, thumbnail when deterministically available, embed capability, external-link fallback, privacy mode, and last availability-check time.

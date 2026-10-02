@@ -1016,6 +1016,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "GrowPath-only explicit completion state",
       "owner-only draft preview and published-only public detail access",
       "learner preview without authoring controls",
+      "Full Course Builder Back prefers an exact supported Commercial Courses, Commercial Storefront or Personal Courses origin over router history; unsupported origins retain history with a safe Personal Courses fallback and never become arbitrary return destinations",
       "signed-out published catalog without owned-course or authoring controls",
       "shared catalog and detail wait for settled authentication and entitlements before course requests or access denial; distinguish recoverable bootstrap failure from loading, hide earlier course state and reject superseded responses without changing public, owner or Facility permissions",
       "shared course detail preserves public previews but suppresses personal learner/payment requests and actions until authentication settles; exact saved-course sign-in return without automatic enrollment or purchase, with session/course/Facility-scoped state and stale-response rejection",

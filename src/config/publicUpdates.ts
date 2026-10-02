@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "course-builder-source-return",
+        title: "Course Builder returns to its starting page",
+        date: "October 2, 2026",
+        dateLabel: "Released",
+        summary:
+          "Back from the Full Course Builder now returns to the Commercial Courses, Storefront or Personal Courses page that opened it, including after a reload. Unsupported return links use normal history and a safe default. Course content, publishing, payments, permissions and the existing layout stay unchanged."
+      },
+      {
         id: "commercial-brand-profile-readiness",
         title: "Reliable saved Brand Profile details",
         date: "October 2, 2026",
