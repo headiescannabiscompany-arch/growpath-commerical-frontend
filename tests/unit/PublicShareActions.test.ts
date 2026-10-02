@@ -57,4 +57,23 @@ describe("buildPublicShareTargets", () => {
       else process.env.EXPO_PUBLIC_SITE_URL = previousSiteUrl;
     }
   });
+
+  it("keeps all video share destinations on the versioned preview, not the media file", () => {
+    const preview =
+      "https://api.growpathai.com/api/videos/64b7f0a1c2d3e4f567890123/share?v=abc123";
+    const targets = buildPublicShareTargets(
+      "Garden video & questions",
+      "/videos/64b7f0a1c2d3e4f567890123",
+      { socialPreviewUrl: preview, description: "A saved public video." }
+    );
+    expect(targets).toHaveLength(7);
+    for (const target of targets) {
+      expect(decodeURIComponent(target.href)).toContain(preview);
+      expect(target.href).not.toMatch(/\.mp4|playback|uploads/);
+    }
+    expect(currentPublicUrl(preview)).toBe(preview);
+    expect(publicShareMessage("Garden video & questions", preview, {
+      description: "A saved public video."
+    })).toBe(`Garden video & questions\nA saved public video.\n${preview}`);
+  });
 });
