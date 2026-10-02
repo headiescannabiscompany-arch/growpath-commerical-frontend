@@ -908,6 +908,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Never limit video upload or sharing only to accounts labeled as creators.",
+      "Wait for current account/workspace readiness and confirmed library quota; failed reads offer Retry, never invented zero usage, empty-library claims or upload controls. Discard superseded reads and clear prior records/forms on scope changes while preserving drafts during same-scope retries.",
       "Never let Facility Staff remove another member's draft or any published Facility video.",
       "Never expose private, unlisted, course-only, or Facility-internal videos in public Discover.",
       "Never treat a client-provided flag as proof that the viewer follows a video owner.",

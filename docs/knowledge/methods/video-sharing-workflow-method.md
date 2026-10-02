@@ -36,6 +36,14 @@ storage. GrowPath-hosted uploads consume the active Personal, Commercial, or poo
 Facility allowance. The API-provided usage and limit are authoritative; clients may show
 plan defaults while loading but must not display hard-coded zero usage as real quota.
 
+The saved library and discovery readers wait for authentication and workspace readiness.
+An unresolved access check offers its own Retry, not a permission denial. Library reads
+must confirm current storage usage before showing counts, an empty collection, or upload
+controls; a failed read or missing quota offers Retry rather than invented zero usage.
+Discard superseded search/tab responses. Changing account, session or workspace clears
+the prior records and unfinished form; a same-workspace read retry preserves draft fields.
+These read guards do not change server permissions, publication, uploads or sharing.
+
 Production GrowPath-hosted video objects remain private. Reserve workspace quota before
 issuing a short-lived direct-upload URL, count unexpired pending reservations so
 concurrent uploads cannot oversubscribe the workspace, and activate the record only after

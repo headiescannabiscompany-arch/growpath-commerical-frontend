@@ -97,6 +97,94 @@ function durationSeconds(asset: any) {
 }
 
 export default function VideosRoute() {
+  const auth = useAuth();
+  const access = useEntitlements();
+  const { palette } = useAppTheme();
+  const retryPending = useRef(false);
+  const [retrying, setRetrying] = useState(false);
+  const [retryFailed, setRetryFailed] = useState(false);
+  const unresolved = auth.isHydrating || access.ready === false;
+  const failed = !auth.isHydrating && unresolved && Boolean(access.bootstrapError);
+
+  async function retryAccess() {
+    if (retryPending.current) return;
+    retryPending.current = true;
+    setRetrying(true);
+    setRetryFailed(false);
+    try {
+      await auth.retryMe();
+    } catch {
+      setRetryFailed(true);
+    } finally {
+      retryPending.current = false;
+      setRetrying(false);
+    }
+  }
+
+  if (unresolved) {
+    return (
+      <AppPage
+        routeKey="videos"
+        header={
+          <Text
+            accessibilityRole="header"
+            aria-level={1}
+            style={{ color: palette.text, fontSize: 28, fontWeight: "900" }}
+          >
+            Videos
+          </Text>
+        }
+      >
+        <AppCard>
+          <Text style={{ color: palette.text }}>
+            {failed ? "Video access check unavailable" : "Checking video access"}
+          </Text>
+          {failed ? (
+            <>
+              <Text style={{ color: palette.textMuted }}>
+                {retryFailed
+                  ? "The check failed. Please try again."
+                  : "Your access could not be checked. This does not mean access was denied."}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Retry video access"
+                disabled={retrying}
+                accessibilityState={{ disabled: retrying }}
+                onPress={() => void retryAccess()}
+                style={{
+                  padding: 12,
+                  backgroundColor: palette.accent,
+                  borderRadius: 8,
+                  alignSelf: "flex-start"
+                }}
+              >
+                <Text style={{ color: palette.accentText }}>
+                  {retrying ? "Checking…" : "Retry"}
+                </Text>
+              </Pressable>
+            </>
+          ) : (
+            <ActivityIndicator
+              accessibilityLabel="Checking video access"
+              color={palette.accent}
+            />
+          )}
+        </AppCard>
+      </AppPage>
+    );
+  }
+  const scope = JSON.stringify([
+    auth.user?.id || auth.user?._id || "",
+    auth.token,
+    auth.isAuthed,
+    access.mode,
+    access.facilityId
+  ]);
+  return <ReadyVideosRoute key={scope} />;
+}
+
+function ReadyVideosRoute() {
   const params = useLocalSearchParams<{ tab?: string }>();
   const router = useRouter();
   const auth = useAuth();
@@ -114,6 +202,10 @@ export default function VideosRoute() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
+  const [readError, setReadError] = useState<any>(null);
+  const readSequence = useRef(0);
+  const pendingRead = useRef("");
+  const mounted = useRef(true);
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<GrowPathVideo | null>(null);
@@ -131,50 +223,96 @@ export default function VideosRoute() {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const videoUploadKeyRef = useRef("");
 
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      readSequence.current += 1;
+      pendingRead.current = "";
+    };
+  }, []);
+
   const loadDiscover = useCallback(async () => {
+    const key = JSON.stringify(["discover", followingOnly, query, sort]);
+    if (!mounted.current || pendingRead.current === key) return;
+    pendingRead.current = key;
+    const request = ++readSequence.current;
     setLoading(true);
-    setError(null);
+    setReadError(null);
+    setDiscoverVideos([]);
     try {
-      setDiscoverVideos(
-        await searchVideos({
-          q: query.trim() || undefined,
-          sort,
-          limit: 30,
-          followingOnly: followingOnly || undefined
-        })
-      );
+      const rows = await searchVideos({
+        q: query.trim() || undefined,
+        sort,
+        limit: 30,
+        followingOnly: followingOnly || undefined
+      });
+      if (request !== readSequence.current) return;
+      if (!Array.isArray(rows))
+        throw new Error("Video search returned an unexpected response.");
+      setDiscoverVideos(rows);
     } catch (err) {
-      setError(err);
+      if (request === readSequence.current) setReadError(err);
     } finally {
-      setLoading(false);
+      if (request === readSequence.current) {
+        pendingRead.current = "";
+        setLoading(false);
+      }
     }
   }, [followingOnly, query, sort]);
 
   const loadLibrary = useCallback(async () => {
+    if (!mounted.current || pendingRead.current === "library") return;
     if (!auth.isAuthed) {
       setLibrary(null);
       setLoading(false);
       return;
     }
+    pendingRead.current = "library";
+    const request = ++readSequence.current;
     setLoading(true);
-    setError(null);
+    setReadError(null);
+    setLibrary(null);
     try {
-      setLibrary(
-        await listVideoLibrary(
-          workspaceType,
-          workspaceType === "facility" ? entitlements.facilityId || undefined : undefined
-        )
+      const result = await listVideoLibrary(
+        workspaceType,
+        workspaceType === "facility" ? entitlements.facilityId || undefined : undefined
       );
+      if (request !== readSequence.current) return;
+      if (
+        !result ||
+        !Array.isArray(result.videos) ||
+        !result.quota ||
+        ![
+          result.quota.usedBytes,
+          result.quota.limitBytes,
+          result.quota.remainingBytes
+        ].every(
+          (value) => typeof value === "number" && Number.isFinite(value) && value >= 0
+        )
+      ) {
+        throw new Error(
+          "Video library storage information is unavailable. Please retry."
+        );
+      }
+      setLibrary(result);
     } catch (err) {
-      setError(err);
+      if (request === readSequence.current) setReadError(err);
     } finally {
-      setLoading(false);
+      if (request === readSequence.current) {
+        pendingRead.current = "";
+        setLoading(false);
+      }
     }
   }, [auth.isAuthed, entitlements.facilityId, workspaceType]);
 
   useEffect(() => {
     if (tab === "library") void loadLibrary();
     else void loadDiscover();
+    return () => {
+      readSequence.current += 1;
+      pendingRead.current = "";
+    };
   }, [loadDiscover, loadLibrary, tab]);
 
   const quota = useMemo(() => {
@@ -225,6 +363,7 @@ export default function VideosRoute() {
 
   const canUpload =
     auth.isAuthed &&
+    Boolean(library) &&
     (library?.permissions?.canUpload ??
       entitlements.can("VIDEOS_UPLOAD") ??
       workspaceType !== "facility");
@@ -473,6 +612,7 @@ export default function VideosRoute() {
                 key={option.value}
                 accessibilityRole="tab"
                 accessibilityState={{ selected }}
+                aria-selected={selected}
                 onPress={() => {
                   setTab(option.value as "discover" | "library");
                   router.setParams({ tab: option.value });
@@ -569,8 +709,21 @@ export default function VideosRoute() {
               color={palette.accent}
             />
           ) : null}
-          <InlineError error={error} />
-          {!loading && !discoverVideos.length ? (
+          {readError ? (
+            <AppCard>
+              <Text style={styles.cardTitle}>Video search unavailable</Text>
+              <InlineError error={readError} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Retry video search"
+                onPress={() => void loadDiscover()}
+                style={styles.primaryButton}
+              >
+                <Text style={styles.primaryText}>Retry</Text>
+              </Pressable>
+            </AppCard>
+          ) : null}
+          {!loading && !readError && !discoverVideos.length ? (
             <AppCard>
               <Text style={styles.empty}>No accessible videos match this search.</Text>
             </AppCard>
@@ -598,341 +751,384 @@ export default function VideosRoute() {
         </AppCard>
       ) : (
         <>
-          <AppCard>
-            <Text style={styles.cardTitle}>
-              {workspaceType === "facility"
-                ? "Facility video storage"
-                : workspaceType === "commercial"
-                  ? "Commercial video storage"
-                  : "Personal video storage"}
-            </Text>
-            <Text style={styles.quota}>
-              {formatBytes(quota.usedBytes)} used of {formatBytes(quota.limitBytes)}
-            </Text>
-            <View style={styles.meter}>
-              <View
-                style={[
-                  styles.meterFill,
-                  {
-                    width: `${Math.min(
-                      100,
-                      quota.limitBytes ? (quota.usedBytes / quota.limitBytes) * 100 : 0
-                    )}%`
-                  }
-                ]}
-              />
-            </View>
-            <Text style={styles.help}>
-              GrowPath uploads use this allowance. YouTube, Vimeo, Rumble, and other
-              external links do not.
-            </Text>
-            <View style={styles.librarySummaryRow}>
-              <View style={styles.libraryMetric}>
-                <Text style={styles.libraryMetricValue}>{libraryCounts.total}</Text>
-                <Text style={styles.libraryMetricLabel}>Workspace videos</Text>
-              </View>
-              <View style={styles.libraryMetric}>
-                <Text style={styles.libraryMetricValue}>{libraryCounts.mine}</Text>
-                <Text style={styles.libraryMetricLabel}>My videos</Text>
-              </View>
-              <View style={styles.libraryMetric}>
-                <Text style={styles.libraryMetricValue}>{libraryCounts.published}</Text>
-                <Text style={styles.libraryMetricLabel}>Published</Text>
-              </View>
-              <View style={styles.libraryMetric}>
-                <Text style={styles.libraryMetricValue}>{libraryCounts.drafts}</Text>
-                <Text style={styles.libraryMetricLabel}>Drafts</Text>
-              </View>
-            </View>
-            {workspaceType === "facility" && !canUpload ? (
-              <Text style={styles.warning}>
-                Your Facility role can watch and follow videos but cannot upload to the
-                shared Facility library.
-              </Text>
-            ) : null}
-          </AppCard>
-
-          {canUpload ? (
+          {loading || readError || !library ? (
             <AppCard>
               <Text style={styles.cardTitle}>
-                {editingId ? "Edit video draft" : "Add a video"}
+                {readError ? "Video library unavailable" : "Loading video library"}
               </Text>
-              <TextInput
-                accessibilityLabel="Video title"
-                onChangeText={setTitle}
-                placeholder="Video title"
-                placeholderTextColor={palette.textMuted}
-                style={styles.input}
-                value={title}
-              />
-              <TextInput
-                accessibilityLabel="Video description"
-                multiline
-                onChangeText={setDescription}
-                placeholder="Explain what viewers will learn or see"
-                placeholderTextColor={palette.textMuted}
-                style={[styles.input, styles.textArea]}
-                value={description}
-              />
-              <LessonMediaSourceEditor
-                value={mediaDraft}
-                onChange={setMediaDraft}
-                disabled={saving}
-                onPickUpload={pickVideo}
-                pendingUploadName={videoFile?.fileName || videoFile?.name || ""}
-                onRemove={() => {
-                  setVideoFile(null);
-                  setMediaDraft(emptyLessonMediaDraft());
-                }}
-              />
-              <Text style={styles.fieldLabel}>Video thumbnail</Text>
               <Text style={styles.help}>
-                Upload a 16:9 image. This exact thumbnail is used on video cards and
-                social shares.
+                Storage usage, video counts and upload controls will be available after
+                the current workspace library loads.
               </Text>
-              <View style={styles.thumbnailActions}>
-                <Pressable
-                  accessibilityLabel="Upload video thumbnail"
-                  accessibilityRole="button"
-                  disabled={saving}
-                  onPress={() => void pickThumbnail()}
-                  style={[styles.secondaryButton, saving && styles.disabled]}
-                >
-                  <Text style={styles.secondaryText}>
-                    {thumbnailUrl ? "Replace thumbnail" : "Upload thumbnail"}
-                  </Text>
-                </Pressable>
-                {thumbnailUrl ? (
+              {readError ? (
+                <>
+                  <InlineError error={readError} />
                   <Pressable
-                    accessibilityLabel="Clear video thumbnail"
                     accessibilityRole="button"
-                    disabled={saving}
-                    onPress={() => setThumbnailUrl("")}
-                    style={[styles.dangerButton, saving && styles.disabled]}
+                    accessibilityLabel="Retry video library"
+                    onPress={() => void loadLibrary()}
+                    style={styles.primaryButton}
                   >
-                    <Text style={styles.dangerText}>Clear</Text>
+                    <Text style={styles.primaryText}>Retry</Text>
                   </Pressable>
-                ) : null}
-              </View>
-              {thumbnailUrl ? (
-                <Image
-                  accessibilityLabel="Video thumbnail preview"
-                  resizeMode="cover"
-                  source={{ uri: resolveImageUri(thumbnailUrl) }}
-                  style={styles.thumbnailPreview}
+                </>
+              ) : (
+                <ActivityIndicator
+                  accessibilityLabel="Loading video library"
+                  color={palette.accent}
                 />
-              ) : null}
-              {uploadProgress !== null ? (
-                <View
-                  accessibilityLabel={`Uploading video ${uploadProgress} percent`}
-                  accessibilityLiveRegion="polite"
-                  style={styles.uploadProgress}
-                >
-                  <ActivityIndicator
-                    accessibilityLabel="Uploading video"
-                    color={palette.accent}
+              )}
+            </AppCard>
+          ) : (
+            <>
+              <AppCard>
+                <Text style={styles.cardTitle}>
+                  {workspaceType === "facility"
+                    ? "Facility video storage"
+                    : workspaceType === "commercial"
+                      ? "Commercial video storage"
+                      : "Personal video storage"}
+                </Text>
+                <Text style={styles.quota}>
+                  {formatBytes(quota.usedBytes)} used of {formatBytes(quota.limitBytes)}
+                </Text>
+                <View style={styles.meter}>
+                  <View
+                    style={[
+                      styles.meterFill,
+                      {
+                        width: `${Math.min(
+                          100,
+                          quota.limitBytes
+                            ? (quota.usedBytes / quota.limitBytes) * 100
+                            : 0
+                        )}%`
+                      }
+                    ]}
                   />
-                  <View style={styles.uploadProgressCopy}>
-                    <Text style={styles.fieldLabel}>Uploading video</Text>
-                    <Text style={styles.help}>
-                      {uploadProgress}% complete. Keep this page open until GrowPath
-                      verifies the file.
+                </View>
+                <Text style={styles.help}>
+                  GrowPath uploads use this allowance. YouTube, Vimeo, Rumble, and other
+                  external links do not.
+                </Text>
+                <View style={styles.librarySummaryRow}>
+                  <View style={styles.libraryMetric}>
+                    <Text style={styles.libraryMetricValue}>{libraryCounts.total}</Text>
+                    <Text style={styles.libraryMetricLabel}>Workspace videos</Text>
+                  </View>
+                  <View style={styles.libraryMetric}>
+                    <Text style={styles.libraryMetricValue}>{libraryCounts.mine}</Text>
+                    <Text style={styles.libraryMetricLabel}>My videos</Text>
+                  </View>
+                  <View style={styles.libraryMetric}>
+                    <Text style={styles.libraryMetricValue}>
+                      {libraryCounts.published}
                     </Text>
+                    <Text style={styles.libraryMetricLabel}>Published</Text>
+                  </View>
+                  <View style={styles.libraryMetric}>
+                    <Text style={styles.libraryMetricValue}>{libraryCounts.drafts}</Text>
+                    <Text style={styles.libraryMetricLabel}>Drafts</Text>
                   </View>
                 </View>
-              ) : null}
-              <Text style={styles.fieldLabel}>Who can watch?</Text>
-              <View accessibilityRole="radiogroup" style={styles.choiceRow}>
-                {visibilityOptions(workspaceType).map((option) => (
+                {workspaceType === "facility" && !canUpload ? (
+                  <Text style={styles.warning}>
+                    Your Facility role can watch and follow videos but cannot upload to
+                    the shared Facility library.
+                  </Text>
+                ) : null}
+              </AppCard>
+
+              {canUpload ? (
+                <AppCard>
+                  <Text style={styles.cardTitle}>
+                    {editingId ? "Edit video draft" : "Add a video"}
+                  </Text>
+                  <TextInput
+                    accessibilityLabel="Video title"
+                    onChangeText={setTitle}
+                    placeholder="Video title"
+                    placeholderTextColor={palette.textMuted}
+                    style={styles.input}
+                    value={title}
+                  />
+                  <TextInput
+                    accessibilityLabel="Video description"
+                    multiline
+                    onChangeText={setDescription}
+                    placeholder="Explain what viewers will learn or see"
+                    placeholderTextColor={palette.textMuted}
+                    style={[styles.input, styles.textArea]}
+                    value={description}
+                  />
+                  <LessonMediaSourceEditor
+                    value={mediaDraft}
+                    onChange={setMediaDraft}
+                    disabled={saving}
+                    onPickUpload={pickVideo}
+                    pendingUploadName={videoFile?.fileName || videoFile?.name || ""}
+                    onRemove={() => {
+                      setVideoFile(null);
+                      setMediaDraft(emptyLessonMediaDraft());
+                    }}
+                  />
+                  <Text style={styles.fieldLabel}>Video thumbnail</Text>
+                  <Text style={styles.help}>
+                    Upload a 16:9 image. This exact thumbnail is used on video cards and
+                    social shares.
+                  </Text>
+                  <View style={styles.thumbnailActions}>
+                    <Pressable
+                      accessibilityLabel="Upload video thumbnail"
+                      accessibilityRole="button"
+                      disabled={saving}
+                      onPress={() => void pickThumbnail()}
+                      style={[styles.secondaryButton, saving && styles.disabled]}
+                    >
+                      <Text style={styles.secondaryText}>
+                        {thumbnailUrl ? "Replace thumbnail" : "Upload thumbnail"}
+                      </Text>
+                    </Pressable>
+                    {thumbnailUrl ? (
+                      <Pressable
+                        accessibilityLabel="Clear video thumbnail"
+                        accessibilityRole="button"
+                        disabled={saving}
+                        onPress={() => setThumbnailUrl("")}
+                        style={[styles.dangerButton, saving && styles.disabled]}
+                      >
+                        <Text style={styles.dangerText}>Clear</Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                  {thumbnailUrl ? (
+                    <Image
+                      accessibilityLabel="Video thumbnail preview"
+                      resizeMode="cover"
+                      source={{ uri: resolveImageUri(thumbnailUrl) }}
+                      style={styles.thumbnailPreview}
+                    />
+                  ) : null}
+                  {uploadProgress !== null ? (
+                    <View
+                      accessibilityLabel={`Uploading video ${uploadProgress} percent`}
+                      accessibilityLiveRegion="polite"
+                      style={styles.uploadProgress}
+                    >
+                      <ActivityIndicator
+                        accessibilityLabel="Uploading video"
+                        color={palette.accent}
+                      />
+                      <View style={styles.uploadProgressCopy}>
+                        <Text style={styles.fieldLabel}>Uploading video</Text>
+                        <Text style={styles.help}>
+                          {uploadProgress}% complete. Keep this page open until GrowPath
+                          verifies the file.
+                        </Text>
+                      </View>
+                    </View>
+                  ) : null}
+                  <Text style={styles.fieldLabel}>Who can watch?</Text>
+                  <View accessibilityRole="radiogroup" style={styles.choiceRow}>
+                    {visibilityOptions(workspaceType).map((option) => (
+                      <Pressable
+                        key={option.value}
+                        accessibilityLabel={`Video visibility: ${option.label}`}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: visibility === option.value }}
+                        onPress={() => setVisibility(option.value)}
+                        style={[
+                          styles.choice,
+                          visibility === option.value && styles.choiceSelected
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.choiceText,
+                            visibility === option.value && styles.choiceTextSelected
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  <TextInput
+                    accessibilityLabel="Video tags"
+                    onChangeText={setTags}
+                    placeholder="Tags, comma separated"
+                    placeholderTextColor={palette.textMuted}
+                    style={styles.input}
+                    value={tags}
+                  />
+                  <GrowInterestPicker
+                    title="Video grow interests"
+                    helperText="Select the structured grow interests this video should be attached to. These tags power discovery and targeting."
+                    value={growInterestSelections}
+                    onChange={setGrowInterestSelections}
+                    tierOptionsOverride={{ crops: getTier1Options() }}
+                    collapsible={false}
+                    showEmptyTiers
+                  />
                   <Pressable
-                    key={option.value}
-                    accessibilityLabel={`Video visibility: ${option.label}`}
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: visibility === option.value }}
-                    onPress={() => setVisibility(option.value)}
-                    style={[
-                      styles.choice,
-                      visibility === option.value && styles.choiceSelected
-                    ]}
+                    accessibilityLabel="Mark video as cannabis or hemp specific"
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: cannabisSpecific }}
+                    onPress={() => setCannabisSpecific((current) => !current)}
+                    style={[styles.checkbox, cannabisSpecific && styles.checkboxSelected]}
                   >
                     <Text
                       style={[
                         styles.choiceText,
-                        visibility === option.value && styles.choiceTextSelected
+                        cannabisSpecific && styles.choiceTextSelected
                       ]}
                     >
-                      {option.label}
+                      Cannabis or hemp-specific content
                     </Text>
                   </Pressable>
-                ))}
-              </View>
-              <TextInput
-                accessibilityLabel="Video tags"
-                onChangeText={setTags}
-                placeholder="Tags, comma separated"
-                placeholderTextColor={palette.textMuted}
-                style={styles.input}
-                value={tags}
-              />
-              <GrowInterestPicker
-                title="Video grow interests"
-                helperText="Select the structured grow interests this video should be attached to. These tags power discovery and targeting."
-                value={growInterestSelections}
-                onChange={setGrowInterestSelections}
-                tierOptionsOverride={{ crops: getTier1Options() }}
-                collapsible={false}
-                showEmptyTiers
-              />
-              <Pressable
-                accessibilityLabel="Mark video as cannabis or hemp specific"
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: cannabisSpecific }}
-                onPress={() => setCannabisSpecific((current) => !current)}
-                style={[styles.checkbox, cannabisSpecific && styles.checkboxSelected]}
-              >
-                <Text
-                  style={[
-                    styles.choiceText,
-                    cannabisSpecific && styles.choiceTextSelected
-                  ]}
-                >
-                  Cannabis or hemp-specific content
-                </Text>
-              </Pressable>
-              <Text style={styles.help}>
-                Cannabis/hemp-specific videos appear only to eligible audiences and do not
-                unlock unrelated cannabis tools.
-              </Text>
-              <View style={styles.actions}>
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={saving || !title.trim()}
-                  onPress={() => void saveDraft()}
-                  style={[
-                    styles.primaryButton,
-                    (saving || !title.trim()) && styles.disabled
-                  ]}
-                >
-                  <Text style={styles.primaryText}>
-                    {saving ? "Saving…" : editingId ? "Save Draft Changes" : "Add Draft"}
+                  <Text style={styles.help}>
+                    Cannabis/hemp-specific videos appear only to eligible audiences and do
+                    not unlock unrelated cannabis tools.
                   </Text>
-                </Pressable>
-                {editingId ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    disabled={saving}
-                    onPress={resetForm}
-                    style={styles.secondaryButton}
-                  >
-                    <Text style={styles.secondaryText}>Cancel Edit</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            </AppCard>
-          ) : null}
-
-          {message ? <Text style={styles.success}>{message}</Text> : null}
-          <InlineError error={error} />
-          {confirmDelete ? (
-            <AppCard>
-              <Text style={styles.cardTitle}>Remove {confirmDelete.title}?</Text>
-              <Text style={styles.warning}>
-                This removes the library record. If the video is attached to a course,
-                GrowPath will block removal until you detach it. Uploaded file cleanup may
-                remain pending until storage confirms deletion.
-              </Text>
-              <View style={styles.actions}>
-                <Pressable
-                  accessibilityLabel={`Confirm removal of ${confirmDelete.title}`}
-                  accessibilityRole="button"
-                  disabled={saving}
-                  onPress={() => void confirmRemove()}
-                  style={styles.dangerButton}
-                >
-                  <Text style={styles.dangerText}>Confirm Remove</Text>
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={saving}
-                  onPress={() => setConfirmDelete(null)}
-                  style={styles.secondaryButton}
-                >
-                  <Text style={styles.secondaryText}>Keep Video</Text>
-                </Pressable>
-              </View>
-            </AppCard>
-          ) : null}
-          {loading ? (
-            <ActivityIndicator
-              accessibilityLabel="Loading video library"
-              color={palette.accent}
-            />
-          ) : null}
-          {!loading && !filteredLibraryVideos.length ? (
-            <AppCard>
-              <Text style={styles.empty}>
-                {libraryScope === "workspace"
-                  ? "This workspace has no videos yet."
-                  : "No videos match this view yet."}
-              </Text>
-            </AppCard>
-          ) : null}
-          <AppCard>
-            <Text style={styles.cardTitle}>Library view</Text>
-            <Text style={styles.help}>
-              Switch between the whole workspace library and the videos you uploaded
-              yourself.
-            </Text>
-            <View accessibilityRole="toolbar" style={styles.scopeRow}>
-              {LIBRARY_SCOPE_OPTIONS.map((option) => {
-                const selected = libraryScope === option.value;
-                return (
-                  <Pressable
-                    key={option.value}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    onPress={() => setLibraryScope(option.value)}
-                    style={[
-                      styles.choice,
-                      selected && styles.choiceSelected,
-                      styles.scopeChip
-                    ]}
-                  >
-                    <Text
-                      style={[styles.choiceText, selected && styles.choiceTextSelected]}
+                  <View style={styles.actions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={saving || !title.trim()}
+                      onPress={() => void saveDraft()}
+                      style={[
+                        styles.primaryButton,
+                        (saving || !title.trim()) && styles.disabled
+                      ]}
                     >
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </AppCard>
-          <View style={styles.grid}>
-            {filteredLibraryVideos.map((video) => {
-              const currentUserId = String(auth.user?.id || auth.user?._id || "");
-              const canEditOwnStaffDraft =
-                !canManage &&
-                canUpload &&
-                !canPublish &&
-                video.status === "draft" &&
-                video.uploaderUserId === currentUserId;
-              const canEdit = canManage || canEditOwnStaffDraft;
-              return (
-                <VideoCard
-                  key={video.id}
-                  video={video}
-                  busy={saving}
-                  ownerControls={canEdit || canPublish || canManage}
-                  onEdit={canEdit ? editVideo : undefined}
-                  onTogglePublished={canPublish ? togglePublished : undefined}
-                  onDelete={
-                    canManage || canEditOwnStaffDraft ? setConfirmDelete : undefined
-                  }
+                      <Text style={styles.primaryText}>
+                        {saving
+                          ? "Saving…"
+                          : editingId
+                            ? "Save Draft Changes"
+                            : "Add Draft"}
+                      </Text>
+                    </Pressable>
+                    {editingId ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={saving}
+                        onPress={resetForm}
+                        style={styles.secondaryButton}
+                      >
+                        <Text style={styles.secondaryText}>Cancel Edit</Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                </AppCard>
+              ) : null}
+
+              {message ? <Text style={styles.success}>{message}</Text> : null}
+              <InlineError error={error} />
+              {confirmDelete ? (
+                <AppCard>
+                  <Text style={styles.cardTitle}>Remove {confirmDelete.title}?</Text>
+                  <Text style={styles.warning}>
+                    This removes the library record. If the video is attached to a course,
+                    GrowPath will block removal until you detach it. Uploaded file cleanup
+                    may remain pending until storage confirms deletion.
+                  </Text>
+                  <View style={styles.actions}>
+                    <Pressable
+                      accessibilityLabel={`Confirm removal of ${confirmDelete.title}`}
+                      accessibilityRole="button"
+                      disabled={saving}
+                      onPress={() => void confirmRemove()}
+                      style={styles.dangerButton}
+                    >
+                      <Text style={styles.dangerText}>Confirm Remove</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={saving}
+                      onPress={() => setConfirmDelete(null)}
+                      style={styles.secondaryButton}
+                    >
+                      <Text style={styles.secondaryText}>Keep Video</Text>
+                    </Pressable>
+                  </View>
+                </AppCard>
+              ) : null}
+              {loading ? (
+                <ActivityIndicator
+                  accessibilityLabel="Loading video library"
+                  color={palette.accent}
                 />
-              );
-            })}
-          </View>
+              ) : null}
+              {!loading && !filteredLibraryVideos.length ? (
+                <AppCard>
+                  <Text style={styles.empty}>
+                    {libraryScope === "workspace"
+                      ? "This workspace has no videos yet."
+                      : "No videos match this view yet."}
+                  </Text>
+                </AppCard>
+              ) : null}
+              <AppCard>
+                <Text style={styles.cardTitle}>Library view</Text>
+                <Text style={styles.help}>
+                  Switch between the whole workspace library and the videos you uploaded
+                  yourself.
+                </Text>
+                <View accessibilityRole="toolbar" style={styles.scopeRow}>
+                  {LIBRARY_SCOPE_OPTIONS.map((option) => {
+                    const selected = libraryScope === option.value;
+                    return (
+                      <Pressable
+                        key={option.value}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
+                        onPress={() => setLibraryScope(option.value)}
+                        style={[
+                          styles.choice,
+                          selected && styles.choiceSelected,
+                          styles.scopeChip
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.choiceText,
+                            selected && styles.choiceTextSelected
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </AppCard>
+              <View style={styles.grid}>
+                {filteredLibraryVideos.map((video) => {
+                  const currentUserId = String(auth.user?.id || auth.user?._id || "");
+                  const canEditOwnStaffDraft =
+                    !canManage &&
+                    canUpload &&
+                    !canPublish &&
+                    video.status === "draft" &&
+                    video.uploaderUserId === currentUserId;
+                  const canEdit = canManage || canEditOwnStaffDraft;
+                  return (
+                    <VideoCard
+                      key={video.id}
+                      video={video}
+                      busy={saving}
+                      ownerControls={canEdit || canPublish || canManage}
+                      onEdit={canEdit ? editVideo : undefined}
+                      onTogglePublished={canPublish ? togglePublished : undefined}
+                      onDelete={
+                        canManage || canEditOwnStaffDraft ? setConfirmDelete : undefined
+                      }
+                    />
+                  );
+                })}
+              </View>
+            </>
+          )}
         </>
       )}
     </AppPage>

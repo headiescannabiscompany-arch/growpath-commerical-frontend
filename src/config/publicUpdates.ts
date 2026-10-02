@@ -409,6 +409,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
           "Refund handling and Stripe seller allocation have been updated. Purchase, partial/full refund, and seller-allocation flows passed Sandbox checks; those checks did not move real money or verify a bank payout."
       },
       {
+        id: "video-library-readiness",
+        title: "Clearer Video Library loading and recovery",
+        date: "October 2, 2026",
+        dateLabel: "Released",
+        summary:
+          "Unavailable libraries now offer Retry instead of showing zero storage use or claiming there are no videos. Upload controls wait for the current library, account/workspace changes clear earlier records and unfinished forms, and late searches cannot replace newer results. Same-workspace retries preserve draft fields. Upload, publication and sharing rules remain unchanged."
+      },
+      {
         id: "forum-share-readiness",
         title: "Clearer shared-discussion access checks",
         date: "October 2, 2026",
