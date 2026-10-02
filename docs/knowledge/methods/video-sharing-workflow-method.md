@@ -44,6 +44,14 @@ Discard superseded search/tab responses. Changing account, session or workspace 
 the prior records and unfinished form; a same-workspace read retry preserves draft fields.
 These read guards do not change server permissions, publication, uploads or sharing.
 
+Video detail uses the same readiness/session/workspace boundary plus the exact video
+identity. Remove the old media, share target, discussion and unfinished composer when
+that scope changes; discard late responses. Read comments only after the exact video
+has loaded successfully. Failed video or discussion reads offer separate single-flight
+Retry actions; a discussion failure is not an empty conversation and its retry keeps
+the same-scope unfinished comment. A detail read retry does not post, report, follow,
+publish, enroll or grant access. Signed-out public viewers retain read-only controls.
+
 Production GrowPath-hosted video objects remain private. Reserve workspace quota before
 issuing a short-lived direct-upload URL, count unexpired pending reservations so
 concurrent uploads cannot oversubscribe the workspace, and activate the record only after

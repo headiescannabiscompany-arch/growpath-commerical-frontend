@@ -410,11 +410,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "video-library-readiness",
-        title: "Clearer Video Library loading and recovery",
+        title: "Clearer video library and detail recovery",
         date: "October 2, 2026",
         dateLabel: "Released",
         summary:
-          "Unavailable libraries now offer Retry instead of showing zero storage use or claiming there are no videos. Upload controls wait for the current library, account/workspace changes clear earlier records and unfinished forms, and late searches cannot replace newer results. Same-workspace retries preserve draft fields. Upload, publication and sharing rules remain unchanged."
+          "Video libraries, individual videos and discussions now offer Retry when reads fail, without claiming zero storage or empty results. Account/workspace or video changes clear earlier content and unfinished forms; late responses cannot replace current results. Same-context retries preserve unfinished drafts. Upload, publication, sharing and access rules remain unchanged."
       },
       {
         id: "forum-share-readiness",

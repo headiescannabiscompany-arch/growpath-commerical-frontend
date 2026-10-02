@@ -1,6 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -29,6 +29,7 @@ import LessonMediaCard from "@/components/learning/LessonMediaCard";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import PublicShareActions from "@/components/sharing/PublicShareActions";
+import VideoReadinessBoundary from "@/components/videos/VideoReadinessBoundary";
 import { formatDuration } from "@/features/videos/videoPresentation";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -36,16 +37,30 @@ import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 
 export default function VideoDetailRoute() {
   const params = useLocalSearchParams<{ videoId?: string }>();
+  const videoId = String(
+    Array.isArray(params.videoId) ? params.videoId[0] : params.videoId || ""
+  );
+  return (
+    <VideoReadinessBoundary detail>
+      <ReadyVideoDetailRoute key={videoId} videoId={videoId} />
+    </VideoReadinessBoundary>
+  );
+}
+
+function ReadyVideoDetailRoute({ videoId }: { videoId: string }) {
   const router = useRouter();
   const auth = useAuth();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
-  const videoId = String(
-    Array.isArray(params.videoId) ? params.videoId[0] : params.videoId || ""
-  );
   const [video, setVideo] = useState<GrowPathVideo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
+  const [readError, setReadError] = useState<any>(null);
+  const [commentsReadError, setCommentsReadError] = useState<any>(null);
+  const videoReadPending = useRef(false);
+  const commentsReadPending = useRef(false);
+  const readGeneration = useRef(0);
+  const mounted = useRef(true);
   const [reportVisible, setReportVisible] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [comments, setComments] = useState<VideoComment[]>([]);
@@ -67,44 +82,67 @@ export default function VideoDetailRoute() {
   const canEditThumbnail =
     auth.isAuthed && Boolean(ownerId) && ownerId === signedInUserId;
 
-  useEffect(() => {
-    let active = true;
+  const loadVideo = useCallback(async () => {
+    if (!mounted.current || videoReadPending.current) return;
+    videoReadPending.current = true;
+    const generation = readGeneration.current;
     setLoading(true);
-    setError(null);
-    getVideo(videoId)
-      .then((result) => {
-        if (active) setVideo(result);
-      })
-      .catch((err) => {
-        if (active) setError(err);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+    setReadError(null);
+    setVideo(null);
+    try {
+      if (!videoId) throw new Error("The video link is missing its video identifier.");
+      const result = await getVideo(videoId);
+      if (generation !== readGeneration.current) return;
+      if (!result || result.id !== videoId)
+        throw new Error("The requested video could not be loaded. Please retry.");
+      setVideo(result);
+    } catch (err) {
+      if (generation === readGeneration.current) setReadError(err);
+    } finally {
+      if (generation === readGeneration.current) {
+        videoReadPending.current = false;
+        setLoading(false);
+      }
+    }
+  }, [videoId]);
+
+  const loadComments = useCallback(async () => {
+    if (!mounted.current || commentsReadPending.current) return;
+    commentsReadPending.current = true;
+    const generation = readGeneration.current;
+    setCommentsLoading(true);
+    setCommentsReadError(null);
+    try {
+      const rows = await listVideoComments(videoId);
+      if (generation !== readGeneration.current) return;
+      if (!Array.isArray(rows))
+        throw new Error("Discussion returned an unexpected response.");
+      setComments(rows);
+    } catch (err) {
+      if (generation === readGeneration.current) setCommentsReadError(err);
+    } finally {
+      if (generation === readGeneration.current) {
+        commentsReadPending.current = false;
+        setCommentsLoading(false);
+      }
+    }
   }, [videoId]);
 
   useEffect(() => {
-    let active = true;
-    setCommentsLoading(true);
-    setCommentError("");
-    listVideoComments(videoId)
-      .then((rows) => {
-        if (active) setComments(rows);
-      })
-      .catch((err) => {
-        if (active)
-          setCommentError(String(err?.message || err || "Comments could not be loaded."));
-      })
-      .finally(() => {
-        if (active) setCommentsLoading(false);
-      });
+    mounted.current = true;
+    void loadVideo();
     return () => {
-      active = false;
+      mounted.current = false;
+      readGeneration.current += 1;
+      videoReadPending.current = false;
+      commentsReadPending.current = false;
     };
-  }, [videoId]);
+  }, [loadVideo]);
+
+  const loadedVideoId = video?.id;
+  useEffect(() => {
+    if (loadedVideoId) void loadComments();
+  }, [loadedVideoId, loadComments]);
 
   async function submitComment() {
     const body = commentText.trim();
@@ -189,6 +227,20 @@ export default function VideoDetailRoute() {
         <ActivityIndicator accessibilityLabel="Loading video" color={palette.accent} />
       ) : null}
       <InlineError error={error} />
+      {readError ? (
+        <AppCard>
+          <Text style={styles.sectionTitle}>Video unavailable</Text>
+          <InlineError error={readError} />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry video"
+            onPress={() => void loadVideo()}
+            style={styles.thumbnailButton}
+          >
+            <Text style={styles.thumbnailButtonText}>Retry</Text>
+          </Pressable>
+        </AppCard>
+      ) : null}
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
       {video ? (
         <>
@@ -333,7 +385,21 @@ export default function VideoDetailRoute() {
             {commentError ? (
               <Text style={styles.commentError}>{commentError}</Text>
             ) : null}
-            {comments.length === 0 && !commentsLoading ? (
+            {commentsReadError ? (
+              <>
+                <Text style={styles.commentError}>Discussion unavailable</Text>
+                <InlineError error={commentsReadError} />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry video discussion"
+                  onPress={() => void loadComments()}
+                  style={styles.thumbnailButton}
+                >
+                  <Text style={styles.thumbnailButtonText}>Retry</Text>
+                </Pressable>
+              </>
+            ) : null}
+            {comments.length === 0 && !commentsLoading && !commentsReadError ? (
               <Text style={styles.emptyComments}>
                 No comments yet. Start the discussion.
               </Text>

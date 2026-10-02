@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 import VideoDetailRoute from "@/app/videos/[videoId]";
 
@@ -14,17 +14,33 @@ let mockLessonMediaCardProps: any = null;
 let mockAppPageProps: any = null;
 let mockPublicShareProps: any = null;
 let mockUserId = "viewer-1";
+let mockVideoId = "video-1";
+let mockAuthed = true;
+let mockReady = true;
+let mockHydrating = false;
+let mockFacilityId: string | null = null;
+const mockRetryMe = jest.fn();
 const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ videoId: "video-1" }),
+  useLocalSearchParams: () => ({ videoId: mockVideoId }),
   useRouter: () => ({ push: mockPush })
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
-    isAuthed: true,
+    isAuthed: mockAuthed,
+    isHydrating: mockHydrating,
+    retryMe: mockRetryMe,
     user: { id: mockUserId, _id: mockUserId }
+  })
+}));
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({
+    ready: mockReady,
+    mode: "personal",
+    facilityId: mockFacilityId
   })
 }));
 
@@ -124,6 +140,13 @@ describe("VideoDetailRoute reporting", () => {
     mockAppPageProps = null;
     mockPublicShareProps = null;
     mockUserId = "viewer-1";
+    mockVideoId = "video-1";
+    mockAuthed = true;
+    mockReady = true;
+    mockHydrating = false;
+    mockFacilityId = null;
+    mockGetVideo.mockReset();
+    mockListVideoComments.mockReset();
     mockGetVideo.mockResolvedValue(video);
     mockListVideoComments.mockResolvedValue([]);
     mockPersistImageUri.mockResolvedValue("/uploads/video-thumbnails/selected.jpg");
@@ -135,6 +158,154 @@ describe("VideoDetailRoute reporting", () => {
     mockUpdateVideo.mockResolvedValue({
       video: { ...video, thumbnailUrl: "/uploads/video-thumbnails/selected.jpg" }
     });
+  });
+
+  it("waits for access readiness before video and discussion reads", async () => {
+    mockHydrating = true;
+    mockReady = false;
+    const view = render(<VideoDetailRoute />);
+    expect(mockGetVideo).not.toHaveBeenCalled();
+    expect(mockListVideoComments).not.toHaveBeenCalled();
+    mockHydrating = false;
+    mockReady = true;
+    view.rerender(<VideoDetailRoute />);
+    await screen.findByText(video.title);
+  });
+
+  it("offers a single-flight video retry and does not request comments before access succeeds", async () => {
+    mockGetVideo.mockRejectedValueOnce(new Error("offline"));
+    let finish: (value: any) => void = () => {};
+    mockGetVideo.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    render(<VideoDetailRoute />);
+    await screen.findByText("Video unavailable");
+    expect(mockListVideoComments).not.toHaveBeenCalled();
+    const retry = screen.getByLabelText("Retry video");
+    fireEvent.press(retry);
+    fireEvent.press(retry);
+    expect(mockGetVideo).toHaveBeenCalledTimes(2);
+    await act(async () => finish(video));
+    await screen.findByText(video.title);
+    await waitFor(() => expect(mockListVideoComments).toHaveBeenCalledTimes(1));
+  });
+
+  it.each(["account", "video", "facility", "signout"])(
+    "removes earlier video and composer immediately after %s changes",
+    async (change) => {
+      mockGetVideo.mockResolvedValueOnce(video);
+      mockGetVideo.mockImplementationOnce(() => new Promise(() => {}));
+      const view = render(<VideoDetailRoute />);
+      await screen.findByText(video.title);
+      fireEvent.changeText(
+        screen.getByLabelText("Write a video comment"),
+        "Private unfinished comment"
+      );
+      if (change === "account") mockUserId = "another-viewer";
+      if (change === "video") mockVideoId = "video-2";
+      if (change === "facility") mockFacilityId = "facility-2";
+      if (change === "signout") {
+        mockUserId = "";
+        mockAuthed = false;
+      }
+      view.rerender(<VideoDetailRoute />);
+      expect(screen.queryByText(video.title)).toBeNull();
+      expect(screen.queryByDisplayValue("Private unfinished comment")).toBeNull();
+      expect(mockGetVideo).toHaveBeenCalledTimes(2);
+    }
+  );
+
+  it("retries failed comments without claiming an empty discussion or losing the composer", async () => {
+    mockListVideoComments.mockRejectedValueOnce(new Error("discussion offline"));
+    mockListVideoComments.mockResolvedValueOnce([]);
+    render(<VideoDetailRoute />);
+    await screen.findByText("Discussion unavailable");
+    expect(screen.queryByText("No comments yet. Start the discussion.")).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("Write a video comment"), "Keep my draft");
+    fireEvent.press(screen.getByLabelText("Retry video discussion"));
+    await screen.findByText("No comments yet. Start the discussion.");
+    expect(screen.getByDisplayValue("Keep my draft")).toBeTruthy();
+    expect(mockGetVideo).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects an empty or mismatched video payload without mounting media or sharing", async () => {
+    mockGetVideo.mockResolvedValue({ ...video, id: "wrong-id" });
+    render(<VideoDetailRoute />);
+    await screen.findByText("Video unavailable");
+    expect(mockLessonMediaCardProps).toBeNull();
+    expect(mockPublicShareProps).toBeNull();
+    expect(mockListVideoComments).not.toHaveBeenCalled();
+  });
+
+  it("discards a late previous-account video response", async () => {
+    let finishOld: (value: any) => void = () => {};
+    mockGetVideo.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishOld = resolve;
+        })
+    );
+    mockGetVideo.mockResolvedValueOnce({ ...video, title: "Current account video" });
+    const view = render(<VideoDetailRoute />);
+    mockUserId = "another-viewer";
+    view.rerender(<VideoDetailRoute />);
+    await screen.findByText("Current account video");
+    await act(async () => finishOld(video));
+    expect(screen.queryByText(video.title)).toBeNull();
+    expect(screen.getByText("Current account video")).toBeTruthy();
+  });
+
+  it("discards a late previous-video discussion and keeps the share target current", async () => {
+    let finishOld: (value: any) => void = () => {};
+    mockListVideoComments.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishOld = resolve;
+        })
+    );
+    mockGetVideo.mockResolvedValueOnce(video);
+    mockGetVideo.mockResolvedValueOnce({
+      ...video,
+      id: "video-2",
+      title: "Second video",
+      socialPreviewUrl: "https://api.growpathai.com/api/videos/video-2/share?v=new"
+    });
+    const view = render(<VideoDetailRoute />);
+    await screen.findByText(video.title);
+    await waitFor(() => expect(mockListVideoComments).toHaveBeenCalledTimes(1));
+    mockVideoId = "video-2";
+    view.rerender(<VideoDetailRoute />);
+    await screen.findByText("Second video");
+    await act(async () =>
+      finishOld([
+        {
+          id: "old-comment",
+          body: "Old private comment",
+          author: { id: "old", displayName: "Old viewer" }
+        }
+      ])
+    );
+    expect(screen.queryByText("Old private comment")).toBeNull();
+    expect(mockPublicShareProps).toEqual(
+      expect.objectContaining({
+        path: "/videos/video-2",
+        socialPreviewUrl: "https://api.growpathai.com/api/videos/video-2/share?v=new"
+      })
+    );
+  });
+
+  it("keeps signed-out video discovery read-only after a successful public response", async () => {
+    mockAuthed = false;
+    mockUserId = "";
+    render(<VideoDetailRoute />);
+    await screen.findByText(video.title);
+    expect(screen.queryByLabelText("Write a video comment")).toBeNull();
+    expect(screen.queryByText("Report Video")).toBeNull();
+    expect(screen.queryByLabelText("Upload thumbnail for this video")).toBeNull();
+    expect(screen.getByText("Sign in to join the discussion.")).toBeTruthy();
   });
 
   it("uses exactly one shared back action with a videos fallback", async () => {

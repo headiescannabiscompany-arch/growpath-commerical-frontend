@@ -32,6 +32,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import GrowInterestPicker from "@/components/GrowInterestPicker";
 import VideoCard from "@/components/videos/VideoCard";
+import VideoReadinessBoundary from "@/components/videos/VideoReadinessBoundary";
 import { useEntitlements } from "@/entitlements";
 import {
   emptyLessonMediaDraft,
@@ -97,91 +98,11 @@ function durationSeconds(asset: any) {
 }
 
 export default function VideosRoute() {
-  const auth = useAuth();
-  const access = useEntitlements();
-  const { palette } = useAppTheme();
-  const retryPending = useRef(false);
-  const [retrying, setRetrying] = useState(false);
-  const [retryFailed, setRetryFailed] = useState(false);
-  const unresolved = auth.isHydrating || access.ready === false;
-  const failed = !auth.isHydrating && unresolved && Boolean(access.bootstrapError);
-
-  async function retryAccess() {
-    if (retryPending.current) return;
-    retryPending.current = true;
-    setRetrying(true);
-    setRetryFailed(false);
-    try {
-      await auth.retryMe();
-    } catch {
-      setRetryFailed(true);
-    } finally {
-      retryPending.current = false;
-      setRetrying(false);
-    }
-  }
-
-  if (unresolved) {
-    return (
-      <AppPage
-        routeKey="videos"
-        header={
-          <Text
-            accessibilityRole="header"
-            aria-level={1}
-            style={{ color: palette.text, fontSize: 28, fontWeight: "900" }}
-          >
-            Videos
-          </Text>
-        }
-      >
-        <AppCard>
-          <Text style={{ color: palette.text }}>
-            {failed ? "Video access check unavailable" : "Checking video access"}
-          </Text>
-          {failed ? (
-            <>
-              <Text style={{ color: palette.textMuted }}>
-                {retryFailed
-                  ? "The check failed. Please try again."
-                  : "Your access could not be checked. This does not mean access was denied."}
-              </Text>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Retry video access"
-                disabled={retrying}
-                accessibilityState={{ disabled: retrying }}
-                onPress={() => void retryAccess()}
-                style={{
-                  padding: 12,
-                  backgroundColor: palette.accent,
-                  borderRadius: 8,
-                  alignSelf: "flex-start"
-                }}
-              >
-                <Text style={{ color: palette.accentText }}>
-                  {retrying ? "Checking…" : "Retry"}
-                </Text>
-              </Pressable>
-            </>
-          ) : (
-            <ActivityIndicator
-              accessibilityLabel="Checking video access"
-              color={palette.accent}
-            />
-          )}
-        </AppCard>
-      </AppPage>
-    );
-  }
-  const scope = JSON.stringify([
-    auth.user?.id || auth.user?._id || "",
-    auth.token,
-    auth.isAuthed,
-    access.mode,
-    access.facilityId
-  ]);
-  return <ReadyVideosRoute key={scope} />;
+  return (
+    <VideoReadinessBoundary>
+      <ReadyVideosRoute />
+    </VideoReadinessBoundary>
+  );
 }
 
 function ReadyVideosRoute() {
