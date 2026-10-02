@@ -1,7 +1,12 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { fireEvent, render } from "@testing-library/react-native";
 import UpdatesPage, { createUpdatesStyles } from "@/app/updates";
 import { PUBLIC_UPDATE_SECTIONS } from "@/config/publicUpdates";
+import {
+  PUBLIC_UPDATE_GROUPS,
+  UPDATE_STATUS_LABELS,
+  updateGroupSections
+} from "@/config/publicUpdateGroups";
 import { getThemePalette } from "@/theme/appTheme";
 import { getRoutePolicy } from "@/navigation/routeAccess";
 import { metadataForPathname } from "@/seo/publicRouteMetadata";
@@ -98,6 +103,10 @@ describe("public Updates page", () => {
       );
     }
     const screen = render(<UpdatesPage />);
+    fireEvent.press(screen.getByRole("tab", { name: "Future Lives" }));
+    fireEvent.press(
+      screen.getByRole("button", { name: "Show Future Lives detailed history" })
+    );
     expect(screen.getByRole("header", { name: "Lives · Later roadmap" })).toBeTruthy();
     expect(screen.getByText("Support a Live host")).toBeTruthy();
   });
@@ -126,35 +135,102 @@ describe("public Updates page", () => {
     expect(note?.summary).toContain("does not publish anything");
     expect(note?.summary).toContain("publishing rules stay unchanged");
   });
-  it("distinguishes released work, testing, and plans with readable fixed dates", () => {
+  it("shows milestone summaries first and retains dated history within each tab", () => {
     const screen = render(<UpdatesPage />);
     expect(screen.getByRole("header", { name: "Updates" })).toBeTruthy();
-    for (const section of PUBLIC_UPDATE_SECTIONS) {
-      expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
-    }
     expect(screen.getByText("Last updated October 2, 2026")).toBeTruthy();
     expect(
-      screen.getByText("Live subscription gift announcements verified")
-    ).toBeTruthy();
-    expect(screen.getByText("Larger journal photos and safer retries")).toBeTruthy();
-    expect(screen.getByText("Timeline headings that fit on phones")).toBeTruthy();
-    expect(screen.getByText("Account management and complimentary access")).toBeTruthy();
-    expect(screen.getByText("Cleaner grow and journal creation")).toBeTruthy();
-    expect(screen.getByText("Visual grow stories and journal photos")).toBeTruthy();
-    expect(screen.getByText("Complete missing age information in Profile")).toBeTruthy();
-    expect(
-      screen.getByText("Updates in progress · Development and testing")
-    ).toBeTruthy();
-    expect(
-      screen.queryByText("No additional updates are currently listed as in testing.")
-    ).toBeNull();
-    expect(screen.getByText(/not a promise of a release date/)).toBeTruthy();
+      screen.getByRole("tab", { name: "Overview" }).props.accessibilityState.selected
+    ).toBe(true);
+    for (const group of PUBLIC_UPDATE_GROUPS) {
+      expect(screen.getByRole("header", { name: group.title })).toBeTruthy();
+      expect(screen.getByText(group.scope)).toBeTruthy();
+    }
+    expect(screen.queryByText("Larger journal photos and safer retries")).toBeNull();
+    expect(screen.getByText(/promise of a release date/)).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Contact Support" }).props.accessibilityHint
     ).toBe("/support");
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).not.toContain(
       "course-gifting"
     );
+    for (const group of PUBLIC_UPDATE_GROUPS) {
+      fireEvent.press(screen.getByRole("tab", { name: group.tab }));
+      expect(screen.getByText(UPDATE_STATUS_LABELS[group.status])).toBeTruthy();
+      expect(screen.getByText(group.next)).toBeTruthy();
+      const history = screen.getByRole("button", {
+        name: `Show ${group.tab} detailed history`
+      });
+      expect(history.props.accessibilityState.expanded).toBe(false);
+      fireEvent.press(history);
+      for (const section of updateGroupSections(group)) {
+        expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
+        for (const entry of section.entries) {
+          expect(
+            screen.getAllByRole("header", { name: entry.title }).length
+          ).toBeGreaterThan(0);
+          expect(
+            screen.getAllByText(`${entry.dateLabel} ${entry.date}`).length
+          ).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
+  it("preserves every existing note exactly once without inventing history", () => {
+    const original = PUBLIC_UPDATE_SECTIONS.flatMap((section) =>
+      section.entries.map((entry) => entry.id)
+    );
+    const grouped = PUBLIC_UPDATE_GROUPS.flatMap((group) => group.entryIds);
+    expect(new Set(grouped).size).toBe(grouped.length);
+    expect([...grouped].sort()).toEqual([...original].sort());
+    expect(new Set(PUBLIC_UPDATE_GROUPS.map((group) => group.id)).size).toBe(
+      PUBLIC_UPDATE_GROUPS.length
+    );
+  });
+
+  it("collapses history when switching groups and supports overview shortcuts", () => {
+    const screen = render(<UpdatesPage />);
+    fireEvent.press(screen.getByRole("button", { name: "View Courses milestone" }));
+    expect(
+      screen.getByRole("tab", { name: "Courses" }).props.accessibilityState.selected
+    ).toBe(true);
+    fireEvent.press(
+      screen.getByRole("button", { name: "Show Courses detailed history" })
+    );
+    expect(screen.getByText(PUBLIC_UPDATE_SECTIONS[0].entries[0].title)).toBeTruthy();
+    fireEvent.press(screen.getByRole("tab", { name: "Billing & checkout" }));
+    expect(screen.queryByText(PUBLIC_UPDATE_SECTIONS[0].entries[0].title)).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Show Billing & checkout detailed history" })
+        .props.accessibilityState.expanded
+    ).toBe(false);
+    fireEvent.press(screen.getByRole("tab", { name: "Courses" }));
+    expect(
+      screen.getByRole("button", { name: "Show Courses detailed history" }).props
+        .accessibilityState.expanded
+    ).toBe(false);
+  });
+
+  it("does not mark unfinished areas or future additions complete", () => {
+    expect(
+      PUBLIC_UPDATE_GROUPS.filter((group) => group.status === "complete").map(
+        (group) => group.id
+      )
+    ).toEqual(["journals", "billing", "hosted-live"]);
+    for (const id of ["courses", "shopping", "admin"]) {
+      expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === id)?.status).toBe(
+        "partial"
+      );
+    }
+    expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === "app-review")?.status).toBe(
+      "progress"
+    );
+    for (const id of ["course-gifts", "future-lives"]) {
+      expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === id)?.status).toBe(
+        "planned"
+      );
+    }
   });
 
   it("is public without requiring an entitlement and has public metadata", () => {
@@ -477,11 +553,14 @@ describe("public Updates page", () => {
       expect(styles.link.color).toBe(palette.link);
       expect(styles.content.width).toBe("100%");
       expect(styles.content.maxWidth).toBe(920);
+      expect(styles.tabs.flexWrap).toBe("wrap");
+      expect(styles.tab.minHeight).toBeGreaterThanOrEqual(44);
+      expect(styles.selectedTabText.color).toBe(palette.accentText);
     }
   );
 
   it("contains no private account, provider, credential, or audit identifiers", () => {
-    expect(JSON.stringify(PUBLIC_UPDATE_SECTIONS)).not.toMatch(
+    expect(JSON.stringify([PUBLIC_UPDATE_SECTIONS, PUBLIC_UPDATE_GROUPS])).not.toMatch(
       /@|qa\.invalid|cs_live_|cs_test_|acct_|cus_|whsec_|sk_live_|srv-|mongodb|vault|audit record|Erick|jcind|DPAPI|registryId|\b[a-f0-9]{24}\b/i
     );
   });
