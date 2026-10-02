@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CommercialProfileRoute from "@/app/home/commercial/profile";
 
@@ -110,13 +110,11 @@ describe("CommercialProfileRoute", () => {
     expect(screen.getByText("Brand support and education")).toBeTruthy();
     expect(screen.getByText("Billing and account controls")).toBeTruthy();
     expect(
-      screen.getByText("Public storefront: Add a public slug to create this URL.")
+      screen.getByText("Public storefront: Waiting for saved brand details.")
     ).toBeTruthy();
     expect(screen.queryByText(/Legacy brand profile:/)).toBeNull();
     expect(
-      screen.getByText(
-        "Public product detail: Add a public slug and save a product to create this URL."
-      )
+      screen.getByText("Public product detail: Waiting for saved brand details.")
     ).toBeTruthy();
     expect(screen.queryByText(/your-brand-slug/)).toBeNull();
     expect(screen.queryByText(/Public storefront alias:/)).toBeNull();
@@ -230,5 +228,129 @@ describe("CommercialProfileRoute", () => {
     expect(screen.queryByText(/Living Soil Labs/i)).toBeNull();
     expect(screen.queryByDisplayValue("Living Soil Labs")).toBeNull();
     expect(screen.getByText(/never inserted/i)).toBeTruthy();
+  });
+
+  it("keeps pending and failed reads unknown and blocks editing until Retry succeeds", async () => {
+    let rejectRead!: (error: Error) => void;
+    mockApiRequest.mockImplementationOnce(
+      () =>
+        new Promise((_, reject) => {
+          rejectRead = reject;
+        })
+    );
+    const screen = render(<CommercialProfileRoute />);
+    expect(screen.queryByText("Not set")).toBeNull();
+    expect(screen.queryByText("draft")).toBeNull();
+    expect(screen.getByLabelText("Commercial brand name").props.editable).toBe(false);
+    await act(async () => rejectRead(new Error("offline")));
+    expect(screen.queryByText("Not set")).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("Commercial brand name"), "Unsaved test");
+    fireEvent.press(screen.getByLabelText("Save commercial brand profile"));
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
+    const retry = screen.getByLabelText("Retry brand profile");
+    act(() => {
+      fireEvent.press(retry);
+      fireEvent.press(retry);
+    });
+    await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
+    expect(screen.getByLabelText("Commercial brand name").props.editable).toBe(true);
+  });
+
+  it.each([true, false])(
+    "uses canonical publication %s ahead of legacy status",
+    async (isPublished) => {
+      mockApiRequest.mockResolvedValueOnce({
+        storefront: {
+          id: "storefront-1",
+          name: "Saved brand",
+          isPublished,
+          status: isPublished ? "draft" : "published"
+        }
+      });
+      const screen = render(<CommercialProfileRoute />);
+      await waitFor(() => expect(screen.getByText("Saved brand")).toBeTruthy());
+      expect(screen.getByText(isPublished ? "published" : "draft")).toBeTruthy();
+    }
+  );
+
+  it("keeps public address and summary tied to the saved record, not the unfinished draft", async () => {
+    const screen = render(<CommercialProfileRoute />);
+    await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Commercial public slug"), "not-saved");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial brand name"),
+      "Not saved name"
+    );
+    expect(screen.getByText("Public storefront: /store/living-soil-labs")).toBeTruthy();
+    expect(screen.getByText("Living Soil Labs")).toBeTruthy();
+    expect(screen.queryByText("Public storefront: /store/not-saved")).toBeNull();
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it("prevents duplicate saves and preserves the draft when a write fails", async () => {
+    const screen = render(<CommercialProfileRoute />);
+    await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
+    let rejectWrite!: (error: Error) => void;
+    mockApiRequest.mockImplementationOnce(
+      () =>
+        new Promise((_, reject) => {
+          rejectWrite = reject;
+        })
+    );
+    fireEvent.changeText(screen.getByLabelText("Commercial public bio"), "Unsaved bio");
+    fireEvent.press(screen.getByLabelText("Save commercial brand profile"));
+    fireEvent.press(screen.getByLabelText("Save commercial brand profile"));
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
+    expect(screen.getByLabelText("Commercial public bio").props.editable).toBe(false);
+    await act(async () => rejectWrite(new Error("write failed")));
+    expect(screen.getByDisplayValue("Unsaved bio")).toBeTruthy();
+    expect(screen.getByLabelText("Commercial public bio").props.editable).toBe(true);
+  });
+
+  it("distinguishes confirmed save from failed refresh and requires read-only recovery", async () => {
+    const screen = render(<CommercialProfileRoute />);
+    await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
+    mockApiRequest.mockResolvedValueOnce({ storefront: { id: "storefront-1" } });
+    mockApiRequest.mockRejectedValueOnce(new Error("refresh failed"));
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial public bio"),
+      "Retained draft"
+    );
+    fireEvent.press(screen.getByLabelText("Save commercial brand profile"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Retry brand profile")).toBeTruthy()
+    );
+    expect(screen.getByText("Brand profile saved.")).toBeTruthy();
+    expect(screen.getByText(/Showing previously loaded brand details/)).toBeTruthy();
+    expect(screen.getByDisplayValue("Retained draft")).toBeTruthy();
+    expect(screen.getByLabelText("Commercial public bio").props.editable).toBe(false);
+    fireEvent.press(screen.getByLabelText("Save commercial brand profile"));
+    expect(
+      mockApiRequest.mock.calls.filter(([, options]) => options?.method === "PATCH")
+    ).toHaveLength(1);
+    fireEvent.press(screen.getByLabelText("Retry brand profile"));
+    await waitFor(() =>
+      expect(screen.queryByText(/Showing previously loaded brand details/)).toBeNull()
+    );
+    expect(
+      mockApiRequest.mock.calls.filter(([, options]) => options?.method === "PATCH")
+    ).toHaveLength(1);
+  });
+
+  it("ignores a completed write after unmount without starting another read", async () => {
+    const screen = render(<CommercialProfileRoute />);
+    await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
+    let resolveWrite!: (value: unknown) => void;
+    mockApiRequest.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveWrite = resolve;
+        })
+    );
+    fireEvent.press(screen.getByLabelText("Save commercial brand profile"));
+    screen.unmount();
+    await act(async () => resolveWrite({ storefront: { id: "storefront-1" } }));
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
   });
 });

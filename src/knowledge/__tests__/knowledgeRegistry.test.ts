@@ -598,6 +598,9 @@ describe("GrowPath knowledge registries", () => {
       "Do not announce that saved Plant ID evidence was recovered or submit it for analysis when any exact asset is missing, not durably uploaded, outside Crop Identification, an unsupported type, or a photo that is not explicitly AI-usable; load none of an ineligible set."
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "Commercial Brand Profile summaries and public links use saved records, with canonical isPublished before legacy status. Unknown reads withhold editing/Save; single-flight Retry restores saved data, writes lock fields and preserve failed drafts, confirmed save and refresh failure remain distinct, and stale completions are ignored without changing publication, payout or privacy rules."
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "published-course discovery limited to published storefronts and explicit public fields"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(

@@ -2,6 +2,8 @@
 
 ## Public shopping navigation
 
+Commercial Brand Profile summaries and public links use successfully loaded saved records, never unfinished inputs. Canonical boolean isPublished takes precedence over legacy status text for the saved visibility display; this does not change publication payloads or permissions. Pending/failed initial reads remain unknown and cannot enable editing or Save. Single-flight Retry restores the saved form. Lock inputs during a save, retain failed drafts, distinguish confirmed writes from failed follow-up reads, label retained snapshots, and ignore unmounted/superseded completions. Existing billing, payout and privacy controls remain separate and unchanged.
+
 Commercial Product Trials and their linked-record choices remain unknown until
 the combined trial/product/line/batch/evidence-run read succeeds. Pending or failed
 reads must not claim an empty trial list or missing saved links. Both ordinary

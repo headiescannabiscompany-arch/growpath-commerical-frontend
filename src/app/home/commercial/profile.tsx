@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { fetchStorefront, Storefront, updateStorefront } from "@/api/storefront";
@@ -121,7 +121,12 @@ function hydrateForm(
     supportEmail: storefront.supportEmail || "",
     socialLinks,
     forumDisplayName: storefront.forumDisplayName || storefront.businessName || "",
-    storefrontStatus: storefront.storefrontStatus || storefront.status || "draft"
+    storefrontStatus:
+      typeof storefront.isPublished === "boolean"
+        ? storefront.isPublished
+          ? "published"
+          : "draft"
+        : storefront.storefrontStatus || storefront.status || "draft"
   };
 }
 
@@ -138,37 +143,73 @@ export default function CommercialProfileRoute() {
   );
   const [storefront, setStorefront] = useState<BusinessStorefront | null>(null);
   const [form, setForm] = useState<ProfileForm>(starterForm);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [success, setSuccess] = useState("");
+  const readInFlight = useRef(false);
+  const writeInFlight = useRef(false);
+  const generation = useRef(0);
+  const canEdit = loaded && !loading && !loadError && !saving;
+  const savedForm = hydrateForm(storefront, starterForm);
 
   const publicStoreUrl = useMemo(() => {
-    const slug = form.slug.trim();
+    const slug = storefront?.slug?.trim();
     return slug ? `/store/${encodeURIComponent(slug)}` : "";
-  }, [form.slug]);
+  }, [storefront?.slug]);
 
   const loadProfile = useCallback(async () => {
+    if (readInFlight.current) return;
+    readInFlight.current = true;
+    const current = generation.current;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       const next = (await fetchStorefront()) as BusinessStorefront | null;
+      if (current !== generation.current) return;
       setStorefront(next);
       setForm(hydrateForm(next, starterForm));
+      setLoaded(true);
     } catch (err) {
-      setError(err);
+      if (current === generation.current) setLoadError(err);
     } finally {
-      setLoading(false);
+      if (current === generation.current) {
+        readInFlight.current = false;
+        setLoading(false);
+      }
     }
   }, [starterForm]);
 
   useEffect(() => {
+    setLoaded(false);
+    setStorefront(null);
+    setForm(starterForm);
+    setError(null);
+    setSuccess("");
+    setSaving(false);
     void loadProfile();
-  }, [loadProfile]);
+    return () => {
+      generation.current += 1;
+      readInFlight.current = false;
+      writeInFlight.current = false;
+    };
+  }, [loadProfile, starterForm]);
 
   async function submitProfile() {
-    if (!form.businessName.trim()) return;
+    if (
+      !canEdit ||
+      readInFlight.current ||
+      writeInFlight.current ||
+      !form.businessName.trim()
+    )
+      return;
+    writeInFlight.current = true;
+    const current = generation.current;
     setSaving(true);
     setError(null);
+    setSuccess("");
     try {
       await updateStorefront({
         name: form.businessName.trim(),
@@ -183,11 +224,16 @@ export default function CommercialProfileRoute() {
         storefrontStatus: form.storefrontStatus.trim() || "draft",
         status: form.storefrontStatus.trim() || "draft"
       } as Partial<BusinessStorefront>);
+      if (current !== generation.current) return;
+      setSuccess("Brand profile saved.");
       await loadProfile();
     } catch (err) {
-      setError(err);
+      if (current === generation.current) setError(err);
     } finally {
-      setSaving(false);
+      if (current === generation.current) {
+        writeInFlight.current = false;
+        setSaving(false);
+      }
     }
   }
 
@@ -227,19 +273,46 @@ export default function CommercialProfileRoute() {
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{form.businessName || "Not set"}</Text>
+            <Text style={styles.metricValue}>
+              {loaded ? savedForm.businessName || "Not set" : "—"}
+            </Text>
             <Text style={styles.metricLabel}>Brand</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{form.accountType || "brand"}</Text>
+            <Text style={styles.metricValue}>{loaded ? savedForm.accountType : "—"}</Text>
             <Text style={styles.metricLabel}>Brand type</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{form.storefrontStatus || "draft"}</Text>
+            <Text style={styles.metricValue}>
+              {loaded ? savedForm.storefrontStatus : "—"}
+            </Text>
             <Text style={styles.metricLabel}>Storefront status</Text>
           </View>
         </View>
         {loading ? <Text style={styles.muted}>Loading brand profile...</Text> : null}
+        {loaded && (loading || loadError) ? (
+          <Text style={styles.muted}>
+            Showing previously loaded brand details. Waiting for a successful refresh
+            before editing.
+          </Text>
+        ) : null}
+        {loadError ? (
+          <>
+            <InlineError error={loadError} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry brand profile"
+              disabled={loading || saving}
+              onPress={() => {
+                if (!writeInFlight.current) void loadProfile();
+              }}
+              style={styles.action}
+            >
+              <Text style={styles.actionText}>Retry brand profile</Text>
+            </Pressable>
+          </>
+        ) : null}
+        {success ? <Text style={styles.muted}>{success}</Text> : null}
         {error ? <InlineError error={error} /> : null}
       </AppCard>
 
@@ -249,6 +322,7 @@ export default function CommercialProfileRoute() {
         <Text style={styles.cardTitle}>Edit brand profile</Text>
         <View style={styles.formGrid}>
           <TextInput
+            editable={canEdit}
             value={form.businessName}
             onChangeText={(businessName) =>
               setForm((prev) => ({ ...prev, businessName }))
@@ -259,6 +333,7 @@ export default function CommercialProfileRoute() {
             style={styles.input}
           />
           <TextInput
+            editable={canEdit}
             value={form.slug}
             onChangeText={(slug) => setForm((prev) => ({ ...prev, slug }))}
             accessibilityLabel="Commercial public slug"
@@ -268,6 +343,7 @@ export default function CommercialProfileRoute() {
             style={styles.input}
           />
           <TextInput
+            editable={canEdit}
             value={form.accountType}
             onChangeText={(accountType) => setForm((prev) => ({ ...prev, accountType }))}
             accessibilityLabel="Commercial brand type"
@@ -276,6 +352,7 @@ export default function CommercialProfileRoute() {
             style={styles.input}
           />
           <TextInput
+            editable={canEdit}
             value={form.storefrontStatus}
             onChangeText={(storefrontStatus) =>
               setForm((prev) => ({ ...prev, storefrontStatus }))
@@ -286,6 +363,7 @@ export default function CommercialProfileRoute() {
             style={styles.input}
           />
           <TextInput
+            editable={canEdit}
             value={form.websiteUrl}
             onChangeText={(websiteUrl) => setForm((prev) => ({ ...prev, websiteUrl }))}
             accessibilityLabel="Commercial website URL"
@@ -295,6 +373,7 @@ export default function CommercialProfileRoute() {
             style={styles.input}
           />
           <TextInput
+            editable={canEdit}
             value={form.supportEmail}
             onChangeText={(supportEmail) =>
               setForm((prev) => ({ ...prev, supportEmail }))
@@ -306,6 +385,7 @@ export default function CommercialProfileRoute() {
             style={styles.input}
           />
           <TextInput
+            editable={canEdit}
             value={form.forumDisplayName}
             onChangeText={(forumDisplayName) =>
               setForm((prev) => ({ ...prev, forumDisplayName }))
@@ -316,6 +396,7 @@ export default function CommercialProfileRoute() {
             style={styles.input}
           />
           <TextInput
+            editable={canEdit}
             value={form.socialLinks}
             onChangeText={(socialLinks) => setForm((prev) => ({ ...prev, socialLinks }))}
             accessibilityLabel="Commercial external links"
@@ -326,6 +407,7 @@ export default function CommercialProfileRoute() {
           />
         </View>
         <TextInput
+          editable={canEdit}
           value={form.bio}
           onChangeText={(bio) => setForm((prev) => ({ ...prev, bio }))}
           accessibilityLabel="Commercial public bio"
@@ -337,11 +419,11 @@ export default function CommercialProfileRoute() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Save commercial brand profile"
-          disabled={saving || !form.businessName.trim()}
+          disabled={!canEdit || !form.businessName.trim()}
           onPress={submitProfile}
           style={[
             styles.submit,
-            saving || !form.businessName.trim() ? styles.submitDisabled : null
+            !canEdit || !form.businessName.trim() ? styles.submitDisabled : null
           ]}
         >
           <Text style={styles.submitText}>
@@ -360,13 +442,19 @@ export default function CommercialProfileRoute() {
         </Text>
         <View style={styles.urlList}>
           <Text style={styles.urlText}>
-            Public storefront: {publicStoreUrl || "Add a public slug to create this URL."}
+            Public storefront:{" "}
+            {publicStoreUrl ||
+              (loaded
+                ? "Save a public slug to create this URL."
+                : "Waiting for saved brand details.")}
           </Text>
           <Text style={styles.urlText}>
             Public product detail:{" "}
             {publicStoreUrl
               ? `Save and publish a product to create its URL under ${publicStoreUrl}.`
-              : "Add a public slug and save a product to create this URL."}
+              : loaded
+                ? "Save a public slug and a product to create this URL."
+                : "Waiting for saved brand details."}
           </Text>
           <Text style={styles.urlText}>
             Similar storefronts and return-to-feed actions stay available from public

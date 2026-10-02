@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-brand-profile-readiness",
+        title: "Reliable saved Brand Profile details",
+        date: "October 2, 2026",
+        dateLabel: "Released",
+        summary:
+          "Brand Profile now shows saved storefront visibility consistently and keeps the public address tied to the saved slug. Unavailable reads provide Retry and cannot enable a blank save. Saving locks competing edits, preserves failed drafts and distinguishes a saved profile from an unsuccessful refresh. Publication, billing, privacy rules and the existing layout stay unchanged."
+      },
+      {
         id: "commercial-setup-readiness",
         title: "Clearer Product Lines, Batches and Inventory loading",
         date: "October 2, 2026",
