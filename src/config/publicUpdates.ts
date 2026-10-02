@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "course-lesson-authoring-guards",
+        title: "Safer saved-course lesson editing",
+        date: "October 2, 2026",
+        dateLabel: "Released",
+        summary:
+          "Lesson editors verify the selected saved course and ownership before showing fields. Published courses now enforce the existing unpublish-before-editing rule, including when a course changes during a save. Failed reads offer Retry; switching courses or accounts clears the previous editor, and Back returns safely. Pricing, enrollment and the existing layout stay unchanged."
+      },
+      {
         id: "course-analytics-readiness",
         title: "Reliable course analytics and return navigation",
         date: "October 2, 2026",
