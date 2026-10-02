@@ -112,7 +112,7 @@ describe("public Updates page", () => {
     for (const section of PUBLIC_UPDATE_SECTIONS) {
       expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
     }
-    expect(screen.getByText("Last updated October 1, 2026")).toBeTruthy();
+    expect(screen.getByText("Last updated October 2, 2026")).toBeTruthy();
     expect(
       screen.getByText("Live subscription gift announcements verified")
     ).toBeTruthy();

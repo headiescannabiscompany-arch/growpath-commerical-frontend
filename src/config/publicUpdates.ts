@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "October 1, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "October 2, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -11,7 +11,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "commercial-evidence-readiness",
         title: "Clearer evidence-run loading and retry",
-        date: "October 1, 2026",
+        date: "October 2, 2026",
         dateLabel: "Released",
         summary:
           "Commercial Evidence Runs no longer shows zero runs or missing linked products when its records cannot load. Retry preserves the unfinished form and restores saved choices before creation becomes available. Evidence, publication rules, AI credits and the existing layout stay unchanged."
