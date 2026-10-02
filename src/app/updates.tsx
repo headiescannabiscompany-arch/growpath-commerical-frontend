@@ -61,6 +61,7 @@ export default function UpdatesPage() {
             accessibilityRole="tab"
             accessibilityLabel={tab.tab}
             accessibilityState={{ selected: selected === tab.id }}
+            aria-selected={selected === tab.id}
             {...(Platform.OS === "web"
               ? {
                   tabIndex: selected === tab.id ? 0 : -1,
@@ -147,6 +148,7 @@ export default function UpdatesPage() {
               accessibilityRole="button"
               accessibilityLabel={`${expanded ? "Hide" : "Show"} ${group.tab} detailed history`}
               accessibilityState={{ expanded }}
+              aria-expanded={expanded}
               onPress={() => setExpanded((value) => !value)}
               style={styles.tab}
             >

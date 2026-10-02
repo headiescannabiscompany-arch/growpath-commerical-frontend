@@ -49,7 +49,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     scope:
       "Finding products, returning to stores and using the existing Commercial tools.",
     live: "Product browsing controls, searchable catalogs, full-store links, safer editing and checkout requests are live. Seller offers, orders-related summaries, dashboards, analytics, tasks and saved-record pages have clearer loading and recovery.",
-    next: "Finish the remaining shopper and seller journey review and campaign-copy consistency. Larger layout changes remain separate and require review; this does not announce a new cart or hat redesign.",
+    next: "Finish the remaining shopper and seller journey review and campaign-copy consistency. Further design changes will be reviewed separately; existing artwork, prices and purchase rules stay unchanged.",
     entryIds: [
       "commercial-brand-profile-readiness",
       "commercial-setup-readiness",

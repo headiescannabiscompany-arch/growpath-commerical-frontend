@@ -162,7 +162,14 @@ describe("public Updates page", () => {
         name: `Show ${group.tab} detailed history`
       });
       expect(history.props.accessibilityState.expanded).toBe(false);
+      expect(
+        screen.getByRole("tab", { name: group.tab }).props.accessibilityState.selected
+      ).toBe(true);
       fireEvent.press(history);
+      expect(
+        screen.getByRole("button", { name: `Hide ${group.tab} detailed history` }).props
+          .accessibilityState.expanded
+      ).toBe(true);
       for (const section of updateGroupSections(group)) {
         expect(screen.getByRole("header", { name: section.title })).toBeTruthy();
         for (const entry of section.entries) {
