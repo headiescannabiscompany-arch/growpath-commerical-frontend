@@ -1128,6 +1128,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "capability-gated Commercial inventory creation exposed as a named actionable control",
       "readable owner-scoped Product Trial record pickers with an explicit advanced ID fallback",
       "single-flight Product Trial creation with positive whole-number plant counts and retained failed drafts",
+      "Product Trial lists and linked-record choices stay unknown until their combined read succeeds; failed reads offer single-flight Retry, preserve both drafts, and block ordinary and concept-trial creation without changing prices, artwork approval or publication rules.",
       "authenticated purchase-intent concept trials with owner-approved artwork, positive hypothetical price, explicit not-for-sale disclosure, one revisable response per account, and aggregate-only owner results",
       "owner-enabled reusable Product purchase-interest mode with approved exact artwork, a configurable positive target defaulting to 25, one revisable response per authenticated account, aggregate progress in Discover, the owning public storefront product card, and Product detail, and transaction suppression until a separate launch review",
       "mutually exclusive single-flight Product Trial detail, claim-review, and evidence-task writes",

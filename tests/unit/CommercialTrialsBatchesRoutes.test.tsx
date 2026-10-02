@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CommercialBatchPlannerRoute from "@/app/home/commercial/batch-planner";
 import CommercialTrialsRoute from "@/app/home/commercial/trials";
@@ -69,6 +69,96 @@ describe("Commercial Product Trial and Batch routes", () => {
     mockFetchProductTrialEvidenceRuns.mockResolvedValue([]);
     mockFetchSoilNutrientBatches.mockResolvedValue([]);
   });
+
+  it("keeps pending trial records unknown and both creation actions unavailable", async () => {
+    let resolveRead!: (value: any[]) => void;
+    mockFetchProductTrials.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRead = resolve;
+        })
+    );
+    const screen = render(<CommercialTrialsRoute />);
+    fireEvent.changeText(screen.getByLabelText("Product trial name"), "Unsaved trial");
+    fireEvent.changeText(
+      screen.getByLabelText("Hypothetical hat trial price in US dollars"),
+      "34"
+    );
+    expect(screen.queryByText("No product trials yet.")).toBeNull();
+    expect(screen.queryByText(/No saved trial product records/)).toBeNull();
+    expect(screen.getByLabelText("Create product trial")).toBeDisabled();
+    expect(
+      screen.getByLabelText("Start purchase-intent hat concept trial")
+    ).toBeDisabled();
+    fireEvent.press(screen.getByLabelText("Create product trial"));
+    fireEvent.press(screen.getByLabelText("Start purchase-intent hat concept trial"));
+    expect(mockCreateProductTrial).not.toHaveBeenCalled();
+    await act(async () => resolveRead([]));
+    expect(screen.getByText("No product trials yet.")).toBeTruthy();
+    expect(screen.getByLabelText("Create product trial")).toBeEnabled();
+  });
+
+  it.each(["trials", "products", "lines", "batches", "evidence runs"])(
+    "does not call a failed %s read empty or permit a trial write",
+    async (failedRead) => {
+      const readers: Record<string, jest.Mock> = {
+        trials: mockFetchProductTrials,
+        products: mockFetchProducts,
+        lines: mockFetchProductLines,
+        batches: mockFetchSoilNutrientBatches,
+        "evidence runs": mockFetchProductTrialEvidenceRuns
+      };
+      readers[failedRead].mockRejectedValueOnce(new Error("Trial records unavailable"));
+      const screen = render(<CommercialTrialsRoute />);
+      await waitFor(() =>
+        expect(screen.getByText("Trial records unavailable")).toBeTruthy()
+      );
+      fireEvent.changeText(screen.getByLabelText("Product trial name"), "Retained trial");
+      fireEvent.changeText(screen.getByLabelText("Trial notes"), "Retained notes");
+      fireEvent.changeText(
+        screen.getByLabelText("Hypothetical hat trial price in US dollars"),
+        "34"
+      );
+      expect(screen.queryByText("No product trials yet.")).toBeNull();
+      expect(screen.queryAllByText(/No saved trial/)).toHaveLength(0);
+      expect(
+        screen.getByText("Trial records are unavailable. Retry before creating a trial.")
+      ).toBeTruthy();
+      expect(screen.getByLabelText("Create product trial")).toBeDisabled();
+      expect(
+        screen.getByLabelText("Start purchase-intent hat concept trial")
+      ).toBeDisabled();
+
+      let resolveRetry!: (value: any[]) => void;
+      mockFetchProductTrials.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveRetry = resolve;
+          })
+      );
+      mockFetchProducts.mockResolvedValue([{ id: "product-1", name: "Saved product" }]);
+      const retry = screen.getByLabelText("Retry product trials");
+      fireEvent.press(retry);
+      fireEvent.press(retry);
+      expect(mockFetchProductTrials).toHaveBeenCalledTimes(2);
+      expect(screen.getByLabelText("Create product trial")).toBeDisabled();
+      await act(async () => resolveRetry([{ id: "trial-1", trialName: "Saved trial" }]));
+      expect(screen.getByText("Saved trial")).toBeTruthy();
+      expect(screen.getByLabelText("Trial product: Saved product")).toBeTruthy();
+      expect(screen.getByLabelText("Product trial name").props.value).toBe(
+        "Retained trial"
+      );
+      expect(screen.getByLabelText("Trial notes").props.value).toBe("Retained notes");
+      expect(
+        screen.getByLabelText("Hypothetical hat trial price in US dollars").props.value
+      ).toBe("34");
+      expect(screen.getByLabelText("Create product trial")).toBeEnabled();
+      expect(
+        screen.getByLabelText("Start purchase-intent hat concept trial")
+      ).toBeEnabled();
+      expect(mockCreateProductTrial).not.toHaveBeenCalled();
+    }
+  );
 
   it("rejects an invalid Product Trial plant count without sending a write", async () => {
     const screen = render(<CommercialTrialsRoute />);

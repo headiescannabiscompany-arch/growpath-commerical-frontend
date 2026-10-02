@@ -19,6 +19,16 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("keeps the Product Trial read-recovery note separate from trial publication", () => {
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "commercial-trials-readiness"
+    );
+    expect(note?.date).toBe("October 2, 2026");
+    expect(note?.summary).toContain("Retry keeps your unfinished form");
+    expect(note?.summary).toContain(
+      "Prices, artwork, publication rules and the existing layout stay unchanged"
+    );
+  });
   it("limits evidence-run readiness to reading and retrying saved records", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "commercial-evidence-readiness"
@@ -157,6 +167,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "commercial-trials-readiness",
       "commercial-evidence-readiness",
       "commercial-diagnosis-return",
       "commercial-tasks-readiness",

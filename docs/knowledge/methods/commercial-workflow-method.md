@@ -2,6 +2,13 @@
 
 ## Public shopping navigation
 
+Commercial Product Trials and their linked-record choices remain unknown until
+the combined trial/product/line/batch/evidence-run read succeeds. Pending or failed
+reads must not claim an empty trial list or missing saved links. Both ordinary
+and concept-trial creation wait for that successful read. Single-flight Retry
+preserves the unfinished trial, notes and hypothetical-price draft and makes no
+write. Existing payloads, prices, artwork approval and publication rules remain unchanged.
+
 Commercial Evidence Run list counts and linked-record choices remain unknown until
 the combined runs/products/lines/batches read succeeds. Pending and failed initial
 reads must not claim zero runs, no saved records, or a create-first prerequisite.

@@ -172,6 +172,7 @@ export default function CommercialTrialsRoute() {
   const [batches, setBatches] = useState<SoilNutrientBatch[]>([]);
   const [evidenceRuns, setEvidenceRuns] = useState<ProductTrialEvidenceRun[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [conceptSaving, setConceptSaving] = useState(false);
   const [loadError, setLoadError] = useState<any>(null);
@@ -196,10 +197,14 @@ export default function CommercialTrialsRoute() {
     "growpathai-hat-circuit-leaf-midnight-purchase-intent-trial"
   );
   const [candidatePrice, setCandidatePrice] = useState("");
-  const canCreate = trialName.trim().length > 1 && !saving && !conceptSaving;
+  const recordsReady = hasLoaded && !loading && !loadError;
+  const canCreate =
+    recordsReady && trialName.trim().length > 1 && !saving && !conceptSaving;
   const selectedConcept = purchaseIntentConceptById(selectedConceptId);
   const parsedCandidatePrice = Number(candidatePrice);
   const canCreateConceptTrial =
+    recordsReady &&
+    !saving &&
     selectedConcept?.artworkApprovalStatus === "owner_approved" &&
     Number.isFinite(parsedCandidatePrice) &&
     parsedCandidatePrice > 0 &&
@@ -224,9 +229,9 @@ export default function CommercialTrialsRoute() {
       setProductLines(nextLines);
       setBatches(nextBatches);
       setEvidenceRuns(nextEvidenceRuns);
+      setHasLoaded(true);
     } catch (err) {
       setLoadError(err);
-      setTrials([]);
     } finally {
       loadInFlightRef.current = false;
       setLoading(false);
@@ -256,7 +261,14 @@ export default function CommercialTrialsRoute() {
 
   async function createTrial() {
     const name = trialName.trim();
-    if (name.length < 2 || createInFlightRef.current || conceptSaving) return;
+    if (
+      !recordsReady ||
+      loadInFlightRef.current ||
+      name.length < 2 ||
+      createInFlightRef.current ||
+      conceptCreateInFlightRef.current
+    )
+      return;
     const parsedPlantCount = plantCount.trim() ? Number(plantCount) : undefined;
     if (
       parsedPlantCount !== undefined &&
@@ -304,7 +316,14 @@ export default function CommercialTrialsRoute() {
   }
 
   async function createConceptTrial() {
-    if (!selectedConcept || conceptCreateInFlightRef.current || saving) return;
+    if (
+      !recordsReady ||
+      loadInFlightRef.current ||
+      !selectedConcept ||
+      conceptCreateInFlightRef.current ||
+      createInFlightRef.current
+    )
+      return;
     if (selectedConcept.artworkApprovalStatus !== "owner_approved") {
       setSaveError(
         new Error("Approve this exact artwork before starting a public concept trial.")
@@ -406,6 +425,13 @@ export default function CommercialTrialsRoute() {
             <Text style={styles.outlineText}>Retry</Text>
           </Pressable>
         </View>
+      ) : null}
+      {!recordsReady ? (
+        <Text accessibilityLiveRegion="polite" style={styles.muted}>
+          {loading
+            ? "Loading trials and linked records before creation is available."
+            : "Trial records are unavailable. Retry before creating a trial."}
+        </Text>
       ) : null}
       {feedback ? (
         <Text
@@ -527,44 +553,52 @@ export default function CommercialTrialsRoute() {
           placeholder="seedling_safety, veg_performance, flower_performance..."
           style={styles.input}
         />
-        <View style={styles.pickerGrid}>
-          <RecordPicker
-            disabled={saving}
-            label="Trial product"
-            choices={productChoices}
-            selectedId={productId}
-            onChange={setProductId}
-            createHref="/home/commercial/products/new"
-            createLabel="Create Product"
-          />
-          <RecordPicker
-            disabled={saving}
-            label="Trial product line"
-            choices={productLineChoices}
-            selectedId={productLineId}
-            onChange={setProductLineId}
-            createHref="/home/commercial/product-lines"
-            createLabel="Create Product Line"
-          />
-          <RecordPicker
-            disabled={saving}
-            label="Trial batch"
-            choices={batchChoices}
-            selectedId={batchId}
-            onChange={setBatchId}
-            createHref="/home/commercial/batch-planner"
-            createLabel="Create Product Batch"
-          />
-          <RecordPicker
-            disabled={saving}
-            label="Trial evidence run"
-            choices={evidenceRunChoices}
-            selectedId={growId}
-            onChange={setGrowId}
-            createHref="/home/commercial/evidence-runs/new"
-            createLabel="Create Evidence Run"
-          />
-        </View>
+        {!hasLoaded ? (
+          <Text style={styles.muted}>
+            {loading
+              ? "Loading linked trial records..."
+              : "Linked trial records are unavailable."}
+          </Text>
+        ) : (
+          <View style={styles.pickerGrid}>
+            <RecordPicker
+              disabled={saving}
+              label="Trial product"
+              choices={productChoices}
+              selectedId={productId}
+              onChange={setProductId}
+              createHref="/home/commercial/products/new"
+              createLabel="Create Product"
+            />
+            <RecordPicker
+              disabled={saving}
+              label="Trial product line"
+              choices={productLineChoices}
+              selectedId={productLineId}
+              onChange={setProductLineId}
+              createHref="/home/commercial/product-lines"
+              createLabel="Create Product Line"
+            />
+            <RecordPicker
+              disabled={saving}
+              label="Trial batch"
+              choices={batchChoices}
+              selectedId={batchId}
+              onChange={setBatchId}
+              createHref="/home/commercial/batch-planner"
+              createLabel="Create Product Batch"
+            />
+            <RecordPicker
+              disabled={saving}
+              label="Trial evidence run"
+              choices={evidenceRunChoices}
+              selectedId={growId}
+              onChange={setGrowId}
+              createHref="/home/commercial/evidence-runs/new"
+              createLabel="Create Evidence Run"
+            />
+          </View>
+        )}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={
@@ -703,6 +737,8 @@ export default function CommercialTrialsRoute() {
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading product trials...</Text>
           </View>
+        ) : !hasLoaded ? (
+          <Text style={styles.muted}>Saved trials are unavailable.</Text>
         ) : trials.length ? (
           <View style={styles.list}>
             {trials.map((trial, index) => {

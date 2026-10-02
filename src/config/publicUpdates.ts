@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-trials-readiness",
+        title: "Clearer Product Trial loading and retry",
+        date: "October 2, 2026",
+        dateLabel: "Released",
+        summary:
+          "Product Trials no longer claims there are no trials or saved links when records cannot load. Retry keeps your unfinished form and restores saved choices before ordinary or concept-trial creation resumes. Prices, artwork, publication rules and the existing layout stay unchanged."
+      },
+      {
         id: "commercial-evidence-readiness",
         title: "Clearer evidence-run loading and retry",
         date: "October 2, 2026",
