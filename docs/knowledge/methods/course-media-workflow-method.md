@@ -20,6 +20,8 @@ Catalog loading depends on stable authenticated identity values, not a whole ses
 
 The Full Course Builder's single route-level Back returns to its explicitly supported entry point (Commercial Courses, Commercial Storefront, or Personal Courses), even when router history skips that page or the builder was reloaded. Accept only these exact source paths and the first query value. An absent or unsupported source retains ordinary history with the existing Personal Courses fallback; arbitrary URLs must not become return destinations. This navigation does not create, save or publish a course or change workspace authorization.
 
+The Commercial author-course list distinguishes unknown counts from confirmed zero, and only reports no courses after a successful current read. Failed reads provide a single-flight Retry without clearing the unfinished form; previously loaded records and counts remain explicitly labeled during refresh or failure. Product Line choices are optional and fail independently with visible feedback, without changing typed draft links or hiding successfully loaded courses. Read recovery does not create, enroll, publish, upload or charge.
+
 ## Source selection and normalization
 
 Authors choose one source type: GrowPath upload, YouTube, Rumble, Vimeo, or Other video URL. Detect YouTube, Vimeo, and Rumble from recognized video-page URLs even when the author initially chooses Other. Preserve the submitted URL for traceability and store a separate canonical URL, provider video ID, Vimeo unlisted privacy hash when present, provider label, thumbnail when deterministically available, embed capability, external-link fallback, privacy mode, and last availability-check time.

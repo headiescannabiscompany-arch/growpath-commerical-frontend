@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
@@ -192,7 +192,12 @@ export default function CommercialCoursesRoute() {
   const [courses, setCourses] = useState<CommercialCourse[]>([]);
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [form, setForm] = useState<CourseForm>(EMPTY_FORM);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+  const [readError, setReadError] = useState<any>(null);
+  const [lineReadFailed, setLineReadFailed] = useState(false);
+  const readInFlight = useRef(false);
+  const mounted = useRef(true);
   const [saving, setSaving] = useState(false);
   const [creatingTaskForCourseId, setCreatingTaskForCourseId] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -223,29 +228,39 @@ export default function CommercialCoursesRoute() {
   });
 
   async function loadCourses() {
+    if (readInFlight.current) return;
+    readInFlight.current = true;
     setLoading(true);
-    setError(null);
+    setReadError(null);
     try {
       const [courseResult, lineResult] = await Promise.allSettled([
         fetchCommercialCourses(),
         fetchProductLines()
       ]);
+      if (!mounted.current) return;
+      setLineReadFailed(lineResult.status === "rejected");
+      setProductLines(lineResult.status === "fulfilled" ? lineResult.value : []);
       if (courseResult.status === "rejected") throw courseResult.reason;
       setCourses(courseResult.value);
-      setProductLines(lineResult.status === "fulfilled" ? lineResult.value : []);
+      setLoaded(true);
     } catch (err) {
-      setError(err);
+      if (mounted.current) setReadError(err);
     } finally {
-      setLoading(false);
+      readInFlight.current = false;
+      if (mounted.current) setLoading(false);
     }
   }
 
   useEffect(() => {
+    mounted.current = true;
     loadCourses();
+    return () => {
+      mounted.current = false;
+    };
   }, []);
 
   async function submitCourse() {
-    if (!form.title.trim()) return;
+    if (readInFlight.current || !form.title.trim()) return;
     setSaving(true);
     setError(null);
     try {
@@ -387,19 +402,52 @@ export default function CommercialCoursesRoute() {
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{courses.length}</Text>
+            <Text style={styles.metricValue}>{loaded ? courses.length : "—"}</Text>
             <Text style={styles.metricLabel}>Courses</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{publishedCount}</Text>
+            <Text style={styles.metricValue}>{loaded ? publishedCount : "—"}</Text>
             <Text style={styles.metricLabel}>Published</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{paidCount}</Text>
+            <Text style={styles.metricValue}>{loaded ? paidCount : "—"}</Text>
             <Text style={styles.metricLabel}>Paid</Text>
           </View>
         </View>
         {loading ? <Text style={styles.muted}>Loading commercial courses...</Text> : null}
+        {loaded && (loading || readError) ? (
+          <Text style={styles.muted}>
+            {loading
+              ? "Showing previously loaded courses while refreshing."
+              : "Showing previously loaded courses. Refresh failed; retry for current records."}
+          </Text>
+        ) : null}
+        {!loaded && readError ? (
+          <Text style={styles.muted}>
+            Commercial courses are unavailable. Retry to load saved courses.
+          </Text>
+        ) : null}
+        {lineReadFailed && !loading ? (
+          <Text style={styles.muted}>
+            Product Line choices are unavailable. Retry to reload choices; your draft
+            links are unchanged.
+          </Text>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            readError || lineReadFailed
+              ? "Retry commercial courses"
+              : "Refresh commercial courses"
+          }
+          disabled={loading || saving}
+          onPress={loadCourses}
+          style={[styles.action, loading || saving ? styles.disabled : null]}
+        >
+          <Text style={styles.actionText}>
+            {readError || lineReadFailed ? "Retry" : "Refresh courses"}
+          </Text>
+        </Pressable>
         {feedback ? <Text style={styles.successText}>{feedback}</Text> : null}
         {error ? <InlineError error={error} /> : null}
         <View style={styles.actions}>
@@ -747,11 +795,11 @@ export default function CommercialCoursesRoute() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Create commercial course"
-          disabled={saving || !form.title.trim()}
+          disabled={loading || saving || !form.title.trim()}
           onPress={submitCourse}
           style={[
             styles.primaryAction,
-            saving || !form.title.trim() ? styles.disabled : null
+            loading || saving || !form.title.trim() ? styles.disabled : null
           ]}
         >
           <Text style={styles.primaryActionText}>
@@ -864,9 +912,9 @@ export default function CommercialCoursesRoute() {
               })()
             )}
           </View>
-        ) : (
+        ) : loaded && !loading && !readError ? (
           <Text style={styles.muted}>No commercial courses yet.</Text>
-        )}
+        ) : null}
       </AppCard>
 
       <AppCard>

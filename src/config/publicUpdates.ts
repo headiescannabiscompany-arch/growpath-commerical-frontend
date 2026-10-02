@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-course-list-readiness",
+        title: "Clearer Commercial course loading and retry",
+        date: "October 2, 2026",
+        dateLabel: "Released",
+        summary:
+          "Commercial Courses no longer shows zero counts or an empty list when saved courses cannot load. Retry keeps unfinished forms; previously loaded courses are labeled during refresh or failure. Unavailable Product Line choices are reported separately. Course creation, publishing, access, payments and the existing layout stay unchanged."
+      },
+      {
         id: "course-builder-source-return",
         title: "Course Builder returns to its starting page",
         date: "October 2, 2026",
