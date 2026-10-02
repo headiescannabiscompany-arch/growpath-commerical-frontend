@@ -68,6 +68,10 @@ At compact widths, shared page content and campaign rails must remain in normal 
 
 Commercial Product Lines must use one level-one page heading, level-two headings for authoring, saved lines, and guidance sections, and level-three headings for individual saved lines. Hide the duplicate navigator header when the page provides that hierarchy.
 
+Product Lines and Product Batches keep initial list totals and linked choices unknown until their reads succeed. A failed read must not claim an empty list or missing saved links. Creation waits for successful loading; Batch AI prefill also waits for its combined saved-record read. Read-only Retry preserves unfinished fields and existing payloads, calculations, publication rules and permissions.
+
+Inventory Support keeps item and stock totals unknown until its initial read succeeds. During refresh or after refresh failure, retained records and totals are explicitly labeled as previously loaded; they are not current stock verification. Keep search text, existing per-unit calculations, canonical import/movement rules and independent full-audit access unchanged.
+
 Commercial Product Line creation and detail editing are single confirmed writes. Prevent duplicate load, create, and save requests; disable the edited fields while a write is active; preserve the owner's draft after failure; expose progress, success, retry, and error feedback inside the page; and keep a Commercial-safe back destination. Never clear an unsaved Product Line draft, submit it twice, or depend on a native-only alert for a create or update failure.
 
 Product Line detail editing requires a successfully loaded record whose saved identity matches the requested line. Missing, failed, malformed, mismatched, or superseded loads must not expose an editable blank record or permit Save; preserve safe list/storefront returns and a retry path. Public line browsing recognizes the supported singular and plural product-line link fields, including `productLineIds`, without adding unrelated products or relaxing public visibility and transaction rules.

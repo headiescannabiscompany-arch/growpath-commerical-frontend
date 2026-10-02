@@ -262,6 +262,67 @@ describe("Commercial Product Trial and Batch routes", () => {
     ).toBeTruthy();
   });
 
+  it.each(["batches", "products", "lines", "evidence"])(
+    "blocks Batch creation and AI fill after a failed %s read",
+    async (failedRead) => {
+      const readers: Record<string, jest.Mock> = {
+        batches: mockFetchSoilNutrientBatches,
+        products: mockFetchProducts,
+        lines: mockFetchProductLines,
+        evidence: mockFetchProductTrialEvidenceRuns
+      };
+      readers[failedRead].mockRejectedValueOnce(new Error("Batch records unavailable"));
+      const screen = render(<CommercialBatchPlannerRoute />);
+      await screen.findByText("Batch records unavailable");
+      fireEvent.changeText(
+        screen.getByLabelText("Commercial batch name"),
+        "Retained batch"
+      );
+      expect(screen.queryByText("No commercial batches yet.")).toBeNull();
+      expect(screen.queryAllByText(/No saved batch/)).toHaveLength(0);
+      expect(screen.queryAllByText("0")).toHaveLength(0);
+      expect(screen.getByLabelText("Create commercial batch")).toBeDisabled();
+      expect(
+        screen.getByLabelText("Fill commercial batch from saved records")
+      ).toBeDisabled();
+      fireEvent.press(screen.getByLabelText("Create commercial batch"));
+      fireEvent.press(screen.getByLabelText("Fill commercial batch from saved records"));
+      expect(mockCreateSoilNutrientBatch).not.toHaveBeenCalled();
+      expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+      fireEvent.press(screen.getByLabelText("Retry commercial batches"));
+      await screen.findByText("No commercial batches yet.");
+      expect(screen.getByLabelText("Commercial batch name").props.value).toBe(
+        "Retained batch"
+      );
+      expect(screen.getByLabelText("Create commercial batch")).toBeEnabled();
+      expect(
+        screen.getByLabelText("Fill commercial batch from saved records")
+      ).toBeEnabled();
+    }
+  );
+
+  it("keeps pending Batch metrics and choices unknown until all reads settle", async () => {
+    let resolveRead!: (value: any[]) => void;
+    mockFetchProductLines.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRead = resolve;
+        })
+    );
+    const screen = render(<CommercialBatchPlannerRoute />);
+    fireEvent.changeText(screen.getByLabelText("Commercial batch name"), "Unsaved batch");
+    expect(screen.queryAllByText("0")).toHaveLength(0);
+    expect(screen.queryAllByText(/No saved batch/)).toHaveLength(0);
+    expect(screen.queryByText("No commercial batches yet.")).toBeNull();
+    expect(screen.getByLabelText("Create commercial batch")).toBeDisabled();
+    expect(
+      screen.getByLabelText("Fill commercial batch from saved records")
+    ).toBeDisabled();
+    await act(async () => resolveRead([]));
+    expect(screen.getByText("No commercial batches yet.")).toBeTruthy();
+    expect(screen.getByLabelText("Create commercial batch")).toBeEnabled();
+  });
+
   it("rejects invalid Batch volume without silently omitting it", async () => {
     const screen = render(<CommercialBatchPlannerRoute />);
     await waitFor(() => expect(screen.queryByText("Loading batches...")).toBeNull());

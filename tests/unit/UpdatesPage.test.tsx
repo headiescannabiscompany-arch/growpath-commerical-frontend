@@ -19,6 +19,16 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("limits the grouped setup note to readiness and retained inventory evidence", () => {
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "commercial-setup-readiness"
+    );
+    expect(note?.summary).toContain("Retry keeps unfinished forms");
+    expect(note?.summary).toContain("unknown totals from zero stock");
+    expect(note?.summary).toContain(
+      "Calculations, permissions, publication rules and the existing layout stay unchanged"
+    );
+  });
   it("keeps the Product Trial read-recovery note separate from trial publication", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "commercial-trials-readiness"
@@ -167,6 +177,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "commercial-setup-readiness",
       "commercial-trials-readiness",
       "commercial-evidence-readiness",
       "commercial-diagnosis-return",

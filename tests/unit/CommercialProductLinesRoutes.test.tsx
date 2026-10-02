@@ -74,6 +74,7 @@ describe("Commercial product line routes", () => {
         })
     );
     const screen = render(<CommercialProductLinesRoute />);
+    await screen.findByText("No product lines yet.");
 
     expect(screen.getByText("Shared Back /home/commercial/storefront")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Product line name"), "Living Soil");
@@ -95,6 +96,7 @@ describe("Commercial product line routes", () => {
       new Error("Product line service unavailable")
     );
     const screen = render(<CommercialProductLinesRoute />);
+    await screen.findByText("No product lines yet.");
     fireEvent.changeText(screen.getByLabelText("Product line name"), "Retained Line");
     fireEvent.press(screen.getByLabelText("Create product line"));
 
@@ -103,6 +105,38 @@ describe("Commercial product line routes", () => {
     );
     expect(screen.getByRole("alert")).toBeTruthy();
     expect(screen.getByLabelText("Product line name").props.value).toBe("Retained Line");
+  });
+
+  it("keeps an unavailable list unknown and preserves the draft through retry", async () => {
+    mockFetchProductLines.mockRejectedValueOnce(new Error("Lines unavailable"));
+    const screen = render(<CommercialProductLinesRoute />);
+    await screen.findByText("Lines unavailable");
+    fireEvent.changeText(screen.getByLabelText("Product line name"), "Retained line");
+    expect(screen.queryByText("No product lines yet.")).toBeNull();
+    expect(screen.getByLabelText("Create product line")).toBeDisabled();
+    fireEvent.press(screen.getByLabelText("Create product line"));
+    expect(mockCreateProductLine).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Retry product lines"));
+    await screen.findByText("No product lines yet.");
+    expect(screen.getByLabelText("Product line name").props.value).toBe("Retained line");
+    expect(screen.getByLabelText("Create product line")).toBeEnabled();
+  });
+
+  it("waits for the initial product-line read before allowing creation", async () => {
+    let resolveRead!: (value: any[]) => void;
+    mockFetchProductLines.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRead = resolve;
+        })
+    );
+    const screen = render(<CommercialProductLinesRoute />);
+    fireEvent.changeText(screen.getByLabelText("Product line name"), "Unsaved line");
+    expect(screen.getByLabelText("Create product line")).toBeDisabled();
+    expect(screen.queryByText("No product lines yet.")).toBeNull();
+    await act(async () => resolveRead([savedLine]));
+    expect(screen.getByText("Living Soil")).toBeTruthy();
+    expect(screen.getByLabelText("Create product line")).toBeEnabled();
   });
 
   it("saves product-line details once and locks the form while saving", async () => {

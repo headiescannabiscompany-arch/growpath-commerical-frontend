@@ -97,6 +97,11 @@ checks, not AI conclusions. Each warning exposes the record, rule/version, evalu
 source freshness, missing inputs, and next authorized review action. Failed or stale reads
 are not displayed as zero inventory or no warnings.
 
+The Commercial Inventory Support list waits for a successful initial read before showing
+item and stock totals. Refreshing or failed refreshes label retained records and totals as
+previously loaded, preserve search text, and offer read-only recovery without changing
+the canonical ledger, import, movement, permission or full-audit contracts.
+
 ## Reviewed import
 
 Import is never a direct write:

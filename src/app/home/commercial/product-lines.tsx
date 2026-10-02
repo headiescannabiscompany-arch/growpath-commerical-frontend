@@ -51,6 +51,7 @@ export default function CommercialProductLinesRoute() {
   const styles = useMemo(() => createCommercialProductLinesStyles(palette), [palette]);
   const [lines, setLines] = useState<ProductLine[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<any>(null);
   const [createError, setCreateError] = useState<any>(null);
@@ -64,7 +65,8 @@ export default function CommercialProductLinesRoute() {
   const [description, setDescription] = useState("");
   const [coverImageUrl, setCoverImageUrl] = useState("");
   const [growInterests, setGrowInterests] = useState("");
-  const canCreate = name.trim().length > 1 && !saving;
+  const recordsReady = hasLoaded && !loading && !loadError;
+  const canCreate = recordsReady && name.trim().length > 1 && !saving;
 
   const load = useCallback(async () => {
     if (loadInFlightRef.current) return;
@@ -73,9 +75,9 @@ export default function CommercialProductLinesRoute() {
     setLoadError(null);
     try {
       setLines(await fetchProductLines());
+      setHasLoaded(true);
     } catch (err) {
       setLoadError(err);
-      setLines([]);
     } finally {
       loadInFlightRef.current = false;
       setLoading(false);
@@ -88,7 +90,7 @@ export default function CommercialProductLinesRoute() {
 
   async function createLine() {
     const trimmed = name.trim();
-    if (trimmed.length < 2 || createInFlightRef.current) return;
+    if (!recordsReady || trimmed.length < 2 || createInFlightRef.current) return;
     createInFlightRef.current = true;
     setSaving(true);
     setCreateError(null);
@@ -280,6 +282,10 @@ export default function CommercialProductLinesRoute() {
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading product lines...</Text>
           </View>
+        ) : !hasLoaded ? (
+          <Text style={styles.muted}>
+            Product lines are unavailable. Retry before creating a line.
+          </Text>
         ) : lines.length ? (
           <View style={styles.list}>
             {lines.map((line, index) => (

@@ -1,4 +1,5 @@
 import React from "react";
+import { FlatList } from "react-native";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CommercialInventoryItemDetailRoute from "@/app/home/commercial/inventory/[id]";
@@ -123,6 +124,8 @@ describe("Commercial Inventory workflow state", () => {
 
     await waitFor(() => expect(mockApiRequest).toHaveBeenCalledTimes(1));
     expect(screen.getByLabelText("Loading commercial inventory support")).toBeTruthy();
+    expect(screen.queryByText("0 items")).toBeNull();
+    expect(screen.queryAllByText("0")).toHaveLength(0);
 
     act(() => resolveLoad?.({ items: [inventoryItem] }));
     await waitFor(() => expect(screen.getByText("Kelp Meal")).toBeTruthy());
@@ -139,10 +142,36 @@ describe("Commercial Inventory workflow state", () => {
       expect(screen.getByText("Inventory service unavailable")).toBeTruthy()
     );
     expect(screen.queryByText("No inventory support records yet")).toBeNull();
+    expect(screen.queryByText("0 items")).toBeNull();
+    expect(screen.queryAllByText("0")).toHaveLength(0);
+    expect(
+      screen.getByText("Inventory totals are unavailable. Retry to load current stock.")
+    ).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Retry commercial inventory support"));
 
     await waitFor(() => expect(mockApiRequest).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(screen.getByText("Kelp Meal")).toBeTruthy());
+  });
+
+  it("labels retained inventory after a failed refresh without erasing search or records", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({ items: [inventoryItem] })
+      .mockRejectedValueOnce(new Error("Refresh unavailable"));
+    const screen = render(<CommercialInventoryRoute />);
+    await screen.findByText("Kelp Meal");
+    fireEvent.changeText(screen.getByLabelText("Search commercial inventory"), "kelp");
+    await act(async () =>
+      screen.UNSAFE_getByType(FlatList).props.refreshControl.props.onRefresh()
+    );
+    await screen.findByText("Refresh unavailable");
+    expect(
+      screen.getByText(
+        "Showing previously loaded inventory; current stock could not be refreshed."
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("Kelp Meal")).toBeTruthy();
+    expect(screen.getByLabelText("Search commercial inventory").props.value).toBe("kelp");
+    expect(screen.queryByText("No inventory support records yet")).toBeNull();
   });
 
   it("keeps a truthful empty state even when an empty ledger has search text", async () => {

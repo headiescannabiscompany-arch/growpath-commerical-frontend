@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "commercial-setup-readiness",
+        title: "Clearer Product Lines, Batches and Inventory loading",
+        date: "October 2, 2026",
+        dateLabel: "Released",
+        summary:
+          "Product Lines and Batches now wait for saved records before creation or batch AI fill; failed reads no longer look like empty lists. Retry keeps unfinished forms. Inventory Support distinguishes unknown totals from zero stock and labels previously loaded records after a refresh failure. Calculations, permissions, publication rules and the existing layout stay unchanged."
+      },
+      {
         id: "commercial-trials-readiness",
         title: "Clearer Product Trial loading and retry",
         date: "October 2, 2026",

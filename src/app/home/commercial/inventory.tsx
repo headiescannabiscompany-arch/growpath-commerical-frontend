@@ -115,6 +115,8 @@ export default function CommercialInventoryRoute() {
   const [items, setItems] = useState<AnyRec[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<any>(null);
   const [exportingAudit, setExportingAudit] = useState(false);
@@ -139,8 +141,11 @@ export default function CommercialInventoryRoute() {
 
         const res = await apiRequest(path, { method: "GET" });
         setItems(asArray(res));
+        setHasLoaded(true);
+        setLoadFailed(false);
       } catch (e) {
         setError(mapApiError(e) ?? e);
+        setLoadFailed(true);
       } finally {
         loadInFlightRef.current = false;
         setLoading(false);
@@ -238,7 +243,9 @@ export default function CommercialInventoryRoute() {
             Commercial Inventory Support
           </Text>
           <View style={styles.headerActions}>
-            <Text style={styles.muted}>{items.length} items</Text>
+            <Text style={styles.muted}>
+              {hasLoaded ? `${items.length} items` : "Inventory count unknown"}
+            </Text>
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Export commercial inventory full audit CSV"
@@ -296,16 +303,27 @@ export default function CommercialInventoryRoute() {
         <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Stock overview
         </Text>
+        {!hasLoaded && !loading ? (
+          <Text accessibilityLiveRegion="polite" style={styles.muted}>
+            Inventory totals are unavailable. Retry to load current stock.
+          </Text>
+        ) : hasLoaded && (refreshing || loadFailed) ? (
+          <Text accessibilityLiveRegion="polite" style={styles.muted}>
+            {refreshing
+              ? "Showing previously loaded inventory while refreshing."
+              : "Showing previously loaded inventory; current stock could not be refreshed."}
+          </Text>
+        ) : null}
         <View style={styles.summaryCard}>
           <View>
             <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
-              {outOfStock}
+              {hasLoaded ? outOfStock : "—"}
             </Text>
             <Text style={styles.summaryLabel}>out of stock</Text>
           </View>
           <View>
             <Text style={[styles.summaryValue, lowStock ? styles.warnText : null]}>
-              {lowStock}
+              {hasLoaded ? lowStock : "—"}
             </Text>
             <Text style={styles.summaryLabel}>low stock</Text>
           </View>
@@ -366,7 +384,7 @@ export default function CommercialInventoryRoute() {
           }
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            !loading && !error ? (
+            hasLoaded && !loading && !refreshing && !error ? (
               <View style={styles.empty}>
                 {normalizedQuery && items.length ? (
                   <>

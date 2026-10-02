@@ -116,6 +116,7 @@ function RecordPicker({
   createHref,
   createLabel,
   disabled,
+  ready,
   label,
   onChange,
   selectedId
@@ -124,6 +125,7 @@ function RecordPicker({
   createHref: string;
   createLabel: string;
   disabled: boolean;
+  ready: boolean;
   label: string;
   onChange: (id: string) => void;
   selectedId: string;
@@ -134,7 +136,9 @@ function RecordPicker({
   return (
     <View style={styles.recordPicker}>
       <Text style={styles.selectorLabel}>{label}</Text>
-      {choices.length ? (
+      {!ready ? (
+        <Text style={styles.muted}>Linked batch records are not available yet.</Text>
+      ) : choices.length ? (
         <View
           accessibilityRole="radiogroup"
           accessibilityLabel={`${label} choices`}
@@ -203,7 +207,8 @@ export default function CommercialBatchPlannerRoute() {
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [evidenceRuns, setEvidenceRuns] = useState<ProductTrialEvidenceRun[]>([]);
   const [form, setForm] = useState<BatchForm>(EMPTY_FORM);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [prefilling, setPrefilling] = useState(false);
   const [loadError, setLoadError] = useState<any>(null);
@@ -214,7 +219,9 @@ export default function CommercialBatchPlannerRoute() {
   const saveInFlightRef = useRef(false);
   const prefillInFlightRef = useRef(false);
   const formBusy = saving || prefilling;
-  const canCreate = form.batchName.trim().length > 1 && !formBusy;
+  const recordsReady = hasLoaded && !loading && !loadError;
+  const canPrefill = recordsReady && !formBusy;
+  const canCreate = recordsReady && form.batchName.trim().length > 1 && !formBusy;
 
   const readyCount = useMemo(
     () =>
@@ -242,6 +249,7 @@ export default function CommercialBatchPlannerRoute() {
       setProducts(nextProducts);
       setProductLines(nextLines);
       setEvidenceRuns(nextEvidenceRuns);
+      setHasLoaded(true);
     } catch (err) {
       setLoadError(err);
     } finally {
@@ -267,7 +275,13 @@ export default function CommercialBatchPlannerRoute() {
     .filter((item): item is RecordChoice => !!item);
 
   async function submitBatch() {
-    if (form.batchName.trim().length < 2 || saveInFlightRef.current) return;
+    if (
+      !recordsReady ||
+      formBusy ||
+      form.batchName.trim().length < 2 ||
+      saveInFlightRef.current
+    )
+      return;
     const batchVolume = form.batchVolume.trim() ? Number(form.batchVolume) : undefined;
     const estimatedCost = form.estimatedCost.trim()
       ? Number(form.estimatedCost)
@@ -322,7 +336,7 @@ export default function CommercialBatchPlannerRoute() {
   }
 
   async function prefillCommercialBatch() {
-    if (prefillInFlightRef.current || saving) return;
+    if (!recordsReady || prefillInFlightRef.current || saving) return;
     prefillInFlightRef.current = true;
     setPrefilling(true);
     setActionError(null);
@@ -404,15 +418,15 @@ export default function CommercialBatchPlannerRoute() {
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{batches.length}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? batches.length : "—"}</Text>
             <Text style={styles.metricLabel}>Batches</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{readyCount}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? readyCount : "—"}</Text>
             <Text style={styles.metricLabel}>Ready/used</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{linkedProductCount}</Text>
+            <Text style={styles.metricValue}>{hasLoaded ? linkedProductCount : "—"}</Text>
             <Text style={styles.metricLabel}>Linked products</Text>
           </View>
         </View>
@@ -456,13 +470,20 @@ export default function CommercialBatchPlannerRoute() {
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           Create commercial batch
         </Text>
+        {!recordsReady ? (
+          <Text accessibilityLiveRegion="polite" style={styles.muted}>
+            {loading
+              ? "Loading saved batch records..."
+              : "Batch records are unavailable. Retry before creating or filling a batch."}
+          </Text>
+        ) : null}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Fill commercial batch from saved records"
-          accessibilityState={{ disabled: formBusy, busy: prefilling }}
-          disabled={formBusy}
+          accessibilityState={{ disabled: !canPrefill, busy: prefilling }}
+          disabled={!canPrefill}
           onPress={prefillCommercialBatch}
-          style={[styles.action, formBusy && styles.disabled]}
+          style={[styles.action, !canPrefill && styles.disabled]}
         >
           <Text style={styles.actionText}>
             {prefilling ? "Reviewing records..." : "Fill from saved records with AI"}
@@ -504,6 +525,7 @@ export default function CommercialBatchPlannerRoute() {
             style={styles.input}
           />
           <RecordPicker
+            ready={hasLoaded}
             disabled={formBusy}
             label="Batch product"
             choices={productChoices}
@@ -513,6 +535,7 @@ export default function CommercialBatchPlannerRoute() {
             createLabel="Create Product"
           />
           <RecordPicker
+            ready={hasLoaded}
             disabled={formBusy}
             label="Batch product line"
             choices={productLineChoices}
@@ -522,6 +545,7 @@ export default function CommercialBatchPlannerRoute() {
             createLabel="Create Product Line"
           />
           <RecordPicker
+            ready={hasLoaded}
             disabled={formBusy}
             label="Batch evidence run"
             choices={evidenceRunChoices}
@@ -709,7 +733,11 @@ export default function CommercialBatchPlannerRoute() {
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           Current batches
         </Text>
-        {batches.length ? (
+        {!hasLoaded ? (
+          <Text style={styles.muted}>
+            {loading ? "Loading saved batches..." : "Saved batches are unavailable."}
+          </Text>
+        ) : batches.length ? (
           <View style={styles.list}>
             {batches.map((batch) => (
               <View key={batchId(batch)} style={styles.batchRow}>
