@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "October 2, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "October 3, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {

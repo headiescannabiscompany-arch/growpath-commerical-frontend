@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 import UpdatesPage, { createUpdatesStyles } from "@/app/updates";
-import { PUBLIC_UPDATE_SECTIONS } from "@/config/publicUpdates";
+import { PUBLIC_UPDATE_SECTIONS, PUBLIC_UPDATES_REVIEWED } from "@/config/publicUpdates";
 import {
   PUBLIC_UPDATE_GROUPS,
   UPDATE_STATUS_LABELS,
@@ -24,6 +24,13 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("never dates the page earlier than its released notes", () => {
+    const reviewed = Date.parse(PUBLIC_UPDATES_REVIEWED);
+    expect(Number.isFinite(reviewed)).toBe(true);
+    for (const entry of PUBLIC_UPDATE_SECTIONS[0].entries) {
+      expect(Date.parse(entry.date)).toBeLessThanOrEqual(reviewed);
+    }
+  });
   it("limits the grouped setup note to readiness and retained inventory evidence", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "commercial-setup-readiness"
@@ -138,7 +145,7 @@ describe("public Updates page", () => {
   it("shows milestone summaries first and retains dated history within each tab", () => {
     const screen = render(<UpdatesPage />);
     expect(screen.getByRole("header", { name: "Updates" })).toBeTruthy();
-    expect(screen.getByText("Last updated October 2, 2026")).toBeTruthy();
+    expect(screen.getByText("Last updated October 3, 2026")).toBeTruthy();
     expect(
       screen.getByRole("tab", { name: "Overview" }).props.accessibilityState.selected
     ).toBe(true);
