@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -17,7 +17,10 @@ import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
 import { createTask as createFacilityTask, getFacilityTasks } from "@/api/tasks";
 import { listTeamMembers, type TeamMember } from "@/api/team";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { useEntitlements } from "@/entitlements";
 import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
 import { useFacilityGrows } from "@/features/facility/useFacilityGrows";
@@ -274,6 +277,12 @@ function calendarMetadataForFacilityTask(sourceType: string) {
 }
 
 export default function FacilityTasksRoute() {
+  const params = useLocalSearchParams();
+  const scope = useFacilityRecordScope(params);
+  return <FacilityTasksRouteContent key={scope} />;
+}
+
+function FacilityTasksRouteContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -291,22 +300,25 @@ export default function FacilityTasksRoute() {
   const contextRoomId = String(firstParam(params.roomId) || "");
   const contextName = String(firstParam(params.contextName) || "");
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const {
+    mounted,
+    error,
+    clearError,
+    handleApiError,
+    hasLoaded,
+    setHasLoaded,
+    readFailed,
+    setReadFailed
+  } = useFacilityRecordRead();
 
   const [items, setItems] = useState<AnyRec[]>([]);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
+  const loadInFlightRef = useRef(false);
+  const creatingRef = useRef(false);
+  const [teamKnown, setTeamKnown] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newNotes, setNewNotes] = useState("");
   const [newDueDate, setNewDueDate] = useState("");
@@ -356,31 +368,57 @@ export default function FacilityTasksRoute() {
   }, [contextGrowId, contextRoomId]);
 
   const load = useCallback(
-    async (opts?: { refresh?: boolean; preserve?: AnyRec[] }) => {
-      if (!facilityId) return;
+    async (opts?: { refresh?: boolean; preserve?: AnyRec[]; afterCreate?: boolean }) => {
+      if (
+        !facilityId ||
+        loadInFlightRef.current ||
+        (creatingRef.current && !opts?.afterCreate)
+      )
+        return;
+      loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
 
       try {
         clearError();
-        const [res, team] = await Promise.all([
+        const [res, team] = await Promise.allSettled([
           getFacilityTasks(facilityId, {
             growId: contextGrowId || undefined,
             roomId: contextRoomId || undefined
           }),
           canAssign ? listTeamMembers(facilityId) : Promise.resolve([])
         ]);
-        setItems(mergeTaskQueue(asArray(res), opts?.preserve));
-        setMembers(team);
+        if (!mounted.current) return;
+        setTeamKnown(team.status === "fulfilled");
+        if (team.status === "fulfilled") setMembers(team.value);
+        if (res.status === "rejected") throw res.reason;
+        setItems(mergeTaskQueue(asArray(res.value), opts?.preserve));
+        setHasLoaded(true);
+        setReadFailed(false);
       } catch (e) {
+        if (!mounted.current) return;
+        setReadFailed(true);
         handleApiError(e);
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        loadInFlightRef.current = false;
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [facilityId, canAssign, contextGrowId, contextRoomId, clearError, handleApiError]
+    [
+      facilityId,
+      canAssign,
+      contextGrowId,
+      contextRoomId,
+      clearError,
+      handleApiError,
+      mounted,
+      setHasLoaded,
+      setReadFailed
+    ]
   );
 
   useEffect(() => {
@@ -392,12 +430,22 @@ export default function FacilityTasksRoute() {
   }, [facilityId, load, router]);
 
   const createTask = useCallback(async () => {
-    if (!facilityId || !canWrite) return;
+    if (
+      !facilityId ||
+      !canWrite ||
+      !hasLoaded ||
+      readFailed ||
+      !teamKnown ||
+      loadInFlightRef.current ||
+      creatingRef.current
+    )
+      return;
     const title = newTitle.trim();
     if (!title) return;
     const cleanSourceObjectId = newSourceObjectId.trim();
     const cleanRoomId = newRoomId.trim();
     const assignedToUserId = canAssign ? newAssignedTo.trim() || undefined : undefined;
+    creatingRef.current = true;
     setCreating(true);
     try {
       clearError();
@@ -421,6 +469,7 @@ export default function FacilityTasksRoute() {
         requiresApproval: newRequiresApproval || undefined,
         scope: "facility"
       });
+      if (!mounted.current) return;
       const preservedTask =
         createdTask && typeof createdTask === "object" && pickId(createdTask)
           ? (createdTask as AnyRec)
@@ -442,12 +491,14 @@ export default function FacilityTasksRoute() {
       setNewRequiresApproval(false);
       await load({
         refresh: true,
+        afterCreate: true,
         preserve: preservedTask ? [preservedTask] : undefined
       });
     } catch (e) {
       handleApiError(e);
     } finally {
-      setCreating(false);
+      creatingRef.current = false;
+      if (mounted.current) setCreating(false);
     }
   }, [
     facilityId,
@@ -469,6 +520,10 @@ export default function FacilityTasksRoute() {
     contextRoomId,
     clearError,
     handleApiError,
+    hasLoaded,
+    readFailed,
+    teamKnown,
+    mounted,
     load
   ]);
 
@@ -496,11 +551,14 @@ export default function FacilityTasksRoute() {
     [items, queueFilter, sourceFilter]
   );
   const header = useMemo(() => {
+    if (!hasLoaded) return "Task count unknown";
     const visible = visibleItems.length;
     const total = items.length;
     if (visible === total) return total === 1 ? "1 task" : `${total} tasks`;
     return `${visible} of ${total} tasks`;
-  }, [items.length, visibleItems.length]);
+  }, [items.length, visibleItems.length, hasLoaded]);
+  const createBlocked =
+    creating || loading || refreshing || !hasLoaded || readFailed || !teamKnown;
 
   return (
     <ScreenBoundary
@@ -514,6 +572,39 @@ export default function FacilityTasksRoute() {
     >
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
+        {hasLoaded && (readFailed || refreshing) ? (
+          <Text style={styles.muted}>
+            Showing previously loaded tasks;{" "}
+            {refreshing
+              ? "refreshing..."
+              : "refresh failed. Retry to verify current records."}
+          </Text>
+        ) : null}
+        {!loading && !refreshing && !teamKnown && canAssign ? (
+          <Text style={styles.muted}>
+            Team choices unavailable. Retry before creating or assigning a task.
+          </Text>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            readFailed || !teamKnown ? "Retry facility tasks" : "Refresh facility tasks"
+          }
+          disabled={loading || refreshing || creating}
+          accessibilityState={{
+            disabled: loading || refreshing || creating,
+            busy: loading || refreshing
+          }}
+          onPress={() => load({ refresh: true })}
+        >
+          <Text style={styles.muted}>
+            {readFailed || !teamKnown
+              ? "Retry"
+              : refreshing
+                ? "Refreshing..."
+                : "Refresh"}
+          </Text>
+        </Pressable>
         <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
           {contextName ? `${contextName} Tasks` : "Facility Tasks"}
         </Text>
@@ -798,12 +889,12 @@ export default function FacilityTasksRoute() {
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="Create facility task"
-                accessibilityState={{ disabled: creating || !newTitle.trim() }}
+                accessibilityState={{ disabled: createBlocked || !newTitle.trim() }}
                 onPress={createTask}
-                disabled={creating || !newTitle.trim()}
+                disabled={createBlocked || !newTitle.trim()}
                 style={[
                   styles.primaryBtn,
-                  (creating || !newTitle.trim()) && styles.primaryBtnDisabled
+                  (createBlocked || !newTitle.trim()) && styles.primaryBtnDisabled
                 ]}
               >
                 <Text style={styles.primaryBtnText}>
@@ -905,10 +996,10 @@ export default function FacilityTasksRoute() {
           contentContainerStyle={styles.list}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           ListEmptyComponent={
-            !loading ? (
+            !loading && hasLoaded && !readFailed ? (
               <View style={styles.empty}>
                 <Text accessibilityRole="header" aria-level={3} style={styles.emptyTitle}>
-                  No tasks yet
+                  {items.length ? "No tasks match these filters" : "No tasks yet"}
                 </Text>
                 <Text style={styles.muted}>
                   {canWrite

@@ -16,7 +16,10 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
 import { completeFacilityTask, deleteTask, getTask, updateTask } from "@/api/tasks";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { listTeamMembers, type TeamMember } from "@/api/team";
 import { useFacilityRooms } from "@/features/facility/useFacilityRooms";
@@ -320,6 +323,12 @@ function taskFormFromItem(item?: AnyRec | null) {
 }
 
 export default function FacilityTaskDetail() {
+  const params = useLocalSearchParams();
+  const scope = useFacilityRecordScope(params);
+  return <FacilityTaskDetailContent key={scope} />;
+}
+
+function FacilityTaskDetailContent() {
   const router = useRouter();
   const ent = useEntitlements();
   const { palette } = useAppTheme();
@@ -328,16 +337,16 @@ export default function FacilityTaskDetail() {
   const { selectedId: facilityId } = useFacility();
   const { rooms } = useFacilityRooms(facilityId);
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const {
+    mounted,
+    error,
+    clearError,
+    handleApiError,
+    hasLoaded,
+    setHasLoaded,
+    readFailed,
+    setReadFailed
+  } = useFacilityRecordRead();
 
   const [item, setItem] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
@@ -351,6 +360,10 @@ export default function FacilityTaskDetail() {
   const savingRef = useRef(false);
   const deletingRef = useRef(false);
   const [form, setForm] = useState(() => taskFormFromItem());
+  const savedFormRef = useRef(taskFormFromItem());
+  const [teamKnown, setTeamKnown] = useState(false);
+  const writeBlocked =
+    saving || deleting || loading || refreshing || !hasLoaded || readFailed;
 
   const canWrite = !!ent?.can?.(CAPABILITY_KEYS.TASKS_WRITE);
   const canAssign = canWrite && canManageRole(ent?.facilityRole);
@@ -358,7 +371,14 @@ export default function FacilityTaskDetail() {
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId || !id || loadInFlightRef.current) return;
+      if (
+        !facilityId ||
+        !id ||
+        loadInFlightRef.current ||
+        savingRef.current ||
+        deletingRef.current
+      )
+        return;
       loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
@@ -367,36 +387,67 @@ export default function FacilityTaskDetail() {
       try {
         clearError();
         setFeedback("");
-        const [res, team] = await Promise.all([
+        const [res, team] = await Promise.allSettled([
           getTask(facilityId, String(id)),
-          canAssign
-            ? listTeamMembers(facilityId).catch(() => [] as TeamMember[])
-            : Promise.resolve([] as TeamMember[])
+          canAssign ? listTeamMembers(facilityId) : Promise.resolve([] as TeamMember[])
         ]);
-        const nextItem = (res as AnyRec) ?? null;
+        if (!mounted.current) return;
+        setTeamKnown(team.status === "fulfilled");
+        if (team.status === "fulfilled") setMembers(team.value);
+        if (res.status === "rejected") throw res.reason;
+        const nextItem = (res.value as AnyRec) ?? null;
         setItem(nextItem);
-        setForm(taskFormFromItem(nextItem));
-        setMembers(team);
+        const nextForm = taskFormFromItem(nextItem);
+        const previousForm = savedFormRef.current;
+        setForm((current) =>
+          JSON.stringify(current) === JSON.stringify(previousForm) ? nextForm : current
+        );
+        savedFormRef.current = nextForm;
+        setHasLoaded(true);
+        setReadFailed(false);
       } catch (e) {
+        if (!mounted.current) return;
+        setReadFailed(true);
         handleApiError(e);
       } finally {
         loadInFlightRef.current = false;
-        setLoading(false);
-        setRefreshing(false);
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [facilityId, id, canAssign, clearError, handleApiError]
+    [
+      facilityId,
+      id,
+      canAssign,
+      clearError,
+      handleApiError,
+      mounted,
+      setHasLoaded,
+      setReadFailed
+    ]
   );
 
   const update = useCallback(
     async (patch: AnyRec, message = "Task updated.") => {
-      if (!facilityId || !id || !canWrite || savingRef.current) return;
+      if (
+        !facilityId ||
+        !id ||
+        !canWrite ||
+        writeBlocked ||
+        loadInFlightRef.current ||
+        savingRef.current ||
+        deletingRef.current
+      )
+        return;
       savingRef.current = true;
       setSaving(true);
       setFeedback("");
       try {
         clearError();
         const res = await updateTask(facilityId, String(id), patch);
+        if (!mounted.current) return;
         const nextItem = {
           ...(item ?? {}),
           ...patch,
@@ -404,15 +455,16 @@ export default function FacilityTaskDetail() {
         };
         setItem(nextItem);
         setForm(taskFormFromItem(nextItem));
+        savedFormRef.current = taskFormFromItem(nextItem);
         setFeedback(message);
       } catch (e) {
         handleApiError(e);
       } finally {
         savingRef.current = false;
-        setSaving(false);
+        if (mounted.current) setSaving(false);
       }
     },
-    [facilityId, id, canWrite, clearError, handleApiError, item]
+    [facilityId, id, canWrite, clearError, handleApiError, item, mounted, writeBlocked]
   );
 
   async function saveDetails() {
@@ -428,7 +480,7 @@ export default function FacilityTaskDetail() {
   }
 
   async function saveAssignment() {
-    if (!canAssign) return;
+    if (!canAssign || !teamKnown) return;
     await update(
       {
         assignedTo: form.assignedTo.trim() || null,
@@ -455,7 +507,16 @@ export default function FacilityTaskDetail() {
   }
 
   async function toggleComplete() {
-    if (!facilityId || !id || !canWrite || savingRef.current) return;
+    if (
+      !facilityId ||
+      !id ||
+      !canWrite ||
+      writeBlocked ||
+      loadInFlightRef.current ||
+      savingRef.current ||
+      deletingRef.current
+    )
+      return;
     savingRef.current = true;
     setSaving(true);
     setFeedback("");
@@ -463,32 +524,44 @@ export default function FacilityTaskDetail() {
       clearError();
       const nextCompleted = !isComplete(item);
       const res = await completeFacilityTask(facilityId, String(id), nextCompleted);
+      if (!mounted.current) return;
       const nextItem = res ? { ...item, ...(res as AnyRec) } : item;
       setItem(nextItem);
       setForm(taskFormFromItem(nextItem));
+      savedFormRef.current = taskFormFromItem(nextItem);
       setFeedback(nextCompleted ? "Task completed." : "Task reopened.");
     } catch (e) {
       handleApiError(e);
     } finally {
       savingRef.current = false;
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   }
 
   async function remove() {
-    if (!facilityId || !id || !canDelete || deletingRef.current) return;
+    if (
+      !facilityId ||
+      !id ||
+      !canDelete ||
+      writeBlocked ||
+      loadInFlightRef.current ||
+      savingRef.current ||
+      deletingRef.current
+    )
+      return;
     deletingRef.current = true;
     setDeleting(true);
     setFeedback("");
     try {
       clearError();
       await deleteTask(facilityId, String(id));
+      if (!mounted.current) return;
       router.replace("/home/facility/tasks");
     } catch (e) {
       handleApiError(e);
     } finally {
       deletingRef.current = false;
-      setDeleting(false);
+      if (mounted.current) setDeleting(false);
     }
   }
 
@@ -542,6 +615,39 @@ export default function FacilityTaskDetail() {
         }
       >
         {error ? <InlineError error={error} /> : null}
+        {hasLoaded && (readFailed || refreshing) ? (
+          <Text style={styles.muted}>
+            Showing previously loaded task;{" "}
+            {refreshing
+              ? "refreshing..."
+              : "refresh failed. Retry before saving changes."}
+          </Text>
+        ) : null}
+        {!loading && !refreshing && !teamKnown && canAssign ? (
+          <Text style={styles.muted}>
+            Team choices unavailable. Retry before changing assignment.
+          </Text>
+        ) : null}
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={
+            readFailed || !teamKnown ? "Retry facility task" : "Refresh facility task"
+          }
+          disabled={loading || refreshing || saving || deleting}
+          accessibilityState={{
+            disabled: loading || refreshing || saving || deleting,
+            busy: loading || refreshing
+          }}
+          onPress={() => load({ refresh: true })}
+        >
+          <Text style={styles.muted}>
+            {readFailed || !teamKnown
+              ? "Retry"
+              : refreshing
+                ? "Refreshing..."
+                : "Refresh"}
+          </Text>
+        </TouchableOpacity>
         {feedback ? (
           <Text accessibilityLiveRegion="polite" style={styles.feedback}>
             {feedback}
@@ -558,7 +664,7 @@ export default function FacilityTaskDetail() {
             <Text style={styles.muted}>Loading task...</Text>
           </View>
         ) : null}
-        {!loading && !item ? (
+        {!loading && hasLoaded && !readFailed && !item ? (
           <View style={styles.empty}>
             <Text accessibilityRole="header" aria-level={1} style={styles.emptyTitle}>
               Task not found
@@ -651,13 +757,13 @@ export default function FacilityTaskDetail() {
                     accessibilityLabel="Save task details"
                     accessibilityState={{
                       busy: saving,
-                      disabled: saving || !form.title.trim()
+                      disabled: writeBlocked || !form.title.trim()
                     }}
                     onPress={saveDetails}
-                    disabled={saving || !form.title.trim()}
+                    disabled={writeBlocked || !form.title.trim()}
                     style={[
                       styles.primaryBtn,
-                      (saving || !form.title.trim()) && styles.primaryBtnDisabled
+                      (writeBlocked || !form.title.trim()) && styles.primaryBtnDisabled
                     ]}
                   >
                     <Text style={styles.primaryBtnText}>
@@ -730,10 +836,16 @@ export default function FacilityTaskDetail() {
                       <TouchableOpacity
                         accessibilityRole="button"
                         accessibilityLabel="Save task assignment"
-                        accessibilityState={{ busy: saving, disabled: saving }}
+                        accessibilityState={{
+                          busy: saving,
+                          disabled: writeBlocked || !teamKnown
+                        }}
                         onPress={saveAssignment}
-                        disabled={saving}
-                        style={[styles.secondaryBtn, saving && styles.primaryBtnDisabled]}
+                        disabled={writeBlocked || !teamKnown}
+                        style={[
+                          styles.secondaryBtn,
+                          (writeBlocked || !teamKnown) && styles.primaryBtnDisabled
+                        ]}
                       >
                         <Text style={styles.secondaryBtnText}>
                           {saving ? "Saving..." : "Save Assignment"}
@@ -917,10 +1029,13 @@ export default function FacilityTaskDetail() {
                   <TouchableOpacity
                     accessibilityRole="button"
                     accessibilityLabel="Save task workflow context"
-                    accessibilityState={{ busy: saving, disabled: saving }}
+                    accessibilityState={{ busy: saving, disabled: writeBlocked }}
                     onPress={saveWorkflowContext}
-                    disabled={saving}
-                    style={[styles.secondaryBtn, saving && styles.primaryBtnDisabled]}
+                    disabled={writeBlocked}
+                    style={[
+                      styles.secondaryBtn,
+                      writeBlocked && styles.primaryBtnDisabled
+                    ]}
                   >
                     <Text style={styles.secondaryBtnText}>
                       {saving ? "Saving..." : "Save Workflow Context"}
@@ -931,10 +1046,13 @@ export default function FacilityTaskDetail() {
                     <TouchableOpacity
                       accessibilityRole="button"
                       accessibilityLabel={complete ? "Reopen task" : "Complete task"}
-                      accessibilityState={{ busy: saving, disabled: saving }}
+                      accessibilityState={{ busy: saving, disabled: writeBlocked }}
                       onPress={toggleComplete}
-                      disabled={saving}
-                      style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
+                      disabled={writeBlocked}
+                      style={[
+                        styles.primaryBtn,
+                        writeBlocked && styles.primaryBtnDisabled
+                      ]}
                     >
                       <Text style={styles.primaryBtnText}>
                         {complete ? "Reopen Task" : "Complete Task"}
@@ -944,10 +1062,13 @@ export default function FacilityTaskDetail() {
                       <TouchableOpacity
                         accessibilityRole="button"
                         accessibilityLabel="Delete task"
-                        accessibilityState={{ busy: deleting, disabled: deleting }}
+                        accessibilityState={{ busy: deleting, disabled: writeBlocked }}
                         onPress={remove}
-                        disabled={deleting}
-                        style={[styles.dangerBtn, deleting && styles.primaryBtnDisabled]}
+                        disabled={writeBlocked}
+                        style={[
+                          styles.dangerBtn,
+                          writeBlocked && styles.primaryBtnDisabled
+                        ]}
                       >
                         <Text style={styles.dangerBtnText}>
                           {deleting ? "Deleting..." : "Delete Task"}

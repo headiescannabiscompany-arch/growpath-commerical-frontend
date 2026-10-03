@@ -24,11 +24,13 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
-  it("groups Room read recovery without claiming all Facility work complete", () => {
+  it("groups Facility record recovery without claiming all Facility work complete", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "facility-dashboard-readiness"
     );
     expect(note?.summary).toContain("preserves unfinished room forms");
+    expect(note?.summary).toContain("task edits and crop choices");
+    expect(note?.summary).toContain("Readable tasks remain visible if team choices fail");
     expect(note?.summary).toContain("do not complete the broader Facility-role review");
   });
   it("never dates the page earlier than its released notes", () => {

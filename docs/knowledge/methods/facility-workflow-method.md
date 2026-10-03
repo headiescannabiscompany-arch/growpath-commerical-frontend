@@ -1,5 +1,17 @@
 # Facility Workflow
 
+Facility grow and task lists/details must distinguish failed reads from confirmed
+empty or missing records, offer visible single-flight Retry, and label retained
+snapshots as previously loaded. Preserve unsaved same-context task fields and crop
+choices across read recovery. Account/session, selected Facility, role or route
+changes discard prior records and drafts and ignore late results. Optional team
+lookup failures must not erase readable tasks or imply an empty team; assignment
+requires readable current choices. Record-derived writes wait for successful reads,
+and refresh cannot overlap creation, saving, completion or removal. Existing roles,
+payloads, crop-visibility rules and private operational-record boundaries remain
+unchanged. This read-recovery review is not evidence that every Facility workflow
+or role has completed hosted acceptance.
+
 Facility Rooms reads distinguish unknown collections from successful empty results.
 Failed equipment or cycle reads keep readable rooms but never claim zero related
 records. Label retained records during refresh or after failure; offer visible,

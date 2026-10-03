@@ -2,7 +2,10 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { useFacility } from "@/state/useFacility";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
@@ -51,6 +54,12 @@ function pickSubtitle(x: AnyRec): string {
 }
 
 export default function FacilityGrowsTab() {
+  const params = useLocalSearchParams();
+  const scope = useFacilityRecordScope(params);
+  return <FacilityGrowsTabContent key={scope} />;
+}
+
+function FacilityGrowsTabContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -65,16 +74,16 @@ export default function FacilityGrowsTab() {
     Boolean(ent?.can?.(CAPABILITY_KEYS.GROWS_WRITE)) &&
     (facilityRole === "OWNER" || facilityRole === "MANAGER");
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const {
+    mounted,
+    error,
+    clearError,
+    handleApiError,
+    hasLoaded,
+    setHasLoaded,
+    readFailed,
+    setReadFailed
+  } = useFacilityRecordRead();
 
   const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,6 +101,7 @@ export default function FacilityGrowsTab() {
       try {
         clearError();
         const res = await apiRequest(endpoints.grows(facilityId));
+        if (!mounted.current) return;
         const rows = asArray(res);
         setItems(
           roomId
@@ -102,15 +112,21 @@ export default function FacilityGrowsTab() {
               )
             : rows
         );
+        setHasLoaded(true);
+        setReadFailed(false);
       } catch (e) {
+        if (!mounted.current) return;
+        setReadFailed(true);
         handleApiError(e);
       } finally {
         loadInFlightRef.current = false;
-        setLoading(false);
-        setRefreshing(false);
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [facilityId, roomId, clearError, handleApiError]
+    [facilityId, roomId, clearError, handleApiError, mounted, setHasLoaded, setReadFailed]
   );
 
   useEffect(() => {
@@ -122,9 +138,10 @@ export default function FacilityGrowsTab() {
   }, [facilityId, load, router]);
 
   const header = useMemo(() => {
+    if (!hasLoaded) return "Grow count unknown";
     const n = items.length;
     return n === 1 ? "1 grow" : `${n} grows`;
-  }, [items.length]);
+  }, [items.length, hasLoaded]);
   const roomLabel = String(roomName || "this room");
 
   function openStartGrow() {
@@ -147,6 +164,30 @@ export default function FacilityGrowsTab() {
     >
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
+        {hasLoaded && (readFailed || refreshing) ? (
+          <Text style={styles.muted}>
+            Showing previously loaded grows;{" "}
+            {refreshing
+              ? "refreshing..."
+              : "refresh failed. Retry to verify current records."}
+          </Text>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            readFailed ? "Retry facility grows" : "Refresh facility grows"
+          }
+          disabled={loading || refreshing}
+          accessibilityState={{
+            disabled: loading || refreshing,
+            busy: loading || refreshing
+          }}
+          onPress={() => load({ refresh: true })}
+        >
+          <Text style={styles.muted}>
+            {readFailed ? "Retry" : refreshing ? "Refreshing..." : "Refresh"}
+          </Text>
+        </Pressable>
 
         <View style={styles.headerRow}>
           <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
@@ -183,7 +224,7 @@ export default function FacilityGrowsTab() {
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            !loading ? (
+            !loading && hasLoaded && !readFailed ? (
               <View style={styles.empty}>
                 <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
                   {roomId ? "No grows in this room yet" : "No facility grows yet"}

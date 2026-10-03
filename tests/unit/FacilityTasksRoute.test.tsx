@@ -1,4 +1,7 @@
 import React from "react";
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "qa-user" }, token: "qa-session" })
+}));
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityTasksRoute from "@/app/home/facility/(tabs)/tasks";

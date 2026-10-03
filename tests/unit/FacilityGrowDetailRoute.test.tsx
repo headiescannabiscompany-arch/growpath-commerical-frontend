@@ -1,4 +1,7 @@
 import React from "react";
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "qa-user" }, token: "qa-session" })
+}));
 import { RefreshControl } from "react-native";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 

@@ -16,7 +16,10 @@ import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import FacilityContextualTools from "@/components/facility/FacilityContextualTools";
 import GrowIntegrationBuildPanel from "@/components/integrations/GrowIntegrationBuildPanel";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { useFacility } from "@/state/useFacility";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { getTier1Options } from "@/utils/growInterests";
@@ -42,6 +45,12 @@ function readableDate(value: unknown) {
 }
 
 export default function FacilityGrowDetail() {
+  const params = useLocalSearchParams();
+  const scope = useFacilityRecordScope(params);
+  return <FacilityGrowDetailContent key={scope} />;
+}
+
+function FacilityGrowDetailContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilityGrowDetailStyles(palette), [palette]);
@@ -50,16 +59,16 @@ export default function FacilityGrowDetail() {
   const entitlements = useEntitlements();
   const canEditGrow = Boolean(entitlements?.can?.(CAPABILITY_KEYS.GROWS_WRITE));
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const {
+    mounted,
+    error,
+    clearError,
+    handleApiError,
+    hasLoaded,
+    setHasLoaded,
+    readFailed,
+    setReadFailed
+  } = useFacilityRecordRead();
 
   const [item, setItem] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,10 +77,13 @@ export default function FacilityGrowDetail() {
   const [savingCrops, setSavingCrops] = useState(false);
   const [cropFeedback, setCropFeedback] = useState("");
   const loadInFlightRef = useRef(false);
+  const savingCropsRef = useRef(false);
+  const savedCropsRef = useRef<string[]>([]);
+  const writeBlocked = savingCrops || loading || refreshing || !hasLoaded || readFailed;
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId || !id || loadInFlightRef.current) return;
+      if (!facilityId || !id || loadInFlightRef.current || savingCropsRef.current) return;
       loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
@@ -80,24 +92,34 @@ export default function FacilityGrowDetail() {
       try {
         clearError();
         const res = await apiRequest(endpoints.grow(facilityId, String(id)));
+        if (!mounted.current) return;
         const grow = unwrapGrow(res);
         setItem(grow);
-        setSelectedCrops(
-          Array.isArray(grow?.cropTypes)
-            ? grow.cropTypes.filter(Boolean)
-            : Array.isArray(grow?.growInterests?.crops)
-              ? grow.growInterests.crops.filter(Boolean)
-              : []
+        const nextCrops = Array.isArray(grow?.cropTypes)
+          ? grow.cropTypes.filter(Boolean)
+          : Array.isArray(grow?.growInterests?.crops)
+            ? grow.growInterests.crops.filter(Boolean)
+            : [];
+        const previousCrops = savedCropsRef.current;
+        setSelectedCrops((current) =>
+          JSON.stringify(current) === JSON.stringify(previousCrops) ? nextCrops : current
         );
+        savedCropsRef.current = nextCrops;
+        setHasLoaded(true);
+        setReadFailed(false);
       } catch (e) {
+        if (!mounted.current) return;
+        setReadFailed(true);
         handleApiError(e);
       } finally {
         loadInFlightRef.current = false;
-        setLoading(false);
-        setRefreshing(false);
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [clearError, facilityId, handleApiError, id]
+    [clearError, facilityId, handleApiError, id, mounted, setHasLoaded, setReadFailed]
   );
 
   useEffect(() => {
@@ -124,10 +146,13 @@ export default function FacilityGrowDetail() {
   }
 
   async function saveCropContext() {
+    if (!canEditGrow || writeBlocked || loadInFlightRef.current || savingCropsRef.current)
+      return;
     if (!facilityId || !id || !selectedCrops.length || savingCrops) {
       if (!selectedCrops.length) setCropFeedback("Select at least one crop type.");
       return;
     }
+    savingCropsRef.current = true;
     setSavingCrops(true);
     setCropFeedback("");
     try {
@@ -138,7 +163,9 @@ export default function FacilityGrowDetail() {
           growInterests: { ...(item?.growInterests || {}), crops: selectedCrops }
         }
       });
+      if (!mounted.current) return;
       const updated = unwrapGrow(res);
+      savedCropsRef.current = selectedCrops;
       setItem((current) => ({
         ...(current || {}),
         ...(updated || {}),
@@ -153,7 +180,8 @@ export default function FacilityGrowDetail() {
       handleApiError(saveError);
       setCropFeedback("Unable to save crop context.");
     } finally {
-      setSavingCrops(false);
+      savingCropsRef.current = false;
+      if (mounted.current) setSavingCrops(false);
     }
   }
 
@@ -172,6 +200,30 @@ export default function FacilityGrowDetail() {
         }
       >
         {error ? <InlineError error={error} /> : null}
+        {hasLoaded && (readFailed || refreshing) ? (
+          <Text style={styles.muted}>
+            Showing previously loaded grow;{" "}
+            {refreshing
+              ? "refreshing..."
+              : "refresh failed. Retry before saving changes."}
+          </Text>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            readFailed ? "Retry facility grow" : "Refresh facility grow"
+          }
+          disabled={loading || refreshing || savingCrops}
+          accessibilityState={{
+            disabled: loading || refreshing || savingCrops,
+            busy: loading || refreshing
+          }}
+          onPress={() => load({ refresh: true })}
+        >
+          <Text style={styles.muted}>
+            {readFailed ? "Retry" : refreshing ? "Refreshing..." : "Refresh"}
+          </Text>
+        </Pressable>
 
         {loading ? (
           <View
@@ -185,7 +237,7 @@ export default function FacilityGrowDetail() {
           </View>
         ) : null}
 
-        {!loading && !item ? (
+        {!loading && hasLoaded && !readFailed && !item ? (
           <View style={styles.empty}>
             <Text accessibilityRole="header" aria-level={1} style={styles.emptyTitle}>
               Grow not found
@@ -243,12 +295,12 @@ export default function FacilityGrowDetail() {
                   return (
                     <Pressable
                       key={crop}
-                      disabled={!canEditGrow || savingCrops}
+                      disabled={!canEditGrow || writeBlocked}
                       onPress={() => toggleCrop(crop)}
                       accessibilityRole="button"
                       accessibilityLabel={`${active ? "Remove" : "Select"} crop ${crop}`}
                       accessibilityState={{
-                        disabled: !canEditGrow || savingCrops,
+                        disabled: !canEditGrow || writeBlocked,
                         selected: active
                       }}
                       style={[styles.cropChip, active && styles.cropChipActive]}
@@ -265,13 +317,13 @@ export default function FacilityGrowDetail() {
               {canEditGrow ? (
                 <Pressable
                   onPress={saveCropContext}
-                  disabled={savingCrops || !selectedCrops.length}
+                  disabled={writeBlocked || !selectedCrops.length}
                   accessibilityRole="button"
                   accessibilityLabel="Save crop context"
-                  accessibilityState={{ disabled: savingCrops || !selectedCrops.length }}
+                  accessibilityState={{ disabled: writeBlocked || !selectedCrops.length }}
                   style={[
                     styles.saveButton,
-                    (savingCrops || !selectedCrops.length) && styles.disabled
+                    (writeBlocked || !selectedCrops.length) && styles.disabled
                   ]}
                 >
                   <Text style={styles.saveButtonText}>
