@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityRoomsTab from "@/app/home/facility/(tabs)/rooms";
 
@@ -21,6 +21,8 @@ const mockArchiveEquipment = jest.fn();
 const mockRouter = { replace: mockReplace, push: mockPush };
 let mockRoomParams: Record<string, string> = {};
 let mockFacilityRole = "OWNER";
+let mockFacilityId = "facility-1";
+let mockAuthToken = "session-1";
 let mockScreenBoundaryProps: any = null;
 
 jest.mock("expo-router", () => ({
@@ -38,8 +40,12 @@ jest.mock("@/entitlements", () => ({
 
 jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({
-    selectedId: "facility-1"
+    selectedId: mockFacilityId
   })
+}));
+
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "owner-1" }, token: mockAuthToken })
 }));
 
 jest.mock("@/api/rooms", () => ({
@@ -77,6 +83,8 @@ describe("FacilityRoomsTab", () => {
     jest.resetAllMocks();
     mockRoomParams = {};
     mockFacilityRole = "OWNER";
+    mockFacilityId = "facility-1";
+    mockAuthToken = "session-1";
     mockScreenBoundaryProps = null;
     mockFetchRooms.mockResolvedValue([
       {
@@ -116,6 +124,163 @@ describe("FacilityRoomsTab", () => {
         )
       )
     );
+  });
+
+  it("keeps initial reads unknown rather than empty and prevents creation", () => {
+    mockFetchRooms.mockReturnValue(new Promise(() => {}));
+    const screen = render(<FacilityRoomsTab />);
+    expect(screen.getByText("— rooms | — equipment | — cycles")).toBeTruthy();
+    expect(screen.queryByText(/No rooms were returned/)).toBeNull();
+    expect(screen.queryByText("No rooms yet.")).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("New room name"), "Unfinished room");
+    fireEvent.press(screen.getByLabelText("Create Room"));
+    expect(mockCreateRoom).not.toHaveBeenCalled();
+  });
+
+  it("retries a failed initial read once while preserving the unfinished room", async () => {
+    mockFetchRooms.mockRejectedValueOnce(new Error("Read unavailable"));
+    const screen = render(<FacilityRoomsTab />);
+    await waitFor(() =>
+      expect(
+        screen.getByText("Room records unavailable. Retry to load saved records.")
+      ).toBeTruthy()
+    );
+    expect(screen.queryByText("No rooms yet.")).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("New room name"), "Unfinished room");
+    let resolve: (rows: any[]) => void = () => {};
+    mockFetchRooms.mockImplementationOnce(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        })
+    );
+    const retry = screen.getByRole("button", { name: "Retry facility room records" });
+    fireEvent.press(retry);
+    fireEvent.press(retry);
+    expect(mockFetchRooms).toHaveBeenCalledTimes(2);
+    await act(async () => resolve([{ id: "room-existing", name: "Recovered room" }]));
+    expect(screen.getAllByText("Recovered room").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("New room name").props.value).toBe("Unfinished room");
+    expect(mockCreateRoom).not.toHaveBeenCalled();
+  });
+
+  it("keeps failed optional collections unknown without hiding readable rooms", async () => {
+    mockListEquipment.mockRejectedValueOnce(new Error("Equipment unavailable"));
+    mockListBatchCycles.mockRejectedValueOnce(new Error("Cycles unavailable"));
+    const screen = render(<FacilityRoomsTab />);
+    await waitFor(() =>
+      expect(screen.getByText("1 rooms | — equipment | — cycles")).toBeTruthy()
+    );
+    expect(screen.getAllByText("Existing Dry Room").length).toBeGreaterThan(0);
+    expect(screen.queryByText("No equipment linked to this room.")).toBeNull();
+    expect(screen.queryByText("No batch cycles linked to this room.")).toBeNull();
+    expect(screen.getByText("Equipment records unavailable.")).toBeTruthy();
+    expect(screen.getByText("Batch cycle records unavailable.")).toBeTruthy();
+  });
+
+  it("labels retained records after a failed refresh and recovers without erasing drafts", async () => {
+    const screen = render(<FacilityRoomsTab />);
+    await waitFor(() =>
+      expect(screen.getByText("1 rooms | 1 equipment | 0 cycles")).toBeTruthy()
+    );
+    fireEvent.changeText(screen.getByLabelText("New room name"), "Keep this draft");
+    mockFetchRooms.mockRejectedValueOnce(new Error("Refresh unavailable"));
+    fireEvent.press(
+      screen.getByRole("button", { name: "Refresh facility room records" })
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Previously loaded room records — refresh failed. These are not current verified records."
+        )
+      ).toBeTruthy()
+    );
+    expect(screen.getAllByText("Existing Dry Room").length).toBeGreaterThan(0);
+    fireEvent.press(screen.getByRole("button", { name: "Retry facility room records" }));
+    await waitFor(() =>
+      expect(screen.queryByText(/Previously loaded room records/)).toBeNull()
+    );
+    expect(screen.getByLabelText("New room name").props.value).toBe("Keep this draft");
+  });
+
+  it("retains but labels previous equipment after an optional refresh failure", async () => {
+    const screen = render(<FacilityRoomsTab />);
+    await waitFor(() =>
+      expect(screen.getByText("1 rooms | 1 equipment | 0 cycles")).toBeTruthy()
+    );
+    mockListEquipment.mockRejectedValueOnce(new Error("Unavailable"));
+    fireEvent.press(
+      screen.getByRole("button", { name: "Refresh facility room records" })
+    );
+    await waitFor(() =>
+      expect(screen.getByText("1 rooms | — equipment | 0 cycles")).toBeTruthy()
+    );
+    expect(screen.getByText("Existing Dry Room Temp/RH")).toBeTruthy();
+    expect(screen.getByText(/any retained entries are previously loaded/)).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText("Equipment name"), "Do not create");
+    fireEvent.press(screen.getByLabelText("Add Equipment"));
+    expect(mockCreateEquipment).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByRole("button", { name: "Retry facility room records" }));
+    await waitFor(() =>
+      expect(screen.getByText("1 rooms | 1 equipment | 0 cycles")).toBeTruthy()
+    );
+    expect(screen.getByLabelText("Equipment name").props.value).toBe("Do not create");
+  });
+
+  it("keeps a confirmed create separate from its failed follow-up read", async () => {
+    const screen = render(<FacilityRoomsTab />);
+    await waitFor(() =>
+      expect(screen.getByText("1 rooms | 1 equipment | 0 cycles")).toBeTruthy()
+    );
+    fireEvent.changeText(screen.getByLabelText("New room name"), "Created room");
+    mockFetchRooms.mockRejectedValueOnce(new Error("Follow-up unavailable"));
+    fireEvent.press(screen.getByLabelText("Create Room"));
+    await waitFor(() => expect(screen.getByText("Room created.")).toBeTruthy());
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Previously loaded room records — refresh failed/)
+      ).toBeTruthy()
+    );
+    expect(mockCreateRoom).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByRole("button", { name: "Retry facility room records" }));
+    await waitFor(() =>
+      expect(screen.queryByText(/Previously loaded room records/)).toBeNull()
+    );
+    expect(mockCreateRoom).toHaveBeenCalledTimes(1);
+  });
+
+  it("discards loaded records and drafts when the selected Facility changes", async () => {
+    const screen = render(<FacilityRoomsTab />);
+    await waitFor(() =>
+      expect(screen.getAllByText("Existing Dry Room").length).toBeGreaterThan(0)
+    );
+    fireEvent.changeText(screen.getByLabelText("New room name"), "Private first draft");
+    mockFacilityId = "facility-2";
+    mockFetchRooms.mockReturnValue(new Promise(() => {}));
+    screen.rerender(<FacilityRoomsTab />);
+    expect(screen.queryByText("Existing Dry Room")).toBeNull();
+    expect(screen.getByLabelText("New room name").props.value).toBe("");
+    expect(screen.getByText("— rooms | — equipment | — cycles")).toBeTruthy();
+  });
+
+  it("ignores old read completion after a session or role change", async () => {
+    let resolve: (rows: any[]) => void = () => {};
+    mockFetchRooms.mockImplementationOnce(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        })
+    );
+    const screen = render(<FacilityRoomsTab />);
+    mockAuthToken = "session-2";
+    mockFacilityRole = "VIEWER";
+    screen.rerender(<FacilityRoomsTab />);
+    await waitFor(() =>
+      expect(screen.getAllByText("Existing Dry Room").length).toBeGreaterThan(0)
+    );
+    await act(async () => resolve([{ id: "old", name: "Old session room" }]));
+    expect(screen.queryByText("Old session room")).toBeNull();
+    expect(screen.queryByLabelText("Create Room")).toBeNull();
   });
 
   it("keeps a Back control on the top-level room workspace", async () => {
@@ -213,6 +378,12 @@ describe("FacilityRoomsTab", () => {
       screen.getByText(/provider Pulse \| metrics air_temperature, relative_humidity/)
     ).toBeTruthy();
 
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Create imported facility rooms").props.accessibilityState
+          .disabled
+      ).toBe(false)
+    );
     fireEvent.press(screen.getByLabelText("Create imported facility rooms"));
 
     await waitFor(() =>
@@ -527,6 +698,12 @@ describe("FacilityRoomsTab", () => {
     expect(screen.getByText("Veg Room")).toBeTruthy();
     expect(screen.queryByText("TrolMaster Hydro-X Pro Flower Room 2")).toBeNull();
 
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Create imported facility rooms").props.accessibilityState
+          .disabled
+      ).toBe(false)
+    );
     fireEvent.press(screen.getByLabelText("Create imported facility rooms"));
 
     await waitFor(() =>

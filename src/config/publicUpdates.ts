@@ -410,11 +410,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "facility-dashboard-readiness",
-        title: "Clearer Facility dashboard evidence and recovery",
+        title: "Clearer Facility dashboard and room recovery",
         date: "October 3, 2026",
         dateLabel: "Released",
         summary:
-          "Unavailable dashboard records now stay unknown instead of appearing as zero or Clear. Retry restores readable counts; failed refreshes label previously loaded data. Changing account, Facility or role clears earlier results. Existing layout, record links and permissions remain unchanged; these dashboard checks do not complete the broader Facility-role review."
+          "Unavailable dashboard and room records stay unknown instead of appearing as zero, empty or Clear. Retry restores readable counts and preserves unfinished room forms; failed refreshes label previously loaded data. Room actions wait for readable records. Changing account, Facility or role clears earlier results. Existing layout, record links and permissions remain unchanged; these checks do not complete the broader Facility-role review."
       },
       {
         id: "video-library-readiness",

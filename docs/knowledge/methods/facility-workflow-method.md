@@ -1,5 +1,14 @@
 # Facility Workflow
 
+Facility Rooms reads distinguish unknown collections from successful empty results.
+Failed equipment or cycle reads keep readable rooms but never claim zero related
+records. Label retained records during refresh or after failure; offer visible,
+single-flight read-only Retry without erasing same-context drafts. Room-derived
+writes wait for successful current reads, and manual refresh cannot overlap a write
+or form-assistant request. Account/session, selected Facility, role or room-route
+changes clear earlier records and drafts and ignore late reads. Existing room,
+equipment, cycle, import and role rules remain authoritative and unchanged.
+
 Facility dashboard totals remain unknown until their reads succeed. An unavailable
 verification, audit, SOP, team or batch read must not become zero, Clear, or No
 pending checks. Keep successful independent records visible, provide a single-flight

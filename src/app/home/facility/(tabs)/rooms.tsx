@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -40,6 +40,7 @@ import { useEntitlements } from "@/entitlements";
 import { getFacilityRoomAccess } from "@/features/facility/roomAccess";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { useAuth } from "@/auth/AuthContext";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
@@ -304,6 +305,21 @@ function buildRoomImportPreview(rawText: string) {
 }
 
 export default function FacilityRoomsTab() {
+  const auth = useAuth();
+  const ent = useEntitlements();
+  const { selectedId } = useFacility();
+  const params = useLocalSearchParams<{ roomId?: string }>();
+  const scope = JSON.stringify([
+    auth.user?.id || auth.user?._id,
+    auth.token,
+    selectedId,
+    ent.facilityRole,
+    params.roomId
+  ]);
+  return <FacilityRoomsContent key={scope} />;
+}
+
+function FacilityRoomsContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -341,7 +357,27 @@ export default function FacilityRoomsTab() {
   const [activeRoomId, setActiveRoomId] = useState(routeRoomId);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [writeBusy, setSaving] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [readFailed, setReadFailed] = useState(false);
+  const [equipmentKnown, setEquipmentKnown] = useState(false);
+  const [cyclesKnown, setCyclesKnown] = useState(false);
+  const mounted = useRef(true);
+  const readPending = useRef(false);
+  const saving =
+    writeBusy ||
+    loading ||
+    refreshing ||
+    !hasLoaded ||
+    readFailed ||
+    !equipmentKnown ||
+    !cyclesKnown;
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const [feedback, setFeedback] = useState("");
 
   const [roomName, setRoomName] = useState("");
@@ -430,7 +466,8 @@ export default function FacilityRoomsTab() {
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId) return;
+      if (!facilityId || !mounted.current || readPending.current) return;
+      readPending.current = true;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
       try {
@@ -440,14 +477,16 @@ export default function FacilityRoomsTab() {
           listEquipment(facilityId),
           listBatchCycles(facilityId)
         ]);
+        if (!mounted.current) return;
         if (roomResult.status === "rejected") throw roomResult.reason;
         const roomRows = roomResult.value;
-        const equipmentRows =
-          equipmentResult.status === "fulfilled" ? equipmentResult.value : [];
-        const cycleRows = cycleResult.status === "fulfilled" ? cycleResult.value : [];
         setRooms(roomRows);
-        setEquipment(equipmentRows);
-        setCycles(cycleRows);
+        setHasLoaded(true);
+        setReadFailed(false);
+        setEquipmentKnown(equipmentResult.status === "fulfilled");
+        setCyclesKnown(cycleResult.status === "fulfilled");
+        if (equipmentResult.status === "fulfilled") setEquipment(equipmentResult.value);
+        if (cycleResult.status === "fulfilled") setCycles(cycleResult.value);
         setActiveRoomId((currentActiveRoomId) =>
           currentActiveRoomId &&
           roomRows.some((room) => rowId(room) === currentActiveRoomId)
@@ -457,10 +496,15 @@ export default function FacilityRoomsTab() {
               : rowId(roomRows[0])
         );
       } catch (e) {
+        if (!mounted.current) return;
+        setReadFailed(true);
         handleApiError(e);
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        readPending.current = false;
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
     [facilityId, routeRoomId, clearError, handleApiError]
@@ -482,6 +526,7 @@ export default function FacilityRoomsTab() {
   }, [activeRoomId, rooms, routeRoomId]);
 
   async function addRoom() {
+    if (saving || readPending.current) return;
     if (!facilityId || !canEditRooms || !roomName.trim()) return;
     setSaving(true);
     setFeedback("");
@@ -556,6 +601,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function getRoomFormHelp() {
+    if (saving || readPending.current || assistantBusy) return;
     if (!facilityId || !roomDescription.trim()) return;
     setAssistantBusy(true);
     clearError();
@@ -605,6 +651,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function createImportedRooms() {
+    if (saving || readPending.current) return;
     if (!facilityId || !canEditRooms || !roomImportPreview.length) return;
     setSaving(true);
     setFeedback("");
@@ -701,6 +748,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function saveTrackingMode(mode: "batch" | "individual") {
+    if (saving || readPending.current) return;
     if (!facilityId || !activeRoomId || !canEditRooms) return;
     setSaving(true);
     setFeedback("");
@@ -717,6 +765,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function removeRoom() {
+    if (saving || readPending.current) return;
     if (!facilityId || !activeRoomId || !canDeleteRooms) return;
     setSaving(true);
     setFeedback("");
@@ -734,6 +783,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function addEquipment() {
+    if (saving || readPending.current) return;
     if (
       !facilityId ||
       !activeRoomId ||
@@ -762,6 +812,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function saveEquipmentAction() {
+    if (saving || readPending.current || !canManageEquipmentCycles) return;
     if (!facilityId || !equipmentActionId || !equipmentActionDetails.trim()) return;
     setSaving(true);
     setFeedback("");
@@ -793,6 +844,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function removeEquipment(item: EquipmentItem) {
+    if (saving || readPending.current) return;
     const id = rowId(item);
     if (!facilityId || !id || !canManageEquipmentCycles) return;
     setSaving(true);
@@ -810,6 +862,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function addCycle() {
+    if (saving || readPending.current) return;
     if (!facilityId || !activeRoomId || !canManageEquipmentCycles || !cycleName.trim())
       return;
     setSaving(true);
@@ -838,6 +891,7 @@ export default function FacilityRoomsTab() {
   }
 
   async function removeCycle(id: string) {
+    if (saving || readPending.current) return;
     if (!facilityId || !id || !canManageEquipmentCycles) return;
     setSaving(true);
     setFeedback("");
@@ -864,7 +918,9 @@ export default function FacilityRoomsTab() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => load({ refresh: true })}
+            onRefresh={() => {
+              if (!writeBusy && !assistantBusy) void load({ refresh: true });
+            }}
             tintColor={palette.accent}
             colors={[palette.accent]}
             progressBackgroundColor={palette.surface}
@@ -884,7 +940,9 @@ export default function FacilityRoomsTab() {
               Facility Rooms &amp; Workspaces
             </Text>
             <Text style={styles.muted}>
-              {rooms.length} rooms | {equipment.length} equipment | {cycles.length} cycles
+              {hasLoaded ? rooms.length : "—"} rooms |{" "}
+              {equipmentKnown ? equipment.length : "—"} equipment |{" "}
+              {cyclesKnown ? cycles.length : "—"} cycles
             </Text>
           </View>
           {loading ? (
@@ -894,6 +952,48 @@ export default function FacilityRoomsTab() {
             />
           ) : null}
         </View>
+
+        {loading || refreshing || readFailed ? (
+          <Text accessibilityRole="alert" style={styles.muted}>
+            {hasLoaded
+              ? readFailed && !refreshing
+                ? "Previously loaded room records — refresh failed. These are not current verified records."
+                : "Refreshing previously loaded room records."
+              : readFailed && !loading && !refreshing
+                ? "Room records unavailable. Retry to load saved records."
+                : "Loading room records. Counts are not yet known."}
+          </Text>
+        ) : null}
+        {hasLoaded && (!equipmentKnown || !cyclesKnown) ? (
+          <Text accessibilityRole="alert" style={styles.muted}>
+            Some related records are unavailable. Counts remain unknown; any retained
+            entries are previously loaded. Retry to verify before making changes.
+          </Text>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            readFailed || (hasLoaded && (!equipmentKnown || !cyclesKnown))
+              ? "Retry facility room records"
+              : "Refresh facility room records"
+          }
+          disabled={loading || refreshing || writeBusy || assistantBusy}
+          accessibilityState={{
+            disabled: loading || refreshing || writeBusy || assistantBusy
+          }}
+          onPress={() => {
+            if (!writeBusy && !assistantBusy) void load({ refresh: true });
+          }}
+          style={styles.pill}
+        >
+          <Text style={styles.pillText}>
+            {loading || refreshing
+              ? "Loading records..."
+              : readFailed || !equipmentKnown || !cyclesKnown
+                ? "Retry records"
+                : "Refresh records"}
+          </Text>
+        </Pressable>
 
         <FacilityContextualTools
           title="Facility environment tools"
@@ -946,8 +1046,12 @@ export default function FacilityRoomsTab() {
                       {[
                         room.roomType || "room",
                         room.stage || "no active stage",
-                        `${linkedCycles.length} grows`,
-                        `${linkedEquipment} connected devices`
+                        cyclesKnown
+                          ? `${linkedCycles.length} grows`
+                          : "Grows unavailable",
+                        equipmentKnown
+                          ? `${linkedEquipment} connected devices`
+                          : "Devices unavailable"
                       ].join(" | ")}
                     </Text>
                     <Text style={styles.openWorkspace}>Open grows {">"}</Text>
@@ -989,12 +1093,12 @@ export default function FacilityRoomsTab() {
                 </View>
               );
             })
-          ) : (
+          ) : hasLoaded ? (
             <Text style={styles.muted}>
               No rooms were returned for this facility. Refresh or verify the selected
               facility and integration mapping.
             </Text>
-          )}
+          ) : null}
         </View>
 
         {canEditRooms && !showRoomImport ? (
@@ -1078,7 +1182,7 @@ export default function FacilityRoomsTab() {
               ]}
             >
               <Text style={styles.primaryText}>
-                {saving ? "Creating..." : "Create previewed rooms"}
+                {writeBusy ? "Creating..." : "Create previewed rooms"}
               </Text>
             </Pressable>
             <Pressable
@@ -1119,15 +1223,15 @@ export default function FacilityRoomsTab() {
               />
               <Pressable
                 onPress={getRoomFormHelp}
-                disabled={assistantBusy || !roomDescription.trim()}
+                disabled={saving || assistantBusy || !roomDescription.trim()}
                 accessibilityRole="button"
                 accessibilityLabel="Ask AI to help fill out new room"
                 accessibilityState={{
-                  disabled: assistantBusy || !roomDescription.trim()
+                  disabled: saving || assistantBusy || !roomDescription.trim()
                 }}
                 style={[
                   styles.primaryBtn,
-                  (assistantBusy || !roomDescription.trim()) && styles.disabled
+                  (saving || assistantBusy || !roomDescription.trim()) && styles.disabled
                 ]}
               >
                 <Text style={styles.primaryText}>
@@ -1361,7 +1465,7 @@ export default function FacilityRoomsTab() {
                 ]}
               >
                 <Text style={styles.primaryText}>
-                  {saving ? "Saving..." : "Create Room"}
+                  {writeBusy ? "Saving..." : "Create Room"}
                 </Text>
               </Pressable>
             </View>
@@ -1393,9 +1497,9 @@ export default function FacilityRoomsTab() {
                 );
               })}
             </View>
-          ) : (
+          ) : hasLoaded ? (
             <Text style={styles.muted}>No rooms yet.</Text>
-          )}
+          ) : null}
 
           {activeRoom ? (
             <View style={styles.detailBlock}>
@@ -1493,6 +1597,9 @@ export default function FacilityRoomsTab() {
                     <Text style={styles.primaryText}>Add Equipment</Text>
                   </Pressable>
                 </View>
+              ) : null}
+              {!equipmentKnown ? (
+                <Text style={styles.muted}>Equipment records unavailable.</Text>
               ) : null}
               {roomEquipment.length ? (
                 roomEquipment.map((item) => (
@@ -1638,9 +1745,9 @@ export default function FacilityRoomsTab() {
                     ) : null}
                   </View>
                 ))
-              ) : (
+              ) : equipmentKnown ? (
                 <Text style={styles.muted}>No equipment linked to this room.</Text>
-              )}
+              ) : null}
             </View>
 
             <View style={styles.card}>
@@ -1649,15 +1756,21 @@ export default function FacilityRoomsTab() {
               </Text>
               <View style={styles.summaryCard}>
                 <View>
-                  <Text style={styles.summaryValue}>{activeCycles}</Text>
+                  <Text style={styles.summaryValue}>
+                    {cyclesKnown ? activeCycles : "—"}
+                  </Text>
                   <Text style={styles.summaryLabel}>active cycles</Text>
                 </View>
                 <View>
-                  <Text style={styles.summaryValue}>{completedCycles}</Text>
+                  <Text style={styles.summaryValue}>
+                    {cyclesKnown ? completedCycles : "—"}
+                  </Text>
                   <Text style={styles.summaryLabel}>complete cycles</Text>
                 </View>
                 <View>
-                  <Text style={styles.summaryValue}>{estimatedPlants}</Text>
+                  <Text style={styles.summaryValue}>
+                    {cyclesKnown ? estimatedPlants : "—"}
+                  </Text>
                   <Text style={styles.summaryLabel}>estimated plants</Text>
                 </View>
               </View>
@@ -1748,6 +1861,9 @@ export default function FacilityRoomsTab() {
                   </Pressable>
                 </View>
               ) : null}
+              {!cyclesKnown ? (
+                <Text style={styles.muted}>Batch cycle records unavailable.</Text>
+              ) : null}
               {roomCycles.length ? (
                 roomCycles.map((cycle) => {
                   const id = rowId(cycle);
@@ -1792,9 +1908,9 @@ export default function FacilityRoomsTab() {
                     </View>
                   );
                 })
-              ) : (
+              ) : cyclesKnown ? (
                 <Text style={styles.muted}>No batch cycles linked to this room.</Text>
-              )}
+              ) : null}
             </View>
           </>
         ) : null}
