@@ -1329,6 +1329,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Facility grow summaries use saved room names, honest creation/start labels and calendar-safe readable dates; optional room lookup recovery and direct grow-list Back preserve scope without record changes",
       "Grow-launched Plants, Journal, Inventory and SOP Library return explicitly to their source grow; SOP journal evidence prefers its source run. Inventory/SOP scope and unscoped history remain unchanged",
       "Dashboard counts recognize hosted plant collections; Plants/Journal distinguish unknown reads from empty records, label retained counts, preserve same-context drafts on Retry, serialize reads/writes and discard late results across identity/context changes",
+      "Inventory and SOP-run lists distinguish failed reads from empty records, offer single-flight Retry, label retained snapshots, preserve inventory search and discard late results across identity/context changes",
       "saved-task-named cancelable removal confirmation with current role/read/write guards, retained soft-removal history, and exact grow-scoped task Back navigation",
       "credential-autofill-safe AI and parental-control inputs",
       "record-backed report counts with explicit untracked compliance evidence",

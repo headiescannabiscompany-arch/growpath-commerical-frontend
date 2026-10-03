@@ -32,6 +32,10 @@ let mockParams: Record<string, string> = {};
 let mockCanWriteSopRuns = true;
 let mockBoundaryProps: any;
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "qa" }, token: "qa-session" })
+}));
+
 jest.mock("expo-document-picker", () => ({
   getDocumentAsync: jest.fn()
 }));

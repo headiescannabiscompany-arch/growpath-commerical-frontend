@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
@@ -9,9 +9,10 @@ import {
   View
 } from "react-native";
 
-import { apiRequest } from "@/api/apiRequest";
+import { InlineError } from "@/components/InlineError";
+import { useFacilityRecordScope } from "@/features/facility/useFacilityRecordRead";
+import { useFacilityCollectionRead } from "@/features/facility/useFacilityCollectionRead";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
@@ -68,11 +69,13 @@ function isComplete(run: SopRunListItem) {
   return status === "completed" || status === "complete" || status === "done";
 }
 
-function getErrorMessage(e: unknown, fallback: string) {
-  return normalizeApiError(e).message || fallback;
+export default function FacilitySopRunsIndexRoute() {
+  const { growId } = useLocalSearchParams();
+  const scope = useFacilityRecordScope(growId);
+  return <FacilitySopRunsContent key={scope} />;
 }
 
-export default function FacilitySopRunsIndexRoute() {
+function FacilitySopRunsContent() {
   const router = useRouter();
   const { growId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const sourceGrowId = Array.isArray(growId) ? growId[0] : growId;
@@ -87,29 +90,8 @@ export default function FacilitySopRunsIndexRoute() {
   const ent = useEntitlements();
   const canWriteSopRuns = Boolean(ent?.can?.(CAPABILITY_KEYS.SOP_RUNS_WRITE));
   const { selectedId: facilityId } = useFacility();
-  const [items, setItems] = useState<SopRunListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(
-    async (opts?: { refresh?: boolean }) => {
-      if (!facilityId) return;
-      if (opts?.refresh) setRefreshing(true);
-      else setLoading(true);
-      setError(null);
-      try {
-        const res = await apiRequest(endpoints.sopRuns(facilityId));
-        setItems(asArray(res));
-      } catch (e: unknown) {
-        setError(getErrorMessage(e, "Failed to load SOP runs"));
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    [facilityId]
-  );
+  const { items, loading, refreshing, error, load, hasLoaded, readFailed, readable } =
+    useFacilityCollectionRead(facilityId ? endpoints.sopRuns(facilityId) : null, asArray);
 
   useEffect(() => {
     if (!facilityId) return;
@@ -126,7 +108,7 @@ export default function FacilitySopRunsIndexRoute() {
     );
   }
 
-  if (loading) {
+  if (loading && !hasLoaded) {
     return (
       <ScreenBoundary title="Facility SOP Library and runs" showBack {...backProps}>
         <View style={styles.center}>
@@ -149,7 +131,7 @@ export default function FacilitySopRunsIndexRoute() {
         style={styles.list}
         data={items}
         keyExtractor={pickId}
-        onRefresh={() => load({ refresh: true })}
+        onRefresh={load}
         refreshing={refreshing}
         ListHeaderComponent={
           <View style={styles.header}>
@@ -160,16 +142,36 @@ export default function FacilitySopRunsIndexRoute() {
               Manage approved facility procedures here, then assign and perform them in a
               grow.
             </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Refresh facility SOP runs"
+              accessibilityState={{ disabled: refreshing, busy: refreshing }}
+              disabled={refreshing}
+              onPress={load}
+            >
+              <Text style={styles.link}>
+                {refreshing ? "Refreshing…" : readFailed ? "Retry" : "Refresh"}
+              </Text>
+            </Pressable>
+            <InlineError error={error} />
+            {readFailed ? (
+              <Text accessibilityLiveRegion="polite" style={styles.err}>
+                {hasLoaded
+                  ? "Previously loaded SOP runs — refresh failed. These are not current verified counts."
+                  : "SOP runs unavailable. Retry to load current records."}
+              </Text>
+            ) : null}
             <View style={styles.links}>
               {canWriteSopRuns ? (
-                <Link
+                <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Start SOP run"
-                  href="/home/facility/sop-runs/start"
-                  style={styles.link}
+                  disabled={!readable}
+                  accessibilityState={{ disabled: !readable }}
+                  onPress={() => readable && router.push("/home/facility/sop-runs/start")}
                 >
-                  Start Run
-                </Link>
+                  <Text style={styles.link}>Start Run</Text>
+                </Pressable>
               ) : null}
               <Link
                 accessibilityRole="button"
@@ -203,13 +205,13 @@ export default function FacilitySopRunsIndexRoute() {
               </Text>
               <View>
                 <Text style={styles.summaryValue}>
-                  {completedRuns}/{totalRuns}
+                  {hasLoaded ? `${completedRuns}/${totalRuns}` : "—"}
                 </Text>
                 <Text style={styles.summaryLabel}>completed runs</Text>
               </View>
               <View>
                 <Text style={styles.summaryValue}>
-                  {reviewedSteps}/{totalSteps}
+                  {hasLoaded ? `${reviewedSteps}/${totalSteps}` : "—"}
                 </Text>
                 <Text style={styles.summaryLabel}>reviewed steps</Text>
               </View>
@@ -217,7 +219,7 @@ export default function FacilitySopRunsIndexRoute() {
                 <Text
                   style={[styles.summaryValue, pendingSteps ? styles.warnText : null]}
                 >
-                  {pendingSteps}
+                  {hasLoaded ? pendingSteps : "—"}
                 </Text>
                 <Text style={styles.summaryLabel}>pending steps</Text>
               </View>
@@ -231,13 +233,14 @@ export default function FacilitySopRunsIndexRoute() {
                 </Text>
               </View>
             ) : null}
-            {error ? <Text style={styles.err}>{error}</Text> : null}
             <Text accessibilityRole="header" aria-level={2} style={styles.sectionHeading}>
               Run history
             </Text>
           </View>
         }
-        ListEmptyComponent={<Text style={styles.empty}>No SOP runs found.</Text>}
+        ListEmptyComponent={
+          hasLoaded ? <Text style={styles.empty}>No SOP runs found.</Text> : null
+        }
         renderItem={({ item, index }) => {
           const id = pickId(item, index);
           const stats = runStats(item);

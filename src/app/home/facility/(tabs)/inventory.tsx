@@ -12,12 +12,12 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { useFacilityRecordScope } from "@/features/facility/useFacilityRecordRead";
+import { useFacilityCollectionRead } from "@/features/facility/useFacilityCollectionRead";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -103,6 +103,12 @@ function matchesInventorySearch(item: InventoryItem, normalizedQuery: string) {
 }
 
 export default function FacilityInventoryTab() {
+  const { growId } = useLocalSearchParams();
+  const scope = useFacilityRecordScope(growId);
+  return <FacilityInventoryContent key={scope} />;
+}
+
+function FacilityInventoryContent() {
   const router = useRouter();
   const { growId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const sourceGrowId = Array.isArray(growId) ? growId[0] : growId;
@@ -116,52 +122,26 @@ export default function FacilityInventoryTab() {
   const styles = useMemo(() => createStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
   const ent = useEntitlements();
-  const handleApiError = useApiErrorHandler();
-
-  const [items, setItems] = useState<InventoryItem[]>([]);
+  const {
+    items,
+    loading,
+    refreshing,
+    load,
+    error,
+    handleApiError,
+    mounted,
+    hasLoaded,
+    readFailed,
+    readable
+  } = useFacilityCollectionRead(
+    facilityId ? endpoints.inventory(facilityId) : null,
+    normalizeInventory
+  );
   const [query, setQuery] = useState("");
-  const itemCountRef = useRef(0);
-  const loadedFacilityRef = useRef<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<any>(null);
   const [exportingAudit, setExportingAudit] = useState(false);
+  const auditInFlight = useRef(false);
   const [auditFeedback, setAuditFeedback] = useState("");
-
-  const fetchItems = useCallback(async () => {
-    if (!facilityId) return;
-    setError(null);
-    const res = await apiRequest(endpoints.inventory(facilityId));
-    const nextItems = normalizeInventory(res);
-    itemCountRef.current = nextItems.length;
-    setItems(nextItems);
-    setError(null);
-  }, [facilityId]);
-
-  const load = useCallback(async () => {
-    if (!facilityId) return;
-    setLoading(true);
-    try {
-      await fetchItems();
-    } catch (e) {
-      setError(handleApiError(e));
-    } finally {
-      setLoading(false);
-    }
-  }, [facilityId, fetchItems, handleApiError]);
-
-  const onRefresh = useCallback(async () => {
-    if (!facilityId) return;
-    setRefreshing(true);
-    setError(null);
-    try {
-      await fetchItems();
-    } catch (e) {
-      setError(handleApiError(e));
-    } finally {
-      setRefreshing(false);
-    }
-  }, [facilityId, fetchItems, handleApiError]);
+  const onRefresh = load;
 
   useEffect(() => {
     if (!facilityId) {
@@ -171,19 +151,8 @@ export default function FacilityInventoryTab() {
 
   useFocusEffect(
     useCallback(() => {
-      if (!facilityId) return;
-
-      if (loadedFacilityRef.current !== facilityId) {
-        loadedFacilityRef.current = facilityId;
-        void load();
-        return;
-      }
-
-      void fetchItems().catch((e) => {
-        if (!itemCountRef.current) setError(handleApiError(e));
-        else handleApiError(e);
-      });
-    }, [facilityId, fetchItems, handleApiError, load])
+      void load();
+    }, [load])
   );
 
   const normalizedQuery = query.trim().toLowerCase();
@@ -212,6 +181,7 @@ export default function FacilityInventoryTab() {
   const quantitySummary = useMemo(() => inventoryQuantitySummary(items), [items]);
 
   const exportCurrent = useCallback(async () => {
+    if (!readable) return;
     try {
       await exportToCsv("growpath-facility-inventory", items, [
         { key: "sku", label: "SKU" },
@@ -224,26 +194,30 @@ export default function FacilityInventoryTab() {
         { key: "updatedAt", label: "Updated at" }
       ]);
     } catch (caught) {
-      setError(handleApiError(caught));
+      handleApiError(caught);
     }
-  }, [handleApiError, items]);
+  }, [handleApiError, items, readable]);
 
   const exportFullAudit = useCallback(async () => {
-    if (!facilityId || exportingAudit || !canReadAudit) return;
+    if (!facilityId || auditInFlight.current || !canReadAudit) return;
+    auditInFlight.current = true;
     setExportingAudit(true);
     setAuditFeedback("");
     try {
       const csv = await getBusinessInventoryAuditCsv({ facilityId });
+      if (!mounted.current) return;
       await exportCsvContent("growpath-inventory-audit", csv);
+      if (!mounted.current) return;
       setAuditFeedback("Full inventory audit CSV is ready.");
     } catch (caught) {
-      setError(handleApiError(caught));
+      handleApiError(caught);
     } finally {
-      setExportingAudit(false);
+      auditInFlight.current = false;
+      if (mounted.current) setExportingAudit(false);
     }
-  }, [canReadAudit, exportingAudit, facilityId, handleApiError]);
+  }, [canReadAudit, facilityId, handleApiError, mounted]);
 
-  if (loading) {
+  if (loading && !hasLoaded) {
     return (
       <ScreenBoundary title="Inventory" {...backProps}>
         <View accessibilityLiveRegion="polite" style={styles.center}>
@@ -261,6 +235,13 @@ export default function FacilityInventoryTab() {
     <ScreenBoundary title="Inventory" {...backProps}>
       <View style={styles.container}>
         <InlineError error={error} />
+        {readFailed ? (
+          <Text accessibilityLiveRegion="polite" style={styles.lockedText}>
+            {hasLoaded
+              ? "Previously loaded inventory — refresh failed. These are not current verified counts."
+              : "Inventory unavailable. Retry to load current records."}
+          </Text>
+        ) : null}
 
         <View style={styles.headerRow}>
           <View>
@@ -268,7 +249,9 @@ export default function FacilityInventoryTab() {
               Facility Inventory
             </Text>
             <Text style={styles.muted}>
-              {items.length} items{quantitySummary ? ` | ${quantitySummary}` : ""}
+              {hasLoaded
+                ? `${items.length} items${quantitySummary ? ` | ${quantitySummary}` : ""}`
+                : "Inventory count unknown"}
             </Text>
           </View>
           <View style={styles.actions}>
@@ -276,9 +259,13 @@ export default function FacilityInventoryTab() {
               accessibilityRole="button"
               accessibilityLabel="Reload inventory"
               onPress={load}
+              disabled={refreshing}
+              accessibilityState={{ disabled: refreshing, busy: refreshing }}
               style={styles.ghostButton}
             >
-              <Text style={styles.ghostText}>Reload</Text>
+              <Text style={styles.ghostText}>
+                {refreshing ? "Refreshing…" : readFailed ? "Retry" : "Reload"}
+              </Text>
             </Pressable>
             {canReadAudit ? (
               <Pressable
@@ -298,6 +285,8 @@ export default function FacilityInventoryTab() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Export facility inventory CSV"
+                disabled={!readable}
+                accessibilityState={{ disabled: !readable }}
                 onPress={exportCurrent}
                 style={styles.ghostButton}
               >
@@ -367,18 +356,22 @@ export default function FacilityInventoryTab() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Create inventory item"
-            onPress={() => router.push("/home/facility/inventory/new")}
+            disabled={!readable}
+            accessibilityState={{ disabled: !readable }}
+            onPress={() => readable && router.push("/home/facility/inventory/new")}
             style={styles.primaryButton}
           >
             <Text style={styles.primaryText}>Create Item</Text>
           </Pressable>
         )}
 
-        <BusinessInventoryImportPanel
-          canWrite={canWriteInventory}
-          onApplied={onRefresh}
-          workspace={{ facilityId }}
-        />
+        {hasLoaded && (
+          <BusinessInventoryImportPanel
+            canWrite={canWriteInventory}
+            onApplied={onRefresh}
+            workspace={{ facilityId }}
+          />
+        )}
 
         <TextInput
           accessibilityLabel="Search facility inventory"
@@ -397,7 +390,7 @@ export default function FacilityInventoryTab() {
           </Text>
         ) : null}
 
-        {sorted.length === 0 ? (
+        {!hasLoaded ? null : sorted.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
               {normalizedQuery && items.length

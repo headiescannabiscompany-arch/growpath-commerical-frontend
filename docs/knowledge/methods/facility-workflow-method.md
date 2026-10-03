@@ -1,5 +1,15 @@
 # Facility Workflow
 
+Facility Inventory and SOP-run collection failures must not claim zero records,
+empty stock, completed evidence, or no runs. Provide single-flight visible Retry;
+retain and label the last successful snapshot after refresh failure. Inventory
+search survives same-context retry. List-based Create Item, Start Run and snapshot
+CSV actions wait for a current successful read. Independent audit, library and
+reviewed-import workflows retain their own authorization/read boundaries. Account,
+session, Facility, role and grow-return changes reset collection state and discard
+late completions. These are list-read safeguards, not new permissions or evidence
+that every inventory/SOP detail, write or Facility role has passed acceptance.
+
 Facility dashboard plant counts accept the hosted `{ plants: [...] }` response
 alongside existing collection envelopes; readable plant records must not become
 zero because of their envelope. Plants and Journal lists distinguish unknown or

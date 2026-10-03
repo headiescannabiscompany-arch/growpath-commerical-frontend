@@ -6,11 +6,17 @@ import FacilityInventoryTab from "@/app/home/facility/(tabs)/inventory";
 const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
-const mockApiErrorHandler = (error: any) => error;
+const mockApiErrorHandler = Object.assign((error: any) => error, {
+  toInlineError: (error: any) => error
+});
 const mockRouter = { push: mockPush, replace: mockReplace };
 let mockCapabilities = new Set(["inventory_write", "audit_read"]);
 let mockParams: Record<string, string | string[]> = {};
 let mockBoundaryProps: any;
+
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "qa" }, token: "qa-session" })
+}));
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
