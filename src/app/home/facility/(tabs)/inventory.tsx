@@ -10,7 +10,7 @@ import {
   View
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -104,6 +104,14 @@ function matchesInventorySearch(item: InventoryItem, normalizedQuery: string) {
 
 export default function FacilityInventoryTab() {
   const router = useRouter();
+  const { growId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const sourceGrowId = Array.isArray(growId) ? growId[0] : growId;
+  const backProps = {
+    preferBackFallback: Boolean(sourceGrowId),
+    backFallbackHref: sourceGrowId
+      ? `/home/facility/grows/${encodeURIComponent(sourceGrowId)}`
+      : "/account/workspace"
+  };
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
@@ -237,7 +245,7 @@ export default function FacilityInventoryTab() {
 
   if (loading) {
     return (
-      <ScreenBoundary title="Inventory">
+      <ScreenBoundary title="Inventory" {...backProps}>
         <View accessibilityLiveRegion="polite" style={styles.center}>
           <ActivityIndicator
             accessibilityRole="progressbar"
@@ -250,7 +258,7 @@ export default function FacilityInventoryTab() {
   }
 
   return (
-    <ScreenBoundary title="Inventory">
+    <ScreenBoundary title="Inventory" {...backProps}>
       <View style={styles.container}>
         <InlineError error={error} />
 

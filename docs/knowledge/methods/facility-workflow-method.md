@@ -1,5 +1,12 @@
 # Facility Workflow
 
+Plants, Journal, Inventory and SOP Library opened from a Facility grow return Back
+explicitly to that grow, including loading/empty states and after a reload. Journal
+evidence opened from an SOP run returns to the exact SOP run ahead of grow context.
+Unscoped entry preserves the existing history/fallback policy. Return context is
+navigation only: Inventory and SOP Library remain Facility-wide; it must not change
+queries, permissions, saved records, assignments or operational evidence.
+
 Facility grow-list summaries resolve room labels only from the exact saved room
 inside the selected Facility or a saved embedded room name. Never stringify room
 objects or substitute raw IDs for names. Room-name lookup failure keeps readable

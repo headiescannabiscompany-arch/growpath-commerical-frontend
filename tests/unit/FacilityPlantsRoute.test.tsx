@@ -63,6 +63,14 @@ jest.mock("@/components/ScreenBoundary", () => {
 jest.mock("@/components/InlineError", () => ({ InlineError: () => null }));
 
 describe("FacilityPlantsRoute", () => {
+  it("prefers the source grow over unrelated tab history", async () => {
+    render(<FacilityPlantsRoute />);
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
+    expect(mockScreenBoundaryProps).toMatchObject({
+      preferBackFallback: true,
+      backFallbackHref: "/home/facility/grows/grow-1"
+    });
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     mockFacilityRole = "manager";
@@ -86,6 +94,7 @@ describe("FacilityPlantsRoute", () => {
       showBack: true,
       backFallbackHref: "/home/facility/dashboard"
     });
+    expect(mockScreenBoundaryProps.preferBackFallback).toBeFalsy();
   });
 
   it("loads and creates plants inside the selected room and grow context", async () => {

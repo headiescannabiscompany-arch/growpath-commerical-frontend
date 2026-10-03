@@ -9,9 +9,12 @@ const mockReplace = jest.fn();
 const mockApiErrorHandler = (error: any) => error;
 const mockRouter = { push: mockPush, replace: mockReplace };
 let mockCapabilities = new Set(["inventory_write", "audit_read"]);
+let mockParams: Record<string, string | string[]> = {};
+let mockBoundaryProps: any;
 
 jest.mock("expo-router", () => ({
-  useRouter: () => mockRouter
+  useRouter: () => mockRouter,
+  useLocalSearchParams: () => mockParams
 }));
 
 jest.mock("@react-navigation/native", () => ({
@@ -33,7 +36,10 @@ jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { View } = require("react-native");
   return {
-    ScreenBoundary: ({ children }: any) => React.createElement(View, null, children)
+    ScreenBoundary: (props: any) => {
+      mockBoundaryProps = props;
+      return React.createElement(View, null, props.children);
+    }
   };
 });
 
@@ -57,6 +63,31 @@ describe("FacilityInventoryTab", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCapabilities = new Set(["inventory_write", "audit_read"]);
+    mockParams = {};
+  });
+
+  it("returns to the source grow while keeping inventory Facility-wide", async () => {
+    mockParams = { growId: ["grow-1", "ignored"] };
+    mockApiRequest.mockResolvedValue({ items: [] });
+    const screen = render(<FacilityInventoryTab />);
+    expect(mockBoundaryProps).toMatchObject({
+      preferBackFallback: true,
+      backFallbackHref: "/home/facility/grows/grow-1"
+    });
+    await screen.findByText("No inventory items yet.");
+    expect(mockBoundaryProps).toMatchObject({
+      preferBackFallback: true,
+      backFallbackHref: "/home/facility/grows/grow-1"
+    });
+    expect(mockApiRequest.mock.calls[0][0]).not.toContain("growId");
+  });
+
+  it("preserves unscoped inventory history behavior", async () => {
+    mockApiRequest.mockResolvedValue({ items: [] });
+    const screen = render(<FacilityInventoryTab />);
+    await screen.findByText("No inventory items yet.");
+    expect(mockBoundaryProps.preferBackFallback).toBeFalsy();
+    expect(mockBoundaryProps.backFallbackHref).toBe("/account/workspace");
   });
 
   it("does not show AI stock-risk review before inventory exists", async () => {
@@ -159,7 +190,9 @@ describe("FacilityInventoryTab", () => {
     const screen = render(<FacilityInventoryTab />);
     await screen.findByText("Kelp Meal");
 
-    expect(screen.queryByLabelText("Export facility inventory full audit CSV")).toBeNull();
+    expect(
+      screen.queryByLabelText("Export facility inventory full audit CSV")
+    ).toBeNull();
     expect(screen.getByLabelText("Export facility inventory CSV")).toBeTruthy();
   });
 

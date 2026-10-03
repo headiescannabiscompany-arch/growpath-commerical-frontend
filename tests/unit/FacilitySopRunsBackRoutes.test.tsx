@@ -30,6 +30,7 @@ const mockUploadSopDocument = jest.fn();
 const mockRefetchTemplates = jest.fn();
 let mockParams: Record<string, string> = {};
 let mockCanWriteSopRuns = true;
+let mockBoundaryProps: any;
 
 jest.mock("expo-document-picker", () => ({
   getDocumentAsync: jest.fn()
@@ -48,15 +49,18 @@ jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
   return {
-    ScreenBoundary: ({ children, showBack, backFallbackHref, title }: any) =>
-      React.createElement(
+    ScreenBoundary: (props: any) => {
+      mockBoundaryProps = props;
+      const { children, showBack, backFallbackHref, title } = props;
+      return React.createElement(
         View,
         { accessibilityLabel: `screen-${title}` },
         showBack
           ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
           : null,
         children
-      )
+      );
+    }
   };
 });
 
@@ -106,6 +110,20 @@ jest.mock("@/hooks/useSopTemplates", () => ({
 }));
 
 describe("facility SOP run nested back behavior", () => {
+  it("returns the Facility-wide library to its source grow", async () => {
+    mockParams = { growId: "grow-1" };
+    const screen = render(<FacilitySopRunsIndexRoute />);
+    expect(mockBoundaryProps).toMatchObject({
+      preferBackFallback: true,
+      backFallbackHref: "/home/facility/grows/grow-1"
+    });
+    await screen.findByText("Daily room check");
+    expect(mockBoundaryProps).toMatchObject({
+      preferBackFallback: true,
+      backFallbackHref: "/home/facility/grows/grow-1"
+    });
+    expect(mockApiRequest.mock.calls[0][0]).not.toContain("growId");
+  });
   beforeEach(() => {
     mockParams = {};
     mockCanWriteSopRuns = true;
@@ -192,6 +210,7 @@ describe("facility SOP run nested back behavior", () => {
       screen.getByRole("header", { name: "SOP Library & Runs" }).props["aria-level"]
     ).toBe(1);
     expect(screen.getByText("Shared Back /home/facility/dashboard")).toBeTruthy();
+    expect(mockBoundaryProps.preferBackFallback).toBeFalsy();
     expect(
       screen.getByRole("header", { name: "Run evidence summary" }).props["aria-level"]
     ).toBe(2);

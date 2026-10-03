@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useRouter } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
   FlatList,
@@ -74,6 +74,14 @@ function getErrorMessage(e: unknown, fallback: string) {
 
 export default function FacilitySopRunsIndexRoute() {
   const router = useRouter();
+  const { growId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const sourceGrowId = Array.isArray(growId) ? growId[0] : growId;
+  const backProps = {
+    preferBackFallback: Boolean(sourceGrowId),
+    backFallbackHref: sourceGrowId
+      ? `/home/facility/grows/${encodeURIComponent(sourceGrowId)}`
+      : "/home/facility/dashboard"
+  };
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const ent = useEntitlements();
@@ -110,11 +118,7 @@ export default function FacilitySopRunsIndexRoute() {
 
   if (!facilityId) {
     return (
-      <ScreenBoundary
-        title="Facility SOP Library and runs"
-        showBack
-        backFallbackHref="/home/facility/dashboard"
-      >
+      <ScreenBoundary title="Facility SOP Library and runs" showBack {...backProps}>
         <View style={styles.center}>
           <Text>Select a facility first.</Text>
         </View>
@@ -124,11 +128,7 @@ export default function FacilitySopRunsIndexRoute() {
 
   if (loading) {
     return (
-      <ScreenBoundary
-        title="Facility SOP Library and runs"
-        showBack
-        backFallbackHref="/home/facility/dashboard"
-      >
+      <ScreenBoundary title="Facility SOP Library and runs" showBack {...backProps}>
         <View style={styles.center}>
           <ActivityIndicator color={palette.accent} />
         </View>
@@ -144,11 +144,7 @@ export default function FacilitySopRunsIndexRoute() {
   const runsMissingSteps = items.filter((item) => runStats(item).total === 0).length;
 
   return (
-    <ScreenBoundary
-      title="Facility SOP Library and runs"
-      showBack
-      backFallbackHref="/home/facility/dashboard"
-    >
+    <ScreenBoundary title="Facility SOP Library and runs" showBack {...backProps}>
       <FlatList
         style={styles.list}
         data={items}

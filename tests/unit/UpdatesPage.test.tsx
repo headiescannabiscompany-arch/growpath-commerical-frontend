@@ -35,6 +35,10 @@ describe("public Updates page", () => {
     expect(note?.summary).toContain("Back from a grow's task queue returns to that grow");
     expect(note?.summary).toContain("grow-detail Back opens the grow list");
     expect(note?.summary).toContain("distinguish creation from start dates");
+    expect(note?.summary).toContain(
+      "Grow-launched Plants, Journal, Inventory and SOP Library"
+    );
+    expect(note?.summary).toContain("Inventory and SOP Library remain Facility-wide");
     expect(note?.summary).toContain("do not complete the broader Facility-role review");
   });
   it("never dates the page earlier than its released notes", () => {

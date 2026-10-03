@@ -189,6 +189,7 @@ export default function FacilityLogsTab() {
     <ScreenBoundary
       title={contextName ? `${contextName} journal` : "Facility Grow Journal"}
       showBack
+      preferBackFallback={Boolean(contextSopRunId || contextGrowId)}
       backFallbackHref={
         contextSopRunId
           ? `/home/facility/sop-runs/${contextSopRunId}`

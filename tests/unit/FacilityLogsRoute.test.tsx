@@ -50,6 +50,14 @@ jest.mock("@/components/ScreenBoundary", () => {
 jest.mock("@/components/InlineError", () => ({ InlineError: () => null }));
 
 describe("FacilityLogsRoute", () => {
+  it("prefers the source grow over unrelated tab history", async () => {
+    render(<FacilityLogsRoute />);
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
+    expect(mockScreenBoundaryProps).toMatchObject({
+      preferBackFallback: true,
+      backFallbackHref: "/home/facility/grows/grow-1"
+    });
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     mockFacilityRole = "STAFF";
@@ -143,7 +151,8 @@ describe("FacilityLogsRoute", () => {
     );
     expect(mockScreenBoundaryProps).toMatchObject({
       showBack: true,
-      backFallbackHref: "/home/facility/sop-runs/run-1"
+      backFallbackHref: "/home/facility/sop-runs/run-1",
+      preferBackFallback: true
     });
 
     fireEvent.press(
@@ -194,6 +203,7 @@ describe("FacilityLogsRoute", () => {
       showBack: true,
       backFallbackHref: "/home/facility/dashboard"
     });
+    expect(mockScreenBoundaryProps.preferBackFallback).toBeFalsy();
   });
 
   it("prevents duplicate journal saves while a request is pending", async () => {

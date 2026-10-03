@@ -224,6 +224,7 @@ export default function FacilityPlantsTab() {
     <ScreenBoundary
       title={contextName ? `${contextName} plants` : "Plants"}
       showBack
+      preferBackFallback={Boolean(contextGrowId)}
       backFallbackHref={
         contextGrowId
           ? `/home/facility/grows/${contextGrowId}`
