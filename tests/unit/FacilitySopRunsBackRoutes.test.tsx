@@ -155,6 +155,7 @@ describe("facility SOP run nested back behavior", () => {
       if (path.endsWith("/sop-runs/run-1")) {
         return Promise.resolve({
           run: {
+            id: "run-1",
             title: "Daily room check",
             status: "active",
             completedAt: null,
@@ -168,6 +169,7 @@ describe("facility SOP run nested back behavior", () => {
       if (path.endsWith("/sop-runs/run-2")) {
         return Promise.resolve({
           run: {
+            id: "run-2",
             title: "Night room check",
             status: "completed",
             completedAt: "2026-07-22T18:00:00.000Z",

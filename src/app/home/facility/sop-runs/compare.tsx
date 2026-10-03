@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { apiRequest } from "@/api/apiRequest";
-import { normalizeApiError } from "@/api/errors";
+import { useFacilityCollectionRead } from "@/features/facility/useFacilityCollectionRead";
+import { useFacilityRecordScope } from "@/features/facility/useFacilityRecordRead";
 import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
@@ -22,7 +22,10 @@ type SopRunListItem = {
 type UnknownRecord = Record<string, unknown>;
 
 function toRunListItem(x: unknown): SopRunListItem {
-  return typeof x === "object" && x !== null ? (x as SopRunListItem) : {};
+  if (!x || typeof x !== "object" || Array.isArray(x) || !pickId(x as SopRunListItem)) {
+    throw new Error("Saved runs are unavailable. Retry the read before comparing.");
+  }
+  return x as SopRunListItem;
 }
 
 function asArray(res: unknown): SopRunListItem[] {
@@ -32,61 +35,52 @@ function asArray(res: unknown): SopRunListItem[] {
   if (Array.isArray(r.runs)) return r.runs.map(toRunListItem);
   if (Array.isArray(r.sopRuns)) return r.sopRuns.map(toRunListItem);
   if (Array.isArray(r.data)) return r.data.map(toRunListItem);
-  return [];
+  throw new Error("Saved runs are unavailable. Retry the read before comparing.");
 }
 
-function pickId(x: SopRunListItem, idx: number) {
-  return String(x?.id ?? x?._id ?? x?.runId ?? `run-${idx}`);
+function pickId(x: SopRunListItem) {
+  const id = x?.id ?? x?._id ?? x?.runId;
+  return typeof id === "string" && /^[a-zA-Z0-9_-]+$/.test(id) ? id : "";
 }
 
 function pickTitle(x: SopRunListItem) {
   return String(x?.title || x?.name || "Untitled SOP run");
 }
 
-function getErrorMessage(e: unknown, fallback: string) {
-  return normalizeApiError(e).message || fallback;
+export default function FacilitySopRunsCompareRoute() {
+  const scope = useFacilityRecordScope("sop-comparison-picker");
+  return <CompareContent key={scope} />;
 }
 
-export default function FacilitySopRunsCompareRoute() {
+function CompareContent() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilitySopCompareStyles(palette), [palette]);
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
-  const [runs, setRuns] = useState<SopRunListItem[]>([]);
+  const { items, loading, refreshing, readable, readFailed, hasLoaded, error, load } =
+    useFacilityCollectionRead(facilityId ? endpoints.sopRuns(facilityId) : null, asArray);
+  const runs = items.filter(
+    (item, index, all) =>
+      pickId(item) && all.findIndex((other) => pickId(other) === pickId(item)) === index
+  );
   const [leftId, setLeftId] = useState("");
   const [rightId, setRightId] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    if (!facilityId) {
-      setRuns([]);
-      setError("Select a facility first.");
-      return;
-    }
-    setError(null);
-    try {
-      const res = await apiRequest(endpoints.sopRuns(facilityId));
-      setRuns(asArray(res));
-    } catch (e: unknown) {
-      setError(getErrorMessage(e, "Failed to load runs for comparison"));
-    }
-  }, [facilityId]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   const go = () => {
-    if (!leftId.trim() || !rightId.trim() || leftId === rightId) return;
+    if (!canCompare) return;
     router.push({
       pathname: "/home/facility/sop-runs/compare-result",
       params: { leftId: leftId.trim(), rightId: rightId.trim() }
     });
   };
 
-  const canCompare = Boolean(leftId && rightId && leftId !== rightId);
-  const leftTitle = runs.find((run, idx) => pickId(run, idx) === leftId);
-  const rightTitle = runs.find((run, idx) => pickId(run, idx) === rightId);
+  const leftTitle = runs.find((run) => pickId(run) === leftId);
+  const rightTitle = runs.find((run) => pickId(run) === rightId);
+  const canCompare = Boolean(readable && leftTitle && rightTitle && leftId !== rightId);
 
   return (
     <ScreenBoundary
@@ -102,7 +96,32 @@ export default function FacilitySopRunsCompareRoute() {
           Choose two saved runs. GrowPath compares their recorded checklist evidence and
           outcomes; no internal IDs are required.
         </Text>
-        {error ? <Text style={styles.err}>{error}</Text> : null}
+        {!facilityId ? <Text style={styles.err}>Select a facility first.</Text> : null}
+        {error ? <Text style={styles.err}>{error.message}</Text> : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Refresh SOP comparison choices"
+          disabled={!facilityId || loading || refreshing}
+          accessibilityState={{
+            disabled: !facilityId || loading || refreshing,
+            busy: Boolean(facilityId && (loading || refreshing))
+          }}
+          onPress={load}
+          style={styles.btn}
+        >
+          <Text style={styles.btnText}>
+            {facilityId && (loading || refreshing)
+              ? "Loading saved runs…"
+              : readFailed
+                ? "Retry"
+                : "Refresh"}
+          </Text>
+        </Pressable>
+        {hasLoaded && (readFailed || refreshing) ? (
+          <Text style={styles.sub}>
+            Previously loaded runs — wait for a successful read before comparing.
+          </Text>
+        ) : null}
         <View style={styles.selectionRow}>
           <View style={styles.selectionCard}>
             <Text style={styles.selectionLabel}>Reference run</Text>
@@ -132,12 +151,14 @@ export default function FacilitySopRunsCompareRoute() {
           data={runs}
           keyExtractor={pickId}
           ListEmptyComponent={
-            <Text style={styles.empty}>
-              Complete at least two SOP runs before comparing recorded outcomes.
-            </Text>
+            readable ? (
+              <Text style={styles.empty}>
+                Complete at least two SOP runs before comparing recorded outcomes.
+              </Text>
+            ) : null
           }
-          renderItem={({ item, index }) => {
-            const id = pickId(item, index);
+          renderItem={({ item }) => {
+            const id = pickId(item);
             const title = pickTitle(item);
             const isReference = id === leftId;
             const isComparison = id === rightId;
@@ -159,8 +180,14 @@ export default function FacilitySopRunsCompareRoute() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={`Select ${title} as reference run`}
-                    disabled={isComparison}
-                    onPress={() => setLeftId(id)}
+                    disabled={!readable || isComparison}
+                    accessibilityState={{
+                      disabled: !readable || isComparison,
+                      selected: isReference
+                    }}
+                    onPress={() => {
+                      if (readable) setLeftId(id);
+                    }}
                     style={[styles.choice, isReference && styles.choiceActive]}
                   >
                     <Text style={styles.link}>
@@ -170,8 +197,14 @@ export default function FacilitySopRunsCompareRoute() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={`Select ${title} as comparison run`}
-                    disabled={isReference}
-                    onPress={() => setRightId(id)}
+                    disabled={!readable || isReference}
+                    accessibilityState={{
+                      disabled: !readable || isReference,
+                      selected: isComparison
+                    }}
+                    onPress={() => {
+                      if (readable) setRightId(id);
+                    }}
                     style={[styles.choice, isComparison && styles.choiceActive]}
                   >
                     <Text style={styles.link}>

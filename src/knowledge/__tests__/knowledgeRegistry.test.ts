@@ -912,6 +912,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "Inventory detail requires verified identity and stock, offers draft-preserving Retry, serializes parent and child actions, confirms saved-name archival, preserves archived history and discards late context results"
     );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "SOP comparison validates saved choices and distinct matching run pairs, preserves same-context selections on Retry, withholds stale outcomes and discards late context results"
+    );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never allow a Facility deviation reference collision or persistence error to terminate the shared API service."
     );

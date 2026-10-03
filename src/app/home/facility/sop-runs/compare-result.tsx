@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -9,6 +9,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { useFacilityRecordScope } from "@/features/facility/useFacilityRecordRead";
 
 type SopRunDetail = {
   title?: string;
@@ -102,13 +103,47 @@ function getErrorMessage(e: unknown, fallback: string) {
   return normalizeApiError(e).message || fallback;
 }
 
+function readRun(response: SopRunDetailResponse, id: string): SopRunDetail {
+  const record =
+    response && Object.prototype.hasOwnProperty.call(response, "run")
+      ? response.run
+      : response && Object.prototype.hasOwnProperty.call(response, "data")
+        ? response.data
+        : response;
+  if (
+    !record ||
+    typeof record !== "object" ||
+    Array.isArray(record) ||
+    String(record.id || record._id || record.runId || "") !== id ||
+    !Array.isArray(record.steps) ||
+    record.steps.some((step) => !step || typeof step !== "object" || Array.isArray(step))
+  ) {
+    throw new Error(
+      "Saved run evidence is unavailable. Retry both runs before comparing."
+    );
+  }
+  return record;
+}
+
 export default function FacilitySopRunsCompareResultRoute() {
+  const params = useLocalSearchParams();
+  const scope = useFacilityRecordScope([params.leftId, params.rightId]);
+  return <CompareResultContent key={scope} />;
+}
+
+function CompareResultContent() {
   const params = useLocalSearchParams<{
     leftId?: string | string[];
     rightId?: string | string[];
   }>();
-  const leftId = Array.isArray(params.leftId) ? params.leftId[0] : params.leftId;
-  const rightId = Array.isArray(params.rightId) ? params.rightId[0] : params.rightId;
+  const leftId =
+    typeof params.leftId === "string" && /^[a-zA-Z0-9_-]+$/.test(params.leftId)
+      ? params.leftId
+      : "";
+  const rightId =
+    typeof params.rightId === "string" && /^[a-zA-Z0-9_-]+$/.test(params.rightId)
+      ? params.rightId
+      : "";
   const router = useRouter();
   const { selectedId: facilityId } = useFacility();
   const { palette } = useAppTheme();
@@ -117,38 +152,51 @@ export default function FacilitySopRunsCompareResultRoute() {
   const [right, setRight] = useState<SopRunDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const mounted = useRef(true);
+  const inFlight = useRef(false);
   useEffect(() => {
-    const run = async () => {
-      if (!leftId || !rightId) {
-        setError("Select two saved runs before comparing them.");
-        setLoading(false);
-        return;
-      }
-      if (!facilityId) {
-        setError("Select a facility first.");
-        setLoading(false);
-        return;
-      }
-      setError(null);
-      setLoading(true);
-      try {
-        const [a, b] = await Promise.all([
-          apiRequest<SopRunDetailResponse>(endpoints.sopRun(facilityId, String(leftId))),
-          apiRequest<SopRunDetailResponse>(endpoints.sopRun(facilityId, String(rightId)))
-        ]);
-        setLeft(a?.run ?? a?.data ?? a);
-        setRight(b?.run ?? b?.data ?? b);
-      } catch (e: unknown) {
-        setError(getErrorMessage(e, "Failed to compare runs"));
-        setLeft(null);
-        setRight(null);
-      } finally {
-        setLoading(false);
-      }
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
     };
-    void run();
+  }, []);
+
+  const load = useCallback(async () => {
+    if (!mounted.current || inFlight.current) return;
+    if (!leftId || !rightId || leftId === rightId) {
+      setError("Select two saved runs before comparing them.");
+      setLoading(false);
+      return;
+    }
+    if (!facilityId) {
+      setError("Select a facility first.");
+      setLoading(false);
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    inFlight.current = true;
+    try {
+      const [a, b] = await Promise.all([
+        apiRequest<SopRunDetailResponse>(endpoints.sopRun(facilityId, String(leftId))),
+        apiRequest<SopRunDetailResponse>(endpoints.sopRun(facilityId, String(rightId)))
+      ]);
+      if (!mounted.current) return;
+      const savedLeft = readRun(a, leftId);
+      const savedRight = readRun(b, rightId);
+      setLeft(savedLeft);
+      setRight(savedRight);
+    } catch (e: unknown) {
+      if (!mounted.current) return;
+      setError(getErrorMessage(e, "Failed to compare runs"));
+    } finally {
+      inFlight.current = false;
+      if (mounted.current) setLoading(false);
+    }
   }, [facilityId, leftId, rightId]);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const comparison = useMemo(() => {
     const leftCounts = statusCounts(left);
@@ -181,6 +229,27 @@ export default function FacilitySopRunsCompareResultRoute() {
         </Text>
         {error ? <Text style={styles.err}>{error}</Text> : null}
         {loading ? <Text style={styles.sub}>Loading saved run evidence...</Text> : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Refresh SOP comparison result"
+          disabled={loading || !facilityId || !leftId || !rightId || leftId === rightId}
+          accessibilityState={{
+            disabled: loading || !facilityId || !leftId || !rightId || leftId === rightId,
+            busy: loading
+          }}
+          onPress={load}
+          style={styles.action}
+        >
+          <Text style={styles.actionText}>
+            {loading ? "Refreshing…" : error ? "Retry" : "Refresh"}
+          </Text>
+        </Pressable>
+        {left && right && (loading || error) ? (
+          <Text style={styles.sub}>
+            Previously loaded comparison is withheld until both saved runs are verified
+            again.
+          </Text>
+        ) : null}
 
         {!loading && !error && left && right ? (
           <>

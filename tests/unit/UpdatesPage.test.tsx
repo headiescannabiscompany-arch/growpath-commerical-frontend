@@ -40,6 +40,7 @@ describe("public Updates page", () => {
     );
     expect(note?.summary).toContain("Inventory and SOP Library remain Facility-wide");
     expect(note?.summary).toContain("Inventory detail now offers Retry");
+    expect(note?.summary).toContain("SOP comparison now offers Retry");
     expect(note?.summary).toContain("archived history stays readable");
     expect(note?.summary).toContain(
       "Dashboard plant counts now recognize the returned plant records"
