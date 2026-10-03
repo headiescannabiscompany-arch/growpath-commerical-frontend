@@ -1331,6 +1331,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Dashboard counts recognize hosted plant collections; Plants/Journal distinguish unknown reads from empty records, label retained counts, preserve same-context drafts on Retry, serialize reads/writes and discard late results across identity/context changes",
       "Inventory and SOP-run lists distinguish failed reads from empty records, offer single-flight Retry, label retained snapshots, preserve inventory search and discard late results across identity/context changes",
       "SOP detail never invents an Active run after a failed read; Retry preserves drafts, stale snapshots block writes, read/write actions serialize, confirmed writes have distinct refresh-failure feedback and context changes discard late results",
+      "Inventory detail requires verified identity and stock, offers draft-preserving Retry, serializes parent and child actions, confirms saved-name archival, preserves archived history and discards late context results",
       "saved-task-named cancelable removal confirmation with current role/read/write guards, retained soft-removal history, and exact grow-scoped task Back navigation",
       "credential-autofill-safe AI and parental-control inputs",
       "record-backed report counts with explicit untracked compliance evidence",

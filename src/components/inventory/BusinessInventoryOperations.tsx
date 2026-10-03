@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -67,6 +67,10 @@ function movementHistoryLabel(movement: BusinessInventoryMovement) {
 
 export function BusinessInventoryOperations({
   canWrite,
+  blocked = false,
+  historyBlocked = blocked,
+  onBeginOperation,
+  onEndOperation,
   itemId,
   itemQuantity,
   lots,
@@ -78,6 +82,10 @@ export function BusinessInventoryOperations({
   workspace
 }: {
   canWrite: boolean;
+  blocked?: boolean;
+  historyBlocked?: boolean;
+  onBeginOperation?: () => boolean;
+  onEndOperation?: () => void;
   itemId: string;
   itemQuantity: number;
   lots: BusinessInventoryLot[];
@@ -91,6 +99,13 @@ export function BusinessInventoryOperations({
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const inFlight = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const retryIdentity = useRef<{ signature: string; key: string } | null>(null);
   const [movementType, setMovementType] = useState<MovementType>("receive");
   const [quantity, setQuantity] = useState("");
@@ -101,7 +116,8 @@ export function BusinessInventoryOperations({
   const [batchCode, setBatchCode] = useState("");
   const [lotLocation, setLotLocation] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [writing, setBusy] = useState(false);
+  const busy = writing || blocked;
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
 
@@ -122,7 +138,7 @@ export function BusinessInventoryOperations({
     : 0;
 
   async function submitMovement() {
-    if (!canWrite || !itemId || inFlight.current) return;
+    if (!mounted.current || !canWrite || blocked || !itemId || inFlight.current) return;
     if (wholeItemRelocationBlocked) {
       setError(
         "Select a stocked lot before relocating inventory with active lot balances."
@@ -156,6 +172,7 @@ export function BusinessInventoryOperations({
       setError("Choose or enter the destination location.");
       return;
     }
+    if (onBeginOperation && !onBeginOperation()) return;
     inFlight.current = true;
     setBusy(true);
     setError("");
@@ -184,6 +201,7 @@ export function BusinessInventoryOperations({
         lotId: selectedLotId || null,
         toLocationId: toLocationId.trim() || null
       });
+      if (!mounted.current) return;
       setQuantity("");
       setReason("");
       setToLocationId("");
@@ -191,15 +209,17 @@ export function BusinessInventoryOperations({
       setFeedback(`${movementDefinition.label} recorded.`);
       await onReload();
     } catch (caught: any) {
-      setError(String(caught?.message || caught || "Inventory movement failed."));
+      if (mounted.current)
+        setError(String(caught?.message || caught || "Inventory movement failed."));
     } finally {
       inFlight.current = false;
-      setBusy(false);
+      onEndOperation?.();
+      if (mounted.current) setBusy(false);
     }
   }
 
   async function createLot() {
-    if (!canWrite || !itemId || inFlight.current) return;
+    if (!mounted.current || !canWrite || blocked || !itemId || inFlight.current) return;
     if (!lotCode.trim()) {
       setError("Lot code is required.");
       return;
@@ -208,6 +228,7 @@ export function BusinessInventoryOperations({
       setError("Expiration must be a valid calendar date.");
       return;
     }
+    if (onBeginOperation && !onBeginOperation()) return;
     inFlight.current = true;
     setBusy(true);
     setError("");
@@ -219,6 +240,7 @@ export function BusinessInventoryOperations({
         locationId: lotLocation.trim() || undefined,
         expiresAt: expiresAt.trim() || undefined
       });
+      if (!mounted.current) return;
       setLotCode("");
       setBatchCode("");
       setLotLocation("");
@@ -226,10 +248,12 @@ export function BusinessInventoryOperations({
       setFeedback("Lot created. Use Receive to add its verified quantity.");
       await onReload();
     } catch (caught: any) {
-      setError(String(caught?.message || caught || "Lot creation failed."));
+      if (mounted.current)
+        setError(String(caught?.message || caught || "Lot creation failed."));
     } finally {
       inFlight.current = false;
-      setBusy(false);
+      onEndOperation?.();
+      if (mounted.current) setBusy(false);
     }
   }
 
@@ -251,7 +275,8 @@ export function BusinessInventoryOperations({
           >
             <Pressable
               accessibilityRole="radio"
-              accessibilityState={{ checked: !selectedLotId }}
+              accessibilityState={{ checked: !selectedLotId, disabled: busy }}
+              disabled={busy}
               onPress={() => setSelectedLotId("")}
               style={[styles.choice, !selectedLotId && styles.choiceSelected]}
             >
@@ -263,7 +288,8 @@ export function BusinessInventoryOperations({
                 <Pressable
                   key={id}
                   accessibilityRole="radio"
-                  accessibilityState={{ checked: selectedLotId === id }}
+                  accessibilityState={{ checked: selectedLotId === id, disabled: busy }}
+                  disabled={busy}
                   onPress={() => setSelectedLotId(id)}
                   style={[styles.choice, selectedLotId === id && styles.choiceSelected]}
                 >
@@ -448,7 +474,7 @@ export function BusinessInventoryOperations({
               ]}
             >
               <Text style={styles.primaryText}>
-                {busy ? "Saving…" : `Record ${movementDefinition.label}`}
+                {writing ? "Saving…" : `Record ${movementDefinition.label}`}
               </Text>
             </Pressable>
           </View>
@@ -497,13 +523,23 @@ export function BusinessInventoryOperations({
             accessibilityLabel="Load older inventory movements"
             accessibilityState={{
               busy: loadingOlderMovements,
-              disabled: loadingOlderMovements || !onLoadOlderMovements
+              disabled:
+                writing ||
+                historyBlocked ||
+                loadingOlderMovements ||
+                !onLoadOlderMovements
             }}
-            disabled={loadingOlderMovements || !onLoadOlderMovements}
+            disabled={
+              writing || historyBlocked || loadingOlderMovements || !onLoadOlderMovements
+            }
             onPress={onLoadOlderMovements}
             style={[
               styles.historyButton,
-              (loadingOlderMovements || !onLoadOlderMovements) && styles.disabled
+              (writing ||
+                historyBlocked ||
+                loadingOlderMovements ||
+                !onLoadOlderMovements) &&
+                styles.disabled
             ]}
           >
             <Text style={styles.historyButtonText}>

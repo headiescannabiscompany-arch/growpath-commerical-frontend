@@ -1,5 +1,4 @@
 import React from "react";
-import { Alert } from "react-native";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import InventoryItemDetailScreen from "@/app/home/facility/inventory/[id]";
@@ -11,6 +10,21 @@ const mockReplace = jest.fn();
 const mockHandleApiError = jest.fn();
 const mockRouter = { replace: mockReplace };
 let mockInventoryItemId = "input-1";
+let mockFacilityId = "facility-1";
+let mockUserId = "qa";
+let mockToken = "session";
+let mockRole = "OWNER";
+let mockCanWrite = true;
+const mockMovement = jest.fn();
+const mockCreateLot = jest.fn();
+jest.mock("@/api/businessInventory", () => ({
+  ...jest.requireActual("@/api/businessInventory"),
+  applyBusinessInventoryMovement: (...args: any[]) => mockMovement(...args),
+  createBusinessInventoryLot: (...args: any[]) => mockCreateLot(...args)
+}));
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: mockUserId }, token: mockToken })
+}));
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: mockInventoryItemId }),
@@ -52,12 +66,12 @@ jest.mock("@/components/forms/CalendarDateField", () => {
 });
 
 jest.mock("@/state/useFacility", () => ({
-  useFacility: () => ({ selectedId: "facility-1" })
+  useFacility: () => ({ selectedId: mockFacilityId })
 }));
 
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { INVENTORY_WRITE: "inventory_write" },
-  useEntitlements: () => ({ can: () => true })
+  useEntitlements: () => ({ can: () => mockCanWrite, facilityRole: mockRole })
 }));
 
 const mockNightPalette = {
@@ -97,6 +111,36 @@ jest.mock("@/api/endpoints", () => ({
 }));
 
 describe("InventoryItemDetailScreen", () => {
+  const record = (extra: any = {}) => ({
+    item: {
+      id: mockInventoryItemId,
+      name: "Saved stock",
+      quantity: 8,
+      unit: "lb",
+      ...extra
+    },
+    lots: [],
+    movements: [],
+    movementPage: { hasMore: true, nextCursor: "older/1", limit: 50 }
+  });
+  const deferred = () => {
+    let resolve!: (value: any) => void;
+    let reject!: (error: any) => void;
+    const promise = new Promise((yes, no) => {
+      resolve = yes;
+      reject = no;
+    });
+    return { promise, resolve, reject };
+  };
+  const blocked = (screen: any, label: string) =>
+    expect(screen.getByLabelText(label).props.accessibilityState.disabled).toBe(true);
+  const fillMovement = (screen: any) => {
+    fireEvent.changeText(screen.getByLabelText("Inventory movement quantity"), "2");
+    fireEvent.changeText(
+      screen.getByLabelText("Inventory movement reason"),
+      "Synthetic delivery"
+    );
+  };
   beforeEach(() => {
     mockApiRequest.mockReset();
     mockReplace.mockReset();
@@ -105,6 +149,13 @@ describe("InventoryItemDetailScreen", () => {
       message: error?.message || String(error)
     }));
     mockInventoryItemId = "input-1";
+    mockFacilityId = "facility-1";
+    mockUserId = "qa";
+    mockToken = "session";
+    mockRole = "OWNER";
+    mockCanWrite = true;
+    mockMovement.mockReset().mockResolvedValue({});
+    mockCreateLot.mockReset().mockResolvedValue({});
     mockApiRequest.mockResolvedValue({
       item: {
         id: "input-1",
@@ -261,7 +312,9 @@ describe("InventoryItemDetailScreen", () => {
     const screen = render(<InventoryItemDetailScreen />);
 
     await waitFor(() =>
-      expect(screen.getByText("This inventory link is missing its record ID.")).toBeTruthy()
+      expect(
+        screen.getByText("This inventory link is missing its record ID.")
+      ).toBeTruthy()
     );
     expect(screen.queryByLabelText("Loading facility inventory item")).toBeNull();
     expect(mockApiRequest).not.toHaveBeenCalled();
@@ -349,7 +402,7 @@ describe("InventoryItemDetailScreen", () => {
     const screen = render(<InventoryItemDetailScreen />);
 
     await waitFor(() =>
-      expect(screen.getByText("Inventory item not found")).toBeTruthy()
+      expect(screen.getByText("Inventory item unavailable")).toBeTruthy()
     );
 
     expect(screen.queryByLabelText("Inventory detail item name")).toBeNull();
@@ -359,22 +412,14 @@ describe("InventoryItemDetailScreen", () => {
   });
 
   it("confirms and removes an inventory item through the canonical endpoint", async () => {
-    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
     const screen = render(<InventoryItemDetailScreen />);
 
     await waitFor(() => expect(screen.getByText("Kelp Meal")).toBeTruthy());
     fireEvent.press(screen.getByLabelText("Remove inventory item"));
 
-    expect(alertSpy).toHaveBeenCalledWith(
-      "Remove inventory item?",
-      expect.stringContaining("active facility inventory"),
-      expect.any(Array)
-    );
-
-    const actions = alertSpy.mock.calls[0][2] as any[];
-    await act(async () => {
-      await actions.find((action) => action.text === "Remove item").onPress();
-    });
+    expect(screen.getByText("Remove Kelp Meal?")).toBeTruthy();
+    expect(screen.getByText(/retains its ledger history/)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Confirm remove inventory item"));
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
@@ -383,6 +428,276 @@ describe("InventoryItemDetailScreen", () => {
       )
     );
     expect(mockReplace).toHaveBeenCalledWith("/home/facility/inventory");
-    alertSpy.mockRestore();
   });
+
+  it.each([
+    null,
+    {},
+    { item: null },
+    { item: [] },
+    { item: { id: "wrong", quantity: 8 } },
+    { item: { id: "input-1" } },
+    { item: { id: "input-1", quantity: "" } },
+    { item: { id: "input-1", quantity: "bad" } }
+  ])(
+    "rejects unavailable or malformed stock without inventing a zero balance: %j",
+    async (response) => {
+      mockApiRequest.mockResolvedValueOnce(response);
+      const screen = render(<InventoryItemDetailScreen />);
+      await screen.findByText("Inventory item unavailable");
+      expect(screen.queryByText("out of stock")).toBeNull();
+      expect(screen.queryByLabelText("Save inventory details")).toBeNull();
+      fireEvent.press(screen.getByLabelText("Refresh inventory item"));
+      await screen.findByText("Kelp Meal");
+      expect(mockApiRequest).toHaveBeenCalledTimes(2);
+    }
+  );
+
+  it("retains all drafts through failed refresh and serializes Retry before re-enabling changes", async () => {
+    const screen = render(<InventoryItemDetailScreen />);
+    await screen.findByText("Kelp Meal");
+    fireEvent.changeText(
+      screen.getByLabelText("Inventory detail item name"),
+      "Unsaved name"
+    );
+    fillMovement(screen);
+    fireEvent.changeText(screen.getByLabelText("New inventory lot code"), "Unsaved lot");
+    const read = deferred();
+    mockApiRequest.mockReturnValueOnce(read.promise);
+    fireEvent.press(screen.getByLabelText("Refresh inventory item"));
+    fireEvent.press(screen.getByLabelText("Refresh inventory item"));
+    [
+      "Save inventory details",
+      "Record inventory receive",
+      "Create inventory lot",
+      "Remove inventory item"
+    ].forEach((label) => blocked(screen, label));
+    await act(async () => read.reject(new Error("Read offline")));
+    await screen.findByText("Read offline");
+    expect(screen.getByText(/Previously loaded inventory/)).toBeTruthy();
+    expect(screen.queryByText("Inventory item unavailable")).toBeNull();
+    blocked(screen, "Save inventory details");
+    mockApiRequest.mockResolvedValueOnce(record());
+    fireEvent.press(screen.getByLabelText("Refresh inventory item"));
+    await screen.findByText("Saved stock");
+    expect(screen.getByLabelText("Inventory detail item name").props.value).toBe(
+      "Unsaved name"
+    );
+    expect(screen.getByLabelText("Inventory movement quantity").props.value).toBe("2");
+    expect(screen.getByLabelText("New inventory lot code").props.value).toBe(
+      "Unsaved lot"
+    );
+    expect(mockApiRequest).toHaveBeenCalledTimes(3);
+    expect(
+      screen.getByLabelText("Save inventory details").props.accessibilityState.disabled
+    ).toBe(false);
+    expect(mockMovement).not.toHaveBeenCalled();
+  });
+
+  it("serializes a detail save with child actions, removal, refresh and history", async () => {
+    mockApiRequest.mockResolvedValue(record());
+    const screen = render(<InventoryItemDetailScreen />);
+    await screen.findByText("Saved stock");
+    fillMovement(screen);
+    fireEvent.changeText(screen.getByLabelText("New inventory lot code"), "Lot draft");
+    const write = deferred();
+    mockApiRequest.mockReturnValueOnce(write.promise);
+    fireEvent.press(screen.getByLabelText("Save inventory details"));
+    fireEvent.press(screen.getByLabelText("Save inventory details"));
+    [
+      "Record inventory receive",
+      "Create inventory lot",
+      "Remove inventory item",
+      "Refresh inventory item",
+      "Load older inventory movements"
+    ].forEach((label) => blocked(screen, label));
+    fireEvent.press(screen.getByLabelText("Record inventory receive"));
+    expect(mockMovement).not.toHaveBeenCalled();
+    await act(async () => write.resolve({ success: true }));
+    await screen.findByText("Item details saved.");
+    expect(
+      mockApiRequest.mock.calls.filter((call) => call[1]?.method === "PATCH")
+    ).toHaveLength(1);
+    expect(screen.getByLabelText("New inventory lot code").props.value).toBe("Lot draft");
+  });
+
+  it("preserves failed saves and distinguishes a successful write from a failed follow-up read", async () => {
+    const screen = render(<InventoryItemDetailScreen />);
+    await screen.findByText("Kelp Meal");
+    fireEvent.changeText(screen.getByLabelText("Inventory detail item name"), "My draft");
+    mockApiRequest.mockRejectedValueOnce(new Error("Write rejected"));
+    fireEvent.press(screen.getByLabelText("Save inventory details"));
+    await screen.findByText("Write rejected");
+    expect(screen.getByLabelText("Inventory detail item name").props.value).toBe(
+      "My draft"
+    );
+    mockApiRequest
+      .mockResolvedValueOnce({ success: true })
+      .mockRejectedValueOnce(new Error("Read offline"));
+    fireEvent.press(screen.getByLabelText("Save inventory details"));
+    await screen.findByText(
+      /Item details saved, but current inventory could not be refreshed/
+    );
+    blocked(screen, "Save inventory details");
+    blocked(screen, "Record inventory receive");
+  });
+
+  it.each(["movement", "lot"])(
+    "coordinates %s writes with parent operations and retains parent drafts",
+    async (kind) => {
+      mockApiRequest.mockResolvedValue(record());
+      const screen = render(<InventoryItemDetailScreen />);
+      await screen.findByText("Saved stock");
+      fireEvent.changeText(
+        screen.getByLabelText("Inventory detail item name"),
+        "Parent draft"
+      );
+      fillMovement(screen);
+      fireEvent.changeText(screen.getByLabelText("New inventory lot code"), "Lot draft");
+      const write = deferred();
+      const operation = kind === "movement" ? mockMovement : mockCreateLot;
+      operation.mockReturnValueOnce(write.promise);
+      const label =
+        kind === "movement" ? "Record inventory receive" : "Create inventory lot";
+      fireEvent.press(screen.getByLabelText(label));
+      fireEvent.press(screen.getByLabelText(label));
+      [
+        "Save inventory details",
+        "Remove inventory item",
+        "Refresh inventory item",
+        "Load older inventory movements"
+      ].forEach((name) => blocked(screen, name));
+      mockApiRequest.mockRejectedValueOnce(new Error("Read after write failed"));
+      await act(async () => write.resolve({ success: true }));
+      await screen.findByText("Read after write failed");
+      expect(operation).toHaveBeenCalledTimes(1);
+      expect(screen.getByLabelText("Inventory detail item name").props.value).toBe(
+        "Parent draft"
+      );
+      blocked(screen, label);
+      blocked(screen, "Save inventory details");
+    }
+  );
+
+  it("names the saved item, preserves edits on Cancel and invalidates removal confirmation on Refresh", async () => {
+    const screen = render(<InventoryItemDetailScreen />);
+    await screen.findByText("Kelp Meal");
+    fireEvent.changeText(
+      screen.getByLabelText("Inventory detail item name"),
+      "Not yet saved"
+    );
+    fireEvent.press(screen.getByLabelText("Remove inventory item"));
+    expect(screen.getByText("Remove Kelp Meal?")).toBeTruthy();
+    blocked(screen, "Save inventory details");
+    blocked(screen, "Record inventory receive");
+    fireEvent.press(screen.getByLabelText("Cancel inventory removal"));
+    expect(screen.getByLabelText("Inventory detail item name").props.value).toBe(
+      "Not yet saved"
+    );
+    fireEvent.press(screen.getByLabelText("Remove inventory item"));
+    fireEvent.press(screen.getByLabelText("Refresh inventory item"));
+    await waitFor(() =>
+      expect(screen.queryByLabelText("Confirm remove inventory item")).toBeNull()
+    );
+    expect(mockApiRequest.mock.calls.some((call) => call[1]?.method === "DELETE")).toBe(
+      false
+    );
+  });
+
+  it("retains a blocked removal error without navigating or claiming archival", async () => {
+    const screen = render(<InventoryItemDetailScreen />);
+    await screen.findByText("Kelp Meal");
+    mockApiRequest.mockRejectedValueOnce(new Error("Inventory balance remains"));
+    fireEvent.press(screen.getByLabelText("Remove inventory item"));
+    fireEvent.press(screen.getByLabelText("Confirm remove inventory item"));
+    await screen.findByText("Inventory balance remains");
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Confirm remove inventory item")).toBeTruthy();
+  });
+
+  it("keeps archived history readable and retries the same history cursor after failure", async () => {
+    mockApiRequest.mockResolvedValue(record({ itemStatus: "archived" }));
+    const screen = render(<InventoryItemDetailScreen />);
+    await screen.findByText("Saved stock");
+    blocked(screen, "Save inventory details");
+    blocked(screen, "Record inventory receive");
+    blocked(screen, "Remove inventory item");
+    mockApiRequest.mockResolvedValueOnce({ movements: null });
+    fireEvent.press(screen.getByLabelText("Load older inventory movements"));
+    await screen.findByText("Movement history is unavailable. Retry the same page.");
+    mockApiRequest.mockResolvedValueOnce({
+      movements: [],
+      movementPage: { hasMore: false }
+    });
+    fireEvent.press(screen.getByLabelText("Load older inventory movements"));
+    await waitFor(() =>
+      expect(screen.queryByLabelText("Load older inventory movements")).toBeNull()
+    );
+    expect(mockApiRequest.mock.calls[1][0]).toBe(mockApiRequest.mock.calls[2][0]);
+  });
+
+  it.each(["account", "token", "facility", "role", "route"])(
+    "clears drafts and ignores late reads on %s context changes",
+    async (kind) => {
+      const screen = render(<InventoryItemDetailScreen />);
+      await screen.findByText("Kelp Meal");
+      fireEvent.changeText(
+        screen.getByLabelText("Inventory detail item name"),
+        "Private old draft"
+      );
+      const oldRead = deferred();
+      mockApiRequest.mockReturnValueOnce(oldRead.promise);
+      fireEvent.press(screen.getByLabelText("Refresh inventory item"));
+      if (kind === "account") mockUserId = "other";
+      if (kind === "token") mockToken = "other-session";
+      if (kind === "facility") mockFacilityId = "other-facility";
+      if (kind === "role") mockRole = "VIEWER";
+      if (kind === "route") mockInventoryItemId = "other-item";
+      mockApiRequest.mockResolvedValueOnce(record({ name: "New context" }));
+      screen.rerender(<InventoryItemDetailScreen />);
+      await screen.findByText("New context");
+      await act(async () => oldRead.resolve(record({ name: "Late old record" })));
+      expect(screen.queryByText("Late old record")).toBeNull();
+      expect(screen.getByLabelText("Inventory detail item name").props.value).toBe(
+        "New context"
+      );
+    }
+  );
+
+  it.each(["PATCH", "DELETE", "movement", "lot"])(
+    "ignores late %s completion after context change, without old refresh/navigation",
+    async (kind) => {
+      const screen = render(<InventoryItemDetailScreen />);
+      await screen.findByText("Kelp Meal");
+      const write = deferred();
+      if (kind === "PATCH") {
+        mockApiRequest.mockReturnValueOnce(write.promise);
+        fireEvent.press(screen.getByLabelText("Save inventory details"));
+      } else if (kind === "DELETE") {
+        mockApiRequest.mockReturnValueOnce(write.promise);
+        fireEvent.press(screen.getByLabelText("Remove inventory item"));
+        fireEvent.press(screen.getByLabelText("Confirm remove inventory item"));
+      } else if (kind === "movement") {
+        mockMovement.mockReturnValueOnce(write.promise);
+        fillMovement(screen);
+        fireEvent.press(screen.getByLabelText("Record inventory receive"));
+      } else {
+        mockCreateLot.mockReturnValueOnce(write.promise);
+        fireEvent.changeText(
+          screen.getByLabelText("New inventory lot code"),
+          "Private lot"
+        );
+        fireEvent.press(screen.getByLabelText("Create inventory lot"));
+      }
+      mockFacilityId = "other-facility";
+      mockApiRequest.mockResolvedValueOnce(record({ name: "New context" }));
+      screen.rerender(<InventoryItemDetailScreen />);
+      await screen.findByText("New context");
+      const calls = mockApiRequest.mock.calls.length;
+      await act(async () => write.resolve({ success: true }));
+      expect(mockApiRequest).toHaveBeenCalledTimes(calls);
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(screen.queryByText("Item details saved.")).toBeNull();
+    }
+  );
 });

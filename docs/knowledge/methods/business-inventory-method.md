@@ -1,5 +1,7 @@
 # Business Inventory (B-02) method
 
+Facility Inventory detail requires a matching saved identity and finite stock balance before enabling changes. Failed reads offer visible Retry without claiming missing or zero stock; retained snapshots are labeled and same-context retries preserve detail, movement and lot drafts. Refresh, history reads, detail saves, movements, lot creation and removal serialize. Removal names the saved item, requires explicit confirmation, preserves drafts on Cancel and retains the backend archival/ledger rules. Archived history remains readable. Confirmed writes distinguish failed follow-up reads; account, session, Facility, role and route changes clear drafts and ignore late completions. Hosted missing-record/read-only evidence is distinct from automated populated-write tests.
+
 B-02 is GrowPathAI's one canonical inventory ledger for Commercial and Facility workspaces.
 It owns product/SKU, lot/batch, receiving, quantity, status, cost authorization, movement,
 adjustment, transfer, hold, consumption, alerts, import, search, and audit export. B-03

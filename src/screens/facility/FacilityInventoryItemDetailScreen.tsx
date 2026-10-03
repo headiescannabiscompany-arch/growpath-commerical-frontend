@@ -1,8 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -31,6 +29,7 @@ import {
 import { BusinessInventoryOperations } from "@/components/inventory/BusinessInventoryOperations";
 import { BusinessInventoryAlerts } from "@/components/inventory/BusinessInventoryAlerts";
 import CalendarDateField from "@/components/forms/CalendarDateField";
+import { useFacilityRecordScope } from "@/features/facility/useFacilityRecordRead";
 
 type AnyRec = Record<string, any>;
 
@@ -41,6 +40,12 @@ function formatTimestamp(value: unknown) {
 }
 
 export default function InventoryItemDetailScreen() {
+  const params = useLocalSearchParams<{ id?: string; itemId?: string }>();
+  const scope = useFacilityRecordScope(params.id ?? params.itemId);
+  return <InventoryItemDetailContent key={scope} />;
+}
+
+function InventoryItemDetailContent() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; itemId?: string }>();
   const { selectedId: facilityId } = useFacility();
@@ -51,18 +56,30 @@ export default function InventoryItemDetailScreen() {
   const itemId = String(params?.id ?? params?.itemId ?? "");
 
   const mapApiError = useApiErrorHandler();
+  const mapper = useRef(mapApiError);
+  mapper.current = mapApiError;
+  const mounted = useRef(true);
+  const readInFlight = useRef(false);
+  const mutationInFlight = useRef(false);
+  const draftInitialized = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const [error, setError] = useState<any>(null);
-  const handleApiError = useCallback(
-    (caught: any) => setError(mapApiError(caught) ?? caught),
-    [mapApiError]
-  );
+  const handleApiError = useCallback((caught: any) => {
+    if (mounted.current) setError(mapper.current(caught) ?? caught);
+  }, []);
   const clearError = useCallback(() => setError(null), []);
 
   const [item, setItem] = useState<AnyRec | null>(null);
   const [lots, setLots] = useState<BusinessInventoryLot[]>([]);
   const [movements, setMovements] = useState<BusinessInventoryMovement[]>([]);
-  const [movementPage, setMovementPage] =
-    useState<BusinessInventoryMovementPage | null>(null);
+  const [movementPage, setMovementPage] = useState<BusinessInventoryMovementPage | null>(
+    null
+  );
   const [loadingOlderMovements, setLoadingOlderMovements] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -78,24 +95,88 @@ export default function InventoryItemDetailScreen() {
   const [savingDetails, setSavingDetails] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [readFailed, setReadFailed] = useState(false);
+  const [childBusy, setChildBusy] = useState(false);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
   const canWriteInventory = Boolean(ent?.can?.(CAPABILITY_KEYS.INVENTORY_WRITE));
+  const readable = Boolean(item && !readFailed && !loading && !refreshing);
+  const busy =
+    loading ||
+    refreshing ||
+    loadingOlderMovements ||
+    savingDetails ||
+    deleting ||
+    childBusy;
+  const itemArchived = Boolean(item?.deletedAt || item?.itemStatus === "archived");
+  const canEdit = canWriteInventory && readable && !busy && !itemArchived;
+
+  const populateDraft = useCallback((record: AnyRec) => {
+    setEditName(String(record.name ?? ""));
+    setEditUnit(String(record.unit ?? ""));
+    setEditReorderPoint(String(record.reorderPoint ?? 0));
+    setEditCategory(String(record.category ?? ""));
+    setEditVendor(String(record.vendor ?? ""));
+    setEditAuthorizedUnitCost(
+      record.authorizedUnitCost == null ? "" : String(record.authorizedUnitCost)
+    );
+    setEditCurrency(String(record.currency ?? ""));
+    setEditSourceFreshnessAt(
+      /^\d{4}-\d{2}-\d{2}/.test(String(record.sourceFreshnessAt ?? ""))
+        ? String(record.sourceFreshnessAt).slice(0, 10)
+        : ""
+    );
+    draftInitialized.current = true;
+  }, []);
 
   const load = useCallback(
-    async (opts?: { refresh?: boolean }) => {
-      if (!facilityId) return;
+    async (opts?: {
+      refresh?: boolean;
+      afterWrite?: boolean;
+      resetDraft?: boolean;
+    }): Promise<boolean> => {
+      if (
+        !mounted.current ||
+        readInFlight.current ||
+        (mutationInFlight.current && !opts?.afterWrite)
+      )
+        return false;
+      if (!facilityId) return false;
       if (!itemId) {
         setLoading(false);
         setError(new Error("This inventory link is missing its record ID."));
-        return;
+        return false;
       }
-
+      readInFlight.current = true;
+      setConfirmingRemove(false);
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
 
       try {
         clearError();
         const res = await apiRequest(endpoints.inventoryItem(facilityId, itemId));
-        setItem((res as AnyRec)?.item ?? (res as AnyRec)?.updated ?? res ?? null);
+        if (!mounted.current) return false;
+        const record =
+          res && Object.prototype.hasOwnProperty.call(res, "item")
+            ? (res as AnyRec).item
+            : res && Object.prototype.hasOwnProperty.call(res, "updated")
+              ? (res as AnyRec).updated
+              : res;
+        if (
+          !record ||
+          typeof record !== "object" ||
+          Array.isArray(record) ||
+          String(record.id || record._id || "") !== itemId ||
+          (record.quantity ?? record.quantityOnHand) == null ||
+          String(record.quantity ?? record.quantityOnHand).trim() === "" ||
+          !Number.isFinite(Number(record.quantity ?? record.quantityOnHand))
+        ) {
+          throw new Error(
+            "The inventory record is unavailable. Retry to load the saved item."
+          );
+        }
+        setItem(record);
+        setReadFailed(false);
+        if (!draftInitialized.current || opts?.resetDraft) populateDraft(record);
         setLots(Array.isArray((res as AnyRec)?.lots) ? (res as AnyRec).lots : []);
         setMovements(
           Array.isArray((res as AnyRec)?.movements) ? (res as AnyRec).movements : []
@@ -111,14 +192,21 @@ export default function InventoryItemDetailScreen() {
               }
             : null
         );
+        return true;
       } catch (e) {
+        if (!mounted.current) return false;
+        setReadFailed(true);
         handleApiError(e);
+        return false;
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        readInFlight.current = false;
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [facilityId, itemId, clearError, handleApiError]
+    [facilityId, itemId, clearError, handleApiError, populateDraft]
   );
 
   const loadOlderMovements = useCallback(async () => {
@@ -128,16 +216,24 @@ export default function InventoryItemDetailScreen() {
       !itemId ||
       !movementPage?.hasMore ||
       !cursor ||
-      loadingOlderMovements
+      !readable ||
+      readInFlight.current ||
+      mutationInFlight.current ||
+      !mounted.current
     ) {
       return;
     }
+    readInFlight.current = true;
+    setConfirmingRemove(false);
     setLoadingOlderMovements(true);
     try {
       clearError();
       const path = `${endpoints.inventoryItem(facilityId, itemId)}?movementLimit=50&movementCursor=${encodeURIComponent(cursor)}`;
       const res = (await apiRequest(path)) as AnyRec;
-      const older = Array.isArray(res?.movements) ? res.movements : [];
+      if (!mounted.current) return;
+      if (!Array.isArray(res?.movements))
+        throw new Error("Movement history is unavailable. Retry the same page.");
+      const older = res.movements;
       setMovements((current) => mergeBusinessInventoryMovements(current, older));
       setMovementPage(
         res?.movementPage
@@ -153,28 +249,29 @@ export default function InventoryItemDetailScreen() {
     } catch (caught) {
       handleApiError(caught);
     } finally {
-      setLoadingOlderMovements(false);
+      readInFlight.current = false;
+      if (mounted.current) setLoadingOlderMovements(false);
     }
-  }, [
-    clearError,
-    facilityId,
-    handleApiError,
-    itemId,
-    loadingOlderMovements,
-    movementPage
-  ]);
+  }, [clearError, facilityId, handleApiError, itemId, readable, movementPage]);
 
   const saveDetails = useCallback(async () => {
-    if (!facilityId || !itemId || !item || !canWriteInventory) return;
+    if (
+      !mounted.current ||
+      readInFlight.current ||
+      mutationInFlight.current ||
+      !facilityId ||
+      !itemId ||
+      !canEdit ||
+      confirmingRemove
+    )
+      return;
 
     if (!editName.trim() || !editUnit.trim()) {
       setError(new Error("Item name and stock-counting unit are required."));
       setFeedback("");
       return;
     }
-    const reorderPointNumber = editReorderPoint.trim()
-      ? Number(editReorderPoint)
-      : 0;
+    const reorderPointNumber = editReorderPoint.trim() ? Number(editReorderPoint) : 0;
     if (!Number.isFinite(reorderPointNumber) || reorderPointNumber < 0) {
       setError(new Error("Reorder point must be a number that is zero or greater."));
       setFeedback("");
@@ -214,6 +311,7 @@ export default function InventoryItemDetailScreen() {
       sourceFreshnessAt: editSourceFreshnessAt || null
     };
 
+    mutationInFlight.current = true;
     setSavingDetails(true);
     try {
       clearError();
@@ -222,18 +320,25 @@ export default function InventoryItemDetailScreen() {
         method: "PATCH",
         body
       });
-      await load({ refresh: true });
-      setFeedback("Item details saved.");
+      if (!mounted.current) return;
+      const refreshed = await load({ refresh: true, afterWrite: true, resetDraft: true });
+      if (mounted.current)
+        setFeedback(
+          refreshed
+            ? "Item details saved."
+            : "Item details saved, but current inventory could not be refreshed. Retry the read before another change."
+        );
     } catch (e) {
       handleApiError(e);
     } finally {
-      setSavingDetails(false);
+      mutationInFlight.current = false;
+      if (mounted.current) setSavingDetails(false);
     }
   }, [
     facilityId,
     itemId,
-    item,
-    canWriteInventory,
+    canEdit,
+    confirmingRemove,
     editName,
     editUnit,
     editReorderPoint,
@@ -248,8 +353,17 @@ export default function InventoryItemDetailScreen() {
   ]);
 
   const removeItem = useCallback(async () => {
-    if (!facilityId || !itemId || !canWriteInventory) return;
-
+    if (
+      !mounted.current ||
+      readInFlight.current ||
+      mutationInFlight.current ||
+      !facilityId ||
+      !itemId ||
+      !canEdit ||
+      !confirmingRemove
+    )
+      return;
+    mutationInFlight.current = true;
     setDeleting(true);
     setFeedback("");
     try {
@@ -257,33 +371,32 @@ export default function InventoryItemDetailScreen() {
       await apiRequest(endpoints.inventoryItem(facilityId, itemId), {
         method: "DELETE"
       });
-      router.replace("/home/facility/inventory");
+      if (mounted.current) router.replace("/home/facility/inventory");
     } catch (e) {
       handleApiError(e);
     } finally {
-      setDeleting(false);
+      mutationInFlight.current = false;
+      if (mounted.current) setDeleting(false);
     }
-  }, [facilityId, itemId, canWriteInventory, clearError, handleApiError, router]);
+  }, [facilityId, itemId, canEdit, confirmingRemove, clearError, handleApiError, router]);
 
-  const confirmRemoveItem = useCallback(() => {
-    if (!canWriteInventory || deleting) return;
-    const message =
-      "This removes the item from active facility inventory. This action cannot be undone.";
-
+  const beginChildOperation = () => {
     if (
-      Platform.OS === "web" &&
-      typeof window !== "undefined" &&
-      typeof window.confirm === "function"
-    ) {
-      if (window.confirm(`Remove inventory item?\n\n${message}`)) void removeItem();
-      return;
-    }
-
-    Alert.alert("Remove inventory item?", message, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Remove item", style: "destructive", onPress: removeItem }
-    ]);
-  }, [canWriteInventory, deleting, removeItem]);
+      !mounted.current ||
+      !canEdit ||
+      confirmingRemove ||
+      readInFlight.current ||
+      mutationInFlight.current
+    )
+      return false;
+    mutationInFlight.current = true;
+    setChildBusy(true);
+    return true;
+  };
+  const endChildOperation = () => {
+    mutationInFlight.current = false;
+    if (mounted.current) setChildBusy(false);
+  };
 
   useEffect(() => {
     if (!facilityId) {
@@ -292,26 +405,6 @@ export default function InventoryItemDetailScreen() {
     }
     load();
   }, [facilityId, itemId, load, router]);
-
-  useEffect(() => {
-    if (!item) return;
-    setEditName(String(item.name ?? ""));
-    setEditUnit(String(item.unit ?? ""));
-    setEditReorderPoint(String(item.reorderPoint ?? 0));
-    setEditCategory(String(item.category ?? ""));
-    setEditVendor(String(item.vendor ?? ""));
-    setEditAuthorizedUnitCost(
-      item.authorizedUnitCost === null || item.authorizedUnitCost === undefined
-        ? ""
-        : String(item.authorizedUnitCost)
-    );
-    setEditCurrency(String(item.currency ?? ""));
-    setEditSourceFreshnessAt(
-      /^\d{4}-\d{2}-\d{2}/.test(String(item.sourceFreshnessAt ?? ""))
-        ? String(item.sourceFreshnessAt).slice(0, 10)
-        : ""
-    );
-  }, [item]);
 
   const quantity = Number(item?.quantity ?? item?.quantityOnHand ?? 0);
   const reorderPoint = Number(item?.reorderPoint ?? 0);
@@ -340,6 +433,29 @@ export default function InventoryItemDetailScreen() {
           />
         }
       >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Refresh inventory item"
+          accessibilityState={{ disabled: busy, busy: loading || refreshing }}
+          disabled={busy}
+          onPress={() => load({ refresh: true })}
+          style={[styles.btn, busy && styles.btnDisabled]}
+        >
+          <Text style={styles.btnText}>
+            {loading || refreshing ? "Refreshing…" : readFailed ? "Retry" : "Refresh"}
+          </Text>
+        </Pressable>
+        {item && (readFailed || refreshing) ? (
+          <Text accessibilityLiveRegion="polite" style={styles.lockedText}>
+            Previously loaded inventory — current stock has not been verified. Retry or
+            wait for the read before making changes.
+          </Text>
+        ) : null}
+        {itemArchived ? (
+          <Text style={styles.lockedText}>
+            This archived item is read-only. Its ledger history is retained.
+          </Text>
+        ) : null}
         {error ? <InlineError error={error} /> : null}
 
         {feedback ? (
@@ -362,11 +478,11 @@ export default function InventoryItemDetailScreen() {
         {!loading && !item ? (
           <View style={styles.notFoundCard}>
             <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
-              Inventory item not found
+              Inventory item unavailable
             </Text>
             <Text style={styles.muted}>
-              This inventory item is unavailable or no longer belongs to the active
-              facility. Return to Inventory to choose an available record.
+              The saved item could not be loaded. Stock and history are not verified.
+              Retry the read or return to Inventory to choose an available record.
             </Text>
           </View>
         ) : null}
@@ -416,7 +532,7 @@ export default function InventoryItemDetailScreen() {
                 onChangeText={setEditName}
                 placeholder="Item name"
                 placeholderTextColor={palette.textMuted}
-                editable={canWriteInventory && !savingDetails}
+                editable={canEdit && !confirmingRemove}
                 style={styles.input}
               />
               <TextInput
@@ -425,7 +541,7 @@ export default function InventoryItemDetailScreen() {
                 onChangeText={setEditUnit}
                 placeholder="Unit"
                 placeholderTextColor={palette.textMuted}
-                editable={canWriteInventory && !savingDetails}
+                editable={canEdit && !confirmingRemove}
                 style={styles.input}
               />
               <TextInput
@@ -435,7 +551,7 @@ export default function InventoryItemDetailScreen() {
                 placeholder="Reorder point"
                 placeholderTextColor={palette.textMuted}
                 keyboardType="numeric"
-                editable={canWriteInventory && !savingDetails}
+                editable={canEdit && !confirmingRemove}
                 style={styles.input}
               />
               <TextInput
@@ -444,12 +560,12 @@ export default function InventoryItemDetailScreen() {
                 onChangeText={setEditCategory}
                 placeholder="Category (optional)"
                 placeholderTextColor={palette.textMuted}
-                editable={canWriteInventory && !savingDetails}
+                editable={canEdit && !confirmingRemove}
                 style={styles.input}
               />
               <Text style={styles.privateHelp}>
-                Private workspace fields — vendor and authorized cost are not published
-                to Storefront or discovery.
+                Private workspace fields — vendor and authorized cost are not published to
+                Storefront or discovery.
               </Text>
               <TextInput
                 accessibilityLabel="Inventory detail vendor"
@@ -457,7 +573,7 @@ export default function InventoryItemDetailScreen() {
                 onChangeText={setEditVendor}
                 placeholder="Vendor (private, optional)"
                 placeholderTextColor={palette.textMuted}
-                editable={canWriteInventory && !savingDetails}
+                editable={canEdit && !confirmingRemove}
                 style={styles.input}
               />
               <TextInput
@@ -467,7 +583,7 @@ export default function InventoryItemDetailScreen() {
                 placeholder="Authorized unit cost (private, optional)"
                 placeholderTextColor={palette.textMuted}
                 keyboardType="decimal-pad"
-                editable={canWriteInventory && !savingDetails}
+                editable={canEdit && !confirmingRemove}
                 style={styles.input}
               />
               <TextInput
@@ -478,12 +594,12 @@ export default function InventoryItemDetailScreen() {
                 placeholderTextColor={palette.textMuted}
                 autoCapitalize="characters"
                 maxLength={3}
-                editable={canWriteInventory && !savingDetails}
+                editable={canEdit && !confirmingRemove}
                 style={styles.input}
               />
               <CalendarDateField
                 accessibilityLabel="Inventory detail source freshness date"
-                disabled={!canWriteInventory || savingDetails}
+                disabled={!canEdit || confirmingRemove}
                 label="Source freshness date"
                 maximumDate={new Date().toISOString().slice(0, 10)}
                 onChange={setEditSourceFreshnessAt}
@@ -495,13 +611,13 @@ export default function InventoryItemDetailScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Save inventory details"
                 accessibilityState={{
-                  disabled: savingDetails || !canWriteInventory
+                  disabled: !canEdit || confirmingRemove
                 }}
                 onPress={saveDetails}
-                disabled={savingDetails || !canWriteInventory}
+                disabled={!canEdit || confirmingRemove}
                 style={({ pressed }) => [
                   styles.btn,
-                  (savingDetails || !canWriteInventory) && styles.btnDisabled,
+                  (!canEdit || confirmingRemove) && styles.btnDisabled,
                   pressed && styles.pressed
                 ]}
               >
@@ -567,6 +683,10 @@ export default function InventoryItemDetailScreen() {
 
             <BusinessInventoryOperations
               canWrite={canWriteInventory}
+              blocked={!readable || busy || confirmingRemove || itemArchived}
+              historyBlocked={!readable || busy || confirmingRemove}
+              onBeginOperation={beginChildOperation}
+              onEndOperation={endChildOperation}
               itemId={itemId}
               itemQuantity={Number.isFinite(quantity) ? quantity : 0}
               lots={lots}
@@ -574,7 +694,9 @@ export default function InventoryItemDetailScreen() {
               movements={movements}
               hasMoreMovements={Boolean(movementPage?.hasMore)}
               onLoadOlderMovements={loadOlderMovements}
-              onReload={() => load({ refresh: true })}
+              onReload={async () => {
+                await load({ refresh: true, afterWrite: true });
+              }}
               workspace={{ facilityId }}
             />
 
@@ -590,12 +712,15 @@ export default function InventoryItemDetailScreen() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Remove inventory item"
-                  accessibilityState={{ disabled: deleting }}
-                  onPress={confirmRemoveItem}
-                  disabled={deleting}
+                  accessibilityState={{ disabled: !canEdit || confirmingRemove }}
+                  onPress={() => {
+                    if (canEdit && !readInFlight.current && !mutationInFlight.current)
+                      setConfirmingRemove(true);
+                  }}
+                  disabled={!canEdit || confirmingRemove}
                   style={({ pressed }) => [
                     styles.dangerButton,
-                    deleting && styles.btnDisabled,
+                    (!canEdit || confirmingRemove) && styles.btnDisabled,
                     pressed && styles.pressed
                   ]}
                 >
@@ -603,6 +728,41 @@ export default function InventoryItemDetailScreen() {
                     {deleting ? "Removing..." : "Remove item"}
                   </Text>
                 </Pressable>
+                {confirmingRemove ? (
+                  <View accessibilityLabel="Confirm inventory removal">
+                    <Text style={styles.cardTitle}>
+                      Remove {String(item.name || "this inventory item")}?
+                    </Text>
+                    <Text style={styles.muted}>
+                      This archives the saved item from active inventory and retains its
+                      ledger history. Unsaved edits are not saved. Items or lots with
+                      stock remaining cannot be removed. This screen has no restore
+                      action.
+                    </Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Cancel inventory removal"
+                      disabled={deleting}
+                      accessibilityState={{ disabled: deleting }}
+                      onPress={() => setConfirmingRemove(false)}
+                      style={styles.btn}
+                    >
+                      <Text style={styles.btnText}>Cancel</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Confirm remove inventory item"
+                      disabled={!canEdit}
+                      accessibilityState={{ disabled: !canEdit }}
+                      onPress={removeItem}
+                      style={styles.dangerButton}
+                    >
+                      <Text style={styles.dangerButtonText}>
+                        {deleting ? "Removing…" : "Confirm removal"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                ) : null}
               </View>
             ) : null}
           </>
