@@ -1,5 +1,16 @@
 # Facility Workflow
 
+Facility grow-list summaries resolve room labels only from the exact saved room
+inside the selected Facility or a saved embedded room name. Never stringify room
+objects or substitute raw IDs for names. Room-name lookup failure keeps readable
+grows, labels the missing names and retries through Refresh. Context changes and
+unmount discard late room lookups with the corresponding grow read. Calendar-only
+dates preserve the chosen day; timestamps use the viewer's local date. Missing or
+invalid dates stay unavailable, and creation time is labeled Created rather than
+inventing a grow start. Grow detail Back returns explicitly to the Facility grow
+list so a task-return history entry cannot trap the operator on the same grow.
+These are read-only presentation/navigation rules, not record or crop-state changes.
+
 Facility task removal requires a separate in-page confirmation naming the saved
 task, with a cancel action that performs no write and preserves unfinished edits.
 Explain the existing soft-removal boundary truthfully: the task and audit history

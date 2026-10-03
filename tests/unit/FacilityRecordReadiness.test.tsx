@@ -47,6 +47,7 @@ jest.mock("@/api/tasks", () => ({
 jest.mock("@/api/team", () => ({
   listTeamMembers: (...args: any[]) => mockTeam(...args)
 }));
+jest.mock("@/api/rooms", () => ({ fetchRooms: async () => [] }));
 jest.mock("@/features/facility/useFacilityRooms", () => ({
   useFacilityRooms: () => ({ rooms: [], loading: false, error: null })
 }));

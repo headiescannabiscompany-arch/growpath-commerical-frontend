@@ -8,6 +8,7 @@ import { RefreshControl } from "react-native";
 import FacilityGrowsTab from "@/app/home/facility/(tabs)/grows";
 
 const mockApiRequest = jest.fn();
+const mockFetchRooms = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockClearError = jest.fn();
@@ -29,6 +30,9 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
+}));
+jest.mock("@/api/rooms", () => ({
+  fetchRooms: (...args: any[]) => mockFetchRooms(...args)
 }));
 
 jest.mock("@/api/endpoints", () => ({
@@ -60,6 +64,43 @@ describe("FacilityGrowsTab", () => {
     mockCanWriteGrows = true;
     mockParams = { roomId: "room-1", roomName: "Flower Room" };
     mockApiRequest.mockResolvedValue({ grows: [] });
+    mockFetchRooms.mockResolvedValue([]);
+  });
+
+  it("shows the matching saved room name and a readable start date", async () => {
+    mockParams = {};
+    mockFetchRooms.mockResolvedValue([{ id: "room-1", name: "Flower Room" }]);
+    mockApiRequest.mockResolvedValue({
+      grows: [
+        { id: "grow-1", name: "Summer crop", roomId: "room-1", startDate: "2026-07-20" }
+      ]
+    });
+    const screen = render(<FacilityGrowsTab />);
+    await waitFor(() =>
+      expect(screen.getByText("Room: Flower Room · Started: Jul 20, 2026")).toBeTruthy()
+    );
+    expect(mockFetchRooms).toHaveBeenCalledWith("facility-1");
+    expect(screen.queryByText(/room-1/)).toBeNull();
+  });
+
+  it("keeps grows readable on room-name failure and restores names with Refresh", async () => {
+    mockParams = {};
+    mockFetchRooms.mockRejectedValueOnce(new Error("Room read unavailable"));
+    mockApiRequest.mockResolvedValue({
+      grows: [{ id: "grow-1", name: "Summer crop", roomId: "room-1" }]
+    });
+    const screen = render(<FacilityGrowsTab />);
+    await waitFor(() =>
+      expect(screen.getByText("Room names unavailable. Refresh to retry.")).toBeTruthy()
+    );
+    expect(screen.getByText("Summer crop")).toBeTruthy();
+    expect(screen.getByText("Room: Linked room · Started: Not set")).toBeTruthy();
+    mockFetchRooms.mockResolvedValue([{ id: "room-1", name: "Flower Room" }]);
+    fireEvent.press(screen.getByLabelText("Refresh facility grows"));
+    await waitFor(() =>
+      expect(screen.getByText("Room: Flower Room · Started: Not set")).toBeTruthy()
+    );
+    expect(screen.queryByText("Room names unavailable. Refresh to retry.")).toBeNull();
   });
 
   it("opens supported grow setup for the exact room from the empty state", async () => {
@@ -85,6 +126,32 @@ describe("FacilityGrowsTab", () => {
       pathname: "/onboarding/start-grow",
       params: { roomId: "room-1", roomName: "Flower Room" }
     });
+  });
+
+  it("ignores old room-name results after the route context changes", async () => {
+    mockParams = {};
+    let finishRooms: (value: any) => void = () => {};
+    mockFetchRooms.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishRooms = resolve;
+        })
+    );
+    mockApiRequest.mockResolvedValueOnce({
+      grows: [{ id: "grow-old", name: "Old grow", roomId: "room-1" }]
+    });
+    const screen = render(<FacilityGrowsTab />);
+    mockParams = { roomId: "room-2", roomName: "Current room" };
+    mockApiRequest.mockResolvedValue({
+      grows: [{ id: "grow-new", name: "Current grow", roomId: "room-2" }]
+    });
+    mockFetchRooms.mockResolvedValue([{ id: "room-2", name: "Current room" }]);
+    screen.rerender(<FacilityGrowsTab />);
+    await screen.findByText("Room: Current room · Started: Not set");
+    await act(async () => finishRooms([{ id: "room-1", name: "Old room" }]));
+    expect(screen.getByText("Current grow")).toBeTruthy();
+    expect(screen.queryByText("Old grow")).toBeNull();
+    expect(screen.queryByText(/Room: Old room/)).toBeNull();
   });
 
   it("owns the page heading and hides grow creation from a Viewer", async () => {
@@ -138,6 +205,7 @@ describe("FacilityGrowsTab", () => {
     });
 
     expect(mockApiRequest).toHaveBeenCalledTimes(callsBeforeRefresh + 1);
+    expect(mockFetchRooms).toHaveBeenCalledTimes(callsBeforeRefresh + 1);
     screen.unmount();
   });
 });

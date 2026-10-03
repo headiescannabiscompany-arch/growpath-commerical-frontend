@@ -12,6 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import { facilityGrowDateSummary } from "@/features/facility/growSummary";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import FacilityContextualTools from "@/components/facility/FacilityContextualTools";
@@ -36,12 +37,6 @@ function unwrapGrow(res: any): AnyRec | null {
 
 function pickTitle(x: AnyRec): string {
   return String(x?.name ?? x?.title ?? x?.strain ?? x?.label ?? "Grow Detail");
-}
-
-function readableDate(value: unknown) {
-  if (!value) return "Not set";
-  const date = new Date(String(value));
-  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString();
 }
 
 export default function FacilityGrowDetail() {
@@ -186,7 +181,12 @@ function FacilityGrowDetailContent() {
   }
 
   return (
-    <ScreenBoundary title={title} showBack backFallbackHref="/home/facility/grows">
+    <ScreenBoundary
+      title={title}
+      showBack
+      preferBackFallback
+      backFallbackHref="/home/facility/grows"
+    >
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
@@ -270,9 +270,11 @@ function FacilityGrowDetailContent() {
                   </Text>
                 </View>
                 <View style={styles.summaryItem}>
-                  <Text style={styles.summaryLabel}>Started</Text>
+                  <Text style={styles.summaryLabel}>
+                    {facilityGrowDateSummary(item).label}
+                  </Text>
                   <Text style={styles.summaryValue}>
-                    {readableDate(item.startedAt ?? item.startDate ?? item.createdAt)}
+                    {facilityGrowDateSummary(item).value}
                   </Text>
                 </View>
                 <View style={styles.summaryItem}>

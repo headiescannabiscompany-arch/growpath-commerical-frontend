@@ -11,6 +11,7 @@ const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
+let mockBoundaryProps: any;
 const mockRouter = { push: mockPush, replace: mockReplace, back: mockBack };
 
 jest.mock("expo-router", () => ({
@@ -36,7 +37,10 @@ jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { View } = require("react-native");
   return {
-    ScreenBoundary: ({ children }: any) => React.createElement(View, null, children)
+    ScreenBoundary: (props: any) => {
+      mockBoundaryProps = props;
+      return React.createElement(View, null, props.children);
+    }
   };
 });
 jest.mock("@/components/InlineError", () => ({ InlineError: () => null }));
@@ -52,6 +56,24 @@ jest.mock("@/components/integrations/GrowIntegrationBuildPanel", () => {
 });
 
 describe("FacilityGrowDetailRoute", () => {
+  it("returns directly to the grow list instead of a duplicate detail history entry", async () => {
+    const screen = render(<FacilityGrowDetailRoute />);
+    await screen.findByText("Grow workspace");
+    expect(mockBoundaryProps.backFallbackHref).toBe("/home/facility/grows");
+    expect(mockBoundaryProps.preferBackFallback).toBe(true);
+  });
+
+  it("labels creation time honestly when no start date is saved", async () => {
+    mockApiRequest.mockResolvedValue({
+      grow: { id: "grow-1", name: "Summer crop", createdAt: "2026-07-20" }
+    });
+    const screen = render(<FacilityGrowDetailRoute />);
+    await screen.findByText("Grow workspace");
+    expect(screen.getByText("Created")).toBeTruthy();
+    expect(screen.getByText("Jul 20, 2026")).toBeTruthy();
+    expect(screen.queryByText("Started")).toBeNull();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockApiRequest.mockResolvedValue({

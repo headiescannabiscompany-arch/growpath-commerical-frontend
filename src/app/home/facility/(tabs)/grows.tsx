@@ -1,5 +1,7 @@
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import { fetchRooms } from "@/api/rooms";
+import { facilityGrowSubtitle } from "@/features/facility/growSummary";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import {
@@ -41,18 +43,6 @@ function pickTitle(x: AnyRec): string {
   return String(x?.name ?? x?.title ?? x?.strain ?? x?.label ?? "Grow");
 }
 
-function pickSubtitle(x: AnyRec): string {
-  const room = x?.roomName ?? x?.room ?? x?.roomId;
-  const phase = x?.phase ?? x?.stage ?? x?.status;
-  const started = x?.startedAt ?? x?.startDate ?? x?.createdAt;
-  const parts = [
-    room ? `Room: ${String(room)}` : "",
-    phase ? `Phase: ${String(phase)}` : "",
-    started ? `Start: ${String(started)}` : ""
-  ].filter(Boolean);
-  return parts.join(" - ");
-}
-
 export default function FacilityGrowsTab() {
   const params = useLocalSearchParams();
   const scope = useFacilityRecordScope(params);
@@ -86,6 +76,8 @@ function FacilityGrowsTabContent() {
   } = useFacilityRecordRead();
 
   const [items, setItems] = useState<AnyRec[]>([]);
+  const [rooms, setRooms] = useState<AnyRec[]>([]);
+  const [roomNamesUnavailable, setRoomNamesUnavailable] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const loadInFlightRef = useRef(false);
@@ -100,9 +92,15 @@ function FacilityGrowsTabContent() {
 
       try {
         clearError();
-        const res = await apiRequest(endpoints.grows(facilityId));
+        const [growsRead, roomsRead] = await Promise.allSettled([
+          apiRequest(endpoints.grows(facilityId)),
+          fetchRooms(facilityId)
+        ]);
         if (!mounted.current) return;
-        const rows = asArray(res);
+        setRoomNamesUnavailable(roomsRead.status === "rejected");
+        setRooms(roomsRead.status === "fulfilled" ? roomsRead.value : []);
+        if (growsRead.status === "rejected") throw growsRead.reason;
+        const rows = asArray(growsRead.value);
         setItems(
           roomId
             ? rows.filter(
@@ -164,6 +162,9 @@ function FacilityGrowsTabContent() {
     >
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
+        {roomNamesUnavailable ? (
+          <Text style={styles.muted}>Room names unavailable. Refresh to retry.</Text>
+        ) : null}
         {hasLoaded && (readFailed || refreshing) ? (
           <Text style={styles.muted}>
             Showing previously loaded grows;{" "}
@@ -259,7 +260,7 @@ function FacilityGrowsTabContent() {
           renderItem={({ item }) => {
             const id = pickId(item);
             const title = pickTitle(item);
-            const subtitle = pickSubtitle(item);
+            const subtitle = facilityGrowSubtitle(item, rooms);
 
             return (
               <Pressable
