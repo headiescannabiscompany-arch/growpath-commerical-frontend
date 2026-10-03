@@ -915,6 +915,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "SOP comparison validates saved choices and distinct matching run pairs, preserves same-context selections on Retry, withholds stale outcomes and discards late context results"
     );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "SOP Library and Start Run require readable current templates, preserve drafts on Retry, serialize authoring actions, distinguish confirmed writes from refresh failures and ignore late context completions"
+    );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never allow a Facility deviation reference collision or persistence error to terminate the shared API service."
     );

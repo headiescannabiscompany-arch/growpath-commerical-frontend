@@ -15,6 +15,11 @@ import {
 import { API_URL } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
 import type { SOPAttachment, SOPTemplate } from "@/api/sop";
+import { savedSopTemplateId } from "@/api/sop";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { uploadSopDocument } from "@/api/uploads";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -48,7 +53,7 @@ const CATEGORY_OPTIONS = [
 ] as const;
 
 function pickId(template: SOPTemplate, index: number) {
-  return String(template?.id ?? template?._id ?? `template-${index}`);
+  return savedSopTemplateId(template);
 }
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -78,6 +83,11 @@ function attachmentLabel(attachment: SOPAttachment) {
 }
 
 export default function FacilitySopRunsPresetsRoute() {
+  const scope = useFacilityRecordScope("sop-library");
+  return <LibraryContent key={scope} />;
+}
+
+function LibraryContent() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilitySopLibraryStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
@@ -86,6 +96,10 @@ export default function FacilitySopRunsPresetsRoute() {
   const {
     templates,
     isLoading,
+    isRefreshing,
+    error: readError,
+    readable,
+    hasLoaded,
     createTemplate,
     updateTemplate,
     deleteTemplate,
@@ -113,8 +127,12 @@ export default function FacilitySopRunsPresetsRoute() {
   } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const operationInFlight = useRef(false);
+  const { mounted } = useFacilityRecordRead();
+  const [operationBusy, setOperationBusy] = useState(false);
 
-  const saving = creating || updating || uploading;
+  const saving = creating || updating || uploading || deleting || operationBusy;
+  const readBusy = isLoading || isRefreshing;
+  const recordsReady = readable && !readBusy;
   const parsedSteps = useMemo(
     () =>
       content
@@ -129,6 +147,11 @@ export default function FacilitySopRunsPresetsRoute() {
     title.trim() &&
     parsedSteps.length &&
     reviewConfirmed &&
+    recordsReady &&
+    (!editingId ||
+      templates.some(
+        (template) => pickId(template, 0) === editingId && template.isActive !== false
+      )) &&
     !saving
   );
 
@@ -148,6 +171,7 @@ export default function FacilitySopRunsPresetsRoute() {
   }
 
   function loadStarter(template: StandardSopTemplate) {
+    if (operationInFlight.current || saving) return;
     setEditingId(null);
     setSourceKey(template.key);
     setSourceVersion(template.version);
@@ -165,6 +189,7 @@ export default function FacilitySopRunsPresetsRoute() {
   }
 
   function editTemplate(template: SOPTemplate, index: number) {
+    if (operationInFlight.current || saving || !recordsReady) return;
     setEditingId(pickId(template, index));
     setSourceKey(template.sourceKey || null);
     setSourceVersion(template.sourceVersion || null);
@@ -188,40 +213,52 @@ export default function FacilitySopRunsPresetsRoute() {
   }
 
   async function chooseDocument() {
+    if (!canManage || !facilityId || !recordsReady || operationInFlight.current || saving)
+      return;
     if (pendingDocuments.length + existingAttachments.length >= 10) {
       setMessage("Use no more than 10 documents on one SOP.");
       return;
     }
-    const result = await DocumentPicker.getDocumentAsync({
-      type: [
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "text/plain",
-        "text/markdown",
-        "application/rtf",
-        "image/jpeg",
-        "image/png"
-      ],
-      multiple: false,
-      copyToCacheDirectory: true
-    });
-    if (result.canceled) return;
-    const asset = result.assets?.[0];
-    if (!asset?.uri) {
-      setMessage("The selected document could not be read.");
-      return;
-    }
-    setPendingDocuments((current) => [
-      ...current,
-      {
-        uri: asset.uri,
-        name: asset.name || "sop-document",
-        mimeType: asset.mimeType || undefined,
-        size: asset.size
+    operationInFlight.current = true;
+    setOperationBusy(true);
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "text/plain",
+          "text/markdown",
+          "application/rtf",
+          "image/jpeg",
+          "image/png"
+        ],
+        multiple: false,
+        copyToCacheDirectory: true
+      });
+      if (!mounted.current || result.canceled) return;
+      const asset = result.assets?.[0];
+      if (!asset?.uri) {
+        setMessage("The selected document could not be read.");
+        return;
       }
-    ]);
-    setMessage(null);
+      setPendingDocuments((current) => [
+        ...current,
+        {
+          uri: asset.uri,
+          name: asset.name || "sop-document",
+          mimeType: asset.mimeType || undefined,
+          size: asset.size
+        }
+      ]);
+      setMessage(null);
+    } catch (error) {
+      if (mounted.current)
+        setMessage(getErrorMessage(error, "Unable to choose this document."));
+    } finally {
+      operationInFlight.current = false;
+      if (mounted.current) setOperationBusy(false);
+    }
   }
 
   async function save() {
@@ -235,12 +272,15 @@ export default function FacilitySopRunsPresetsRoute() {
       return;
     }
     operationInFlight.current = true;
+    setOperationBusy(true);
+    setRetireTarget(null);
     setMessage("Saving this reviewed SOP...");
     setUploading(true);
     try {
       const uploaded: SOPAttachment[] = [];
       for (const document of pendingDocuments) {
         const attachment = await uploadSopDocument(facilityId, document);
+        if (!mounted.current) return;
         uploaded.push(attachment as SOPAttachment);
       }
       const attachments = [...existingAttachments, ...uploaded];
@@ -267,33 +307,83 @@ export default function FacilitySopRunsPresetsRoute() {
       } else {
         await createTemplate(payload);
       }
-      await refetch();
+      if (!mounted.current) return;
       resetForm();
       setMessage(editingId ? "New SOP version saved." : "Approved SOP saved.");
+      await refreshAfterWrite(
+        "SOP saved, but the library could not refresh. Retry the read before another change."
+      );
     } catch (error: unknown) {
+      if (!mounted.current) return;
       setMessage(getErrorMessage(error, "Failed to save SOP"));
     } finally {
       operationInFlight.current = false;
-      setUploading(false);
+      if (mounted.current) {
+        setUploading(false);
+        setOperationBusy(false);
+      }
     }
   }
 
   async function retireTemplate() {
-    if (operationInFlight.current || !facilityId || !retireTarget || deleting) return;
+    if (
+      operationInFlight.current ||
+      !facilityId ||
+      !retireTarget ||
+      saving ||
+      !canManage ||
+      !recordsReady ||
+      !templates.some(
+        (template) =>
+          pickId(template, 0) === retireTarget.id && template.isActive !== false
+      )
+    )
+      return;
     operationInFlight.current = true;
+    setOperationBusy(true);
     setMessage(`Retiring "${retireTarget.title}"...`);
     try {
       await deleteTemplate(retireTarget.id);
-      await refetch();
+      if (!mounted.current) return;
       if (editingId === retireTarget.id) resetForm();
       setMessage(
         `Retired "${retireTarget.title}". Historical versions and completed runs remain available as evidence.`
       );
       setRetireTarget(null);
+      await refreshAfterWrite(
+        "SOP retired, but the library could not refresh. Retry the read before another change."
+      );
     } catch (error: unknown) {
+      if (!mounted.current) return;
       setMessage(getErrorMessage(error, "Failed to retire SOP"));
     } finally {
       operationInFlight.current = false;
+      if (mounted.current) setOperationBusy(false);
+    }
+  }
+
+  async function refreshLibrary() {
+    if (!facilityId || operationInFlight.current || saving || readBusy) return;
+    operationInFlight.current = true;
+    setOperationBusy(true);
+    setRetireTarget(null);
+    try {
+      await refetch();
+    } catch (error) {
+      if (mounted.current)
+        setMessage(getErrorMessage(error, "Unable to refresh library."));
+    } finally {
+      operationInFlight.current = false;
+      if (mounted.current) setOperationBusy(false);
+    }
+  }
+
+  async function refreshAfterWrite(failureMessage: string) {
+    try {
+      const result = await refetch();
+      if (mounted.current && result?.error) setMessage(failureMessage);
+    } catch {
+      if (mounted.current) setMessage(failureMessage);
     }
   }
 
@@ -317,6 +407,37 @@ export default function FacilitySopRunsPresetsRoute() {
               PDF, Word, text, and scanned JPG/PNG documents. A document supplements the
               executable checklist—it does not replace it.
             </Text>
+
+            {!facilityId ? (
+              <Text style={styles.sub}>Select a facility first.</Text>
+            ) : null}
+            {readError ? (
+              <Text accessibilityRole="alert" style={styles.message}>
+                {getErrorMessage(readError, "Unable to read SOP templates.")}
+              </Text>
+            ) : null}
+            {hasLoaded && !recordsReady ? (
+              <Text style={styles.sub}>
+                Previously loaded templates — wait for a successful read before changing
+                or starting them.
+              </Text>
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Refresh SOP library"
+              disabled={!facilityId || saving || readBusy}
+              accessibilityState={{ disabled: !facilityId || saving || readBusy }}
+              onPress={refreshLibrary}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>
+                {readBusy || operationBusy
+                  ? "Refreshing library..."
+                  : readError
+                    ? "Retry"
+                    : "Refresh"}
+              </Text>
+            </Pressable>
 
             <Text accessibilityRole="header" aria-level={2} style={styles.h2}>
               Standard starter templates
@@ -342,6 +463,8 @@ export default function FacilitySopRunsPresetsRoute() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Use ${template.title} starter`}
+                      disabled={saving}
+                      accessibilityState={{ disabled: saving }}
                       onPress={() => loadStarter(template)}
                       style={styles.secondaryButton}
                     >
@@ -479,6 +602,7 @@ export default function FacilitySopRunsPresetsRoute() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Remove SOP document ${attachment.filename}`}
+                      disabled={saving}
                       onPress={() =>
                         setExistingAttachments((current) =>
                           current.filter((item) => item.assetId !== attachment.assetId)
@@ -498,6 +622,7 @@ export default function FacilitySopRunsPresetsRoute() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Remove pending SOP document ${document.name}`}
+                      disabled={saving}
                       onPress={() =>
                         setPendingDocuments((current) =>
                           current.filter((_, itemIndex) => itemIndex !== index)
@@ -512,8 +637,8 @@ export default function FacilitySopRunsPresetsRoute() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Choose SOP document"
-                  accessibilityState={{ disabled: saving }}
-                  disabled={saving}
+                  accessibilityState={{ disabled: saving || !recordsReady }}
+                  disabled={saving || !recordsReady}
                   onPress={chooseDocument}
                   style={[styles.secondaryButton, saving && styles.disabled]}
                 >
@@ -582,7 +707,7 @@ export default function FacilitySopRunsPresetsRoute() {
           </View>
         }
         ListEmptyComponent={
-          !isLoading ? (
+          recordsReady ? (
             <Text style={styles.empty}>
               No active facility SOPs yet. An owner or manager can customize a standard
               starter or create one above.
@@ -631,7 +756,7 @@ export default function FacilitySopRunsPresetsRoute() {
                 </Pressable>
               ))}
               <View style={styles.savedActions}>
-                {canManage ? (
+                {canManage && recordsReady && !saving ? (
                   <Link
                     accessibilityRole="button"
                     accessibilityLabel={`Start run from SOP ${titleText}`}
@@ -649,6 +774,8 @@ export default function FacilitySopRunsPresetsRoute() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Revise SOP ${titleText}`}
+                      disabled={saving || !recordsReady}
+                      accessibilityState={{ disabled: saving || !recordsReady }}
                       onPress={() => editTemplate(item, index)}
                       style={styles.textButton}
                     >
@@ -657,9 +784,12 @@ export default function FacilitySopRunsPresetsRoute() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Retire SOP ${titleText}`}
-                      accessibilityState={{ disabled: deleting }}
-                      disabled={deleting}
-                      onPress={() => setRetireTarget({ id, title: titleText })}
+                      accessibilityState={{ disabled: saving || !recordsReady }}
+                      disabled={saving || !recordsReady}
+                      onPress={() => {
+                        if (!operationInFlight.current && recordsReady)
+                          setRetireTarget({ id, title: titleText });
+                      }}
                       style={[styles.retireButton, deleting && styles.disabled]}
                     >
                       <Text style={styles.retireButtonText}>Retire</Text>
@@ -681,7 +811,7 @@ export default function FacilitySopRunsPresetsRoute() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Cancel retirement ${titleText}`}
-                      disabled={deleting}
+                      disabled={saving}
                       onPress={() => setRetireTarget(null)}
                       style={[styles.textButton, deleting && styles.disabled]}
                     >
@@ -690,8 +820,8 @@ export default function FacilitySopRunsPresetsRoute() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Confirm retire SOP ${titleText}`}
-                      accessibilityState={{ disabled: deleting }}
-                      disabled={deleting}
+                      accessibilityState={{ disabled: saving || !recordsReady }}
+                      disabled={saving || !recordsReady}
                       onPress={retireTemplate}
                       style={[styles.retireConfirmButton, deleting && styles.disabled]}
                     >

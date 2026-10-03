@@ -103,6 +103,9 @@ jest.mock("@/hooks/useSopTemplates", () => ({
       { id: "template-1", title: "Daily room check", content: "Inspect room." }
     ],
     isLoading: false,
+    isRefreshing: false,
+    readable: true,
+    hasLoaded: true,
     createTemplate: (...args: any[]) => mockCreateTemplate(...args),
     updateTemplate: (...args: any[]) => mockUpdateTemplate(...args),
     deleteTemplate: (...args: any[]) => mockDeleteTemplate(...args),

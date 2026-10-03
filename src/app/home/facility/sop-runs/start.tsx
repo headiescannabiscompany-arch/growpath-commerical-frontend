@@ -8,6 +8,11 @@ import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import type { SOPTemplate } from "@/api/sop";
+import { savedSopTemplateId } from "@/api/sop";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { useSopTemplates } from "@/hooks/useSopTemplates";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -21,7 +26,7 @@ function pickId(x: CreatedRun | undefined) {
 }
 
 function pickTemplateId(x: SOPTemplate, idx: number) {
-  return String(x?.id ?? x?._id ?? `template-${idx}`);
+  return savedSopTemplateId(x);
 }
 
 function getErrorMessage(e: unknown, fallback: string) {
@@ -29,6 +34,16 @@ function getErrorMessage(e: unknown, fallback: string) {
 }
 
 export default function FacilitySopRunsStartRoute() {
+  const params = useLocalSearchParams();
+  const scope = useFacilityRecordScope([
+    "sop-start",
+    params.templateId,
+    params.templateTitle
+  ]);
+  return <StartContent key={scope} />;
+}
+
+function StartContent() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilitySopStartStyles(palette), [palette]);
   const router = useRouter();
@@ -36,12 +51,18 @@ export default function FacilitySopRunsStartRoute() {
   const canWriteSopRuns = Boolean(ent?.can?.(CAPABILITY_KEYS.SOP_RUNS_WRITE));
   const params = useLocalSearchParams<{ templateId?: string; templateTitle?: string }>();
   const { selectedId: facilityId } = useFacility();
-  const { templates, isLoading } = useSopTemplates(facilityId);
+  const { templates, isLoading, isRefreshing, error, readable, hasLoaded, refetch } =
+    useSopTemplates(facilityId);
+  const { mounted } = useFacilityRecordRead();
+  const [refreshing, setRefreshing] = useState(false);
+  const refreshInFlight = useRef(false);
   const [title, setTitle] = useState(
     params.templateTitle ? `Run: ${String(params.templateTitle)}` : ""
   );
   const [templateId, setTemplateId] = useState(
-    params.templateId ? String(params.templateId) : ""
+    typeof params.templateId === "string"
+      ? savedSopTemplateId({ id: params.templateId })
+      : ""
   );
   const [notes, setNotes] = useState("");
   const [oneOffSteps, setOneOffSteps] = useState("");
@@ -50,10 +71,12 @@ export default function FacilitySopRunsStartRoute() {
   const submitInFlight = useRef(false);
 
   const selectedTemplate = templates.find(
-    (template, idx) => pickTemplateId(template, idx) === templateId
+    (template, idx) =>
+      pickTemplateId(template, idx) === templateId && template.isActive !== false
   );
 
   function selectTemplate(template: SOPTemplate, idx: number) {
+    if (!readable || saving || refreshing || submitInFlight.current) return;
     const id = pickTemplateId(template, idx);
     setTemplateId(id);
     setOneOffSteps("");
@@ -67,14 +90,16 @@ export default function FacilitySopRunsStartRoute() {
     .filter(Boolean);
   const canStart = Boolean(
     canWriteSopRuns &&
+    readable &&
+    !refreshing &&
     facilityId &&
     title.trim() &&
-    (templateId || parsedOneOffSteps.length) &&
+    (templateId ? selectedTemplate : parsedOneOffSteps.length) &&
     !saving
   );
 
   const submit = async () => {
-    if (submitInFlight.current) return;
+    if (submitInFlight.current || refreshInFlight.current || !canStart) return;
     if (!canWriteSopRuns) return;
     if (!facilityId) {
       setMsg("Select a facility first.");
@@ -102,6 +127,7 @@ export default function FacilitySopRunsStartRoute() {
         method: "POST",
         body
       });
+      if (!mounted.current) return;
       const id = pickId(res?.created ?? res?.run ?? res);
       if (id) {
         router.replace({ pathname: "/home/facility/sop-runs/[id]", params: { id } });
@@ -109,10 +135,32 @@ export default function FacilitySopRunsStartRoute() {
       }
       router.replace("/home/facility/sop-runs");
     } catch (e: unknown) {
+      if (!mounted.current) return;
       setMsg(getErrorMessage(e, "Failed to start run"));
     } finally {
       submitInFlight.current = false;
-      setSaving(false);
+      if (mounted.current) setSaving(false);
+    }
+  };
+
+  const refresh = async () => {
+    if (
+      !facilityId ||
+      submitInFlight.current ||
+      refreshInFlight.current ||
+      isLoading ||
+      isRefreshing
+    )
+      return;
+    refreshInFlight.current = true;
+    setRefreshing(true);
+    try {
+      await refetch();
+    } catch (error) {
+      if (mounted.current) setMsg(getErrorMessage(error, "Unable to refresh templates."));
+    } finally {
+      refreshInFlight.current = false;
+      if (mounted.current) setRefreshing(false);
     }
   };
 
@@ -172,11 +220,42 @@ export default function FacilitySopRunsStartRoute() {
               {selectedTemplate?.title
                 ? `Selected: ${selectedTemplate.title}`
                 : templateId
-                  ? `Selected ID: ${templateId}`
+                  ? "Selected template unavailable — retry or choose another"
                   : "Optional"}
             </Text>
           </View>
           {isLoading ? <Text style={styles.muted}>Loading templates...</Text> : null}
+          {!facilityId ? (
+            <Text style={styles.muted}>Select a facility first.</Text>
+          ) : null}
+          {error ? (
+            <Text accessibilityRole="alert" style={styles.msg}>
+              {getErrorMessage(error, "Unable to read SOP templates.")}
+            </Text>
+          ) : null}
+          {hasLoaded && !readable ? (
+            <Text style={styles.muted}>
+              Previously loaded templates — wait for a successful read before starting.
+            </Text>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh SOP start templates"
+            disabled={!facilityId || saving || refreshing || isLoading || isRefreshing}
+            accessibilityState={{
+              disabled: !facilityId || saving || refreshing || isLoading || isRefreshing
+            }}
+            onPress={refresh}
+            style={styles.libraryBtn}
+          >
+            <Text style={styles.libraryBtnText}>
+              {refreshing || isLoading || isRefreshing
+                ? "Loading templates..."
+                : error
+                  ? "Retry"
+                  : "Refresh"}
+            </Text>
+          </Pressable>
           {templates.length ? (
             templates.map((template, idx) => {
               const id = pickTemplateId(template, idx);
@@ -186,6 +265,14 @@ export default function FacilitySopRunsStartRoute() {
                   key={id}
                   accessibilityRole="button"
                   accessibilityLabel={`Select SOP template ${String(template.title || id)}`}
+                  disabled={
+                    !readable || saving || refreshing || template.isActive === false
+                  }
+                  accessibilityState={{
+                    disabled:
+                      !readable || saving || refreshing || template.isActive === false,
+                    selected: active
+                  }}
                   onPress={() => selectTemplate(template, idx)}
                   style={[styles.templateCard, active && styles.templateCardActive]}
                 >
@@ -200,7 +287,7 @@ export default function FacilitySopRunsStartRoute() {
                 </Pressable>
               );
             })
-          ) : !isLoading ? (
+          ) : readable ? (
             <View style={styles.emptyPanel}>
               <Text style={styles.muted}>
                 No SOP templates yet. Add one in the SOP Library or enter one-off steps
@@ -220,7 +307,12 @@ export default function FacilitySopRunsStartRoute() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Clear SOP template selection"
-              onPress={() => setTemplateId("")}
+              disabled={saving || refreshing}
+              accessibilityState={{ disabled: saving || refreshing }}
+              onPress={() => {
+                if (!submitInFlight.current && !refreshInFlight.current)
+                  setTemplateId("");
+              }}
               style={styles.clearBtn}
             >
               <Text style={styles.clearBtnText}>Clear template</Text>

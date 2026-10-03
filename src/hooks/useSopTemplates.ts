@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useFacilityRecordScope } from "@/features/facility/useFacilityRecordRead";
 import {
   getSOPTemplates,
   createSOPTemplate,
@@ -8,9 +9,10 @@ import {
 
 export function useSopTemplates(facilityId: string | null) {
   const queryClient = useQueryClient();
+  const scope = useFacilityRecordScope("sop-templates");
 
   const templatesQuery = useQuery({
-    queryKey: ["sopTemplates", facilityId],
+    queryKey: ["sopTemplates", facilityId, scope],
     queryFn: () => (facilityId ? getSOPTemplates(facilityId) : Promise.resolve([])),
     enabled: !!facilityId,
     refetchOnWindowFocus: false
@@ -51,7 +53,9 @@ export function useSopTemplates(facilityId: string | null) {
     isLoading: templatesQuery.isLoading,
     isRefreshing: templatesQuery.isRefetching,
     error: templatesQuery.error,
-    refetch: templatesQuery.refetch,
+    hasLoaded: Array.isArray(templatesQuery.data),
+    readable: !!facilityId && templatesQuery.isSuccess && !templatesQuery.isFetching,
+    refetch: () => templatesQuery.refetch({ cancelRefetch: false }),
 
     createTemplate: createMutation.mutateAsync,
     creating: createMutation.isPending,

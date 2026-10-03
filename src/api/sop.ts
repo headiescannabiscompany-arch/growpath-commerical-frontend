@@ -39,7 +39,23 @@ export type SOPAttachment = {
 
 function normalizeSOPList(value: any): SOPTemplate[] {
   const rows = value?.templates ?? value?.items ?? value?.sops ?? value?.data ?? value;
-  return Array.isArray(rows) ? rows : [];
+  if (
+    !Array.isArray(rows) ||
+    rows.some(
+      (row) =>
+        !row || typeof row !== "object" || Array.isArray(row) || !savedSopTemplateId(row)
+    )
+  ) {
+    throw new Error(
+      "Saved SOP templates are unavailable. Retry before using this library."
+    );
+  }
+  return rows;
+}
+
+export function savedSopTemplateId(template: SOPTemplate) {
+  const id = template?.id ?? template?._id;
+  return typeof id === "string" && /^[a-zA-Z0-9_-]+$/.test(id) ? id : "";
 }
 
 function normalizeSOP(value: any): SOPTemplate {
