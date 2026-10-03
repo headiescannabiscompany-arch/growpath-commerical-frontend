@@ -409,6 +409,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
           "Refund handling and Stripe seller allocation have been updated. Purchase, partial/full refund, and seller-allocation flows passed Sandbox checks; those checks did not move real money or verify a bank payout."
       },
       {
+        id: "facility-dashboard-readiness",
+        title: "Clearer Facility dashboard evidence and recovery",
+        date: "October 3, 2026",
+        dateLabel: "Released",
+        summary:
+          "Unavailable dashboard records now stay unknown instead of appearing as zero or Clear. Retry restores readable counts; failed refreshes label previously loaded data. Changing account, Facility or role clears earlier results. Existing layout, record links and permissions remain unchanged; these dashboard checks do not complete the broader Facility-role review."
+      },
+      {
         id: "video-library-readiness",
         title: "Clearer video library and detail recovery",
         date: "October 2, 2026",

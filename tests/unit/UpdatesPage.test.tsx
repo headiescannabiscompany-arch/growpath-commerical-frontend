@@ -310,6 +310,7 @@ describe("public Updates page", () => {
       "facility-billing",
       "commerce-checkout",
       "commerce-refunds-sellers",
+      "facility-dashboard-readiness",
       "video-library-readiness",
       "forum-share-readiness",
       "live-directory-readiness"
