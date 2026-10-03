@@ -353,6 +353,12 @@ function FacilityTaskDetailContent() {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [removalRequested, setRemovalRequested] = useState(false);
+  const removalRequestedRef = useRef(false);
+  const setRemovalPrompt = useCallback((open: boolean) => {
+    removalRequestedRef.current = open;
+    setRemovalRequested(open);
+  }, []);
   const [feedback, setFeedback] = useState("");
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [showAdvancedLinkage, setShowAdvancedLinkage] = useState(false);
@@ -380,6 +386,7 @@ function FacilityTaskDetailContent() {
       )
         return;
       loadInFlightRef.current = true;
+      setRemovalPrompt(false);
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -425,7 +432,8 @@ function FacilityTaskDetailContent() {
       handleApiError,
       mounted,
       setHasLoaded,
-      setReadFailed
+      setReadFailed,
+      setRemovalPrompt
     ]
   );
 
@@ -442,6 +450,7 @@ function FacilityTaskDetailContent() {
       )
         return;
       savingRef.current = true;
+      setRemovalPrompt(false);
       setSaving(true);
       setFeedback("");
       try {
@@ -464,7 +473,17 @@ function FacilityTaskDetailContent() {
         if (mounted.current) setSaving(false);
       }
     },
-    [facilityId, id, canWrite, clearError, handleApiError, item, mounted, writeBlocked]
+    [
+      facilityId,
+      id,
+      canWrite,
+      clearError,
+      handleApiError,
+      item,
+      mounted,
+      writeBlocked,
+      setRemovalPrompt
+    ]
   );
 
   async function saveDetails() {
@@ -518,6 +537,7 @@ function FacilityTaskDetailContent() {
     )
       return;
     savingRef.current = true;
+    setRemovalPrompt(false);
     setSaving(true);
     setFeedback("");
     try {
@@ -540,6 +560,8 @@ function FacilityTaskDetailContent() {
 
   async function remove() {
     if (
+      !mounted.current ||
+      !removalRequestedRef.current ||
       !facilityId ||
       !id ||
       !canDelete ||
@@ -1063,7 +1085,7 @@ function FacilityTaskDetailContent() {
                         accessibilityRole="button"
                         accessibilityLabel="Delete task"
                         accessibilityState={{ busy: deleting, disabled: writeBlocked }}
-                        onPress={remove}
+                        onPress={() => setRemovalPrompt(true)}
                         disabled={writeBlocked}
                         style={[
                           styles.dangerBtn,
@@ -1076,6 +1098,51 @@ function FacilityTaskDetailContent() {
                       </TouchableOpacity>
                     ) : null}
                   </View>
+                  {canDelete && removalRequested ? (
+                    <View
+                      accessibilityLabel="Task removal confirmation"
+                      style={styles.form}
+                    >
+                      <Text
+                        accessibilityRole="header"
+                        aria-level={3}
+                        style={styles.sectionTitle}
+                      >
+                        Remove “{title}” from the active task queue?
+                      </Text>
+                      <Text style={styles.muted}>
+                        The task record and audit history are retained. Unsaved edits are
+                        not saved. This screen has no restore action.
+                      </Text>
+                      <View style={styles.statusRow}>
+                        <TouchableOpacity
+                          accessibilityRole="button"
+                          accessibilityLabel="Cancel task removal"
+                          accessibilityState={{ disabled: deleting }}
+                          disabled={deleting}
+                          onPress={() => setRemovalPrompt(false)}
+                          style={styles.secondaryBtn}
+                        >
+                          <Text style={styles.secondaryBtnText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          accessibilityRole="button"
+                          accessibilityLabel="Confirm task removal"
+                          accessibilityState={{ busy: deleting, disabled: writeBlocked }}
+                          disabled={writeBlocked}
+                          onPress={remove}
+                          style={[
+                            styles.dangerBtn,
+                            writeBlocked && styles.primaryBtnDisabled
+                          ]}
+                        >
+                          <Text style={styles.dangerBtnText}>
+                            {deleting ? "Removing..." : "Confirm removal"}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ) : null}
                 </View>
               )}
             </View>

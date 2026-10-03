@@ -78,6 +78,161 @@ describe("Facility retained forms and write/read boundaries", () => {
     mockTeam.mockReset().mockResolvedValue([]);
   });
 
+  it("requires a saved-title confirmation and cancel never deletes or saves a draft", async () => {
+    mockRead.mockResolvedValue(record);
+    const screen = render(<Task />);
+    await waitFor(() => expect(screen.getByLabelText("Delete task")).not.toBeDisabled());
+    fireEvent.changeText(screen.getByLabelText("Task detail title"), "Unsubmitted name");
+    fireEvent.press(screen.getByLabelText("Delete task"));
+    expect(mockWrite).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("Remove “Saved QA task” from the active task queue?")
+    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Cancel task removal"));
+    expect(screen.queryByLabelText("Confirm task removal")).toBeNull();
+    expect(screen.getByLabelText("Task detail title").props.value).toBe(
+      "Unsubmitted name"
+    );
+    expect(mockWrite).not.toHaveBeenCalled();
+  });
+
+  it("serializes confirmed removal and returns only after success", async () => {
+    mockRead.mockResolvedValue(record);
+    let finish: (value: unknown) => void = () => {};
+    mockWrite.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const screen = render(<Task />);
+    await waitFor(() => expect(screen.getByLabelText("Delete task")).not.toBeDisabled());
+    fireEvent.press(screen.getByLabelText("Delete task"));
+    const confirm = screen.getByLabelText("Confirm task removal");
+    act(() => {
+      fireEvent.press(confirm);
+      fireEvent.press(confirm);
+    });
+    expect(mockWrite).toHaveBeenCalledTimes(1);
+    expect(mockWrite).toHaveBeenCalledWith("facility-1", "record-1");
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+    for (const label of [
+      "Refresh facility task",
+      "Save task details",
+      "Complete task",
+      "Cancel task removal"
+    ])
+      expect(screen.getByLabelText(label)).toBeDisabled();
+    await act(async () => finish({ ok: true }));
+    expect(mockRouter.replace).toHaveBeenCalledWith("/home/facility/tasks");
+  });
+
+  it("retains a failed removal and requires another deliberate confirmation", async () => {
+    mockRead.mockResolvedValue(record);
+    mockWrite.mockRejectedValueOnce(new Error("Removal unavailable"));
+    const screen = render(<Task />);
+    await waitFor(() => expect(screen.getByLabelText("Delete task")).not.toBeDisabled());
+    fireEvent.press(screen.getByLabelText("Delete task"));
+    fireEvent.press(screen.getByLabelText("Confirm task removal"));
+    await waitFor(() => expect(screen.getByText("Removal unavailable")).toBeTruthy());
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Confirm task removal")).not.toBeDisabled();
+    fireEvent.press(screen.getByLabelText("Cancel task removal"));
+    expect(mockWrite).toHaveBeenCalledTimes(1);
+  });
+
+  it("invalidates a removal prompt when refreshing the record", async () => {
+    mockRead.mockResolvedValue(record);
+    const screen = render(<Task />);
+    await waitFor(() => expect(screen.getByLabelText("Delete task")).not.toBeDisabled());
+    fireEvent.press(screen.getByLabelText("Delete task"));
+    fireEvent.press(screen.getByLabelText("Refresh facility task"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Refresh facility task")).not.toBeDisabled()
+    );
+    expect(screen.queryByLabelText("Confirm task removal")).toBeNull();
+    expect(mockWrite).not.toHaveBeenCalled();
+  });
+
+  it.each(["facility", "user", "role", "route"])(
+    "drops removal confirmation after a %s switch",
+    async (scope) => {
+      mockRead.mockResolvedValue(record);
+      const screen = render(<Task />);
+      await waitFor(() =>
+        expect(screen.getByLabelText("Delete task")).not.toBeDisabled()
+      );
+      fireEvent.press(screen.getByLabelText("Delete task"));
+      if (scope === "facility") mockFacility = "facility-2";
+      if (scope === "user") mockUser = "owner-2";
+      if (scope === "role") mockRole = "STAFF";
+      if (scope === "route") mockParams = { id: "record-2" };
+      screen.rerender(<Task />);
+      await waitFor(() =>
+        expect(screen.getByLabelText("Refresh facility task")).not.toBeDisabled()
+      );
+      expect(screen.queryByLabelText("Confirm task removal")).toBeNull();
+      expect(mockWrite).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(["Save task details", "Complete task"])(
+    "invalidates removal when %s changes the record",
+    async (action) => {
+      mockRead.mockResolvedValue(record);
+      mockWrite.mockResolvedValue(record);
+      const screen = render(<Task />);
+      await waitFor(() =>
+        expect(screen.getByLabelText("Delete task")).not.toBeDisabled()
+      );
+      fireEvent.press(screen.getByLabelText("Delete task"));
+      fireEvent.press(screen.getByLabelText(action));
+      await waitFor(() =>
+        expect(screen.queryByLabelText("Confirm task removal")).toBeNull()
+      );
+      expect(mockWrite).toHaveBeenCalledTimes(1);
+      expect(mockRouter.replace).not.toHaveBeenCalled();
+    }
+  );
+
+  it("ignores a confirmed removal response after switching Facility", async () => {
+    mockRead.mockResolvedValue(record);
+    let finish: (value: unknown) => void = () => {};
+    mockWrite.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const screen = render(<Task />);
+    await waitFor(() => expect(screen.getByLabelText("Delete task")).not.toBeDisabled());
+    fireEvent.press(screen.getByLabelText("Delete task"));
+    fireEvent.press(screen.getByLabelText("Confirm task removal"));
+    mockFacility = "facility-2";
+    screen.rerender(<Task />);
+    await act(async () => finish({ ok: true }));
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it("allows a capable Manager to review removal without performing it", async () => {
+    mockRole = "MANAGER";
+    mockRead.mockResolvedValue(record);
+    const screen = render(<Task />);
+    await waitFor(() => expect(screen.getByLabelText("Delete task")).not.toBeDisabled());
+    fireEvent.press(screen.getByLabelText("Delete task"));
+    expect(screen.getByLabelText("Confirm task removal")).not.toBeDisabled();
+    expect(mockWrite).not.toHaveBeenCalled();
+  });
+
+  it.each(["STAFF", "VIEWER"])("does not offer removal to %s", async (role) => {
+    mockRole = role;
+    mockRead.mockResolvedValue(record);
+    const screen = render(<Task />);
+    await waitFor(() => expect(screen.getByText("Saved QA task")).toBeTruthy());
+    expect(screen.queryByLabelText("Delete task")).toBeNull();
+    expect(screen.queryByLabelText("Confirm task removal")).toBeNull();
+  });
+
   it("keeps the readable queue when team lookup fails and retries without losing a draft", async () => {
     mockRead.mockResolvedValue([record]);
     mockTeam.mockRejectedValueOnce(new Error("Team unavailable"));

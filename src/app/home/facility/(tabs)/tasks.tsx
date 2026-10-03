@@ -564,6 +564,7 @@ function FacilityTasksRouteContent() {
     <ScreenBoundary
       title={contextName ? `${contextName} tasks` : "Tasks"}
       showBack
+      preferBackFallback={Boolean(contextGrowId)}
       backFallbackHref={
         contextGrowId
           ? `/home/facility/grows/${contextGrowId}`

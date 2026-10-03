@@ -1,5 +1,15 @@
 # Facility Workflow
 
+Facility task removal requires a separate in-page confirmation naming the saved
+task, with a cancel action that performs no write and preserves unfinished edits.
+Explain the existing soft-removal boundary truthfully: the task and audit history
+are retained, unsaved edits are not saved, and this screen has no restore action.
+Keep Owner/Manager plus task-write authorization and single-flight read/write
+guards. Refresh, save, completion, and account/Facility/role/route changes invalidate
+the pending confirmation; failed removal remains on the record with retry feedback.
+Grow-scoped task queues return Back to the exact grow explicitly instead of using
+unrelated tab history. Unscoped task queues retain their existing back behavior.
+
 Facility grow and task lists/details must distinguish failed reads from confirmed
 empty or missing records, offer visible single-flight Retry, and label retained
 snapshots as previously loaded. Preserve unsaved same-context task fields and crop

@@ -31,6 +31,8 @@ describe("public Updates page", () => {
     expect(note?.summary).toContain("preserves unfinished room forms");
     expect(note?.summary).toContain("task edits and crop choices");
     expect(note?.summary).toContain("Readable tasks remain visible if team choices fail");
+    expect(note?.summary).toContain("separate confirmation naming the saved task");
+    expect(note?.summary).toContain("Back from a grow's task queue returns to that grow");
     expect(note?.summary).toContain("do not complete the broader Facility-role review");
   });
   it("never dates the page earlier than its released notes", () => {

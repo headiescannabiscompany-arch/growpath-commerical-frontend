@@ -1326,6 +1326,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "title-based public outreach destination selection with advanced reference fallback",
       "read-after-write reconciled facility task queues",
       "stable accessible Facility task queue links",
+      "saved-task-named cancelable removal confirmation with current role/read/write guards, retained soft-removal history, and exact grow-scoped task Back navigation",
       "credential-autofill-safe AI and parental-control inputs",
       "record-backed report counts with explicit untracked compliance evidence",
       "export readiness separated by open, resolved, and cancelled deviation status",

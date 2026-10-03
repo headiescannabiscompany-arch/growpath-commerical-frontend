@@ -17,6 +17,7 @@ const mockRouter = { push: mockPush, replace: mockReplace };
 let mockFacilityRole = "MANAGER";
 let mockCanWrite = true;
 let mockScreenBoundaryProps: any = null;
+let mockRouteParams: Record<string, string> = {};
 
 function addDaysKey(days: number) {
   const date = new Date();
@@ -30,7 +31,7 @@ jest.mock("expo-router", () => ({
     return React.cloneElement(children, { onPress: () => mockPush(href) });
   },
   useRouter: () => mockRouter,
-  useLocalSearchParams: () => ({})
+  useLocalSearchParams: () => mockRouteParams
 }));
 
 jest.mock("@/api/tasks", () => ({
@@ -96,11 +97,20 @@ jest.mock("@/features/facility/useFacilityGrows", () => ({
 }));
 
 describe("FacilityTasksRoute", () => {
+  it("returns a grow-scoped queue to its grow instead of unrelated tab history", async () => {
+    mockRouteParams = { growId: "grow-1", name: "QA grow" };
+    render(<FacilityTasksRoute />);
+    await waitFor(() => expect(mockScreenBoundaryProps).toBeTruthy());
+    expect(mockScreenBoundaryProps.backFallbackHref).toBe("/home/facility/grows/grow-1");
+    expect(mockScreenBoundaryProps.preferBackFallback).toBe(true);
+  });
+
   beforeEach(() => {
     jest.resetAllMocks();
     mockFacilityRole = "MANAGER";
     mockCanWrite = true;
     mockScreenBoundaryProps = null;
+    mockRouteParams = {};
     mockGetFacilityTasks.mockResolvedValue([
       {
         id: "task-1",
