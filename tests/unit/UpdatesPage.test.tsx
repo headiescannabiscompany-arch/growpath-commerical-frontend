@@ -39,6 +39,10 @@ describe("public Updates page", () => {
       "Grow-launched Plants, Journal, Inventory and SOP Library"
     );
     expect(note?.summary).toContain("Inventory and SOP Library remain Facility-wide");
+    expect(note?.summary).toContain(
+      "Dashboard plant counts now recognize the returned plant records"
+    );
+    expect(note?.summary).toContain("Plants and Journal have visible Refresh/Retry");
     expect(note?.summary).toContain("do not complete the broader Facility-role review");
   });
   it("never dates the page earlier than its released notes", () => {

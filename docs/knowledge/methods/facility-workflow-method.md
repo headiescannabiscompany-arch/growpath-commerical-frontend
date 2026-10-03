@@ -1,5 +1,16 @@
 # Facility Workflow
 
+Facility dashboard plant counts accept the hosted `{ plants: [...] }` response
+alongside existing collection envelopes; readable plant records must not become
+zero because of their envelope. Plants and Journal lists distinguish unknown or
+failed reads from confirmed empty collections. Provide explicit single-flight
+Refresh/Retry and label retained counts as previously loaded after a read failure.
+Same-context retries and failed saves preserve unfinished input. Account/session,
+Facility, role and grow/SOP context changes discard prior records/drafts and late
+results. Writes require readable current records and cannot overlap refresh;
+after-save refresh is internal to the same serialized operation. Existing role
+permissions, data scope, payloads and navigation remain unchanged.
+
 Plants, Journal, Inventory and SOP Library opened from a Facility grow return Back
 explicitly to that grow, including loading/empty states and after a reload. Journal
 evidence opened from an SOP run returns to the exact SOP run ahead of grow context.

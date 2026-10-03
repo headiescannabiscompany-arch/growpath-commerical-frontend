@@ -79,6 +79,23 @@ jest.mock("@/hooks/useApiErrorHandler", () => ({
 }));
 
 describe("FacilityDashboardTab", () => {
+  it("counts the actual hosted plants envelope instead of reporting zero", async () => {
+    mockApiRequest.mockImplementation((path: string) =>
+      Promise.resolve(
+        path.endsWith("/plants")
+          ? { plants: Array.from({ length: 12 }, (_, id) => ({ id })) }
+          : []
+      )
+    );
+    const screen = render(<FacilityDashboardTab />);
+    await screen.findByText("No pending checks");
+    expect(
+      screen
+        .getByLabelText("Open Plants")
+        .findAllByType(require("react-native").Text)
+        .map((node: any) => node.props.children)
+    ).toContain("12");
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     mockFacilityId = "facility-1";

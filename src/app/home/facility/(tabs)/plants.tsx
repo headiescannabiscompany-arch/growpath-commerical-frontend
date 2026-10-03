@@ -17,7 +17,10 @@ import { createPlant } from "@/api/plants";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { useFacilityGrows } from "@/features/facility/useFacilityGrows";
 import { useFacilityRooms } from "@/features/facility/useFacilityRooms";
 import { useFacility } from "@/state/useFacility";
@@ -81,6 +84,16 @@ function contextRowId(row: AnyRec) {
 }
 
 export default function FacilityPlantsTab() {
+  const params = useLocalSearchParams();
+  const scope = useFacilityRecordScope([
+    params.growId,
+    params.roomId,
+    params.contextName
+  ]);
+  return <FacilityPlantsContent key={scope} />;
+}
+
+function FacilityPlantsContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -101,16 +114,16 @@ export default function FacilityPlantsTab() {
   const contextRoomId = String(firstParam(params.roomId) || "");
   const contextName = String(firstParam(params.contextName) || "");
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const {
+    mounted,
+    error,
+    handleApiError,
+    clearError,
+    hasLoaded,
+    setHasLoaded,
+    readFailed,
+    setReadFailed
+  } = useFacilityRecordRead();
 
   const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,8 +141,13 @@ export default function FacilityPlantsTab() {
   const [growId, setGrowId] = useState("");
 
   const load = useCallback(
-    async (opts?: { refresh?: boolean }) => {
-      if (!facilityId || loadInFlightRef.current) return;
+    async (opts?: { refresh?: boolean; afterSave?: boolean }) => {
+      if (
+        !facilityId ||
+        loadInFlightRef.current ||
+        (savingRef.current && !opts?.afterSave)
+      )
+        return;
       loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
@@ -146,20 +164,39 @@ export default function FacilityPlantsTab() {
         const res = await apiRequest(
           `${endpoints.plants(facilityId)}${query ? `?${query}` : ""}`
         );
+        if (!mounted.current) return;
         setItems(asArray(res));
+        setHasLoaded(true);
+        setReadFailed(false);
       } catch (e) {
+        if (!mounted.current) return;
+        setReadFailed(true);
         handleApiError(e);
       } finally {
         loadInFlightRef.current = false;
-        setLoading(false);
-        setRefreshing(false);
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [facilityId, contextGrowId, contextRoomId, clearError, handleApiError]
+    [
+      facilityId,
+      contextGrowId,
+      contextRoomId,
+      clearError,
+      handleApiError,
+      mounted,
+      setHasLoaded,
+      setReadFailed
+    ]
   );
 
+  const readable = hasLoaded && !readFailed && !loading && !refreshing;
+  const canSave = readable && !saving && canWritePlants && Boolean(plantName.trim());
+
   async function addPlant() {
-    if (!facilityId || !canWritePlants || !plantName.trim() || savingRef.current) return;
+    if (!facilityId || !canSave || savingRef.current || loadInFlightRef.current) return;
     savingRef.current = true;
     setSaving(true);
     setFeedback("");
@@ -173,18 +210,19 @@ export default function FacilityPlantsTab() {
         roomId: roomId.trim() || undefined,
         growId: growId.trim() || undefined
       });
+      if (!mounted.current) return;
       setPlantName("");
       setPlantTag("");
       setPlantStrain("");
       setRoomId(contextRoomId);
       setGrowId(contextGrowId);
       setFeedback("Plant created.");
-      await load({ refresh: true });
+      await load({ refresh: true, afterSave: true });
     } catch (e) {
       handleApiError(e);
     } finally {
       savingRef.current = false;
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   }
 
@@ -202,9 +240,10 @@ export default function FacilityPlantsTab() {
   }, [contextGrowId, contextRoomId]);
 
   const header = useMemo(() => {
+    if (!hasLoaded) return "Plant count unknown";
     const n = items.length;
     return n === 1 ? "1 plant" : `${n} plants`;
-  }, [items.length]);
+  }, [items.length, hasLoaded]);
 
   const activeCount = items.filter(isActivePlant).length;
   const missingRoomCount = items.filter((item) => !hasRoomLink(item)).length;
@@ -244,7 +283,28 @@ export default function FacilityPlantsTab() {
             {contextName ? `${contextName} → Plants` : "Facility Plants"}
           </Text>
           <Text style={styles.muted}>{header}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh facility plants"
+            style={styles.primaryBtn}
+            disabled={loading || refreshing || saving}
+            accessibilityState={{ disabled: loading || refreshing || saving }}
+            onPress={() => void load({ refresh: true })}
+          >
+            <Text style={styles.primaryText}>{readFailed ? "Retry" : "Refresh"}</Text>
+          </Pressable>
         </View>
+        {!hasLoaded && readFailed ? (
+          <Text accessibilityLiveRegion="polite" style={styles.muted}>
+            Plants unavailable. Retry to load current records.
+          </Text>
+        ) : hasLoaded && (refreshing || readFailed) ? (
+          <Text accessibilityLiveRegion="polite" style={styles.muted}>
+            {refreshing
+              ? "Previously loaded plants — refreshing current records."
+              : "Previously loaded plants — refresh failed. These are not current verified counts."}
+          </Text>
+        ) : null}
 
         <View style={styles.summaryCard}>
           <Text
@@ -255,14 +315,14 @@ export default function FacilityPlantsTab() {
             Plant coverage
           </Text>
           <View>
-            <Text style={styles.summaryValue}>{activeCount}</Text>
+            <Text style={styles.summaryValue}>{hasLoaded ? activeCount : "Unknown"}</Text>
             <Text style={styles.summaryLabel}>active plants</Text>
           </View>
           <View>
             <Text
               style={[styles.summaryValue, missingRoomCount ? styles.warnText : null]}
             >
-              {missingRoomCount}
+              {hasLoaded ? missingRoomCount : "Unknown"}
             </Text>
             <Text style={styles.summaryLabel}>missing room</Text>
           </View>
@@ -270,7 +330,7 @@ export default function FacilityPlantsTab() {
             <Text
               style={[styles.summaryValue, missingBatchCount ? styles.warnText : null]}
             >
-              {missingBatchCount}
+              {hasLoaded ? missingBatchCount : "Unknown"}
             </Text>
             <Text style={styles.summaryLabel}>missing batch</Text>
           </View>
@@ -284,6 +344,7 @@ export default function FacilityPlantsTab() {
             <View style={styles.form}>
               <TextInput
                 accessibilityLabel="Plant name"
+                editable={!saving}
                 value={plantName}
                 onChangeText={setPlantName}
                 style={styles.input}
@@ -292,6 +353,7 @@ export default function FacilityPlantsTab() {
               />
               <TextInput
                 accessibilityLabel="Plant tag"
+                editable={!saving}
                 value={plantTag}
                 onChangeText={setPlantTag}
                 style={styles.input}
@@ -300,6 +362,7 @@ export default function FacilityPlantsTab() {
               />
               <TextInput
                 accessibilityLabel="Plant strain"
+                editable={!saving}
                 value={plantStrain}
                 onChangeText={setPlantStrain}
                 style={styles.input}
@@ -315,6 +378,7 @@ export default function FacilityPlantsTab() {
                   <Pressable
                     key={stage}
                     accessibilityRole="radio"
+                    disabled={saving}
                     accessibilityLabel={`Set plant stage to ${stage}`}
                     accessibilityState={{ checked: plantStage === stage }}
                     onPress={() => setPlantStage(stage)}
@@ -346,6 +410,7 @@ export default function FacilityPlantsTab() {
                       key={id}
                       accessibilityRole="radio"
                       accessibilityLabel={`Set plant room to ${label}`}
+                      disabled={saving}
                       accessibilityState={{ checked: roomId === id }}
                       onPress={() => {
                         setRoomId(id);
@@ -391,6 +456,7 @@ export default function FacilityPlantsTab() {
                       key={id}
                       accessibilityRole="radio"
                       accessibilityLabel={`Set plant grow to ${label}`}
+                      disabled={saving}
                       accessibilityState={{ checked: growId === id }}
                       onPress={() => setGrowId(id)}
                       style={[styles.pill, growId === id && styles.pillSelected]}
@@ -412,14 +478,11 @@ export default function FacilityPlantsTab() {
                 accessibilityLabel="Create facility plant"
                 accessibilityState={{
                   busy: saving,
-                  disabled: saving || !plantName.trim()
+                  disabled: !canSave
                 }}
                 onPress={addPlant}
-                disabled={saving || !plantName.trim()}
-                style={[
-                  styles.primaryBtn,
-                  (saving || !plantName.trim()) && styles.disabled
-                ]}
+                disabled={!canSave}
+                style={[styles.primaryBtn, !canSave && styles.disabled]}
               >
                 <Text style={styles.primaryText}>
                   {saving ? "Saving..." : "Create Plant"}
@@ -461,7 +524,7 @@ export default function FacilityPlantsTab() {
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            !loading ? (
+            hasLoaded && !loading && !readFailed ? (
               <View style={styles.empty}>
                 <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
                   No plants yet

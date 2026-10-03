@@ -214,7 +214,9 @@ function FacilityDashboardContent() {
         setPartialFailure(optionalFailed);
         setCounts({
           grows: insightsSummary?.activeGrowsCount ?? asArray(growsRes).length,
-          plants: asArray(plantsRes).length,
+          plants: Array.isArray(plantsRes?.plants)
+            ? plantsRes.plants.length
+            : asArray(plantsRes).length,
           rooms: asArray(roomsRes).length,
           batchCycles: batchCyclesRes === null ? null : asArray(batchCyclesRes).length,
           tasks: insightsSummary?.openTasksCount ?? asArray(tasksRes).length,

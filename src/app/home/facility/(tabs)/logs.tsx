@@ -16,7 +16,10 @@ import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -59,6 +62,17 @@ function firstParam(value?: string | string[]) {
 const LOG_TYPES = ["OBSERVATION", "WATER", "FEED", "IPM", "TRAINING"] as const;
 
 export default function FacilityLogsTab() {
+  const params = useLocalSearchParams();
+  const scope = useFacilityRecordScope([
+    params.growId,
+    params.sopRunId,
+    params.sopStepId,
+    params.contextName
+  ]);
+  return <FacilityLogsContent key={scope} />;
+}
+
+function FacilityLogsContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -78,16 +92,16 @@ export default function FacilityLogsTab() {
   const contextName = String(firstParam(params.contextName) || "");
   const contextSopRunId = String(firstParam(params.sopRunId) || "");
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const {
+    mounted,
+    error,
+    handleApiError,
+    clearError,
+    hasLoaded,
+    setHasLoaded,
+    readFailed,
+    setReadFailed
+  } = useFacilityRecordRead();
 
   const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,8 +120,13 @@ export default function FacilityLogsTab() {
   }, [contextName, contextSopRunId]);
 
   const load = useCallback(
-    async (opts?: { refresh?: boolean }) => {
-      if (!facilityId || loadInFlightRef.current) return;
+    async (opts?: { refresh?: boolean; afterSave?: boolean }) => {
+      if (
+        !facilityId ||
+        loadInFlightRef.current ||
+        (savingRef.current && !opts?.afterSave)
+      )
+        return;
       loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
@@ -120,20 +139,38 @@ export default function FacilityLogsTab() {
             contextGrowId ? `?growId=${encodeURIComponent(contextGrowId)}` : ""
           }`
         );
+        if (!mounted.current) return;
         setItems(asArray(res));
+        setHasLoaded(true);
+        setReadFailed(false);
       } catch (e) {
+        if (!mounted.current) return;
+        setReadFailed(true);
         handleApiError(e);
       } finally {
         loadInFlightRef.current = false;
-        setLoading(false);
-        setRefreshing(false);
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [facilityId, contextGrowId, clearError, handleApiError]
+    [
+      facilityId,
+      contextGrowId,
+      clearError,
+      handleApiError,
+      mounted,
+      setHasLoaded,
+      setReadFailed
+    ]
   );
 
+  const readable = hasLoaded && !readFailed && !loading && !refreshing;
+  const canSave = readable && !saving && canWriteLogs && Boolean(title.trim());
+
   const addLog = useCallback(async () => {
-    if (!facilityId || !title.trim() || !canWriteLogs || savingRef.current) return;
+    if (!facilityId || !canSave || savingRef.current || loadInFlightRef.current) return;
     savingRef.current = true;
     setSaving(true);
     setFeedback("");
@@ -149,16 +186,17 @@ export default function FacilityLogsTab() {
           date: new Date().toISOString()
         }
       });
+      if (!mounted.current) return;
       setTitle("");
       setNote("");
       setType("OBSERVATION");
       setFeedback("Journal entry saved to the grow timeline.");
-      await load({ refresh: true });
+      await load({ refresh: true, afterSave: true });
     } catch (e) {
       handleApiError(e);
     } finally {
       savingRef.current = false;
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   }, [
     facilityId,
@@ -166,7 +204,8 @@ export default function FacilityLogsTab() {
     note,
     type,
     contextGrowId,
-    canWriteLogs,
+    canSave,
+    mounted,
     clearError,
     handleApiError,
     load
@@ -181,9 +220,10 @@ export default function FacilityLogsTab() {
   }, [facilityId, load, router]);
 
   const header = useMemo(() => {
+    if (!hasLoaded) return "Journal count unknown";
     const n = items.length;
     return n === 1 ? "1 entry" : `${n} entries`;
-  }, [items.length]);
+  }, [items.length, hasLoaded]);
 
   return (
     <ScreenBoundary
@@ -215,7 +255,27 @@ export default function FacilityLogsTab() {
             together under Compliance.
           </Text>
           <Text style={styles.muted}>{header}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh facility journal"
+            disabled={loading || refreshing || saving}
+            accessibilityState={{ disabled: loading || refreshing || saving }}
+            onPress={() => void load({ refresh: true })}
+          >
+            <Text style={styles.secondaryText}>{readFailed ? "Retry" : "Refresh"}</Text>
+          </Pressable>
         </View>
+        {!hasLoaded && readFailed ? (
+          <Text accessibilityLiveRegion="polite" style={styles.muted}>
+            Journal unavailable. Retry to load current records.
+          </Text>
+        ) : hasLoaded && (refreshing || readFailed) ? (
+          <Text accessibilityLiveRegion="polite" style={styles.muted}>
+            {refreshing
+              ? "Previously loaded journal — refreshing current records."
+              : "Previously loaded journal — refresh failed. These are not current verified counts."}
+          </Text>
+        ) : null}
 
         {canWriteLogs ? (
           <View style={styles.card}>
@@ -237,6 +297,7 @@ export default function FacilityLogsTab() {
                   key={option}
                   accessibilityRole="radio"
                   accessibilityLabel={`Set facility journal type ${option}`}
+                  disabled={saving}
                   accessibilityState={{ checked: type === option }}
                   onPress={() => setType(option)}
                   style={[styles.chip, type === option && styles.chipSelected]}
@@ -251,6 +312,7 @@ export default function FacilityLogsTab() {
             </View>
             <TextInput
               accessibilityLabel="Facility journal title"
+              editable={!saving}
               value={title}
               onChangeText={setTitle}
               style={styles.input}
@@ -259,6 +321,7 @@ export default function FacilityLogsTab() {
             />
             <TextInput
               accessibilityLabel="Facility journal note"
+              editable={!saving}
               value={note}
               onChangeText={setNote}
               style={[styles.input, styles.textArea]}
@@ -269,10 +332,10 @@ export default function FacilityLogsTab() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Save facility journal entry"
-              accessibilityState={{ busy: saving, disabled: saving || !title.trim() }}
-              disabled={saving || !title.trim()}
+              accessibilityState={{ busy: saving, disabled: !canSave }}
+              disabled={!canSave}
               onPress={() => void addLog()}
-              style={[styles.primaryBtn, (saving || !title.trim()) && styles.disabled]}
+              style={[styles.primaryBtn, !canSave && styles.disabled]}
             >
               <Text style={styles.primaryText}>
                 {saving ? "Saving…" : "Save journal entry"}
@@ -319,7 +382,7 @@ export default function FacilityLogsTab() {
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            !loading ? (
+            hasLoaded && !loading && !readFailed ? (
               <View style={styles.empty}>
                 <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
                   No log entries yet

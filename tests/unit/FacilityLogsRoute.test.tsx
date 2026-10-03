@@ -33,10 +33,12 @@ jest.mock("@/entitlements", () => ({
   })
 }));
 jest.mock("@/hooks/useApiErrorHandler", () => {
-  const clearError = jest.fn();
-  const handleApiError = jest.fn();
-  return { useApiErrorHandler: () => ({ error: null, clearError, handleApiError }) };
+  const toInlineError = jest.fn(() => ({ message: "Request unavailable" }));
+  return { useApiErrorHandler: () => ({ toInlineError }) };
 });
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "qa" }, token: "session" })
+}));
 jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { View } = require("react-native");
