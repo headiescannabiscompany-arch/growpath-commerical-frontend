@@ -43,8 +43,13 @@ describe("public Updates page", () => {
       "Dashboard plant counts now recognize the returned plant records"
     );
     expect(note?.summary).toContain("Plants and Journal have visible Refresh/Retry");
-    expect(note?.summary).toContain("Inventory and SOP-run lists now distinguish unavailable reads from empty records");
+    expect(note?.summary).toContain(
+      "Inventory and SOP-run lists now distinguish unavailable reads from empty records"
+    );
     expect(note?.summary).toContain("do not complete the broader Facility-role review");
+    expect(note?.summary).toContain(
+      "SOP detail no longer invents an Active run after a failed read"
+    );
   });
   it("never dates the page earlier than its released notes", () => {
     const reviewed = Date.parse(PUBLIC_UPDATES_REVIEWED);

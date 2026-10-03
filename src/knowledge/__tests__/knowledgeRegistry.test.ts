@@ -906,6 +906,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "Inventory and SOP-run lists distinguish failed reads from empty records, offer single-flight Retry, label retained snapshots, preserve inventory search and discard late results across identity/context changes"
     );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "SOP detail never invents an Active run after a failed read; Retry preserves drafts, stale snapshots block writes, read/write actions serialize, confirmed writes have distinct refresh-failure feedback and context changes discard late results"
+    );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never allow a Facility deviation reference collision or persistence error to terminate the shared API service."
     );

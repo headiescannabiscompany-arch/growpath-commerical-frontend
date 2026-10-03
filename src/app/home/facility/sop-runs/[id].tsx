@@ -6,6 +6,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { useFacilityRecordScope } from "@/features/facility/useFacilityRecordRead";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -70,7 +71,39 @@ function stepStatus(step: SopRunStep) {
   return String(step.status || "pending").toLowerCase();
 }
 
+function readRun(response: SopRunDetailResponse): SopRunDetail {
+  const candidate =
+    response && Object.prototype.hasOwnProperty.call(response, "run")
+      ? response.run
+      : response && Object.prototype.hasOwnProperty.call(response, "data")
+        ? response.data
+        : response;
+  if (
+    !candidate ||
+    typeof candidate !== "object" ||
+    Array.isArray(candidate) ||
+    !(
+      candidate.id ||
+      candidate._id ||
+      candidate.title ||
+      candidate.name ||
+      Array.isArray(candidate.steps)
+    )
+  ) {
+    throw new Error(
+      "The SOP run response is unavailable. Retry to load the saved record."
+    );
+  }
+  return candidate;
+}
+
 export default function FacilitySopRunDetailRoute() {
+  const params = useLocalSearchParams();
+  const scope = useFacilityRecordScope(params.id);
+  return <FacilitySopRunDetailContent key={scope} />;
+}
+
+function FacilitySopRunDetailContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilitySopRunDetailStyles(palette), [palette]);
@@ -81,11 +114,22 @@ export default function FacilitySopRunDetailRoute() {
   const canWriteSopRuns = Boolean(ent?.can?.(CAPABILITY_KEYS.SOP_RUNS_WRITE));
   const [run, setRun] = useState<SopRunDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [readFailed, setReadFailed] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [stepTitle, setStepTitle] = useState("");
   const [stepNote, setStepNote] = useState("");
   const [savingStep, setSavingStep] = useState<string | null>(null);
   const mutationInFlight = useRef(false);
+  const readInFlight = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const readable = Boolean(run && !readFailed && !loading);
+  const canEdit = canWriteSopRuns && readable && !savingStep;
 
   const steps = Array.isArray(run?.steps) ? run.steps : [];
   const completedSteps = steps.filter((step) => stepStatus(step) === "done").length;
@@ -94,7 +138,7 @@ export default function FacilitySopRunDetailRoute() {
   ).length;
   const runComplete = runIsComplete(run);
   const canComplete = Boolean(
-    canWriteSopRuns &&
+    canEdit &&
     !runComplete &&
     steps.length > 0 &&
     reviewedSteps === steps.length &&
@@ -111,29 +155,47 @@ export default function FacilitySopRunDetailRoute() {
     </ScreenBoundary>
   );
 
-  const load = useCallback(async () => {
-    if (!id) {
-      setLoading(false);
-      return;
-    }
-    if (!facilityId) {
-      setMessage("Select a facility first.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await apiRequest<SopRunDetailResponse>(
-        endpoints.sopRun(facilityId, String(id))
-      );
-      setRun(res?.run ?? res?.data ?? res);
+  const load = useCallback(
+    async (afterWrite = false): Promise<boolean> => {
+      if (
+        !mounted.current ||
+        readInFlight.current ||
+        (mutationInFlight.current && !afterWrite)
+      )
+        return false;
+      if (!id) {
+        setLoading(false);
+        return false;
+      }
+      if (!facilityId) {
+        setMessage("Select a facility first.");
+        setLoading(false);
+        return false;
+      }
+      readInFlight.current = true;
+      setLoading(true);
       setMessage(null);
-    } catch (e: unknown) {
-      setMessage(getErrorMessage(e, "Failed to load SOP run"));
-    } finally {
-      setLoading(false);
-    }
-  }, [facilityId, id]);
+      try {
+        const res = await apiRequest<SopRunDetailResponse>(
+          endpoints.sopRun(facilityId, String(id))
+        );
+        if (!mounted.current) return false;
+        setRun(readRun(res));
+        setReadFailed(false);
+        setMessage(null);
+        return true;
+      } catch (e: unknown) {
+        if (!mounted.current) return false;
+        setReadFailed(true);
+        setMessage(getErrorMessage(e, "Failed to load SOP run"));
+        return false;
+      } finally {
+        readInFlight.current = false;
+        if (mounted.current) setLoading(false);
+      }
+    },
+    [facilityId, id]
+  );
 
   useEffect(() => {
     void load();
@@ -142,6 +204,7 @@ export default function FacilitySopRunDetailRoute() {
   const completeRun = async () => {
     if (
       mutationInFlight.current ||
+      readInFlight.current ||
       !canWriteSopRuns ||
       !facilityId ||
       !id ||
@@ -155,13 +218,19 @@ export default function FacilitySopRunDetailRoute() {
       await apiRequest(endpoints.sopRunComplete(facilityId, String(id)), {
         method: "POST"
       });
-      await load();
-      setMessage("Run marked complete.");
+      if (!mounted.current) return;
+      const refreshed = await load(true);
+      if (!mounted.current) return;
+      setMessage(
+        refreshed
+          ? "Run marked complete."
+          : "Run marked complete, but the saved record could not be refreshed. Retry the read before another action."
+      );
     } catch (e: unknown) {
-      setMessage(getErrorMessage(e, "Failed to complete run"));
+      if (mounted.current) setMessage(getErrorMessage(e, "Failed to complete run"));
     } finally {
       mutationInFlight.current = false;
-      setSavingStep(null);
+      if (mounted.current) setSavingStep(null);
     }
   };
 
@@ -172,7 +241,8 @@ export default function FacilitySopRunDetailRoute() {
   ): Promise<boolean> => {
     if (
       mutationInFlight.current ||
-      !canWriteSopRuns ||
+      readInFlight.current ||
+      !canEdit ||
       !facilityId ||
       !id ||
       !stepId ||
@@ -182,6 +252,7 @@ export default function FacilitySopRunDetailRoute() {
     mutationInFlight.current = true;
     setSavingStep(stepId);
     setMessage("Saving checklist evidence...");
+    let writeConfirmed = false;
     try {
       const res = await apiRequest<SopRunDetailResponse>(
         endpoints.sopRunStep(facilityId, String(id), stepId),
@@ -194,20 +265,29 @@ export default function FacilitySopRunDetailRoute() {
           }
         }
       );
-      setRun(res?.run ?? res?.data ?? res);
+      if (!mounted.current) return false;
+      writeConfirmed = true;
+      setRun(readRun(res));
       setMessage("Step evidence updated.");
       return true;
     } catch (e: unknown) {
-      setMessage(getErrorMessage(e, "Failed to update SOP step"));
-      return false;
+      if (!mounted.current) return false;
+      if (writeConfirmed) {
+        setReadFailed(true);
+        setMessage(
+          "Step evidence saved, but the returned record is unavailable. Retry the read before another action."
+        );
+      } else setMessage(getErrorMessage(e, "Failed to update SOP step"));
+      return writeConfirmed;
     } finally {
       mutationInFlight.current = false;
-      setSavingStep(null);
+      if (mounted.current) setSavingStep(null);
     }
   };
 
   const addStep = async () => {
-    if (!canWriteSopRuns || runComplete) return;
+    if (!canEdit || readInFlight.current || mutationInFlight.current || runComplete)
+      return;
     const title = stepTitle.trim();
     if (!title) {
       setMessage("Step title is required.");
@@ -229,7 +309,7 @@ export default function FacilitySopRunDetailRoute() {
       title,
       note: stepNote.trim() || undefined
     });
-    if (saved) {
+    if (saved && mounted.current) {
       setStepTitle("");
       setStepNote("");
     }
@@ -241,7 +321,7 @@ export default function FacilitySopRunDetailRoute() {
         <Text style={styles.sub}>Missing run id.</Text>
       </ScrollView>
     );
-  if (loading)
+  if (loading && !run)
     return renderBoundary(
       <ScrollView contentContainerStyle={styles.container}>
         <Text accessibilityRole="progressbar" style={styles.sub}>
@@ -250,15 +330,59 @@ export default function FacilitySopRunDetailRoute() {
       </ScrollView>
     );
 
+  if (!run)
+    return renderBoundary(
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+          SOP run unavailable
+        </Text>
+        <Text style={styles.sub}>
+          The saved run could not be loaded. No checklist or completion status is
+          verified.
+        </Text>
+        {message ? (
+          <Text accessibilityRole="alert" style={styles.msg}>
+            {message}
+          </Text>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Refresh SOP run detail"
+          onPress={() => load()}
+          style={styles.btn}
+        >
+          <Text style={styles.btnText}>Retry</Text>
+        </Pressable>
+      </ScrollView>
+    );
+
   return renderBoundary(
     <ScrollView contentContainerStyle={styles.container}>
       <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
         {String(run?.title || run?.name || "SOP Run")}
       </Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Refresh SOP run detail"
+        accessibilityState={{ disabled: loading || !!savingStep, busy: loading }}
+        disabled={loading || !!savingStep}
+        onPress={() => load()}
+        style={styles.evidenceLink}
+      >
+        <Text style={styles.evidenceLinkText}>
+          {loading ? "Refreshing…" : readFailed ? "Retry" : "Refresh"}
+        </Text>
+      </Pressable>
+      {readFailed || loading ? (
+        <Text accessibilityLiveRegion="polite" style={styles.completionHelp}>
+          Previously loaded SOP run — current evidence has not been verified. Retry or
+          wait for the read before making changes.
+        </Text>
+      ) : null}
       <View style={styles.metaRow}>
         <View style={styles.metaCard}>
           <Text style={styles.metaLabel}>Status</Text>
-          <Text style={styles.metaValue}>{formatLabel(run?.status, "Active")}</Text>
+          <Text style={styles.metaValue}>{formatLabel(run?.status, "Not recorded")}</Text>
         </View>
         <View style={styles.metaCard}>
           <Text style={styles.metaLabel}>Started</Text>
@@ -299,7 +423,7 @@ export default function FacilitySopRunDetailRoute() {
                 : status === "skipped"
                   ? styles.status_skipped
                   : styles.status_pending;
-            const busy = savingStep === stepId;
+            const busy = !canEdit;
             return (
               <View key={stepId} style={styles.stepCard}>
                 <View style={styles.stepHeader}>
@@ -311,7 +435,7 @@ export default function FacilitySopRunDetailRoute() {
                 {step.note ? (
                   <Text style={styles.stepNote}>{String(step.note)}</Text>
                 ) : null}
-                {!runComplete ? (
+                {!runComplete && readable ? (
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={`Record journal evidence for SOP step ${title}`}
@@ -397,7 +521,7 @@ export default function FacilitySopRunDetailRoute() {
             placeholderTextColor={palette.textMuted}
             value={stepTitle}
             onChangeText={setStepTitle}
-            editable={!savingStep}
+            editable={canEdit}
             style={styles.input}
           />
           <TextInput
@@ -406,7 +530,7 @@ export default function FacilitySopRunDetailRoute() {
             placeholderTextColor={palette.textMuted}
             value={stepNote}
             onChangeText={setStepNote}
-            editable={!savingStep}
+            editable={canEdit}
             style={[styles.input, styles.noteInput]}
             multiline
           />
@@ -414,11 +538,9 @@ export default function FacilitySopRunDetailRoute() {
             accessibilityRole="button"
             accessibilityLabel="Add SOP evidence step"
             onPress={addStep}
-            disabled={!!savingStep || !stepTitle.trim()}
-            style={[
-              styles.addBtn,
-              (!!savingStep || !stepTitle.trim()) && styles.disabled
-            ]}
+            accessibilityState={{ disabled: !canEdit || !stepTitle.trim() }}
+            disabled={!canEdit || !stepTitle.trim()}
+            style={[styles.addBtn, (!canEdit || !stepTitle.trim()) && styles.disabled]}
           >
             <Text style={styles.btnText}>Add Step</Text>
           </Pressable>

@@ -1,5 +1,15 @@
 # Facility Workflow
 
+SOP detail must not invent an Active run or checklist when its read fails or returns
+an unavailable envelope. Offer visible Retry; retained records after refresh failure
+are explicitly previously loaded and cannot authorize edits. Same-context Retry
+preserves unfinished step input. Serialize refresh, step changes and completion;
+distinguish a confirmed write from an unsuccessful response/read refresh and lock
+further writes until recovery. Account, session, Facility, role and run changes
+discard prior drafts and late read/write results. Existing capability checks and
+completed-run immutability remain unchanged. Hosted missing-record recovery and
+automated populated-record checks are distinct acceptance evidence.
+
 Facility Inventory and SOP-run collection failures must not claim zero records,
 empty stock, completed evidence, or no runs. Provide single-flight visible Retry;
 retain and label the last successful snapshot after refresh failure. Inventory
