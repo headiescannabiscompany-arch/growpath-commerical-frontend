@@ -1310,6 +1310,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "read-only integration state",
       "reviewed device mapping",
       "record-backed facility analytics",
+      "Facility dashboard unknown counts, independent read failures, labeled retained snapshots and session/Facility/role-scoped read recovery",
       "read-after-write Facility invitation session handoff",
       "Facility-subscription-backed member role capabilities",
       "exact selected-row server alias reconciliation for Facility course scope",

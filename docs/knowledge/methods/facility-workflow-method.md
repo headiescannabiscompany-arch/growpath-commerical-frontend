@@ -1,5 +1,13 @@
 # Facility Workflow
 
+Facility dashboard totals remain unknown until their reads succeed. An unavailable
+verification, audit, SOP, team or batch read must not become zero, Clear, or No
+pending checks. Keep successful independent records visible, provide a single-flight
+read-only refresh, and explicitly label retained snapshots during refresh and after
+failure. Account/session, selected Facility and role changes discard the previous
+dashboard and late responses. Preserve existing navigation and role exclusions;
+dashboard summaries never certify compliance or grant permission to a linked action.
+
 Facility outreach analytics use the same recorded Feed campaign events as Commercial while remaining facility scoped. Measure education/outreach impressions, clicks, explicit conversions, hides, and reports without introducing direct-sales claims or exposing viewer identity in owner-facing summaries.
 
 Facility outreach destinations must be selected from readable public course, live-event, and Forum/Q&A records whenever those lists are available. Show record titles instead of internal identifiers, preserve the selected canonical identifier in the campaign payload, and keep manual identifiers or slugs behind an explicitly labeled advanced fallback. A failure in one destination list must not erase the other lists or prevent an authorized operator from using a known valid reference.

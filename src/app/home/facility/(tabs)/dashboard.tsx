@@ -30,6 +30,7 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { useEntitlements } from "@/entitlements";
+import { useAuth } from "@/auth/AuthContext";
 
 type AnyRec = Record<string, any>;
 type Tone = "green" | "amber" | "blue" | "violet" | "red" | "slate" | "cyan" | "orange";
@@ -93,6 +94,19 @@ export function createFacilityDashboardThemeStyles(palette: ThemePalette) {
 }
 
 export default function FacilityDashboardTab() {
+  const auth = useAuth();
+  const entitlements = useEntitlements();
+  const { selectedId } = useFacility();
+  const scope = JSON.stringify([
+    auth.user?.id || auth.user?._id,
+    auth.token,
+    selectedId,
+    entitlements.facilityRole
+  ]);
+  return <FacilityDashboardContent key={scope} />;
+}
+
+function FacilityDashboardContent() {
   const router = useRouter();
   const entitlements = useEntitlements();
   const facilityRole = String(entitlements.facilityRole || "VIEWER").toUpperCase();
@@ -114,8 +128,19 @@ export default function FacilityDashboardTab() {
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [readFailed, setReadFailed] = useState(false);
+  const [partialFailure, setPartialFailure] = useState(false);
+  const pending = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
-  const [counts, setCounts] = useState({
+  const [counts, setCounts] = useState<Record<string, number | null>>({
     grows: 0,
     plants: 0,
     rooms: 0,
@@ -133,18 +158,22 @@ export default function FacilityDashboardTab() {
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId) return;
+      if (!facilityId || pending.current) return;
+      pending.current = true;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
 
       try {
         setError(null);
+        setReadFailed(false);
+        let optionalFailed = false;
 
         const optional = async <T,>(fn: () => Promise<T>, fallback: T): Promise<T> => {
           try {
             return await fn();
           } catch {
+            optionalFailed = true;
             return fallback;
           }
         };
@@ -167,45 +196,62 @@ export default function FacilityDashboardTab() {
           apiRequest(endpoints.grows(facilityId)),
           apiRequest(endpoints.plants(facilityId)),
           apiRequest(endpoints.rooms(facilityId)),
-          optional(() => listBatchCycles(facilityId), []),
+          optional(() => listBatchCycles(facilityId), null),
           apiRequest(endpoints.tasks(facilityId)),
           apiRequest(endpoints.inventory(facilityId)),
           apiRequest(endpoints.growlogs(facilityId)),
-          optional(() => listTeamMembers(facilityId), []),
-          optional(() => getSOPTemplates(facilityId), []),
-          optional(() => listAuditLogs(facilityId), { success: true, data: [] }),
-          optional(() => getVerifications(facilityId), []),
+          optional(() => listTeamMembers(facilityId), null),
+          optional(() => getSOPTemplates(facilityId), null),
+          optional(() => listAuditLogs(facilityId), null),
+          optional(() => getVerifications(facilityId), null),
           optional(() => getFacilityReport(facilityId), null),
           optional(() => fetchFacilityInsightsSummary(facilityId), null)
         ]);
 
+        if (!mounted.current) return;
         setInsights(insightsSummary);
+        setHasLoaded(true);
+        setPartialFailure(optionalFailed);
         setCounts({
           grows: insightsSummary?.activeGrowsCount ?? asArray(growsRes).length,
           plants: asArray(plantsRes).length,
           rooms: asArray(roomsRes).length,
-          batchCycles: asArray(batchCyclesRes).length,
+          batchCycles: batchCyclesRes === null ? null : asArray(batchCyclesRes).length,
           tasks: insightsSummary?.openTasksCount ?? asArray(tasksRes).length,
           inventory: asArray(inventoryRes).length,
           logs: insightsSummary?.recentLogsCount ?? asArray(logsRes).length,
-          team: asArray(teamRes).length,
-          sops: asArray(sopRows).length,
-          auditLogs: Array.isArray(auditRes?.data)
-            ? auditRes.data.length
-            : asArray(auditRes).length,
-          verifications: asArray(verificationRows).filter((record) => {
-            const status = String(
-              record?.status || record?.state || "pending"
-            ).toLowerCase();
-            return status === "pending" || status === "open" || status === "requested";
-          }).length,
+          team: teamRes === null ? null : asArray(teamRes).length,
+          sops: sopRows === null ? null : asArray(sopRows).length,
+          auditLogs:
+            auditRes === null
+              ? null
+              : Array.isArray(auditRes?.data)
+                ? auditRes.data.length
+                : asArray(auditRes).length,
+          verifications:
+            verificationRows === null
+              ? null
+              : asArray(verificationRows).filter((record) => {
+                  const status = String(
+                    record?.status || record?.state || "pending"
+                  ).toLowerCase();
+                  return (
+                    status === "pending" || status === "open" || status === "requested"
+                  );
+                }).length,
           reports: reportRes ? 1 : 0
         });
       } catch (e) {
-        setError(mapApiErrorRef.current.toInlineError(e));
+        if (mounted.current) {
+          setReadFailed(true);
+          setError(mapApiErrorRef.current.toInlineError(e));
+        }
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        pending.current = false;
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
     [facilityId]
@@ -226,7 +272,10 @@ export default function FacilityDashboardTab() {
         value: counts.rooms,
         to: "/home/facility/rooms",
         tone: "blue" as Tone,
-        hint: `${counts.batchCycles} batches`
+        hint:
+          !hasLoaded || counts.batchCycles === null
+            ? "Batches unavailable"
+            : `${counts.batchCycles} batches`
       },
       {
         label: "Grows",
@@ -267,8 +316,17 @@ export default function FacilityDashboardTab() {
         label: "Verifications",
         value: counts.verifications,
         to: "/home/facility/compliance",
-        tone: (counts.verifications ? "red" : "green") as Tone,
-        hint: counts.verifications ? "Needs review" : "Clear"
+        tone: (!hasLoaded || counts.verifications === null
+          ? "slate"
+          : counts.verifications
+            ? "red"
+            : "green") as Tone,
+        hint:
+          !hasLoaded || counts.verifications === null
+            ? "Unavailable"
+            : counts.verifications
+              ? "Needs review"
+              : "Clear"
       },
       {
         label: "Audit events",
@@ -285,7 +343,7 @@ export default function FacilityDashboardTab() {
         hint: "Members"
       }
     ],
-    [counts]
+    [counts, hasLoaded]
   );
 
   const statusRows = useMemo(() => {
@@ -298,21 +356,33 @@ export default function FacilityDashboardTab() {
     return [
       {
         label: "Compliance posture",
-        value: counts.verifications
-          ? `${counts.verifications} pending`
-          : "No pending checks",
-        tone: (counts.verifications ? "red" : "green") as Tone,
+        value:
+          !hasLoaded || counts.verifications === null
+            ? "Verification records unavailable"
+            : counts.verifications
+              ? `${counts.verifications} pending`
+              : "No pending checks",
+        tone: (!hasLoaded || counts.verifications === null
+          ? "slate"
+          : counts.verifications
+            ? "red"
+            : "green") as Tone,
         to: "/home/facility/compliance"
       },
       {
         label: "Audit readiness",
-        value: `${counts.auditLogs} events captured`,
+        value:
+          !hasLoaded || counts.auditLogs === null
+            ? "Audit records unavailable"
+            : `${counts.auditLogs} events captured`,
         tone: (counts.auditLogs ? "blue" : "amber") as Tone,
         to: "/home/facility/audit-logs"
       },
       {
         label: "Operational load",
-        value: `${counts.tasks} tasks / ${counts.logs} logs`,
+        value: hasLoaded
+          ? `${counts.tasks} tasks / ${counts.logs} logs`
+          : "Task and log counts unavailable",
         tone: (counts.tasks ? "amber" : "slate") as Tone,
         to: "/home/facility/tasks"
       },
@@ -325,7 +395,7 @@ export default function FacilityDashboardTab() {
         to: "/home/facility/reports"
       }
     ];
-  }, [counts, insights]);
+  }, [counts, insights, hasLoaded]);
 
   const visibleQuick = useMemo(
     () =>
@@ -443,6 +513,17 @@ export default function FacilityDashboardTab() {
         }
       >
         {error ? <InlineError error={error} /> : null}
+        {readFailed || (hasLoaded && refreshing) || partialFailure ? (
+          <Text accessibilityLiveRegion="polite" style={{ color: palette.textMuted }}>
+            {readFailed
+              ? hasLoaded
+                ? "Previously loaded dashboard — refresh failed. These are not current verified counts."
+                : "Facility dashboard unavailable. Retry to load current records."
+              : refreshing
+                ? "Previously loaded dashboard — refreshing current records."
+                : "Some dashboard records are unavailable. Refresh to retry; unavailable counts are not zero."}
+          </Text>
+        ) : null}
 
         <View
           style={[
@@ -481,13 +562,17 @@ export default function FacilityDashboardTab() {
           <View style={styles.heroStats}>
             <View style={[styles.pulse, themeStyles.pulse]}>
               <Text style={[styles.pulseValue, themeStyles.pulseValue]}>
-                {counts.verifications ? "Review" : "Clear"}
+                {!hasLoaded || counts.verifications === null
+                  ? "Unknown"
+                  : counts.verifications
+                    ? "Review"
+                    : "Clear"}
               </Text>
               <Text style={[styles.pulseLabel, themeStyles.pulseLabel]}>Compliance</Text>
             </View>
             <View style={[styles.pulse, themeStyles.pulse]}>
               <Text style={[styles.pulseValue, themeStyles.pulseValue]}>
-                {String(counts.tasks)}
+                {hasLoaded ? String(counts.tasks) : "—"}
               </Text>
               <Text style={[styles.pulseLabel, themeStyles.pulseLabel]}>Tasks</Text>
             </View>
@@ -585,7 +670,7 @@ export default function FacilityDashboardTab() {
                 ]}
               >
                 <Text style={[styles.refreshText, { color: palette.accentText }]}>
-                  Refresh
+                  {readFailed || partialFailure ? "Retry" : "Refresh"}
                 </Text>
               </Pressable>
             </View>
@@ -612,7 +697,7 @@ export default function FacilityDashboardTab() {
                         isTv ? styles.tileValueTv : null
                       ]}
                     >
-                      {String(q.value)}
+                      {hasLoaded && q.value !== null ? String(q.value) : "—"}
                     </Text>
                     <Text
                       accessibilityRole="header"
