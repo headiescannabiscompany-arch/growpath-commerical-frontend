@@ -90,7 +90,7 @@ session. Home: no horizontal overflow, CTA above fold, readable hero; navigation
 links were only 19px tall. Pricing: labeled focusable table width284/scroll620,
 ArrowRight changes scrollLeft0→16. Signup: email/password input types, no page
 overflow, no data entered/submitted. This phase increases nav/footer/CTA targets
-to44px in both renderers; postrelease measurement remains required.
+to44px in both renderers; postrelease measurements below verify the change.
 
 ## Deliberately unfinished proof
 
@@ -119,5 +119,53 @@ summary of that motivation, not unsupported allegations about named companies.
 The other-industry goal is future vision, not delivered functionality. Founder
 story is recovered, not a remaining request for the owner to repeat it.
 
-Status: local implementation complete; release verification in progress.
-No new audit score is claimed; the owner will rerun the audit.
+## Release receipt — CLOSED / LIVE at the repo-corrections scope
+
+Exact app revision: `12055bff6b893ce9179b22e18cae7adebb62580c` (includes
+`9668e453e2124bd38b6fcd0dcbf9bf1dfc95dec7`).
+
+- Staging: `dep-db1bj1p42hec73ete9g0`, LIVE **2026-10-04 20:41:25 UTC**
+  (**October 4, 2026, 4:41:25 PM Eastern / EDT**).
+- Production: `dep-db1bka49v7es73eqo5lg`, LIVE **2026-10-04 20:44:27 UTC**
+  (**October 4, 2026, 4:44:27 PM Eastern / EDT**), service
+  `srv-d8ulmu3eo5us73e2otmg`.
+- Both hosted route tables preserve their previous 25 specific rules, add
+  `/vs/growtrackr` and `/grow-journal-app`, and keep the SPA catch-all last.
+- 73 Jest tests in five suites, 13 static-render tests, typecheck, scoped lint,
+  export, SEO, contamination, interface delta and independent review passed.
+  The unrelated default historical Commercial Profile budget mismatch remains
+  recorded; the released-parent delta passed and no blanket historical pass is claimed.
+- Production public HTML check at **2026-10-04 20:46:17 UTC**: six changed pages
+  HTTP200, one canonical/OG URL/h1 each, correct robots, four plan offers,
+  new copy/source links, sitemap and llms discovery passed.
+- The public founder JPEG matches the original 11,930-byte supplied asset:
+  SHA256 `66928a01101d8f5450dbfb8c5425f6f68544f61f74e0372a7eb5470fb35aec5c`.
+- Hosted final staging checks and live production responsive checks passed.
+  At 375x812, homepage width375 and signup CTA bottom608; pricing width375,
+  signup CTA bottom641, height44; the comparison scroller is width284/content620
+  and keyboard ArrowRight moves it. Public nav targets measure44px. Signup
+  input-type/no-overflow checks were read-only; no account was submitted.
+- Responsive measurement used the production service's alternate origin to
+  preserve the owner's signed-in custom-domain session. Browser-wide viewport
+  control did not consistently target the intended tab; tab-scoped metrics were
+  used and actual innerWidth checked. All overrides were cleared afterward.
+- Live custom-domain About shows the actual portrait and recovered story;
+  grouped Updates correctly says partially live and lists proof still open.
+  Browser error logs were empty; release-window Render error logs were empty.
+- Screenshots in the workspace outputs: `W04_Founder_Production_2026-10-04.png`
+  and `W04_Updates_Production_2026-10-04.png`.
+
+No pending W04 app deployment, data cleanup, billing or backend change.
+W05 feedback/testimonial collection and W06 labeled synthetic demos are approved,
+not yet implemented. Real permissioned stories, verified counts and authentic
+outside mentions remain evidence-dependent. No new audit score is claimed.
+
+## Exact-date provenance rule
+
+Owner requested specific dates on October 4, 2026, in light of perceived
+similarities with another product. Preserve first-documented, first-live and
+later-modified dates separately, with source records/commit/deployment references.
+This receipt dates this bounded release, not the founding of GrowPathAI or first
+creation of older features. Do not replace an older feature's first-live date
+with today's maintenance date. No competitor copying, relative launch chronology
+or legal priority has been verified or asserted.
