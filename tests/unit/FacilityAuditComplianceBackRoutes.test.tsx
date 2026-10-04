@@ -54,8 +54,16 @@ jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
 }));
 
-jest.mock("@/hooks/useAuditLogs", () => ({
-  useAuditLogs: (...args: any[]) => mockUseAuditLogs(...args)
+jest.mock("@/features/facility/useFacilityAuditRead", () => ({
+  ...jest.requireActual("@/features/facility/useFacilityAuditRead"),
+  useFacilityAuditRead: (...args: any[]) => {
+    const result = mockUseAuditLogs(...args);
+    return {
+      selectedId: "facility-1",
+      hasLoaded: !result.isLoading && !result.error,
+      ...result
+    };
+  }
 }));
 
 jest.mock("@/hooks/useFacilityReport", () => ({

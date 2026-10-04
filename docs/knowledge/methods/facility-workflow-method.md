@@ -1,5 +1,13 @@
 # Facility Workflow
 
+Facility audit lists, individual records and entity history offer visible single-flight
+Refresh/Retry. Failed or malformed reads are unavailable, not empty history or missing
+records. Retain and label a same-context successful snapshot during refresh/failure.
+Audit snapshots are page-local and isolated by account, session, Facility, role and
+route; discard previous and late results when context changes. Preserve immutable
+payloads, readable summaries, existing Back destinations and server authorization.
+These recovery controls never create, edit, remove, export or publish audit records.
+
 Facility Analytics keeps pending, failed, absent and malformed metrics unknown rather than turning them into zero activity. Preserve recorded numeric zero, leave unavailable numeric fields explicit, label previously loaded metrics during refresh and after failure, and offer single-flight read-only Retry. Account/session/Facility/role changes clear old snapshots and ignore late responses. Existing record-backed calculations, room-stability evidence rules, permissions and navigation remain unchanged; Analytics is not a compliance certification.
 
 The Facility route boundary is the sole automatic selection restorer. The shared provider only synchronizes account mode; it must not seed a placeholder identity, select the first membership, or race a manual selection. Acceptance must cover the real provider and route together, including a failed authorized-list read before any operational request.

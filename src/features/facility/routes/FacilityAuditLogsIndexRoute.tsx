@@ -2,10 +2,8 @@ import React, { useMemo } from "react";
 import { Link } from "expo-router";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
-import { normalizeApiError } from "@/api/errors";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { useFacility } from "@/state/useFacility";
-import { useAuditLogs } from "@/hooks/useAuditLogs";
+import { FacilityAuditReadStatus, useFacilityAuditRead } from "../useFacilityAuditRead";
 import type { AuditLog } from "@/types/contracts";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -29,10 +27,6 @@ function pickId(x: AuditLogListItem, idx: number) {
   return String(x?.id || x?._id || x?.logId || `audit-${idx}`);
 }
 
-function getErrorMessage(e: unknown, fallback: string) {
-  return normalizeApiError(e).message || fallback;
-}
-
 function AuditLogsHeading() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -43,57 +37,15 @@ function AuditLogsHeading() {
   );
 }
 
-function AuditLogsStatus({ message }: { message: string }) {
-  const { palette } = useAppTheme();
-  const styles = useMemo(() => createStyles(palette), [palette]);
-  return (
-    <View style={styles.container}>
-      <AuditLogsHeading />
-      <Text style={styles.sub}>{message}</Text>
-    </View>
-  );
-}
-
 export default function FacilityAuditLogsIndexRoute() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
-  const { selectedId } = useFacility();
-  const { logs, isLoading, isRefreshing, error, refetch } = useAuditLogs(selectedId);
+  const read = useFacilityAuditRead();
+  const { logs, isRefreshing, refetch, hasLoaded } = read;
   const items = useMemo(
     () => (Array.isArray(logs) ? (logs as AuditLogListItem[]) : []),
     [logs]
   );
-
-  if (!selectedId)
-    return (
-      <ScreenBoundary
-        title="Facility audit logs"
-        showBack
-        backFallbackHref="/home/facility/dashboard"
-      >
-        <AuditLogsStatus message="Select a facility first." />
-      </ScreenBoundary>
-    );
-  if (isLoading)
-    return (
-      <ScreenBoundary
-        title="Facility audit logs"
-        showBack
-        backFallbackHref="/home/facility/dashboard"
-      >
-        <AuditLogsStatus message="Loading audit logs..." />
-      </ScreenBoundary>
-    );
-  if (error)
-    return (
-      <ScreenBoundary
-        title="Facility audit logs"
-        showBack
-        backFallbackHref="/home/facility/dashboard"
-      >
-        <AuditLogsStatus message={getErrorMessage(error, "Failed to load audit logs.")} />
-      </ScreenBoundary>
-    );
 
   return (
     <ScreenBoundary
@@ -109,8 +61,15 @@ export default function FacilityAuditLogsIndexRoute() {
         refreshing={Boolean(isRefreshing)}
         data={items}
         keyExtractor={pickId}
-        ListHeaderComponent={<AuditLogsHeading />}
-        ListEmptyComponent={<Text style={styles.empty}>No audit logs yet.</Text>}
+        ListHeaderComponent={
+          <>
+            <AuditLogsHeading />
+            <FacilityAuditReadStatus read={read} />
+          </>
+        }
+        ListEmptyComponent={
+          hasLoaded ? <Text style={styles.empty}>No audit logs yet.</Text> : null
+        }
         renderItem={({ item, index }) => {
           const id = pickId(item, index);
           return (

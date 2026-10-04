@@ -2,10 +2,11 @@ import React, { useMemo } from "react";
 import { Link, useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
-import { normalizeApiError } from "@/api/errors";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { useAuditLogs } from "@/hooks/useAuditLogs";
-import { useFacility } from "@/state/useFacility";
+import {
+  FacilityAuditReadStatus,
+  useFacilityAuditRead
+} from "@/features/facility/useFacilityAuditRead";
 import type { AuditLog } from "@/types/contracts";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -33,17 +34,13 @@ function pickId(x: AuditLogItem) {
   return String(x?.id ?? x?._id ?? x?.logId ?? "");
 }
 
-function getErrorMessage(e: unknown, fallback: string) {
-  return normalizeApiError(e).message || fallback;
-}
-
 export default function FacilityAuditLogDetailRoute() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilityAuditDetailStyles(palette), [palette]);
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const { selectedId } = useFacility();
-  const { logs, isLoading, error } = useAuditLogs(selectedId);
+  const read = useFacilityAuditRead(["detail", id]);
+  const { logs, hasLoaded } = read;
 
   const item = useMemo(() => {
     if (!id || !Array.isArray(logs)) return null;
@@ -72,35 +69,22 @@ export default function FacilityAuditLogDetailRoute() {
     </ScreenBoundary>
   );
 
-  if (isLoading)
-    return renderBoundary(
-      <View style={styles.container}>
-        <Text style={styles.status}>Loading audit log...</Text>
-      </View>
-    );
-  if (!selectedId)
-    return renderBoundary(
-      <View style={styles.container}>
-        <Text style={styles.status}>Select a facility first.</Text>
-      </View>
-    );
   if (!id)
     return renderBoundary(
       <View style={styles.container}>
         <Text style={styles.status}>Missing audit log id.</Text>
       </View>
     );
-  if (error)
+  if (!hasLoaded)
     return renderBoundary(
       <View style={styles.container}>
-        <Text style={styles.status}>
-          {getErrorMessage(error, "Failed to load audit log detail.")}
-        </Text>
+        <FacilityAuditReadStatus read={read} />
       </View>
     );
   if (!item)
     return renderBoundary(
       <View style={styles.container}>
+        <FacilityAuditReadStatus read={read} />
         <Text style={styles.status}>Audit log not found.</Text>
       </View>
     );
@@ -110,6 +94,7 @@ export default function FacilityAuditLogDetailRoute() {
       <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
         Audit Log Detail
       </Text>
+      <FacilityAuditReadStatus read={read} />
       <View style={styles.summaryCard}>
         <Text style={styles.eventTitle}>{actionLabel}</Text>
         {detailSummary ? <Text style={styles.summary}>{detailSummary}</Text> : null}

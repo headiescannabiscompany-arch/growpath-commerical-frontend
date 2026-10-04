@@ -2,10 +2,11 @@ import React, { useMemo } from "react";
 import { Link, useLocalSearchParams } from "expo-router";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
-import { normalizeApiError } from "@/api/errors";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import { useAuditLogs } from "@/hooks/useAuditLogs";
-import { useFacility } from "@/state/useFacility";
+import {
+  FacilityAuditReadStatus,
+  useFacilityAuditRead
+} from "@/features/facility/useFacilityAuditRead";
 import type { AuditLog } from "@/types/contracts";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -33,10 +34,6 @@ function pickId(x: AuditLogItem, idx: number) {
   return String(x?.id ?? x?._id ?? x?.logId ?? `audit-${idx}`);
 }
 
-function getErrorMessage(e: unknown, fallback: string) {
-  return normalizeApiError(e).message || fallback;
-}
-
 export default function FacilityAuditLogEntityRoute() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilityAuditEntityStyles(palette), [palette]);
@@ -50,8 +47,8 @@ export default function FacilityAuditLogEntityRoute() {
   const entityId = String(
     Array.isArray(params.entityId) ? params.entityId[0] : params.entityId || ""
   );
-  const { selectedId } = useFacility();
-  const { logs, isLoading, error } = useAuditLogs(selectedId);
+  const read = useFacilityAuditRead(["entity", entity, entityId]);
+  const { logs, hasLoaded } = read;
 
   const filtered = useMemo(() => {
     if (!Array.isArray(logs)) return [];
@@ -75,33 +72,12 @@ export default function FacilityAuditLogEntityRoute() {
     </ScreenBoundary>
   );
 
-  if (isLoading)
-    return renderBoundary(
-      <View style={styles.container}>
-        <Text style={styles.status}>Loading audit logs...</Text>
-      </View>
-    );
-  if (!selectedId)
-    return renderBoundary(
-      <View style={styles.container}>
-        <Text style={styles.status}>Select a facility first.</Text>
-      </View>
-    );
   if (!entity || !entityId)
     return renderBoundary(
       <View style={styles.container}>
         <Text style={styles.status}>Missing entity route params.</Text>
       </View>
     );
-  if (error)
-    return renderBoundary(
-      <View style={styles.container}>
-        <Text style={styles.status}>
-          {getErrorMessage(error, "Failed to load audit logs.")}
-        </Text>
-      </View>
-    );
-
   return renderBoundary(
     <FlatList
       style={styles.list}
@@ -113,9 +89,12 @@ export default function FacilityAuditLogEntityRoute() {
             Audit Logs for Entity
           </Text>
           <Text style={styles.sub}>{formatFacilityAuditAction(entity)} history</Text>
+          <FacilityAuditReadStatus read={read} />
         </View>
       }
-      ListEmptyComponent={<Text style={styles.sub}>No matching audit logs.</Text>}
+      ListEmptyComponent={
+        hasLoaded ? <Text style={styles.sub}>No matching audit logs.</Text> : null
+      }
       renderItem={({ item, index }) => {
         const id = pickId(item, index);
         return (

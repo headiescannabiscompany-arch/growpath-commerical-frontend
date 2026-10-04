@@ -16,12 +16,17 @@ import type { AuditLog } from "../types/contracts";
  */
 
 function normalizeAuditLogs(res: any): AuditLog[] {
-  if (!res) return [];
-  if (Array.isArray(res)) return res as AuditLog[];
-  if (Array.isArray(res?.data)) return res.data as AuditLog[];
-  if (Array.isArray(res?.logs)) return res.logs as AuditLog[];
-  if (Array.isArray(res?.items)) return res.items as AuditLog[];
-  return [];
+  const rows = Array.isArray(res) ? res : (res?.data ?? res?.logs ?? res?.items);
+  if (
+    res?.success === false ||
+    !Array.isArray(rows) ||
+    rows.some((row) => !row || typeof row !== "object" || Array.isArray(row))
+  ) {
+    throw new Error(
+      "Audit history response is unavailable. Retry to load recorded events."
+    );
+  }
+  return rows as AuditLog[];
 }
 
 function normalizeCreatedLog(res: any): AuditLog {

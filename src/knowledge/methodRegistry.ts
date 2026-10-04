@@ -1310,6 +1310,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "read-only integration state",
       "reviewed device mapping",
       "record-backed facility analytics",
+      "Facility audit list/detail/entity-history single-flight Refresh/Retry, unavailable versus empty reads, labeled retained snapshots and page-local account/session/Facility/role/route isolation without audit mutations",
       "Facility dashboard unknown counts, independent read failures, labeled retained snapshots and session/Facility/role-scoped read recovery",
       "Facility Rooms unknown collections, retained snapshot labels, draft-preserving single-flight Retry and context-isolated reads before record-derived writes",
       "Facility grow/task lists and details distinguish failed reads from empty or missing records, preserve same-context drafts on Retry, isolate identity/route changes, retain tasks when team choices fail and serialize read/write actions without changing roles or private-record visibility",
