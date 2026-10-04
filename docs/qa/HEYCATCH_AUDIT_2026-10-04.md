@@ -27,7 +27,9 @@ Bigger bet: /customers proof page. Deferred until permissioned real stories exis
 The nullable founder fields and empty proof arrays in publicMarketing.json are
 unpublished editorial slots, not a claim that content has been collected.
 
-- Founder portrait, first-person origin story, show and social URLs need owner material.
+- Founder portrait and first-person origin story need owner material.
+  Owner supplied https://youtube.com/@etgujay for the show; linked without its
+  tracking query. No separate Exploring the Growing Universe site exists.
   The audit brief supports the public name Jay and show title; the conversation
   supports the Maryland company identity. No biography was invented.
 - Real product screenshots and a no-login visual preview need reviewed crop-neutral,
@@ -61,4 +63,33 @@ not independently verified; readers are directed to its current store listing.
 
 ## Release status
 
-Implementation and verification in progress. Not yet released or rescored.
+Application revision: e0faf6254c955e8b5ed96e7e62e4b4354ab8e13e.
+
+Local verification: 55 tests in four Jest suites, three export tests, TypeScript,
+scoped ESLint, whitespace/interface guards, production export, SEO verification,
+and both Render routing manifests passed. No dependency or backend changes.
+
+Staging deploy dep-db18vnnavr4c73ar05fg was live October 4 at 17:43:40Z.
+The 13 public marketing rewrites were saved before the existing catch-all;
+existing application fallback routes were retained. Direct pricing, About,
+personal-grower and both comparison responses contain their own title/canonical.
+Pricing contains the four actual offers and seven FAQ answers; llms.txt returns 200.
+Rendered mobile pricing/About at 375px has no page-wide horizontal overflow;
+the comparison table is a separately labeled, focusable horizontal scroll region.
+Desktop navigation, both comparisons, founder YouTube link and SPA schema removal
+were checked. Browser error log was empty.
+
+Production deploy dep-db192d0u01pc73dd09d0 was LIVE October 4 at 17:49:40Z.
+The same public routing rules were saved successfully on production. Eight direct
+public routes returned their own expected canonical/title and one H1. Homepage
+and pricing each contain four offers; pricing contains FAQ schema. Both comparison
+URLs are in the sitemap and llms.txt returned 200. Rendered pricing, keyboard and
+pointer navigation, founder YouTube link and the Website & plans Updates tab passed.
+The Updates tab correctly says partially live and lists the missing proof work.
+Production browser error log was empty. The existing signed-in session redirects
+the homepage to its workspace as before; homepage raw HTML was verified separately.
+
+W01 code/release work is CLOSED / LIVE. W02/W03 remain open for real proof assets.
+No new audit score is claimed. Screenshot evidence is saved in the task outputs as
+Website_Audit_Pricing_Production_2026-10-04.jpg. No backend, credentials, payments,
+customer records or plan prices were changed. Existing completed phases stay closed.
