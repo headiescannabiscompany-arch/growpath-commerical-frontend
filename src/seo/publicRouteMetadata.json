@@ -124,6 +124,14 @@
       "title": "GrowPathAI and PLNTRK: compare the work you need to do | GrowPathAI",
       "description": "Both keep grow records and offer AI help. Choose by your plant count, day-to-day logging, export needs, and whether you also need courses, storefront work, or a facility workspace."
     },
+    "grow-journal-app": {
+      "title": "Grow journal app: keep the details you will want next run | GrowPathAI",
+      "description": "Choose a grow journal for feeds, photos, readings, and tasks. Compare free limits, cloud or local storage, and exports before committing a season of records."
+    },
+    "vs/growtrackr": {
+      "title": "GrowPathAI and GrowTrackr: cloud-backed or local-first? | GrowPathAI",
+      "description": "Compare GrowPathAI and GrowTrackr by pricing, platforms, local or cloud storage, AI context, and exports. Dated comparison with links to official sources."
+    },
     "vs/grow-with-jane": {
       "title": "GrowPathAI and Grow with Jane: choose your grow journal | GrowPathAI",
       "description": "Both organize grow records and offer contextual AI assistance. Try the logging workflow, check the limits, and test an export before you commit a whole grow."

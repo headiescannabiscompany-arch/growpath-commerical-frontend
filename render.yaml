@@ -98,6 +98,12 @@ services:
         source: /vs/grow-with-jane
         destination: /vs/grow-with-jane/index.html
       - type: rewrite
+        source: /vs/growtrackr
+        destination: /vs/growtrackr/index.html
+      - type: rewrite
+        source: /grow-journal-app
+        destination: /grow-journal-app/index.html
+      - type: rewrite
         source: /*
         destination: /index.html
     headers:

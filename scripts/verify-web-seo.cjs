@@ -55,7 +55,9 @@ function main() {
     "https://growpathai.com/forum",
     "https://growpathai.com/privacy",
     "https://growpathai.com/terms",
-    "https://growpathai.com/support"
+    "https://growpathai.com/support",
+    "https://growpathai.com/vs/growtrackr",
+    "https://growpathai.com/grow-journal-app"
   ]) {
     requireIncludes(sitemap, `<loc>${url}</loc>`, "sitemap.xml");
   }
@@ -146,7 +148,9 @@ function main() {
     "about",
     "features",
     "vs/plntrk",
-    "vs/grow-with-jane"
+    "vs/grow-with-jane",
+    "vs/growtrackr",
+    "grow-journal-app"
   ]) {
     const html = read(path.join(route, "index.html"));
     if ((html.match(/rel="canonical"/g) || []).length !== 1)
@@ -158,6 +162,16 @@ function main() {
   for (const price of ["0", "10", "50", "100"])
     requireIncludes(pricing, '"price":"' + price + '"', "pricing");
   requireIncludes(read("llms.txt"), "# GrowPathAI", "llms");
+  for (const route of ["vs/growtrackr", "grow-journal-app"]) {
+    requireIncludes(read("llms.txt"), route, "llms new page");
+  }
+  const about = read(path.join("about", "index.html"));
+  requireIncludes(about, 'src="/images/founder-jay.jpg"', "founder portrait");
+  requireIncludes(about, 'alt="Jay, founder of GrowPathAI"', "founder portrait alt");
+  const portrait = fs.readFileSync(path.join(DIST, "images", "founder-jay.jpg"));
+  if (portrait[0] !== 0xff || portrait[1] !== 0xd8 || portrait.length > 50000) {
+    throw new Error("Founder portrait is missing, invalid, or unexpectedly large");
+  }
 
   console.log("Web SEO verification passed.");
 }

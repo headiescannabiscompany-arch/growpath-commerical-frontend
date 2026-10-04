@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-n
 
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import marketing from "./publicMarketing.json";
-import MarketingDetails from "./MarketingDetails";
+import MarketingDetails, { FounderPortrait } from "./MarketingDetails";
 
 export type PublicPageKey =
   | "home"
@@ -20,7 +20,9 @@ export type PublicPageKey =
   | "contact"
   | "ai-cultivation-disclaimer"
   | "vs/plntrk"
-  | "vs/grow-with-jane";
+  | "vs/grow-with-jane"
+  | "vs/growtrackr"
+  | "grow-journal-app";
 
 type PageCopy = {
   eyebrow: string;
@@ -55,25 +57,25 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
         <View
           style={isCompact ? [styles.navLinks, styles.navLinksCompact] : styles.navLinks}
         >
-          <Link href="/features" style={styles.link}>
+          <Link href="/features" style={styles.navigationLink}>
             Features
           </Link>
-          <Link href="/pricing" style={styles.link}>
+          <Link href="/pricing" style={styles.navigationLink}>
             Pricing
           </Link>
-          <Link href="/store" style={styles.link}>
+          <Link href="/store" style={styles.navigationLink}>
             Store
           </Link>
-          <Link href="/courses" style={styles.link}>
+          <Link href="/courses" style={styles.navigationLink}>
             Courses
           </Link>
-          <Link href="/forum" style={styles.link}>
+          <Link href="/forum" style={styles.navigationLink}>
             Forum
           </Link>
-          <Link href="/about" style={styles.link}>
+          <Link href="/about" style={styles.navigationLink}>
             About
           </Link>
-          <Link href="/login" style={styles.link}>
+          <Link href="/login" style={styles.navigationLink}>
             Sign in
           </Link>
         </View>
@@ -136,6 +138,7 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
             <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
               {section.title}
             </Text>
+            {page === "about" && section.title === "Meet Jay" && <FounderPortrait />}
             <Text style={styles.cardBody}>{section.body}</Text>
             {section.href && (
               <Link href={section.href as never} style={styles.link}>
@@ -147,39 +150,48 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
                 Annual billing saves 2 months compared with paying monthly for a year.
               </Text>
             )}
+            {page === "pricing" && index === 1 && marketing.pricingValueAnchor && (
+              <Text style={styles.cardBody}>{marketing.pricingValueAnchor}</Text>
+            )}
           </View>
         ))}
       </View>
       <MarketingDetails page={page} />
       <View style={styles.footer}>
-        <Link href="/about" style={styles.link}>
+        <Link href="/about" style={styles.navigationLink}>
           About
         </Link>
-        <Link href="/contact" style={styles.link}>
+        <Link href="/contact" style={styles.navigationLink}>
           Contact
         </Link>
-        <Link href="/updates" style={styles.link}>
+        <Link href="/updates" style={styles.navigationLink}>
           Updates
         </Link>
-        <Link href="/nurseries-breeders" style={styles.link}>
+        <Link href="/nurseries-breeders" style={styles.navigationLink}>
           Nurseries &amp; breeders
         </Link>
-        <Link href="/grow-stores" style={styles.link}>
+        <Link href="/grow-stores" style={styles.navigationLink}>
           Grow stores
         </Link>
-        <Link href="/vs/plntrk" style={styles.link}>
+        <Link href="/vs/plntrk" style={styles.navigationLink}>
           Compare PLNTRK
         </Link>
-        <Link href="/vs/grow-with-jane" style={styles.link}>
+        <Link href="/vs/grow-with-jane" style={styles.navigationLink}>
           Compare Grow with Jane
         </Link>
-        <Link href="/privacy" style={styles.link}>
+        <Link href="/vs/growtrackr" style={styles.navigationLink}>
+          Compare GrowTrackr
+        </Link>
+        <Link href="/grow-journal-app" style={styles.navigationLink}>
+          Grow journal app
+        </Link>
+        <Link href="/privacy" style={styles.navigationLink}>
           Privacy
         </Link>
-        <Link href="/terms" style={styles.link}>
+        <Link href="/terms" style={styles.navigationLink}>
           Terms
         </Link>
-        <Link href="/ai-cultivation-disclaimer" style={styles.link}>
+        <Link href="/ai-cultivation-disclaimer" style={styles.navigationLink}>
           AI disclaimer
         </Link>
       </View>
@@ -206,6 +218,9 @@ export function createPublicLandingStyles(palette: ThemePalette) {
       gap: 12
     },
     brand: {
+      minHeight: 44,
+      lineHeight: 28,
+      paddingVertical: 8,
       color: palette.text,
       fontSize: 22,
       fontWeight: "900",
@@ -214,6 +229,16 @@ export function createPublicLandingStyles(palette: ThemePalette) {
     navLinks: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
     navLinksCompact: { width: "100%", gap: 12 },
     link: { color: palette.link, fontWeight: "700", textDecorationLine: "none" },
+    navigationLink: {
+      color: palette.link,
+      fontWeight: "700",
+      textDecorationLine: "none",
+      minHeight: 44,
+      minWidth: 44,
+      lineHeight: 20,
+      paddingVertical: 12,
+      paddingHorizontal: 4
+    },
     hero: { backgroundColor: palette.hero, borderRadius: 24, padding: 32, gap: 14 },
     heroCompact: { borderRadius: 18, padding: 20, gap: 12 },
     eyebrow: {
@@ -236,6 +261,8 @@ export function createPublicLandingStyles(palette: ThemePalette) {
     actions: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 8 },
     actionsCompact: { flexDirection: "column", alignItems: "stretch" },
     primary: {
+      minHeight: 44,
+      lineHeight: 20,
       backgroundColor: palette.accent,
       color: palette.accentText,
       paddingVertical: 12,
@@ -246,6 +273,8 @@ export function createPublicLandingStyles(palette: ThemePalette) {
     },
     actionCompact: { width: "100%", textAlign: "center" },
     secondary: {
+      minHeight: 44,
+      lineHeight: 20,
       borderColor: palette.accent,
       borderWidth: 1,
       color: palette.link,

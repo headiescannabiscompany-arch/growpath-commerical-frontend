@@ -31,6 +31,8 @@ const footer = [
   ["Grow stores", "/grow-stores"],
   ["Compare PLNTRK", "/vs/plntrk"],
   ["Compare Grow with Jane", "/vs/grow-with-jane"],
+  ["Compare GrowTrackr", "/vs/growtrackr"],
+  ["Grow journal app", "/grow-journal-app"],
   ["Privacy", "/privacy"],
   ["Terms", "/terms"],
   ["AI disclaimer", "/ai-cultivation-disclaimer"]
@@ -55,12 +57,26 @@ function publicMarketingMarkup(route) {
           : "") +
         "<h2>" +
         escape(section.title) +
-        "</h2><p>" +
+        "</h2>" +
+        (page === "about" &&
+        section.title === "Meet Jay" &&
+        marketing.founder.photo &&
+        marketing.founder.photoAlt
+          ? '<img src="' +
+            escape(marketing.founder.photo) +
+            '" alt="' +
+            escape(marketing.founder.photoAlt) +
+            '" width="192" height="240" style="max-width:100%;object-fit:contain" />'
+          : "") +
+        "<p>" +
         escape(section.body) +
         "</p>" +
         (section.href ? anchor([section.linkLabel, section.href]) : "") +
         (page === "pricing" && i > 0
           ? "<p>Annual billing saves 2 months compared with paying monthly for a year.</p>"
+          : "") +
+        (page === "pricing" && i === 1 && marketing.pricingValueAnchor
+          ? "<p>" + escape(marketing.pricingValueAnchor) + "</p>"
           : "") +
         "</section>"
     )
@@ -116,6 +132,13 @@ function publicMarketingMarkup(route) {
         anchor(["See exact limits, exports, and data-ownership answers", "/pricing"]) +
         "</section>"
       : "") +
+    (page === "home" && marketing.founder.homeMention
+      ? '<section class="marketing-card"><p>' +
+        escape(marketing.founder.homeMention) +
+        "</p>" +
+        anchor(["Watch the show on YouTube", marketing.founder.showUrl]) +
+        "</section>"
+      : "") +
     (page === "home" || page === "about"
       ? '<section class="marketing-card"><h2>See what has actually shipped</h2><p>Our Updates page separates live releases from work still in progress. Read the dated release notes before counting on a feature.</p>' +
         anchor(["Read product updates", "/updates"]) +
@@ -161,4 +184,11 @@ function marketingSchema(route) {
 }
 const marketingCss =
   ".marketing{max-width:1120px;margin:auto;padding:24px;color:#172a1d;font:16px/1.6 system-ui,sans-serif}.marketing a{color:#176537}.marketing nav,.marketing footer,.marketing-actions{display:flex;flex-wrap:wrap;gap:16px;align-items:center}.marketing .brand{font-size:22px;font-weight:900;margin-right:auto}.marketing-hero{background:#e9f6eb;border-radius:24px;padding:32px;margin:28px 0}.marketing h1{font-size:42px;line-height:1.15;max-width:820px}.marketing h2{font-size:23px;line-height:1.3}.marketing-actions a{padding:12px 18px;border-radius:12px;font-weight:700}.marketing-actions .primary{background:#176537;color:white}.marketing-actions .secondary{border:1px solid #176537}.marketing-grid{display:flex;flex-wrap:wrap;gap:16px}.marketing-card{flex:1 1 280px;border:1px solid #d4e1d6;border-radius:18px;padding:22px;margin-bottom:24px;min-width:0}.marketing-card.primary-path{flex-basis:100%}.marketing-card.recommended{border:2px solid #176537}.table-scroll{overflow-x:auto;max-width:100%}.marketing table{border-collapse:collapse;min-width:620px;width:100%}.marketing th,.marketing td{padding:12px;border-top:1px solid #d4e1d6;text-align:left}.marketing caption{text-align:left;padding:12px}.marketing footer{border-top:1px solid #d4e1d6;padding:22px 0}.marketing a:focus-visible,.table-scroll:focus-visible{outline:3px solid #176537;outline-offset:3px}@media(max-width:599px){.marketing{padding:16px}.marketing-hero{padding:20px}.marketing h1{font-size:32px}.marketing-actions{align-items:stretch;flex-direction:column}.marketing-actions a{text-align:center}.marketing nav{gap:12px}.marketing .brand{flex-basis:100%}}";
-module.exports = { publicMarketingMarkup, marketingSchema, marketingCss, marketing };
+const marketingTapTargetCss =
+  ".marketing nav a,.marketing footer a{display:inline-flex;align-items:center;box-sizing:border-box;min-height:44px;min-width:44px;line-height:20px;padding:12px 4px}.marketing nav a.brand{line-height:28px;padding:8px 0}.marketing-actions a{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:44px;line-height:20px}.marketing-actions .secondary{padding:11px 18px}";
+module.exports = {
+  publicMarketingMarkup,
+  marketingSchema,
+  marketingCss: marketingCss + marketingTapTargetCss,
+  marketing
+};

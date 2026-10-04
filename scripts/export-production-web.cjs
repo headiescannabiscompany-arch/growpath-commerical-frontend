@@ -908,7 +908,9 @@ const sitemapXml = [
   ...[
     ...sitemapRoutes,
     { route: "vs/plntrk", priority: "0.6", changefreq: "monthly" },
-    { route: "vs/grow-with-jane", priority: "0.6", changefreq: "monthly" }
+    { route: "vs/grow-with-jane", priority: "0.6", changefreq: "monthly" },
+    { route: "vs/growtrackr", priority: "0.6", changefreq: "monthly" },
+    { route: "grow-journal-app", priority: "0.7", changefreq: "monthly" }
   ].map(({ route, priority, changefreq }) =>
     [
       "  <url>",

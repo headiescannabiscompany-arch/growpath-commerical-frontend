@@ -2,6 +2,20 @@ import fs from "node:fs";
 import path from "node:path";
 
 describe("Render static route rewrites", () => {
+  it.each(["render.yaml", "render.staging.yaml"])(
+    "serves new audit pages before the catch-all in %s",
+    (file) => {
+      const config = fs.readFileSync(path.resolve(process.cwd(), file), "utf8");
+      for (const route of ["/vs/growtrackr", "/grow-journal-app"]) {
+        expect(config).toContain(
+          `source: ${route}\n        destination: ${route}/index.html`
+        );
+        expect(config.indexOf(`source: ${route}`)).toBeLessThan(
+          config.indexOf("source: /*")
+        );
+      }
+    }
+  );
   it("serves every root-level dynamic Expo route through the application shell", () => {
     const config = fs.readFileSync(path.resolve(process.cwd(), "render.yaml"), "utf8");
     const requiredPrefixes = [

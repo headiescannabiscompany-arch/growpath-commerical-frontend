@@ -1,5 +1,5 @@
 import React from "react";
-import { Platform, Text, View } from "react-native";
+import { Image, Platform, Text, View } from "react-native";
 import { Link } from "expo-router";
 import { useAppTheme } from "@/theme/appTheme";
 import marketing from "./publicMarketing.json";
@@ -11,6 +11,22 @@ export const PLAN_COMPARISON_ROWS = [
   { title: "Published paid courses", key: "paidCourses" },
   { title: "Lessons per course", key: "lessons" }
 ] as const;
+
+export function FounderPortrait() {
+  const { photo, photoAlt } = marketing.founder;
+  if (!photo || !photoAlt) return null;
+  return (
+    <Image
+      source={{
+        uri: Platform.OS === "web" ? photo : new URL(photo, "https://growpathai.com").href
+      }}
+      alt={photoAlt}
+      accessibilityLabel={photoAlt}
+      style={{ width: 192, height: 240, maxWidth: "100%" }}
+      resizeMode="contain"
+    />
+  );
+}
 
 export default function MarketingDetails({ page }: { page: string }) {
   const { palette } = useAppTheme();
@@ -134,6 +150,14 @@ export default function MarketingDetails({ page }: { page: string }) {
           <Text style={text}>{marketing.scope}</Text>
           <Link href="/pricing" style={{ color: palette.link }}>
             See exact limits, exports, and data-ownership answers
+          </Link>
+        </View>
+      )}
+      {page === "home" && marketing.founder.homeMention && (
+        <View style={card}>
+          <Text style={text}>{marketing.founder.homeMention}</Text>
+          <Link href={marketing.founder.showUrl as never} style={{ color: palette.link }}>
+            Watch the show on YouTube
           </Link>
         </View>
       )}

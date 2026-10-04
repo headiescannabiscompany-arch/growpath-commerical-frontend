@@ -7,6 +7,22 @@ import {
 } from "@/seo/publicRouteMetadata";
 
 describe("public route metadata", () => {
+  it.each(["vs/growtrackr", "grow-journal-app"])(
+    "gives the new audit page %s its own share/search metadata",
+    (route) => {
+      document.head.innerHTML = "";
+      applyPublicRouteMetadata(`/${route}`);
+      expect(metadataForPathname(`/${route}`).index).toBe(true);
+      expect(document.title).not.toBe("GrowPathAI App");
+      expect(document.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(
+        `https://growpathai.com/${route}`
+      );
+      expect(
+        document.querySelector('meta[property="og:url"]')?.getAttribute("content")
+      ).toBe(`https://growpathai.com/${route}`);
+      expect(document.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
+    }
+  );
   it("replaces price and FAQ schema when navigating without a reload", () => {
     document.head.innerHTML = "";
     applyPublicRouteMetadata("/pricing");

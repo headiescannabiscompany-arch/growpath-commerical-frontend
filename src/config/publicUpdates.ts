@@ -14,7 +14,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "October 4, 2026",
         dateLabel: "Released",
         summary:
-          "The public website now leads with personal grow journals, shows exact grow, plant and weekly AI allowances, explains annual savings and export choices, and links source-checked comparisons. Search metadata and page addresses are aligned. Plan prices, billing behavior and the signed-in app stay unchanged. Product screenshots and permissioned customer stories remain separate open work."
+          "The public website explains how to keep this run's lessons for the next one, shows exact plan allowances, and answers export and billing questions. About now includes the founder's supplied portrait and show link. Pricing explains workflow-based plans and the Pro allowance value; public navigation has larger tap targets. Three source-linked comparisons and a grow-journal guide are available. Plan prices, billing behavior and the signed-in app stay unchanged. Reviewed product previews, permissioned customer stories and outside endorsements remain open."
       },
       {
         id: "course-media-playback-recovery",

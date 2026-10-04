@@ -29,8 +29,8 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     status: "partial",
     scope:
       "Grower-focused explanations, exact plan allowances and search-readable public pages.",
-    live: "The website explains grow journals first, compares the four plans with weekly AI credits, answers export and billing questions, and links source-checked product comparisons. Public pages have their own search metadata.",
-    next: "Add reviewed product screenshots, a founder portrait and permissioned grower stories. These proof items are not presented as completed or invented.",
+    live: "Grow-journal explanations, exact plan limits, a real founder portrait and show link, workflow-based pricing context, larger public-page tap targets, three sourced comparisons and a grow-journal guide are live. Search metadata and the plan prices stay consistent.",
+    next: "Add reviewed product screenshots and a view-only sample grow, permissioned grower stories, verified usage proof and genuine outside endorsements. These proof items are not presented as completed or invented.",
     entryIds: ["public-website-audit"]
   },
   {

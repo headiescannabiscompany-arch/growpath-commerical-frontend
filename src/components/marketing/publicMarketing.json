@@ -3,7 +3,7 @@
     "home": {
       "eyebrow": "A grow journal for personal growers",
       "title": "The grow journal that remembers every run.",
-      "intro": "Plan your grow, log feeds and photos, and ask AI with your grow's history attached — free to start.",
+      "intro": "Stop piecing together phone photos, feeding notes, and calendar reminders. Keep a grow history you can use to repeat what worked — with AI help when you need it. Free to start.",
       "sections": [
         {
           "title": "Personal growers",
@@ -47,7 +47,7 @@
     "pricing": {
       "eyebrow": "Plans and access",
       "title": "Start free and keep what you create",
-      "intro": "All GrowPathAI users can create and publish free or paid courses, including users on the Free plan. Paid plans add higher limits and advanced workspace features.",
+      "intro": "All GrowPathAI users can create and publish free or paid courses, including users on the Free plan. Paid plans add higher limits and advanced workspace features. Priced by what you do, not per seat: one Facility subscription covers its team workspace, with shared plan limits.",
       "sections": [
         {
           "title": "Free",
@@ -70,7 +70,7 @@
     "personal-grower": {
       "eyebrow": "For personal growers",
       "title": "A grow journal that helps decide what comes next",
-      "intro": "Keep your feeding schedule, photos, readings, and finished tasks in one timeline, from setup to harvest. Look back at the last run without hunting through notebooks and camera rolls.",
+      "intro": "Keep your feeding schedule, photos, readings, and finished tasks in one timeline, from setup to harvest. This run's lessons survive to the next run, without hunting through notebooks and camera rolls.",
       "sections": [
         {
           "title": "Grow your way",
@@ -82,7 +82,7 @@
         },
         {
           "title": "Keep a useful record",
-          "body": "Review what you fed, what you saw, and what you changed. Keep the results attached to the run, then export supported timelines and reports for your own records."
+          "body": "Review what you fed, what you saw, and what you changed so you can repeat what worked and remember what you would do differently. Keep the results attached to the run, then export supported timelines and reports for your own records."
         }
       ]
     },
@@ -281,6 +281,86 @@
         }
       ]
     },
+    "grow-journal-app": {
+      "eyebrow": "Choosing a grow journal app",
+      "title": "Keep the details you will want next run",
+      "intro": "A useful grow journal puts feeds, photos, readings, and completed work in order. Start with the records you already keep, then choose an app that makes them easier to find and use.",
+      "sections": [
+        {
+          "title": "Put a date and a grow on each observation",
+          "body": "Record what you fed, what the plant looked like, and what changed. In GrowPathAI, journal entries and supported tool results connect to a grow timeline so you can review the sequence instead of searching a camera roll.",
+          "href": "/personal-grower",
+          "linkLabel": "See the personal grower workflow"
+        },
+        {
+          "title": "Keep the next task near the record",
+          "body": "A journal tells you what happened; tasks help you remember what to check next. GrowPathAI connects grow records with feeding, watering, scheduled work, and contextual AI help. Review suggestions before acting; AI is not a diagnosis guarantee.",
+          "href": "/features",
+          "linkLabel": "Explore connected grow tools"
+        },
+        {
+          "title": "Check what Free actually includes",
+          "body": "GrowPathAI Free includes 1 tracked grow, 1 plant, and 5 AI credits each week, with no payment card required. Compare the limits against the number of plants you want to record; a free account is not unlimited usage.",
+          "href": "/pricing",
+          "linkLabel": "Read plan limits and export answers"
+        },
+        {
+          "title": "Choose where your records live",
+          "body": "GrowPathAI is cloud-backed. If local-first records and a one-time license are important to you, compare GrowTrackr. If a mobile grow journal is your priority, also compare Grow with Jane. Try your everyday logging and export tasks before choosing.",
+          "href": "/vs/growtrackr",
+          "linkLabel": "Compare GrowTrackr and GrowPathAI"
+        },
+        {
+          "title": "Keep a record you can take with you",
+          "body": "Check the actual export, not just whether a product says it has one. GrowPathAI supports timeline and report exports where your plan and role allow them, plus account-export requests in Profile privacy controls. A timeline PDF is not a complete original-photo backup.",
+          "href": "/vs/grow-with-jane",
+          "linkLabel": "Compare Grow with Jane and GrowPathAI"
+        }
+      ]
+    },
+    "vs/growtrackr": {
+      "eyebrow": "Grow journal comparison · reviewed October 4, 2026",
+      "title": "GrowPathAI and GrowTrackr: cloud-backed or local-first?",
+      "intro": "Prefer installed software with local records and a one-time paid license? GrowTrackr is worth considering. Prefer a cloud-backed journal connected to sharing, courses, and team workspaces? Compare GrowPathAI's limits and try the tasks you actually use.",
+      "sections": [
+        {
+          "title": "GrowTrackr: installed, local-first records",
+          "body": "GrowTrackr currently advertises Pro at $59 once, rather than a monthly or annual subscription. Free includes 5 grows, 50 plants, and 1 space with a banner ad. Its pricing page lists Windows, macOS, Linux, and Android, plus optional Pro device sync. Check its checkout for current currency, price, and terms.",
+          "href": "https://growtrackr.app/pricing",
+          "linkLabel": "Source: GrowTrackr pricing and platforms"
+        },
+        {
+          "title": "GrowPathAI: records connected to other work",
+          "body": "Free includes 1 grow, 1 plant, and 5 weekly AI credits. Pro Grower is $10/month or $100/year for 10 grows, 50 plants, and 100 weekly AI credits. Commercial and Facility plans add separate brand or team workflows. GrowPathAI is not an offline-only journal.",
+          "href": "/pricing",
+          "linkLabel": "Compare GrowPathAI plans"
+        },
+        {
+          "title": "Both offer AI with grow context",
+          "body": "GrowTrackr advertises Growmie, photo diagnosis, and journal analysis, with cloud-provider or local Ollama options. GrowPathAI attaches relevant records when you start AI from supported grow, plant, log, or photo workflows. Neither approach guarantees a correct answer.",
+          "href": "https://growtrackr.app/ai-integrations",
+          "linkLabel": "Source: GrowTrackr AI options"
+        },
+        {
+          "title": "Local by default does not mean every action is offline",
+          "body": "GrowTrackr describes local storage by default; optional sync, cloud AI, and vendor-cloud integrations involve connections. Its first license activation needs internet. Review the settings you enable. GrowPathAI's Privacy page describes its cloud processing and data rights.",
+          "href": "https://growtrackr.app/privacy-and-security",
+          "linkLabel": "Source: GrowTrackr privacy and security"
+        },
+        {
+          "title": "Try the export before committing a season of records",
+          "body": "GrowTrackr's logging guide describes run reports in PDF, CSV, or Markdown. GrowPathAI offers supported timeline/report exports and an account-export request. Check whether the output contains the records and photos you need; neither statement here promises a complete original-media backup.",
+          "href": "https://growtrackr.app/blog/grow-tent-data-logging",
+          "linkLabel": "Source: GrowTrackr run-report exports"
+        },
+        {
+          "title": "Choose the workflow, not a winner's badge",
+          "body": "A one-time license can suit a different budget from a subscription. GrowTrackr also advertises hardware integrations and timelapses; it is not simply a notes app. Compare the tasks you will actually use. This comparison is written by GrowPathAI, not an independent review.",
+          "href": "https://growtrackr.app/features",
+          "linkLabel": "Source: GrowTrackr features"
+        }
+      ]
+    },
     "vs/grow-with-jane": {
       "eyebrow": "Grow journal comparison · reviewed October 4, 2026",
       "title": "GrowPathAI and Grow with Jane: choose your grow journal",
@@ -320,8 +400,9 @@
     }
   },
   "founder": {
-    "photo": null,
-    "photoAlt": null,
+    "photo": "/images/founder-jay.jpg",
+    "photoAlt": "Jay, founder of GrowPathAI",
+    "homeMention": "Built by Jay, host of Exploring the Growing Universe.",
     "story": null,
     "showUrl": "https://youtube.com/@etgujay",
     "socialUrl": null
@@ -412,5 +493,6 @@
       "body": "Start Free for one grow and one plant. Pro Grower adds room for 10 grows and 50 plants at $10/month or $100/year. Choose Commercial for brand and storefront workflows, or Facility for room-based team operations. Facility credits are shared within that workspace. These are different workflow plans, not a promise of unlimited seats, usage, or device integrations."
     }
   ],
-  "scope": "GrowPathAI keeps records and helps you review them. It is not an automatic grow controller, a guarantee of plant health or yield, or a substitute for professional advice. Ordinary public storefronts do not process cannabis sales."
+  "pricingValueAnchor": "At the 10-grow plan limit, $10/month works out to $1 per tracked grow per month.",
+  "scope": "GrowPathAI keeps records and helps you review them. It is not an automatic grow controller, a guarantee of plant health or yield, or a substitute for professional advice. Ordinary public storefronts do not process cannabis sales. If you only want a photo feed for bud shots, this is probably more structure than you need."
 }

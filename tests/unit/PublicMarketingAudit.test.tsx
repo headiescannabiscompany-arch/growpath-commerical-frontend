@@ -41,7 +41,10 @@ describe("HeyCatch audit corrections", () => {
       "Watch Exploring the Growing Universe on YouTube"
     );
     expect(marketing.founder.showUrl).toBe("https://youtube.com/@etgujay");
-    expect(marketing.founder.photo).toBeNull();
+    expect(marketing.founder.photo).toBe("/images/founder-jay.jpg");
+    expect(marketing.founder.photoAlt).toBe("Jay, founder of GrowPathAI");
+    expect(marketing.founder.story).toBeNull();
+    expect(marketing.founder.socialUrl).toBeNull();
     expect(marketing.proof.stories).toEqual([]);
     expect(marketing.proof.verifiedGrowerCount).toBeNull();
   });
