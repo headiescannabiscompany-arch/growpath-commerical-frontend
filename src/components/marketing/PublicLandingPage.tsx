@@ -140,6 +140,11 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
             </Text>
             {page === "about" && section.title === "Meet Jay" && <FounderPortrait />}
             <Text style={styles.cardBody}>{section.body}</Text>
+            {page === "about" &&
+              section.title === "Meet Jay" &&
+              marketing.founder.story && (
+                <Text style={styles.cardBody}>{marketing.founder.story}</Text>
+              )}
             {section.href && (
               <Link href={section.href as never} style={styles.link}>
                 {section.linkLabel}

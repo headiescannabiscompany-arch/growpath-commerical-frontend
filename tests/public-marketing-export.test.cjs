@@ -119,7 +119,8 @@ test("quick wins preserve plan amounts and leave unsupported proof unpublished",
       ["facility", 100, 1000, 200, 2000, 2000, 50, 100]
     ]
   );
-  assert.equal(marketing.founder.story, null);
+  assert.ok(marketing.founder.story.includes("I wanted a place for growers"));
+  assert.ok(publicMarketingMarkup("about").includes(marketing.founder.story));
   assert.equal(marketing.founder.socialUrl, null);
   assert.deepEqual(marketing.proof, {
     verifiedGrowerCount: null,

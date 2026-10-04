@@ -174,7 +174,10 @@ describe("PublicLandingPage", () => {
   it("adds the real founder asset without fabricating missing stories or social proof", () => {
     expect(marketing.founder.photo).toBe("/images/founder-jay.jpg");
     expect(marketing.founder.showUrl).toBe("https://youtube.com/@etgujay");
-    expect(marketing.founder.story).toBeNull();
+    expect(marketing.founder.story).toContain("I wanted a place for growers");
+    expect(
+      render(<PublicLandingPage page="about" />).getByText(marketing.founder.story)
+    ).toBeTruthy();
     expect(marketing.founder.socialUrl).toBeNull();
     expect(marketing.proof).toEqual({
       verifiedGrowerCount: null,

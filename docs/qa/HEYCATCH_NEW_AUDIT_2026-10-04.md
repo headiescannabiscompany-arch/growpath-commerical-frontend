@@ -69,7 +69,7 @@ Do not use staging QA counts as customer proof or query private production recor
 merely to manufacture a marketing number.
 
 Owner supplied the actual portrait and YouTube URL. Preserve the original image
-without AI alteration or invented biography. Existing story/socialUrl stay null.
+without AI alteration or invented biography. Existing socialUrl stays null.
 The report's nutrient-cost example is not a verified universal cost; the value
 anchor instead uses published Pro price and allowance ($10/10 tracked grows).
 It states the full-capacity assumption and does not suggest per-grow billing.
@@ -104,8 +104,20 @@ Do not replace these with fabricated UI/outcomes or a broken demo button.
 October4 owner asked whether testimonial collection exists. Current state: proof
 slots exist, but no submission/Admin-review system is built. Proposed only:
 experience/outcome, preferred public name, optional portrait, explicit publication
-consent, manual Admin review and permission withdrawal. This is not approved
-implementation or an audit-invented action item; retain it as a separate decision.
+consent, manual Admin review and permission withdrawal. Owner subsequently approved
+this as separate W05, and clearly labeled synthetic demos as W06. Actual submissions
+are still needed; approval does not allow fabricated proof or automatic publication.
+
+## Recovered founder story
+
+Owner directed reuse of their previous account. Retrieved ChatGPT conversation
+"Write Founder Story", thread6aa174fc-8354-83e9-9d9e-f0319a1e0e70, user message
+39ffefa6-d2be-41b7-b085-79f3308feb93. They wanted AI to empower users rather than
+control markets, a feed not driven by hatred, tools of the trade and community,
+starting with "A place for growers". About uses a concise first-person edited
+summary of that motivation, not unsupported allegations about named companies.
+The other-industry goal is future vision, not delivered functionality. Founder
+story is recovered, not a remaining request for the owner to repeat it.
 
 Status: local implementation complete; release verification in progress.
 No new audit score is claimed; the owner will rerun the audit.

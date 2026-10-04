@@ -71,6 +71,9 @@ function publicMarketingMarkup(route) {
         "<p>" +
         escape(section.body) +
         "</p>" +
+        (page === "about" && section.title === "Meet Jay" && marketing.founder.story
+          ? "<p>" + escape(marketing.founder.story) + "</p>"
+          : "") +
         (section.href ? anchor([section.linkLabel, section.href]) : "") +
         (page === "pricing" && i > 0
           ? "<p>Annual billing saves 2 months compared with paying monthly for a year.</p>"

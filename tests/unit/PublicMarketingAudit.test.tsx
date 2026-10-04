@@ -43,7 +43,7 @@ describe("HeyCatch audit corrections", () => {
     expect(marketing.founder.showUrl).toBe("https://youtube.com/@etgujay");
     expect(marketing.founder.photo).toBe("/images/founder-jay.jpg");
     expect(marketing.founder.photoAlt).toBe("Jay, founder of GrowPathAI");
-    expect(marketing.founder.story).toBeNull();
+    expect(screen.getByText(marketing.founder.story)).toBeTruthy();
     expect(marketing.founder.socialUrl).toBeNull();
     expect(marketing.proof.stories).toEqual([]);
     expect(marketing.proof.verifiedGrowerCount).toBeNull();
