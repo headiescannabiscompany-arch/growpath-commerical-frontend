@@ -1,5 +1,7 @@
 # Facility Workflow
 
+Facility Analytics keeps pending, failed, absent and malformed metrics unknown rather than turning them into zero activity. Preserve recorded numeric zero, leave unavailable numeric fields explicit, label previously loaded metrics during refresh and after failure, and offer single-flight read-only Retry. Account/session/Facility/role changes clear old snapshots and ignore late responses. Existing record-backed calculations, room-stability evidence rules, permissions and navigation remain unchanged; Analytics is not a compliance certification.
+
 The Facility route boundary is the sole automatic selection restorer. The shared provider only synchronizes account mode; it must not seed a placeholder identity, select the first membership, or race a manual selection. Acceptance must cover the real provider and route together, including a failed authorized-list read before any operational request.
 
 Direct-entry and reloaded Facility routes restore the selected workspace from the authenticated Facility list before mounting operational screens. Match exactly one saved row by its ID or server-provided canonicalFacilityId; never substitute a public session alias for an operational ID, guess from names, or choose the first row. Preserve readable saved metadata and existing explicit selection. Missing, ambiguous or failed restoration offers Retry and Select Facility without exposing operational actions. Account/session/role/Facility changes invalidate late restoration. Existing membership and subscription authorization remains server enforced.

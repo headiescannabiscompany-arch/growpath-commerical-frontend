@@ -9,6 +9,26 @@ import { InlineError } from "@/components/InlineError";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
+
+function recordedCount(value: unknown): string {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0
+    ? String(value)
+    : "Unknown";
+}
+
+function recordedRate(value: unknown): string {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100
+    ? `${value}%`
+    : "Unknown";
+}
+
+function countsReadable(...values: unknown[]) {
+  return values.every((value) => recordedCount(value) !== "Unknown");
+}
 
 function Metric({ label, value, detail }: { label: string; value: any; detail: string }) {
   const { palette } = useAppTheme();
@@ -25,12 +45,26 @@ function Metric({ label, value, detail }: { label: string; value: any; detail: s
 }
 
 export default function FacilityAnalyticsRoute() {
+  const scope = useFacilityRecordScope("analytics");
+  return <FacilityAnalyticsContent key={scope} />;
+}
+
+function FacilityAnalyticsContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilityAnalyticsStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
   const [data, setData] = useState<any>({});
-  const [error, setError] = useState<any>(null);
+  const {
+    mounted,
+    error,
+    clearError,
+    handleApiError,
+    hasLoaded,
+    setHasLoaded,
+    readFailed,
+    setReadFailed
+  } = useFacilityRecordRead();
   const [loading, setLoading] = useState(true);
   const loadInFlightRef = useRef(false);
 
@@ -38,16 +72,28 @@ export default function FacilityAnalyticsRoute() {
     if (!facilityId || loadInFlightRef.current) return;
     loadInFlightRef.current = true;
     setLoading(true);
-    setError(null);
+    clearError();
     try {
-      setData(await fetchFacilityAnalyticsOverview(facilityId));
+      const next = await fetchFacilityAnalyticsOverview(facilityId);
+      if (!mounted.current) return;
+      if (!next || typeof next !== "object" || Array.isArray(next)) {
+        throw new Error(
+          "Facility analytics response is unavailable. Retry to load recorded metrics."
+        );
+      }
+      setData(next);
+      setHasLoaded(true);
+      setReadFailed(false);
     } catch (loadError) {
-      setError(loadError);
+      if (mounted.current) {
+        handleApiError(loadError);
+        setReadFailed(true);
+      }
     } finally {
       loadInFlightRef.current = false;
-      setLoading(false);
+      if (mounted.current) setLoading(false);
     }
-  }, [facilityId]);
+  }, [facilityId, mounted, clearError, handleApiError, setHasLoaded, setReadFailed]);
 
   useEffect(() => {
     if (!facilityId) {
@@ -85,7 +131,11 @@ export default function FacilityAnalyticsRoute() {
           style={[styles.refreshButton, loading && styles.disabledButton]}
         >
           <Text style={styles.refreshButtonText}>
-            {loading ? "Refreshing..." : "Refresh analytics"}
+            {loading
+              ? "Refreshing..."
+              : readFailed
+                ? "Retry analytics"
+                : "Refresh analytics"}
           </Text>
         </Pressable>
       </View>
@@ -100,37 +150,89 @@ export default function FacilityAnalyticsRoute() {
         </View>
       ) : null}
       {error ? <InlineError error={error} /> : null}
+      {!hasLoaded ? (
+        <Text style={styles.subtitle}>
+          {loading
+            ? "Loading recorded analytics. Metrics are not available yet."
+            : "Analytics unavailable. Retry to load recorded metrics."}
+        </Text>
+      ) : loading || readFailed ? (
+        <Text style={styles.subtitle}>
+          Previously loaded analytics shown.{" "}
+          {loading
+            ? "Refreshing recorded metrics..."
+            : "Retry to refresh the recorded metrics."}
+        </Text>
+      ) : null}
       <AppCard>
         <View style={styles.grid}>
           <Metric
             label="Stable rooms"
-            value={`${data.roomStability?.stableRooms || 0}/${data.roomStability?.measuredRooms || 0}`}
-            detail={`${data.roomStability?.unknownRooms || 0} rooms unknown`}
+            value={
+              countsReadable(
+                data.roomStability?.stableRooms,
+                data.roomStability?.measuredRooms
+              )
+                ? `${recordedCount(data.roomStability?.stableRooms)}/${recordedCount(data.roomStability?.measuredRooms)}`
+                : "Unknown"
+            }
+            detail={
+              countsReadable(data.roomStability?.unknownRooms)
+                ? `${recordedCount(data.roomStability?.unknownRooms)} rooms unknown`
+                : "Room coverage unavailable"
+            }
           />
           <Metric
             label="Task completion"
-            value={`${data.taskCompletion?.rate || 0}%`}
-            detail={`${data.taskCompletion?.completed || 0} of ${data.taskCompletion?.total || 0} tasks`}
+            value={recordedRate(data.taskCompletion?.rate)}
+            detail={
+              countsReadable(data.taskCompletion?.completed, data.taskCompletion?.total)
+                ? `${recordedCount(data.taskCompletion?.completed)} of ${recordedCount(data.taskCompletion?.total)} tasks`
+                : "Task counts unavailable"
+            }
           />
           <Metric
             label="SOP compliance"
-            value={`${data.sopCompliance?.rate || 0}%`}
-            detail={`${data.sopCompliance?.completedSteps || 0} of ${data.sopCompliance?.applicableSteps || 0} applicable steps`}
+            value={recordedRate(data.sopCompliance?.rate)}
+            detail={
+              countsReadable(
+                data.sopCompliance?.completedSteps,
+                data.sopCompliance?.applicableSteps
+              )
+                ? `${recordedCount(data.sopCompliance?.completedSteps)} of ${recordedCount(data.sopCompliance?.applicableSteps)} applicable steps`
+                : "SOP step counts unavailable"
+            }
           />
           <Metric
             label="Sensor alerts"
-            value={data.sensorAlerts?.total || 0}
-            detail={`${data.sensorAlerts?.recordedEvents || 0} sensor/environment events`}
+            value={recordedCount(data.sensorAlerts?.total)}
+            detail={
+              countsReadable(data.sensorAlerts?.recordedEvents)
+                ? `${recordedCount(data.sensorAlerts?.recordedEvents)} sensor/environment events`
+                : "Event coverage unavailable"
+            }
           />
           <Metric
             label="Active batches"
-            value={data.batches?.active || 0}
-            detail={`${data.batches?.completed || 0} completed runs`}
+            value={recordedCount(data.batches?.active)}
+            detail={
+              countsReadable(data.batches?.completed)
+                ? `${recordedCount(data.batches?.completed)} completed runs`
+                : "Completed-run count unavailable"
+            }
           />
           <Metric
             label="Training completion"
-            value={`${data.training?.completionRate || 0}%`}
-            detail={`${data.training?.completedAssignments || 0} of ${data.training?.assignments || 0} assignments · ${data.training?.staff || 0} staff`}
+            value={recordedRate(data.training?.completionRate)}
+            detail={
+              countsReadable(
+                data.training?.completedAssignments,
+                data.training?.assignments,
+                data.training?.staff
+              )
+                ? `${recordedCount(data.training?.completedAssignments)} of ${recordedCount(data.training?.assignments)} assignments · ${recordedCount(data.training?.staff)} staff`
+                : "Training coverage unavailable"
+            }
           />
         </View>
       </AppCard>

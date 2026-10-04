@@ -1338,6 +1338,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Facility Reports retains labeled summaries after failed refresh, retries reads, validates report and export identity, and discards late context results without changing export permissions",
       "Web compliance exports announce download dispatch rather than saved-file success and retain the temporary file URL only until replacement, failure or context exit",
       "Facility direct entry restores exactly one server-authorized saved identity before operational reads, with Retry or explicit selection on unavailable or ambiguous matches; only the route boundary restores selection, never a shared-provider placeholder or first-row fallback",
+      "Facility Analytics preserves unknown pending, failed, absent or malformed metrics; recorded zero remains zero, retained refresh snapshots are labeled, Retry is single-flight and account/session/Facility/role changes discard old metrics and late reads without changing calculations",
       "Facility Team distinguishes unknown from empty membership, labels retained reads, serializes access actions and refresh, and discards stale session, Facility and role results",
       "saved-task-named cancelable removal confirmation with current role/read/write guards, retained soft-removal history, and exact grow-scoped task Back navigation",
       "credential-autofill-safe AI and parental-control inputs",
