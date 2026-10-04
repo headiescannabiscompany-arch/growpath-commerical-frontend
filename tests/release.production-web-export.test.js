@@ -30,6 +30,12 @@ function createExportRoot() {
     "src/seo/publicRouteMetadata.json",
     fs.readFileSync(path.join(root, "src", "seo", "publicRouteMetadata.json"), "utf8")
   );
+  for (const relative of [
+    "scripts/public-marketing.cjs",
+    "src/components/marketing/publicMarketing.json"
+  ]) {
+    writeFile(tempRoot, relative, fs.readFileSync(path.join(root, relative), "utf8"));
+  }
 
   writeFile(
     tempRoot,
@@ -253,6 +259,33 @@ describe("production web export", () => {
     const indexHtml = fs.readFileSync(path.join(tempRoot, "dist", "index.html"), "utf8");
     expect(indexHtml).toContain('window.__siteBase = "https://growpathai.com"');
     expect(indexHtml).not.toContain("wrong-staging-origin.example.com");
+  });
+
+  it("serves feedback's noindex shell before the homepage catch-all", () => {
+    const yaml = require("js-yaml");
+    for (const filename of ["render.yaml", "render.staging.yaml"]) {
+      const blueprint = yaml.load(fs.readFileSync(path.join(root, filename), "utf8"));
+      const routes = blueprint.services[0].routes;
+      const feedback = routes.findIndex((route) => route.source === "/feedback");
+      const fallback = routes.findIndex((route) => route.source === "/*");
+      expect(feedback).toBeGreaterThanOrEqual(0);
+      expect(feedback).toBeLessThan(fallback);
+      expect(routes[feedback]).toEqual({
+        type: "rewrite",
+        source: "/feedback",
+        destination: "/feedback/index.html"
+      });
+    }
+    const tempRoot = createExportRoot();
+    const result = runExport(tempRoot, {
+      EXPO_PUBLIC_API_URL: "https://api.growpathai.com"
+    });
+    expect(result.status).toBe(0);
+    const html = fs.readFileSync(path.join(tempRoot, "dist/feedback/index.html"), "utf8");
+    expect(html).toContain('<meta name="robots" content="noindex,follow"');
+    expect(
+      fs.readFileSync(path.join(tempRoot, "dist/sitemap.xml"), "utf8")
+    ).not.toContain("https://growpathai.com/feedback");
   });
 
   it("keeps runtime social previews, shares, overlays, and feeds on their configured origins", () => {
