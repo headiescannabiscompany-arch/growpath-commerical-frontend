@@ -25,7 +25,10 @@ import {
   updateTeamMemberRole
 } from "@/api/team";
 import type { FacilityRole } from "@/api/team";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { getFacilityTaskAccess } from "@/features/facility/taskAccess";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -59,6 +62,16 @@ function pickSubtitle(x: AnyRec): string {
 }
 
 export default function FacilityTeamTab() {
+  const ent = useEntitlements();
+  const scope = useFacilityRecordScope([
+    "team",
+    ent?.can?.(CAPABILITY_KEYS.TEAM_INVITE),
+    ent?.can?.("TASKS_WRITE")
+  ]);
+  return <FacilityTeamContent key={scope} />;
+}
+
+function FacilityTeamContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -73,10 +86,16 @@ export default function FacilityTeamTab() {
     facilityRole
   }).canAssignTask;
 
-  const mapApiError = useApiErrorHandler();
-  const mapApiErrorRef = useRef(mapApiError);
-  mapApiErrorRef.current = mapApiError;
-  const [error, setError] = useState<any>(null);
+  const {
+    mounted,
+    error,
+    clearError,
+    handleApiError,
+    hasLoaded,
+    setHasLoaded,
+    readFailed,
+    setReadFailed
+  } = useFacilityRecordRead();
 
   const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,106 +110,176 @@ export default function FacilityTeamTab() {
   const loadInFlightRef = useRef(false);
   const inviteInFlightRef = useRef(false);
   const busyMembersRef = useRef(new Set<string>());
+  const actionInFlightRef = useRef(false);
+  const readVersionRef = useRef(0);
+  const busy = loading || refreshing || inviting || Boolean(busyMemberId);
+  const canAct = hasLoaded && !readFailed && !busy;
 
   const load = useCallback(
-    async (opts?: { refresh?: boolean }) => {
-      if (!facilityId || loadInFlightRef.current) return;
+    async (opts?: { refresh?: boolean; afterMutation?: boolean }) => {
+      if (
+        !mounted.current ||
+        !facilityId ||
+        loadInFlightRef.current ||
+        (actionInFlightRef.current && !opts?.afterMutation)
+      )
+        return;
       loadInFlightRef.current = true;
+      readVersionRef.current += 1;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
 
       try {
-        setError(null);
+        clearError();
         const res = await listTeamMembers(facilityId);
+        if (!mounted.current) return;
         setItems(asArray(res));
+        setHasLoaded(true);
+        setReadFailed(false);
       } catch (e) {
-        setError(mapApiErrorRef.current.toInlineError(e));
+        if (!mounted.current) return;
+        handleApiError(e);
+        setReadFailed(true);
       } finally {
         loadInFlightRef.current = false;
-        setLoading(false);
-        setRefreshing(false);
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [facilityId]
+    [facilityId, mounted, clearError, handleApiError, setHasLoaded, setReadFailed]
   );
 
   const sendInvite = useCallback(async () => {
-    if (!canInvite || inviteInFlightRef.current) return;
+    if (
+      !mounted.current ||
+      !canInvite ||
+      !canAct ||
+      loadInFlightRef.current ||
+      actionInFlightRef.current ||
+      inviteInFlightRef.current
+    )
+      return;
     if (!facilityId) return;
 
     const inviteEmailValue = inviteEmail.trim();
     if (!inviteEmailValue) return;
 
     inviteInFlightRef.current = true;
+    actionInFlightRef.current = true;
     setInviting(true);
     try {
-      setError(null);
+      clearError();
       const result: any = await inviteTeamMember(facilityId, {
         email: inviteEmailValue,
         role: inviteRole
       });
+      if (!mounted.current) return;
       setInviteFeedback(
         result?.emailDelivery?.sent
           ? `Invite emailed to ${inviteEmailValue} as ${inviteRole.toLowerCase()}.`
           : `Invite saved for ${inviteEmailValue}, but email delivery was not confirmed.`
       );
       setInviteEmail("");
-      await load({ refresh: true });
+      await load({ refresh: true, afterMutation: true });
     } catch (e) {
-      setError(mapApiErrorRef.current.toInlineError(e));
+      handleApiError(e);
     } finally {
       inviteInFlightRef.current = false;
-      setInviting(false);
+      actionInFlightRef.current = false;
+      if (mounted.current) setInviting(false);
     }
-  }, [canInvite, facilityId, inviteEmail, inviteRole, load]);
+  }, [
+    canInvite,
+    canAct,
+    facilityId,
+    inviteEmail,
+    inviteRole,
+    load,
+    mounted,
+    clearError,
+    handleApiError
+  ]);
 
   const changeRole = useCallback(
     async (userId: string, role: "MANAGER" | "STAFF" | "VIEWER") => {
-      if (!facilityId || !isOwner || !userId || busyMembersRef.current.has(userId)) {
+      if (
+        !mounted.current ||
+        !canAct ||
+        loadInFlightRef.current ||
+        actionInFlightRef.current ||
+        !facilityId ||
+        !isOwner ||
+        !userId ||
+        busyMembersRef.current.has(userId)
+      ) {
         return;
       }
       busyMembersRef.current.add(userId);
+      actionInFlightRef.current = true;
       setBusyMemberId(userId);
       try {
-        setError(null);
+        clearError();
         await updateTeamMemberRole(facilityId, userId, { role });
-        await load({ refresh: true });
+        if (!mounted.current) return;
+        setMemberFeedback("Role change saved. Refresh confirms the current team.");
+        await load({ refresh: true, afterMutation: true });
       } catch (e) {
-        setError(mapApiErrorRef.current.toInlineError(e));
+        handleApiError(e);
       } finally {
         busyMembersRef.current.delete(userId);
-        setBusyMemberId("");
+        actionInFlightRef.current = false;
+        if (mounted.current) setBusyMemberId("");
       }
     },
-    [facilityId, isOwner, load]
+    [facilityId, isOwner, load, canAct, mounted, clearError, handleApiError]
   );
 
   const removeMember = useCallback(
     async (userId: string, label: string) => {
-      if (!facilityId || !isOwner || !userId || busyMembersRef.current.has(userId)) {
+      if (
+        !mounted.current ||
+        !canAct ||
+        loadInFlightRef.current ||
+        actionInFlightRef.current ||
+        !facilityId ||
+        !isOwner ||
+        !userId ||
+        busyMembersRef.current.has(userId)
+      ) {
         return;
       }
       busyMembersRef.current.add(userId);
+      actionInFlightRef.current = true;
       setBusyMemberId(userId);
       try {
-        setError(null);
+        clearError();
         setMemberFeedback("");
         await removeTeamMember(facilityId, userId);
-        await load({ refresh: true });
+        if (!mounted.current) return;
         setMemberFeedback(`${label} no longer has access to this facility.`);
+        await load({ refresh: true, afterMutation: true });
       } catch (e) {
-        setError(mapApiErrorRef.current.toInlineError(e));
+        handleApiError(e);
       } finally {
         busyMembersRef.current.delete(userId);
-        setBusyMemberId("");
+        actionInFlightRef.current = false;
+        if (mounted.current) setBusyMemberId("");
       }
     },
-    [facilityId, isOwner, load]
+    [facilityId, isOwner, load, canAct, mounted, clearError, handleApiError]
   );
 
   const confirmRemoveMember = useCallback(
     (userId: string, label: string) => {
+      if (!canAct || actionInFlightRef.current || loadInFlightRef.current) return;
+      const confirmationVersion = readVersionRef.current;
+      const removeIfCurrent = () => {
+        if (confirmationVersion === readVersionRef.current)
+          void removeMember(userId, label);
+      };
       const message = `${label} will lose access to this facility. Their historical task and audit records remain.`;
 
       if (
@@ -199,7 +288,7 @@ export default function FacilityTeamTab() {
         typeof window.confirm === "function"
       ) {
         if (window.confirm(`Remove facility member?\n\n${message}`)) {
-          void removeMember(userId, label);
+          removeIfCurrent();
         }
         return;
       }
@@ -209,11 +298,11 @@ export default function FacilityTeamTab() {
         {
           text: "Remove",
           style: "destructive",
-          onPress: () => removeMember(userId, label)
+          onPress: removeIfCurrent
         }
       ]);
     },
-    [removeMember]
+    [removeMember, canAct]
   );
 
   useEffect(() => {
@@ -225,9 +314,11 @@ export default function FacilityTeamTab() {
   }, [facilityId, load, router]);
 
   const header = useMemo(() => {
+    if (!hasLoaded) return "Team count unavailable";
     const n = items.length;
-    return n === 1 ? "1 member" : `${n} members`;
-  }, [items.length]);
+    const count = n === 1 ? "1 member" : `${n} members`;
+    return refreshing || readFailed ? `${count} (previously loaded)` : count;
+  }, [items.length, hasLoaded, refreshing, readFailed]);
 
   return (
     <ScreenBoundary title="Team" showBack backFallbackHref="/home/facility/dashboard">
@@ -245,6 +336,23 @@ export default function FacilityTeamTab() {
           </Text>
           <Text style={styles.muted}>{header}</Text>
         </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Refresh facility team"
+          accessibilityState={{ disabled: busy, busy: loading || refreshing }}
+          disabled={busy}
+          onPress={() => load({ refresh: true })}
+          style={styles.smallButton}
+        >
+          <Text style={styles.smallButtonText}>{readFailed ? "Retry" : "Refresh"}</Text>
+        </Pressable>
+        {readFailed ? (
+          <Text style={styles.muted}>
+            {hasLoaded
+              ? "Previously loaded team shown. Retry before changing access or assigning work."
+              : "Team unavailable. Retry to load members."}
+          </Text>
+        ) : null}
 
         {canInvite ? (
           <View style={styles.card}>
@@ -255,6 +363,7 @@ export default function FacilityTeamTab() {
             <TextInput
               accessibilityLabel="Invite team member email"
               value={inviteEmail}
+              editable={!busy}
               onChangeText={setInviteEmail}
               placeholder="email@company.com"
               placeholderTextColor={palette.textMuted}
@@ -272,9 +381,10 @@ export default function FacilityTeamTab() {
                 <Pressable
                   key={role}
                   onPress={() => setInviteRole(role)}
+                  disabled={busy}
                   accessibilityRole="radio"
                   accessibilityLabel={`Invite as ${role.toLowerCase()}`}
-                  accessibilityState={{ checked: inviteRole === role }}
+                  accessibilityState={{ checked: inviteRole === role, disabled: busy }}
                   style={[styles.roleButton, inviteRole === role && styles.roleSelected]}
                 >
                   <Text
@@ -294,13 +404,13 @@ export default function FacilityTeamTab() {
               accessibilityLabel="Send team invite"
               accessibilityState={{
                 busy: inviting,
-                disabled: inviting || !inviteEmail.trim()
+                disabled: !canAct || !inviteEmail.trim()
               }}
               onPress={sendInvite}
-              disabled={inviting || !inviteEmail.trim()}
+              disabled={!canAct || !inviteEmail.trim()}
               style={({ pressed }) => [
                 styles.btn,
-                (inviting || !inviteEmail.trim()) && styles.btnDisabled,
+                (!canAct || !inviteEmail.trim()) && styles.btnDisabled,
                 pressed && styles.pressed
               ]}
             >
@@ -360,7 +470,7 @@ export default function FacilityTeamTab() {
             </Text>
           }
           ListEmptyComponent={
-            !loading ? (
+            hasLoaded && !loading && !readFailed ? (
               <View style={styles.empty}>
                 <Text accessibilityRole="header" aria-level={3} style={styles.emptyTitle}>
                   No members yet
@@ -409,7 +519,10 @@ export default function FacilityTeamTab() {
                       <Pressable
                         accessibilityRole="link"
                         accessibilityLabel={`Assign task to ${title}`}
+                        disabled={!canAct}
+                        accessibilityState={{ disabled: !canAct }}
                         onPress={() =>
+                          canAct &&
                           router.push(
                             `/home/facility/tasks?assignee=${encodeURIComponent(memberId)}` as any
                           )
@@ -433,9 +546,9 @@ export default function FacilityTeamTab() {
                             accessibilityState={{
                               busy: busyMemberId === memberId,
                               checked: memberRole === role,
-                              disabled: busyMemberId === memberId || memberRole === role
+                              disabled: !canAct || memberRole === role
                             }}
-                            disabled={busyMemberId === memberId || memberRole === role}
+                            disabled={!canAct || memberRole === role}
                             onPress={() => changeRole(memberId, role)}
                             style={[
                               styles.smallButton,
@@ -455,9 +568,9 @@ export default function FacilityTeamTab() {
                         accessibilityLabel={`Remove ${removalLabel} from facility`}
                         accessibilityState={{
                           busy: busyMemberId === memberId,
-                          disabled: busyMemberId === memberId
+                          disabled: !canAct
                         }}
-                        disabled={busyMemberId === memberId}
+                        disabled={!canAct}
                         onPress={() =>
                           confirmRemoveMember(memberId, removalLabel || "This member")
                         }

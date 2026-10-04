@@ -1,6 +1,6 @@
 import React from "react";
-import { Platform } from "react-native";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Alert, Platform } from "react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityTeamTab from "@/app/home/facility/(tabs)/team";
 
@@ -13,12 +13,15 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockRouter = { push: mockPush, replace: mockReplace };
 let mockFacilityRole = "OWNER";
+let mockFacilityId = "facility-1";
+let mockAuth = { user: { id: "owner-1" }, token: "session-1" };
+jest.mock("@/auth/AuthContext", () => ({ useAuth: () => mockAuth }));
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter
 }));
 jest.mock("@/state/useFacility", () => ({
-  useFacility: () => ({ selectedId: "facility-1" })
+  useFacility: () => ({ selectedId: mockFacilityId })
 }));
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { TEAM_INVITE: "TEAM_INVITE" },
@@ -47,6 +50,8 @@ jest.mock("@/components/ScreenBoundary", () => {
 describe("FacilityTeamTab", () => {
   beforeEach(() => {
     mockFacilityRole = "OWNER";
+    mockFacilityId = "facility-1";
+    mockAuth = { user: { id: "owner-1" }, token: "session-1" };
     mockCan.mockImplementation((capability) => capability === "TASKS_WRITE");
     mockInvite.mockReset();
     mockListTeamMembers.mockReset();
@@ -76,11 +81,11 @@ describe("FacilityTeamTab", () => {
     expect(screen.getByDisplayValue("staff@example.com")).toBeTruthy();
     expect(
       screen.getByRole("radio", { name: "Invite as staff" }).props.accessibilityState
-    ).toEqual({ checked: true });
+    ).toMatchObject({ checked: true });
     fireEvent.press(screen.getByRole("radio", { name: "Invite as manager" }));
     expect(
       screen.getByRole("radio", { name: "Invite as manager" }).props.accessibilityState
-    ).toEqual({ checked: true });
+    ).toMatchObject({ checked: true });
     fireEvent.press(screen.getByLabelText("Send team invite"));
 
     await waitFor(() =>
@@ -246,5 +251,187 @@ describe("FacilityTeamTab", () => {
     expect(
       screen.getByLabelText("Assign task to Alex Grower").props.accessibilityRole
     ).toBe("link");
+  });
+
+  it("does not claim zero members after a failed initial read and recovers without sending an invite", async () => {
+    mockListTeamMembers.mockRejectedValueOnce(new Error("offline"));
+    const screen = render(<FacilityTeamTab />);
+    await screen.findByText("Team unavailable. Retry to load members.");
+    expect(screen.getByText("Team count unavailable")).toBeTruthy();
+    expect(screen.queryByText("No members yet")).toBeNull();
+    fireEvent.changeText(
+      screen.getByLabelText("Invite team member email"),
+      "qa@example.com"
+    );
+    expect(
+      screen.getByLabelText("Send team invite").props.accessibilityState.disabled
+    ).toBe(true);
+    mockListTeamMembers.mockResolvedValueOnce([
+      { userId: "staff-1", name: "Alex", role: "STAFF" }
+    ]);
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText("Refresh facility team"))
+    );
+    expect(await screen.findByText("Alex")).toBeTruthy();
+    expect(screen.getByDisplayValue("qa@example.com")).toBeTruthy();
+    expect(mockInvite).not.toHaveBeenCalled();
+  });
+
+  it("labels retained team after failed refresh and locks role, removal and assignment until Retry", async () => {
+    mockListTeamMembers.mockResolvedValueOnce([
+      { userId: "staff-1", name: "Alex", role: "STAFF" }
+    ]);
+    const screen = render(<FacilityTeamTab />);
+    await screen.findByText("Alex");
+    mockListTeamMembers.mockRejectedValueOnce(new Error("offline"));
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText("Refresh facility team"))
+    );
+    await screen.findByText("1 member (previously loaded)");
+    expect(
+      screen.getByLabelText("Assign task to Alex").props.accessibilityState.disabled
+    ).toBe(true);
+    expect(
+      screen.getByLabelText("Change Alex role to manager").props.accessibilityState
+        .disabled
+    ).toBe(true);
+    expect(
+      screen.getByLabelText("Remove Alex - staff from facility").props.accessibilityState
+        .disabled
+    ).toBe(true);
+    expect(mockUpdateTeamMemberRole).not.toHaveBeenCalled();
+    expect(mockRemoveTeamMember).not.toHaveBeenCalled();
+  });
+
+  it.each(["account", "session", "facility", "role"])(
+    "discards old members and invite drafts after %s changes",
+    async (kind) => {
+      mockListTeamMembers.mockResolvedValueOnce([
+        { userId: "staff-1", name: "Old member", role: "STAFF" }
+      ]);
+      const screen = render(<FacilityTeamTab />);
+      await screen.findByText("Old member");
+      fireEvent.changeText(
+        screen.getByLabelText("Invite team member email"),
+        "old@example.com"
+      );
+      if (kind === "account") mockAuth = { ...mockAuth, user: { id: "owner-2" } };
+      if (kind === "session") mockAuth = { ...mockAuth, token: "session-2" };
+      if (kind === "facility") mockFacilityId = "facility-2";
+      if (kind === "role") mockFacilityRole = "VIEWER";
+      screen.rerender(<FacilityTeamTab />);
+      await screen.findByText("No members yet");
+      expect(screen.queryByText("Old member")).toBeNull();
+      expect(screen.queryByDisplayValue("old@example.com")).toBeNull();
+    }
+  );
+
+  it("ignores an old invite completion after the selected Facility changes", async () => {
+    let finish!: (value: any) => void;
+    mockInvite.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const screen = render(<FacilityTeamTab />);
+    await screen.findByText("No members yet");
+    fireEvent.changeText(
+      screen.getByLabelText("Invite team member email"),
+      "old@example.com"
+    );
+    fireEvent.press(screen.getByLabelText("Send team invite"));
+    mockFacilityId = "facility-2";
+    screen.rerender(<FacilityTeamTab />);
+    await screen.findByText("No members yet");
+    await act(async () => finish({ emailDelivery: { sent: true } }));
+    expect(screen.queryByText(/Invite emailed/)).toBeNull();
+    expect(mockListTeamMembers).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps a confirmed role change separate from failed canonical refresh", async () => {
+    mockListTeamMembers.mockResolvedValueOnce([
+      { userId: "staff-1", name: "Alex", role: "STAFF" }
+    ]);
+    mockUpdateTeamMemberRole.mockResolvedValue({});
+    const screen = render(<FacilityTeamTab />);
+    await screen.findByText("Alex");
+    mockListTeamMembers.mockRejectedValueOnce(new Error("offline"));
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText("Change Alex role to manager"))
+    );
+    await screen.findByText("Role change saved. Refresh confirms the current team.");
+    expect(screen.getByText("1 member (previously loaded)")).toBeTruthy();
+    expect(mockUpdateTeamMemberRole).toHaveBeenCalledTimes(1);
+  });
+
+  it("serializes different members' role changes and refresh", async () => {
+    mockListTeamMembers.mockResolvedValue([
+      { userId: "staff-1", name: "Alex", role: "STAFF" },
+      { userId: "staff-2", name: "Sam", role: "STAFF" }
+    ]);
+    let finish!: (value: any) => void;
+    mockUpdateTeamMemberRole.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const screen = render(<FacilityTeamTab />);
+    await screen.findByText("Alex");
+    fireEvent.press(screen.getByLabelText("Change Alex role to manager"));
+    fireEvent.press(screen.getByLabelText("Change Sam role to manager"));
+    fireEvent.press(screen.getByLabelText("Refresh facility team"));
+    expect(mockUpdateTeamMemberRole).toHaveBeenCalledTimes(1);
+    expect(mockListTeamMembers).toHaveBeenCalledTimes(1);
+    await act(async () => finish({}));
+    expect(mockListTeamMembers).toHaveBeenCalledTimes(2);
+  });
+
+  it("ignores a pending old-Facility team read", async () => {
+    let finish!: (value: any) => void;
+    mockListTeamMembers.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const screen = render(<FacilityTeamTab />);
+    mockFacilityId = "facility-2";
+    screen.rerender(<FacilityTeamTab />);
+    await screen.findByText("No members yet");
+    await act(async () => finish([{ userId: "old", name: "Old member", role: "STAFF" }]));
+    expect(screen.queryByText("Old member")).toBeNull();
+    expect(screen.getByText("0 members")).toBeTruthy();
+  });
+
+  it("invalidates a delayed native removal confirmation when the team refreshes", async () => {
+    const originalPlatform = Platform.OS;
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "ios" });
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    mockListTeamMembers.mockResolvedValue([
+      { userId: "staff-1", name: "Alex", role: "STAFF" }
+    ]);
+    const screen = render(<FacilityTeamTab />);
+    try {
+      await screen.findByText("Alex");
+      fireEvent.press(screen.getByLabelText("Remove Alex - staff from facility"));
+      const confirm = alert.mock.calls[0][2]?.find(
+        (button) => button.text === "Remove"
+      )?.onPress;
+      expect(confirm).toBeDefined();
+      await act(async () =>
+        fireEvent.press(screen.getByLabelText("Refresh facility team"))
+      );
+      await act(async () => confirm?.());
+      expect(mockRemoveTeamMember).not.toHaveBeenCalled();
+    } finally {
+      screen.unmount();
+      alert.mockRestore();
+      Object.defineProperty(Platform, "OS", {
+        configurable: true,
+        value: originalPlatform
+      });
+    }
   });
 });
