@@ -208,6 +208,7 @@ const fallbackRoutes = [
   "ai-cultivation-disclaimer",
   "accept-facility-invite",
   "claim-gift",
+  "feedback",
   "courses",
   "courses/create",
   "courses/add-lesson",

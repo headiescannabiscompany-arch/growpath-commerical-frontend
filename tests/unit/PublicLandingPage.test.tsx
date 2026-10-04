@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
-import { Platform, StyleSheet } from "react-native";
+import { AppState, Platform, StyleSheet } from "react-native";
 import { Link } from "expo-router";
 import PublicLandingPage, {
   PUBLIC_PAGE_COPY,
@@ -9,8 +9,20 @@ import PublicLandingPage, {
 } from "@/components/marketing/PublicLandingPage";
 import { getThemePalette } from "@/theme/appTheme";
 import marketing from "@/components/marketing/publicMarketing.json";
+import { getPublicTestimonials } from "@/api/testimonials";
+
+jest.mock("@/api/testimonials", () => ({
+  getPublicTestimonials: jest.fn(() => new Promise(() => {}))
+}));
 
 describe("PublicLandingPage", () => {
+  beforeEach(() => {
+    jest.mocked(getPublicTestimonials).mockImplementation(() => new Promise(() => {}));
+    jest
+      .spyOn(AppState, "addEventListener")
+      .mockImplementation(() => ({ remove: jest.fn() }));
+  });
+
   it("renders crawl-aligned facility workflow copy and public navigation", () => {
     const screen = render(<PublicLandingPage page="facility-management" />);
 

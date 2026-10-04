@@ -23,6 +23,7 @@ import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import TestimonialReviewPanel from "@/components/admin/TestimonialReviewPanel";
 import ComplimentaryGrantsAdminCard from "@/features/admin/ComplimentaryGrantsAdminCard";
 import AdminAccountBillingVerification from "@/features/admin/AdminAccountBillingVerification";
 import AdminCommercePaymentReviewCard from "@/features/admin/AdminCommercePaymentReviewCard";
@@ -2712,6 +2713,8 @@ export default function PlatformAdminRoute() {
       {showComplimentaryAccess ? <ComplimentaryGrantsAdminCard /> : null}
 
       <AdminCommercePaymentReviewCard />
+
+      <TestimonialReviewPanel authorized={isAdmin} />
 
       <AdminEvidenceVaultCard
         requestedUser={vaultRequestedUser}

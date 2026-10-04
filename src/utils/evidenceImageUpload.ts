@@ -26,7 +26,13 @@ export type PreparedNativeEvidenceImage = {
   optimized: boolean;
 };
 
-type PreparationOptions = { signal?: AbortSignal };
+type PreparationOptions = {
+  signal?: AbortSignal;
+  // Website feedback does not need camera/location metadata. Opt in to pixel-only
+  // encoding even when a source already fits the upload limit; other callers keep
+  // their existing original-preservation behavior.
+  forceStripMetadata?: boolean;
+};
 
 const AI_READY_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -102,7 +108,11 @@ export async function prepareNativeEvidenceImageForUpload(
     !AI_READY_IMAGE_TYPES.has(originalType) ||
     originalExtension === "heic" ||
     originalExtension === "heif";
-  if (!requiresJpegNormalization && originalBytes <= EVIDENCE_IMAGE_UPLOAD_TARGET_BYTES) {
+  if (
+    options.forceStripMetadata !== true &&
+    !requiresJpegNormalization &&
+    originalBytes <= EVIDENCE_IMAGE_UPLOAD_TARGET_BYTES
+  ) {
     return {
       uri: input.uri,
       fileName: originalName,
@@ -263,6 +273,7 @@ export async function prepareEvidenceImageForUpload(
     originalExtension === "heic" ||
     originalExtension === "heif";
   if (
+    options.forceStripMetadata !== true &&
     !requiresJpegNormalization &&
     (!originalBytes || originalBytes <= EVIDENCE_IMAGE_UPLOAD_TARGET_BYTES)
   ) {

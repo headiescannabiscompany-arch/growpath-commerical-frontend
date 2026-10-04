@@ -41,6 +41,40 @@ function method(
 
 export const methodRegistry: GrowPathMethod[] = [
   method(
+    "testimonial-feedback",
+    "Genuine Feedback and Optional Testimonials",
+    ["feedback", "testimonials", "public_marketing", "admin_review"],
+    "testimonial-feedback-method.md",
+    [
+      "write personal feedback",
+      "review exact preview",
+      "choose private or consented submission",
+      "manual Admin review",
+      "withdraw"
+    ],
+    [
+      "verified account",
+      "bounded original feedback and chosen public name",
+      "optional owned Personal photo re-encoded without EXIF/GPS before upload",
+      "separate unchecked website-publication consent"
+    ],
+    [
+      "immutable versioned submission and original consent",
+      "idempotent one-current owner record",
+      "minimal approved non-synthetic public DTO",
+      "terminal quote-and-photo withdrawal",
+      "bounded owner export and account cleanup"
+    ],
+    [
+      "Private feedback does not require publicity permission; never invent testimonials or verified outcomes.",
+      "Admins cannot edit consented words, name or photo and must explicitly review generic-public-audience suitability before publication.",
+      "Synthetic records never enter ordinary public proof; no AI training, incentives or separate advertising permission are included.",
+      "Public photo reads recheck access and source version without exposing storage URLs; never bake testimonials into static public HTML.",
+      "Withdrawal and account quarantine revoke visibility without a republish shortcut; account restoration does not restore publicity permission."
+    ],
+    ["feedback", "admin-testimonial-review"]
+  ),
+  method(
     "public-copy-sharing",
     "Reviewed Public Copies",
     ["sharing", "grow_timeline", "journal", "ai_result", "public_copy"],

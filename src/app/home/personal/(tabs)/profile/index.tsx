@@ -31,6 +31,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import LegacyAgeCompletion from "@/components/account/LegacyAgeCompletion";
 import BackButton from "@/components/nav/BackButton";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
+import FeedbackEntryCard from "@/components/account/FeedbackEntryCard";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import AccountBillingSummary from "@/features/billing/AccountBillingSummary";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -612,6 +613,7 @@ export default function ProfileScreen() {
       </View>
 
       <ThemeModeSelector />
+      <FeedbackEntryCard />
 
       <View style={[styles.card, cardStyle]}>
         <Text style={[styles.rowLabel, mutedTextStyle]}>Plan</Text>

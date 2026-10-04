@@ -8,6 +8,7 @@ import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
+import FeedbackEntryCard from "@/components/account/FeedbackEntryCard";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
@@ -317,6 +318,7 @@ export default function CommercialProfileRoute() {
       </AppCard>
 
       <ThemeModeSelector />
+      <FeedbackEntryCard />
 
       <AppCard>
         <Text style={styles.cardTitle}>Edit brand profile</Text>

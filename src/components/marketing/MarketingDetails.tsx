@@ -161,6 +161,26 @@ export default function MarketingDetails({ page }: { page: string }) {
           </Link>
         </View>
       )}
+      {page === "about" && (
+        <View style={card}>
+          <Text accessibilityRole="header" aria-level={2} style={heading}>
+            {marketing.founder.historyTitle}
+          </Text>
+          <Text style={text}>{marketing.founder.historyNote}</Text>
+          {marketing.founder.historySections.map((section) => (
+            <View key={section.title} style={{ gap: 8 }}>
+              <Text
+                accessibilityRole="header"
+                aria-level={3}
+                style={{ ...heading, fontSize: 19 }}
+              >
+                {section.title}
+              </Text>
+              <Text style={text}>{section.body}</Text>
+            </View>
+          ))}
+        </View>
+      )}
       {(page === "home" || page === "about") && (
         <View style={card}>
           <Text accessibilityRole="header" aria-level={2} style={heading}>

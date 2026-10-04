@@ -23,6 +23,7 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import CannabisContentControls from "@/components/account/CannabisContentControls";
+import FeedbackEntryCard from "@/components/account/FeedbackEntryCard";
 import { updateNotificationPreferences } from "@/api/users";
 import {
   DEFAULT_NOTIFICATION_PREFERENCES,
@@ -445,6 +446,7 @@ export default function FacilityProfileRoute() {
         </View>
 
         <CannabisContentControls />
+        <FeedbackEntryCard />
 
         <View style={styles.card}>
           <Text accessibilityRole="header" aria-level={2} style={styles.h1}>

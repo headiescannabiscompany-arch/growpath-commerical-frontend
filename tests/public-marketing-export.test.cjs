@@ -131,6 +131,32 @@ test("quick wins preserve plan amounts and leave unsupported proof unpublished",
   assert.deepEqual(marketingSchema("about"), []);
 });
 
+test("founder history preserves owner-supplied dates without asserting a launch or shipped future products", () => {
+  const html = publicMarketingMarkup("about");
+  assert.ok(html.includes("June 2025"));
+  assert.ok(html.includes("August 4, 2025"));
+  assert.ok(
+    html.includes("not a confirmed first-concept date or a public product launch")
+  );
+  assert.ok(html.includes("I may have had the original concept earlier"));
+  assert.ok(html.includes("I do not have a confirmed date for that first idea"));
+  assert.ok(
+    html.includes("My starting point was the idea of a choose-your-own-adventure book")
+  );
+  assert.ok(html.includes("I later turned that idea into GrowPathAI"));
+  assert.ok(!html.includes("On August 4, 2025, the idea"));
+  assert.ok(html.includes("Future ambitions below are not a list of shipped features"));
+  assert.ok(html.includes("Jorge Cervantes"));
+  assert.ok(html.includes("was one inspiration for GrowPathAI"));
+  assert.ok(html.includes("it does not use his framework"));
+  assert.ok(!html.includes("became the LAWNS framework"));
+  for (const section of marketing.founder.historySections) {
+    assert.ok(html.includes(section.title));
+  }
+  assert.ok(!publicMarketingMarkup("").includes(marketing.founder.historyTitle));
+  assert.deepEqual(marketingSchema("about"), []);
+});
+
 test("every public footer links the new comparison and grow-journal pages", () => {
   for (const key of Object.keys(marketing.pages)) {
     const html = publicMarketingMarkup(key === "home" ? "" : key);

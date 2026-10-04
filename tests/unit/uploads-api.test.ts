@@ -489,6 +489,45 @@ describe("uploads API", () => {
     expect(mockUploadBinaryToSignedUrl).not.toHaveBeenCalled();
   });
 
+  it.each(["web", "ios"])(
+    "passes the explicit metadata-stripping option through the %s protected-photo path",
+    async (os) => {
+      Object.defineProperty(platform, "OS", { configurable: true, value: os });
+      const original = new Blob(["original"], { type: "image/jpeg" });
+      const prepared = {
+        blob: new Blob(["clean"], { type: "image/jpeg" }),
+        uri: "file:///cache/clean.jpg",
+        fileName: "clean.jpg",
+        mimeType: "image/jpeg",
+        uploadBytes: 5,
+        optimized: true
+      };
+      mockPrepareEvidenceImageForUpload.mockResolvedValue(prepared);
+      mockPrepareNativeEvidenceImageForUpload.mockResolvedValue(prepared);
+      mockApiRequest.mockResolvedValue({
+        assetId: "feedback-photo",
+        uploadStatus: "active",
+        url: "/api/evidence-assets/uploads/feedback-photo/object"
+      });
+      const { uploadEvidenceMedia } = require("@/api/uploads");
+      await uploadEvidenceMedia({
+        uri: "file:///source.jpg",
+        file: original,
+        mimeType: "image/jpeg",
+        clientUploadKey: "feedback-photo-key",
+        forceStripMetadata: true
+      });
+      const prepare =
+        os === "web"
+          ? mockPrepareEvidenceImageForUpload
+          : mockPrepareNativeEvidenceImageForUpload;
+      expect(prepare.mock.calls[0].at(-1)).toEqual({
+        signal: undefined,
+        forceStripMetadata: true
+      });
+    }
+  );
+
   it("finishes an older single-strategy photo reservation without inventing an ETag", async () => {
     Object.defineProperty(platform, "OS", {
       configurable: true,

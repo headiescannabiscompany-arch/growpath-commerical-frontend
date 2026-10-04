@@ -115,6 +115,47 @@ describe("prepareEvidenceImageForUpload", () => {
     });
   });
 
+  it.each(["image/jpeg", "image/png", "image/webp"])(
+    "re-encodes even a small %s when metadata stripping is explicitly requested",
+    async (type) => {
+      const original = new Blob(["source with camera metadata"], { type });
+      const encoded = new Blob(["pixel-only JPEG"], { type: "image/jpeg" });
+      const fixture = installImageCanvasFixture({ preparedBlob: encoded });
+      try {
+        const result = await prepareEvidenceImageForUpload(original, "feedback.jpg", {
+          forceStripMetadata: true
+        });
+        expect(result.blob).toBe(encoded);
+        expect(result.optimized).toBe(true);
+        expect(fixture.context.drawImage).toHaveBeenCalledTimes(1);
+        expect(fixture.canvas.toBlob).toHaveBeenCalledWith(
+          expect.any(Function),
+          "image/jpeg",
+          0.9
+        );
+      } finally {
+        fixture.restore();
+      }
+    }
+  );
+
+  it("does not fall back to the original if mandatory metadata stripping fails", async () => {
+    const original = new Blob(["source with camera metadata"], { type: "image/jpeg" });
+    const fixture = installImageCanvasFixture({
+      preparedBlob: new Blob(["unused"], { type: "image/jpeg" })
+    });
+    fixture.canvas.getContext.mockReturnValue(null as any);
+    try {
+      await expect(
+        prepareEvidenceImageForUpload(original, "feedback.jpg", {
+          forceStripMetadata: true
+        })
+      ).rejects.toMatchObject({ code: "IMAGE_PREPARATION_FAILED" });
+    } finally {
+      fixture.restore();
+    }
+  });
+
   it.each([
     {
       label: "small HEIC photo",
@@ -335,6 +376,39 @@ describe("prepareNativeEvidenceImageForUpload", () => {
       optimized: false
     });
     expect(mockNativeManipulate).not.toHaveBeenCalled();
+  });
+
+  it("re-encodes an uploadable native JPEG only when metadata stripping is requested", async () => {
+    const resize = jest.fn();
+    const saveAsync = jest.fn().mockResolvedValue({ uri: "file:///cache/feedback.jpg" });
+    mockNativeManipulate.mockReturnValue({
+      resize,
+      renderAsync: jest.fn().mockResolvedValue({ width: 1200, height: 900, saveAsync })
+    });
+    mockNativeGetInfo.mockResolvedValue({ exists: true, size: 800 });
+    const result = await prepareNativeEvidenceImageForUpload(
+      {
+        uri: "file:///DCIM/feedback.jpg",
+        fileName: "feedback.jpg",
+        mimeType: "image/jpeg",
+        fileSizeBytes: 1024,
+        width: 1200,
+        height: 900
+      },
+      { forceStripMetadata: true }
+    );
+    expect(mockNativeManipulate).toHaveBeenCalledWith("file:///DCIM/feedback.jpg");
+    expect(saveAsync).toHaveBeenCalledWith({ compress: 0.9, format: "jpeg" });
+    expect(resize).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      uri: "file:///cache/feedback.jpg",
+      mimeType: "image/jpeg",
+      optimized: true
+    });
+    expect(mockNativeDelete).not.toHaveBeenCalledWith(
+      "file:///DCIM/feedback.jpg",
+      expect.anything()
+    );
   });
 
   it("converts and shrinks a large native HEIC without upscaling", async () => {

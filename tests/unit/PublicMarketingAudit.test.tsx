@@ -1,11 +1,38 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
+import { AppState } from "react-native";
 import PublicLandingPage from "@/components/marketing/PublicLandingPage";
 import marketing from "@/components/marketing/publicMarketing.json";
 import { PLAN_LIMITS } from "@/config/planLimits";
 import { FREE_POLICY } from "@/config/freePolicy";
+import { getPublicTestimonials } from "@/api/testimonials";
+
+jest.mock("@/api/testimonials", () => ({
+  getPublicTestimonials: jest.fn(() => new Promise(() => {}))
+}));
 
 describe("HeyCatch audit corrections", () => {
+  beforeEach(() => {
+    jest.mocked(getPublicTestimonials).mockImplementation(() => new Promise(() => {}));
+    jest
+      .spyOn(AppState, "addEventListener")
+      .mockImplementation(() => ({ remove: jest.fn() }));
+  });
+
+  it("preserves the founder's book-first origin and distinguishes inspiration from implementation", () => {
+    const screen = render(<PublicLandingPage page="about" />);
+    expect(screen.getByText(marketing.founder.historyNote)).toBeTruthy();
+    for (const section of marketing.founder.historySections) {
+      expect(screen.getByText(section.title)).toBeTruthy();
+      expect(screen.getByText(section.body)).toBeTruthy();
+    }
+    const copy = JSON.stringify(screen.toJSON());
+    expect(copy).toContain("idea of a choose-your-own-adventure book");
+    expect(copy).toContain("I may have had the original concept earlier");
+    expect(copy).toContain("Jorge Cervantes");
+    expect(copy).toContain("it does not use his framework");
+  });
+
   it("uses a personal-grower hero and scope limits without outcome promises", () => {
     const screen = render(<PublicLandingPage page="home" />);
     expect(screen.getByText("The grow journal that remembers every run.")).toBeTruthy();

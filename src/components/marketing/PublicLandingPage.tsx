@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-n
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import marketing from "./publicMarketing.json";
 import MarketingDetails, { FounderPortrait } from "./MarketingDetails";
+import PublicTestimonials from "./PublicTestimonials";
 
 export type PublicPageKey =
   | "home"
@@ -162,6 +163,7 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
         ))}
       </View>
       <MarketingDetails page={page} />
+      {(page === "home" || page === "about") && <PublicTestimonials />}
       <View style={styles.footer}>
         <Link href="/about" style={styles.navigationLink}>
           About

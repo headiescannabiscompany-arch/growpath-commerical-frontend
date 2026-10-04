@@ -1,6 +1,10 @@
 # W05 Genuine Feedback Collection and Reviewed Testimonials
 
-Status: approved implementation contract; not implemented or released by this document.
+Status: implemented and locally verified October 4, 2026; staging-specific Vault
+integration and hosted acceptance remain open. Not yet released. Local evidence:
+260 backend tests, 320 frontend tests, 14 static export tests, production export,
+and synthetic real-Chrome metadata/orientation verification. See the execution
+checkpoint for exact workspaces and release boundaries.
 
 The owner approved a workflow for collecting actual user feedback, a chosen public
 name, an optional photo, explicit publication consent, Admin review, and withdrawal.
@@ -239,21 +243,24 @@ change runtime behavior.
 
 ## Finite acceptance checklist
 
-- [ ] Immutable record, versioned consent, one-current-submission index, and retry
+The checked items below have local automated evidence; hosted end-to-end
+acceptance and production verification are separately required before completion.
+
+- [x] Immutable record, versioned consent, one-current-submission index, and retry
   idempotency are implemented and tested.
-- [ ] Genuine private feedback can be submitted with publicity consent unchecked.
-- [ ] The exact name, quote, and optional photo are previewed before consent.
-- [ ] Owner status/history and idempotent withdrawal work without a paid plan.
-- [ ] Admin can review, publish the exact consented version, reject, or hide;
+- [x] Genuine private feedback can be submitted with publicity consent unchecked.
+- [x] The exact name, quote, and optional photo are previewed before consent.
+- [x] Owner status/history and idempotent withdrawal work without a paid plan.
+- [x] Admin can review, publish the exact consented version, reject, or hide;
   there is no content-editing or automatic-publication shortcut.
-- [ ] Withdrawal wins publish/withdraw races and blocks subsequent text and known
+- [x] Withdrawal wins publish/withdraw races and blocks subsequent text and known
   photo URL reads even if physical cleanup fails.
-- [ ] Photo ownership, source-generation changes, concurrent deletion, bounded
+- [x] Photo ownership, source-generation changes, concurrent deletion, bounded
   uploads, metadata removal, and cleanup are covered.
-- [ ] Public responses redact all private fields and exclude synthetic records.
+- [x] Public responses redact all private fields and exclude synthetic records.
 - [ ] Account export, deletion, quarantine, media reference, and model-coverage
   tests pass; restoration never restores revoked consent.
-- [ ] Tests cover absent/false/invalid consent, stale digest/revision, duplicate
+- [x] Tests cover absent/false/invalid consent, stale digest/revision, duplicate
   submission, non-owner/non-Admin requests, stale session/UI responses, and
   failed reads/retries.
 - [ ] Staging acceptance passes; the exact reviewed revision is deployed and

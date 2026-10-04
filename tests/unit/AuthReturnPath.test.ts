@@ -22,6 +22,23 @@ const SHARED_COURSE_PATH = `/courses?courseId=${COURSE_ID}`;
 const STOREFRONT_COURSE_PATH = `/store/growpathai/courses/${COURSE_ID}`;
 const PRODUCT_PATH = "/store/growpathai/products/6a90f76bf113936857750634";
 
+describe("feedback login return", () => {
+  it("allows only the exact feedback destination, not arbitrary redirects or signup carryover", () => {
+    expect(parseSafeLoginReturnPath("/feedback")).toBe("/feedback");
+    for (const value of [
+      "/feedback?next=https://evil.example",
+      "//feedback",
+      "/feedback#submit",
+      "/feedback/",
+      ["/feedback"],
+      "https://growpathai.com/feedback"
+    ]) {
+      expect(parseSafeLoginReturnPath(value)).toBe("");
+    }
+    expect(parseShopperSignupReturnPath("/feedback")).toBe("");
+  });
+});
+
 describe("shopper signup return allowlist", () => {
   it.each([PRODUCT_PATH, SHARED_COURSE_PATH, STOREFRONT_COURSE_PATH])(
     "accepts only the exact canonical shopper destination %s",

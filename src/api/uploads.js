@@ -294,7 +294,8 @@ export async function uploadEvidenceMedia(input) {
         timeoutMs: 30000
       }));
     prepared = await prepareEvidenceImageForUpload(blob, file.name, {
-      signal: input?.signal
+      signal: input?.signal,
+      ...(input?.forceStripMetadata === true ? { forceStripMetadata: true } : {})
     });
   } else {
     preparedNative = await prepareNativeEvidenceImageForUpload(
@@ -306,7 +307,10 @@ export async function uploadEvidenceMedia(input) {
         width: input?.width,
         height: input?.height
       },
-      { signal: input?.signal }
+      {
+        signal: input?.signal,
+        ...(input?.forceStripMetadata === true ? { forceStripMetadata: true } : {})
+      }
     );
   }
 

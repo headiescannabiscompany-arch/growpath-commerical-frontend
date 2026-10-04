@@ -204,6 +204,7 @@ export function parseSafeLoginReturnPath(value: unknown): string {
     parsePublicCourseReturnPath(value) ||
     parseAuthReturnPath(value) ||
     parseClaimReturnPath(value) ||
+    (value === "/feedback" ? "/feedback" : "") ||
     (value === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "")
   );
 }

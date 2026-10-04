@@ -142,6 +142,20 @@ function publicMarketingMarkup(route) {
         anchor(["Watch the show on YouTube", marketing.founder.showUrl]) +
         "</section>"
       : "") +
+    (page === "about"
+      ? '<section class="marketing-card"><h2>' +
+        escape(marketing.founder.historyTitle) +
+        "</h2><p>" +
+        escape(marketing.founder.historyNote) +
+        "</p>" +
+        marketing.founder.historySections
+          .map(
+            (section) =>
+              "<h3>" + escape(section.title) + "</h3><p>" + escape(section.body) + "</p>"
+          )
+          .join("") +
+        "</section>"
+      : "") +
     (page === "home" || page === "about"
       ? '<section class="marketing-card"><h2>See what has actually shipped</h2><p>Our Updates page separates live releases from work still in progress. Read the dated release notes before counting on a feature.</p>' +
         anchor(["Read product updates", "/updates"]) +

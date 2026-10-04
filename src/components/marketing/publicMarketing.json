@@ -404,6 +404,34 @@
     "photoAlt": "Jay, founder of GrowPathAI",
     "homeMention": "Built by Jay, host of Exploring the Growing Universe.",
     "story": "I built GrowPathAI because I wanted social software and AI to empower the people using them, not feed arguments or turn their interests into someone else's product. I wanted a place for growers: community alongside practical tools of the trade. My longer-term goal is to bring that same approach to other industries. GrowPathAI is where I'm starting.",
+    "historyTitle": "The GrowPathAI founder story",
+    "historyNote": "In Jay's words, adapted from his founder story and clarifications supplied October 4, 2026. The dates describe remembered milestones, not a confirmed first-concept date or a public product launch. Future ambitions below are not a list of shipped features.",
+    "historySections": [
+      {
+        "title": "June 2025 — learning by building",
+        "body": "GrowPathAI did not start as a gardening app. In June 2025, I started experimenting with applications around the Pi Network ecosystem: marketplaces, jobs, education and payments. One early idea was a store for soil, nutrients, seeds and growing equipment that could accept Pi. That led me into payment gateways and how software systems fit together. I was learning how far AI-assisted development could take one person with an idea."
+      },
+      {
+        "title": "August 4, 2025 — returning to growing",
+        "body": "I remember August 4, 2025 as a milestone in GrowPathAI taking shape, though I may have had the original concept earlier. I do not have a confirmed date for that first idea. Growing was something I knew from years of experimenting, making mistakes and studying plants. I wanted more than a static calendar saying what to do in week one, two or three. Two plants of the same cultivar can behave differently. The plant and its environment change the plan."
+      },
+      {
+        "title": "The original idea: follow the plant",
+        "body": "My starting point was the idea of a choose-your-own-adventure book. I later turned that idea into GrowPathAI: a growing system where the next step depends on the plant and what has happened so far. Jorge Cervantes' LAWNS framework — Light, Air, Water, Nutrients and Substrate — was one inspiration for GrowPathAI. GrowPathAI takes its own approach; it does not use his framework. I wanted growers to bring photos, observations, watering, feeding and environmental records together over time, so AI could help explain patterns in that particular grow. The aim was to help people understand their own information and decide what to do next."
+      },
+      {
+        "title": "Tools need people, too",
+        "body": "Growing has always been a community activity. People teach each other, compare techniques, ask questions and show their plants. I wanted practical tools, grow records, education and community in one place, instead of scattering a grow's history across ten apps. Start personal. Learn. Track. Improve. Share. Scale. The platform should grow with the person using it."
+      },
+      {
+        "title": "Make the person more capable",
+        "body": "My background is architecture, construction, design and growing, not a traditional software career. I learned by building, with plenty of wrong turns and things rebuilt along the way. I don't want technology that quietly profiles people, speaks for them or publishes without their knowledge. AI should explain, assist and suggest. When something consequential happens, the person should stay involved in the decision."
+      },
+      {
+        "title": "The longer-term vision",
+        "body": "I'd like to bring this approach to other industries: tools, education, community and AI built around the work people actually do. That's a future ambition, not something GrowPathAI already delivers outside growing. GrowPathAI is where I'm starting. Give people better tools, better information and a way to connect with each other. Use AI to empower the person holding the tool."
+      }
+    ],
     "showUrl": "https://youtube.com/@etgujay",
     "socialUrl": null
   },

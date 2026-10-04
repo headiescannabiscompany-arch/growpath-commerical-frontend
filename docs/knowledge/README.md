@@ -24,6 +24,7 @@ Before changing a tool, read the relevant method plus `source-reliability-regist
 | Small Business Desk (B-03)     | `methods/business-desk-method.md`                                                       |
 | Horticulture operations (B-04) | `methods/horticulture-operations-method.md`, plus Plant Diagnosis and B-02 when linked  |
 | Public copies / sharing        | `methods/public-copy-sharing-method.md`, plus the source workflow method                |
+| Feedback / testimonials        | `methods/testimonial-feedback-method.md`                                               |
 
 The runtime counterparts live in `src/knowledge`. Method IDs and source IDs are stable API values. Add named sites to the registry only after recording trusted uses, exclusions, cross-check requirements, and review date.
 
