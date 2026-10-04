@@ -163,6 +163,167 @@ describe("toolRuns API", () => {
     expect(runs.map((run: any) => run.id)).toEqual(["run-plant-1", "run-plant-2"]);
   });
 
+  describe("saved-run collection readiness", () => {
+    const envelopeCases: Array<[string, (rows: any[]) => unknown]> = [
+      ["bare array", (rows) => rows],
+      ["items", (rows) => ({ items: rows })],
+      ["tools", (rows) => ({ tools: rows })],
+      ["data.tools", (rows) => ({ data: { tools: rows } })],
+      ["data.items", (rows) => ({ data: { items: rows } })]
+    ];
+
+    it.each(envelopeCases)("preserves populated %s responses", async (_name, wrap) => {
+      const source = {
+        _id: "run-legacy",
+        toolName: "vpd",
+        params: { rh: 62 },
+        result: { vpdKpa: 1.1 },
+        summary: "Previously saved result",
+        createdAt: "2026-10-04T12:00:00.000Z",
+        growId: null,
+        facilityId: null,
+        optionalMetadata: { preserve: true }
+      };
+      mockApiRequest.mockResolvedValueOnce(wrap([source]));
+
+      await expect(listToolRuns()).resolves.toEqual([
+        expect.objectContaining({
+          id: "run-legacy",
+          _id: "run-legacy",
+          toolType: "vpd",
+          inputs: { rh: 62 },
+          outputs: { vpdKpa: 1.1 },
+          optionalMetadata: { preserve: true }
+        })
+      ]);
+      expect(source).not.toHaveProperty("id");
+    });
+
+    it.each(envelopeCases)(
+      "accepts confirmed empty %s responses",
+      async (_name, wrap) => {
+        mockApiRequest.mockResolvedValueOnce(wrap([]));
+        await expect(listToolRuns()).resolves.toEqual([]);
+      }
+    );
+
+    it.each([
+      "network unavailable",
+      "Not authenticated",
+      "Access denied",
+      "Server unavailable"
+    ])("propagates %s instead of inventing empty history", async (message) => {
+      const failure = new Error(message);
+      mockApiRequest.mockRejectedValueOnce(failure);
+      await expect(listToolRuns()).rejects.toBe(failure);
+    });
+
+    it.each([
+      null,
+      undefined,
+      "unavailable",
+      {},
+      { items: null },
+      { items: {} },
+      { tools: "unavailable" },
+      { data: [] },
+      { data: { items: null } },
+      { data: { tools: {} } },
+      { ok: false, items: [] },
+      { success: false, tools: [] },
+      { error: { code: "UNAVAILABLE" }, items: [] },
+      { data: { ok: false, tools: [] } },
+      { data: { success: false, items: [] } },
+      { data: { error: "Unavailable", items: [] } },
+      { items: null, tools: [] },
+      { data: { tools: null, items: [] } }
+    ])("rejects malformed or explicitly failed collection %#", async (response) => {
+      mockApiRequest.mockResolvedValueOnce(response);
+      await expect(listToolRuns()).rejects.toThrow(
+        "Saved run history could not be verified. Please retry."
+      );
+    });
+
+    it.each([
+      null,
+      [],
+      "run-1",
+      {},
+      { _id: "run-1" },
+      { _id: "", toolName: "vpd" },
+      { _id: " run-1 ", toolName: "vpd" },
+      { _id: 1, toolName: "vpd" },
+      { _id: { id: "run-1" }, toolName: "vpd" },
+      { _id: "run-1", id: "different-run", toolName: "vpd" },
+      { _id: "run-1", id: 1, toolName: "vpd" },
+      { _id: "run-1", toolName: " " },
+      { _id: "run-1", toolName: { name: "vpd" } },
+      { _id: "run-1", toolName: "vpd", toolType: [] },
+      { _id: "run-1", toolName: "vpd", summary: {} },
+      { _id: "run-1", toolName: "vpd", createdAt: [] },
+      { _id: "run-1", toolName: "vpd", growId: {} },
+      { _id: "run-1", toolName: "vpd", facilityId: 1 }
+    ])(
+      "rejects an unreadable row rather than normalizing a fictitious run %#",
+      async (row) => {
+        mockApiRequest.mockResolvedValueOnce({ items: [row] });
+        await expect(listToolRuns()).rejects.toThrow(/could not be verified/);
+      }
+    );
+
+    it("rejects repeated saved identities", async () => {
+      mockApiRequest.mockResolvedValueOnce({
+        items: [
+          { _id: "run-1", toolName: "vpd" },
+          { id: "run-1", toolType: "vpd" }
+        ]
+      });
+      await expect(listToolRuns()).rejects.toThrow(/could not be verified/);
+    });
+
+    it("validates every row before applying the requested tool filter", async () => {
+      mockApiRequest.mockResolvedValueOnce({
+        items: [{ _id: "run-1", toolName: "vpd" }, { toolName: "species_crop_id" }]
+      });
+      await expect(listToolRuns({ toolType: "vpd" })).rejects.toThrow(
+        /could not be verified/
+      );
+    });
+
+    it("preserves canonical ids, legacy naming aliases and an empty local filter result", async () => {
+      mockApiRequest.mockResolvedValue({
+        items: [{ id: "run-1", _id: "run-1", toolName: "", toolType: "vpd" }]
+      });
+      await expect(listToolRuns()).resolves.toEqual([
+        expect.objectContaining({ id: "run-1", toolName: "vpd", toolType: "vpd" })
+      ]);
+      await expect(listToolRuns({ toolType: "species_crop_id" })).resolves.toEqual([]);
+    });
+
+    it("preserves every existing query option and the fresh read boundary", async () => {
+      mockApiRequest.mockResolvedValueOnce({ items: [] });
+      await listToolRuns({
+        growId: "grow-1",
+        toolType: "harvest-readiness",
+        includeArchived: true,
+        workspaceType: "facility",
+        facilityId: "facility-1"
+      });
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/tools", {
+        method: "GET",
+        cache: "no-store",
+        params: expect.objectContaining({
+          growId: "grow-1",
+          toolType: "harvest-readiness",
+          includeArchived: "true",
+          workspaceType: "facility",
+          facilityId: "facility-1",
+          _fresh: expect.any(String)
+        })
+      });
+    });
+  });
+
   it("scopes facility Saved Run reads and safe mutations", async () => {
     const scope = { workspaceType: "facility", facilityId: "facility-1" };
 

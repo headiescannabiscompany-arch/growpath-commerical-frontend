@@ -68,7 +68,12 @@ jest.mock("@/api/toolRuns", () => ({
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
-  useOptionalAuth: () => ({ user: { id: "account-1" } })
+  useOptionalAuth: () => ({
+    user: { id: "account-1" },
+    token: "test-session",
+    isAuthed: true,
+    isHydrating: false
+  })
 }));
 
 jest.mock("@/features/personal/tools/harvestResultDeletionPersistence", () => ({
@@ -1673,7 +1678,13 @@ describe("SavedToolRunsRoute", () => {
     expect(await screen.findByLabelText("Selected saved tool run run-1")).toBeTruthy();
     fireEvent.press(screen.getByText("Include Current Location Privately"));
     await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(1));
+    expect(screen.getByLabelText("Saved tool run run-2")).toBeDisabled();
     fireEvent.press(screen.getByLabelText("Saved tool run run-2"));
+    expect(screen.queryByLabelText("Selected saved tool run run-2")).toBeNull();
+    // In-page selection is serialized with the write. A new source route can still
+    // replace the context while that old request is settling.
+    mockSearchParams = { toolRunId: "run-2", toolType: "species_crop_id" };
+    screen.rerender(<SavedToolRunsRoute />);
     expect(await screen.findByLabelText("Selected saved tool run run-2")).toBeTruthy();
 
     await act(async () => {

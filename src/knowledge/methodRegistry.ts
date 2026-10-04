@@ -731,6 +731,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Exclude synthetic QA evidence from ordinary production conclusions unless it is explicitly selected and labeled.",
       "The deterministic comparison uses no AI credit; optional AI explanation must preserve the same evidence limits.",
       "Timeline exports must remain readable and must not expose raw machine payloads, evidence fingerprints, provider data or private identifiers.",
+      "Saved ToolRun history distinguishes failed reads from empty collections, offers single-flight read-only Refresh/Retry, labels retained same-query snapshots and discards late account/session/workspace/Facility/filter results without AI dispatch or evidence writes.",
       "Journal uploads prepare oversized phone photos locally without overwriting device originals, retain completed uploads across draft retries, and record uploaded byte/type metadata without claiming unknown resized dimensions. This does not grant AI consent or change original-evidence policy."
     ],
     ["run-comparison"]
@@ -1355,6 +1356,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "record-backed non-submitting Facility AI readiness presets",
       "visible Facility AI hub entry for supported templates and a capability-gated owner entry for the AI Validation Lab",
       "selected-Facility Plant/Crop Identification, Plant Diagnosis, IPM Scout, and Saved AI Runs with Facility-safe back navigation",
+      "Facility Saved AI Runs uses scoped read-only Refresh/Retry, unavailable versus empty history, labeled retained snapshots and late-context isolation without rerunning AI or spending credits",
       "selected-Facility Environment Review with deterministic VPD/dew-point interpretation and a pH/EC Range Check whose runs, logs, and task plans remain Facility-scoped",
       "cannabis-specific Facility AI discovery gated by structured eligible Facility grow evidence",
       "explicit Facility grow crop-type setup and correction so authorized owners and managers can establish the structured context required by crop-specific tools",

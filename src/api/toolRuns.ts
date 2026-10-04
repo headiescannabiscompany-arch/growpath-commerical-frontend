@@ -346,6 +346,72 @@ export async function getToolRun(
   }
 }
 
+function isToolRunRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function toolRunCollection(response: unknown): Record<string, unknown>[] {
+  const invalid = () =>
+    new Error("Saved run history could not be verified. Please retry.");
+  let rows: unknown;
+  if (Array.isArray(response)) {
+    rows = response;
+  } else {
+    if (
+      !isToolRunRecord(response) ||
+      response.ok === false ||
+      response.success === false ||
+      response.error != null
+    ) {
+      throw invalid();
+    }
+    // Preserve the existing envelopes and precedence, but never skip an invalid
+    // collection in favor of a lower-priority field or pretend it was empty.
+    if ("items" in response) rows = response.items;
+    else if ("tools" in response) rows = response.tools;
+    else if (isToolRunRecord(response.data)) {
+      if (
+        response.data.ok === false ||
+        response.data.success === false ||
+        response.data.error != null
+      ) {
+        throw invalid();
+      }
+      if ("tools" in response.data) rows = response.data.tools;
+      else if ("items" in response.data) rows = response.data.items;
+    }
+  }
+  if (!Array.isArray(rows)) throw invalid();
+
+  const ids = new Set<string>();
+  for (const row of rows) {
+    if (!isToolRunRecord(row)) throw invalid();
+    const id = row._id ?? row.id;
+    const identities = [row._id, row.id].filter((value) => value != null);
+    if (
+      typeof id !== "string" ||
+      !id.trim() ||
+      id !== id.trim() ||
+      identities.some((value) => value !== id) ||
+      ids.has(id)
+    ) {
+      throw invalid();
+    }
+    const names = [row.toolName, row.toolType];
+    if (
+      !names.some((value) => typeof value === "string" && Boolean(value.trim())) ||
+      names.some((value) => value != null && typeof value !== "string") ||
+      [row.summary, row.createdAt, row.growId, row.facilityId].some(
+        (value) => value != null && typeof value !== "string"
+      )
+    ) {
+      throw invalid();
+    }
+    ids.add(id);
+  }
+  return rows;
+}
+
 export async function listToolRuns(options?: {
   growId?: string;
   toolType?: string;
@@ -353,38 +419,23 @@ export async function listToolRuns(options?: {
   workspaceType?: "personal" | "commercial" | "facility";
   facilityId?: string;
 }): Promise<ToolRun[]> {
-  try {
-    const params: Record<string, string> = {};
-    if (options?.growId) params.growId = options.growId;
-    if (options?.toolType) params.toolType = options.toolType;
-    if (options?.includeArchived) params.includeArchived = "true";
-    if (options?.workspaceType) params.workspaceType = options.workspaceType;
-    if (options?.facilityId) params.facilityId = options.facilityId;
-    const res: any = await apiRequest("/api/tools", {
-      method: "GET",
-      cache: "no-store",
-      params: withFreshnessParam(params)
-    });
-    const rows = Array.isArray(res)
-      ? res
-      : Array.isArray(res?.items)
-        ? res.items
-        : Array.isArray(res?.tools)
-          ? res.tools
-          : Array.isArray(res?.data?.tools)
-            ? res.data.tools
-            : Array.isArray(res?.data?.items)
-              ? res.data.items
-              : [];
-    const normalizedRows: ToolRun[] = rows.map((row: any) => normalizeToolRun(row));
-    const requestedToolType = toolTypeFilterKey(options?.toolType);
-    if (!requestedToolType) return normalizedRows;
-    return normalizedRows.filter(
-      (run) => toolTypeFilterKey(run.toolType || run.toolName) === requestedToolType
-    );
-  } catch (_err) {
-    return [];
-  }
+  const params: Record<string, string> = {};
+  if (options?.growId) params.growId = options.growId;
+  if (options?.toolType) params.toolType = options.toolType;
+  if (options?.includeArchived) params.includeArchived = "true";
+  if (options?.workspaceType) params.workspaceType = options.workspaceType;
+  if (options?.facilityId) params.facilityId = options.facilityId;
+  const res: unknown = await apiRequest("/api/tools", {
+    method: "GET",
+    cache: "no-store",
+    params: withFreshnessParam(params)
+  });
+  const normalizedRows = toolRunCollection(res).map(normalizeToolRun);
+  const requestedToolType = toolTypeFilterKey(options?.toolType);
+  if (!requestedToolType) return normalizedRows;
+  return normalizedRows.filter(
+    (run) => toolTypeFilterKey(run.toolType || run.toolName) === requestedToolType
+  );
 }
 
 export async function updateToolRun(

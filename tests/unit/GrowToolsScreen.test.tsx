@@ -91,6 +91,21 @@ describe("GrowToolsScreen", () => {
     ]);
   });
 
+  it("does not turn an unavailable run read into empty history or an unhandled rejection", async () => {
+    mockListToolRuns.mockRejectedValueOnce(new Error("read unavailable"));
+    const screen = render(<GrowToolsScreen />);
+    expect(screen.queryByText("No saved runs yet.")).toBeNull();
+    await waitFor(() =>
+      expect(
+        screen.getByText("Recent tool runs are unavailable. Open Saved runs to retry.")
+      ).toBeTruthy()
+    );
+    expect(screen.queryByText("No saved runs yet.")).toBeNull();
+    expect(screen.getByText("Harvest readiness calculator")).toBeTruthy();
+    expect(mockSaveToolRunToLog).not.toHaveBeenCalled();
+    expect(mockCreateTaskFromToolRun).not.toHaveBeenCalled();
+  });
+
   it("reloads and renders saved tool run results from the grow workspace", async () => {
     const screen = render(<GrowToolsScreen />);
 

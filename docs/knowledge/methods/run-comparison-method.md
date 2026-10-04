@@ -1,5 +1,12 @@
 # Run Comparison and Grow History
 
+Saved ToolRun history distinguishes loading, unavailable reads and confirmed empty
+collections. Offer single-flight read-only Refresh/Retry, label retained same-query
+snapshots, and discard prior results after account/session, workspace, Facility or
+filter changes. An unavailable read never establishes that no saved evidence exists.
+Refreshing history neither reruns AI nor creates, edits, archives or shares a result.
+Existing saved-result access, evidence and reviewed follow-up actions remain unchanged.
+
 Journal photo uploads use the existing local image-preparation helper before the
 5 MiB image endpoint: compatible photos below its 4.5 MiB target pass unchanged;
 larger/normalization-required photos are prepared as JPEG without enlarging pixels.

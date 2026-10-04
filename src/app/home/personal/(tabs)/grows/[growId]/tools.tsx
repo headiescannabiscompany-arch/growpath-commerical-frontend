@@ -260,6 +260,9 @@ export default function GrowToolsScreen({
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const basePath = growWorkspaceBasePath(workspace);
   const [recent, setRecent] = useState<ToolRun[]>([]);
+  const [recentState, setRecentState] = useState<"loading" | "ready" | "error">(
+    "loading"
+  );
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
   const [loadingRunId, setLoadingRunId] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -268,13 +271,19 @@ export default function GrowToolsScreen({
   useFocusEffect(
     useCallback(() => {
       let mounted = true;
+      setRecentState("loading");
+      setRecent([]);
+      setCannabisGrow(false);
       (async () => {
-        const [rows, grows] = await Promise.all([
+        const [runsResult, growsResult] = await Promise.allSettled([
           listToolRuns({ growId, workspaceType: workspace }),
           listWorkspaceGrows(workspace)
         ]);
         if (!mounted) return;
+        const rows = runsResult.status === "fulfilled" ? runsResult.value : [];
+        const grows = growsResult.status === "fulfilled" ? growsResult.value : [];
         setRecent(Array.isArray(rows) ? rows.slice(0, 4) : []);
+        setRecentState(runsResult.status === "fulfilled" ? "ready" : "error");
         setCannabisGrow(isCannabisGrow(findGrowById(grows, growId), rows));
       })();
       return () => {
@@ -422,7 +431,13 @@ export default function GrowToolsScreen({
           );
         })}
         <Text style={styles.recentTitle}>Recent tool runs</Text>
-        {recent.length === 0 ? (
+        {recentState !== "ready" ? (
+          <Text style={styles.recentRow}>
+            {recentState === "loading"
+              ? "Loading recent tool runs..."
+              : "Recent tool runs are unavailable. Open Saved runs to retry."}
+          </Text>
+        ) : recent.length === 0 ? (
           <Text style={styles.recentRow}>No saved runs yet.</Text>
         ) : (
           recent.map((run, index) => (

@@ -1,5 +1,11 @@
 # Facility Workflow
 
+Facility Saved AI Runs follows the shared history read-recovery boundary: scoped
+failed or malformed reads are unavailable, not empty history. Refresh/Retry is
+read-only and single-flight; retained same-query results are labeled and old
+account/session/Facility/filter responses are ignored. Back returns to Facility AI
+Tools. This does not run AI, spend credits or modify saved evidence or permissions.
+
 Integration destination grow reads follow the integration-workflow recovery boundary:
 validate collections, preserve labeled same-context choices on failure, offer
 single-flight Refresh/Retry and lock destination actions until recovery. Active

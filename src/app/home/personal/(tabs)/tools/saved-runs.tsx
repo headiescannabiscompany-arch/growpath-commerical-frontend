@@ -1400,7 +1400,7 @@ export default function SavedToolRunsScreen({
       ? requestedGrowId
       : "";
   const fieldStudyId = workspaceType === "personal" ? requestedFieldStudyId : "";
-  const workspaceIdentityKey = toolWorkspaceIdentity({
+  const storageWorkspaceIdentityKey = toolWorkspaceIdentity({
     workspaceType,
     facilityId
   });
@@ -1431,11 +1431,52 @@ export default function SavedToolRunsScreen({
         ? `/home/personal/field-studies/${fieldStudyId}`
         : sourceBackTarget;
   const [toolType, setToolType] = useState(initialToolType);
+  const contextValue = JSON.stringify([
+    accountId,
+    auth?.token,
+    auth?.isAuthed,
+    auth?.isHydrating,
+    entitlements.mode,
+    entitlements.facilityRole,
+    storageWorkspaceIdentityKey,
+    growId,
+    fieldStudyId,
+    commercialAccountId,
+    sourceContext,
+    sourceTaskId,
+    targetToolRunId,
+    initialToolType,
+    toolType
+  ]);
+  const contextRef = useRef({ value: contextValue, generation: 0 });
+  if (contextRef.current.value !== contextValue) {
+    contextRef.current = {
+      value: contextValue,
+      generation: contextRef.current.generation + 1
+    };
+  }
+  // Include an epoch so an old request cannot become current after A -> B -> A.
+  const workspaceIdentityKey = `${contextRef.current.generation}:${contextValue}`;
+  const canReadRuns = Boolean(
+    auth?.isAuthed &&
+    !auth.isHydrating &&
+    accountId &&
+    (workspaceType !== "facility" || facilityId)
+  );
   const [runs, setRuns] = useState<ToolRun[]>([]);
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
   const [summaryDraft, setSummaryDraft] = useState("");
   const [correctionDraft, setCorrectionDraft] = useState("");
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState("");
+  const [loadedContextKey, setLoadedContextKey] = useState("");
+  const [snapshotVersion, setSnapshotVersion] = useState(0);
+  const snapshotVersionRef = useRef(0);
+  const [actionBusy, setActionBusy] = useState(false);
+  const mountedRef = useRef(true);
+  const readRef = useRef<object | null>(null);
+  const actionRef = useRef<object | null>(null);
+  const readReadyRef = useRef(false);
   const [feedback, setFeedback] = useState("");
   const [fieldStudy, setFieldStudy] = useState<FieldStudy | null>(null);
   const [fieldObservations, setFieldObservations] = useState<FieldObservation[]>([]);
@@ -1477,8 +1518,65 @@ export default function SavedToolRunsScreen({
   const renderedWorkspaceIdentityRef = useRef(workspaceIdentityKey);
   const currentWorkspaceIdentityRef = useRef(workspaceIdentityKey);
   currentWorkspaceIdentityRef.current = workspaceIdentityKey;
+  const hasCurrentSnapshot = loadedContextKey === workspaceIdentityKey;
+  const listReady = canReadRuns && hasCurrentSnapshot && !loading && !listError;
+  readReadyRef.current = listReady;
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      currentWorkspaceIdentityRef.current = "";
+      readRef.current = null;
+      actionRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => setToolType(initialToolType), [initialToolType]);
+
+  const runRecordAction = useCallback(
+    async <T,>(action: () => Promise<T>): Promise<T> => {
+      if (
+        !mountedRef.current ||
+        !readReadyRef.current ||
+        snapshotVersionRef.current !== snapshotVersion ||
+        readRef.current ||
+        actionRef.current ||
+        currentWorkspaceIdentityRef.current !== workspaceIdentityKey
+      )
+        throw new Error(
+          "Wait for current saved runs and the active operation to finish."
+        );
+      const operation = {};
+      actionRef.current = operation;
+      setActionBusy(true);
+      try {
+        return await action();
+      } finally {
+        if (mountedRef.current && actionRef.current === operation) {
+          actionRef.current = null;
+          setActionBusy(false);
+        }
+      }
+    },
+    [snapshotVersion, workspaceIdentityKey]
+  );
+
+  function performRecordAction(action: () => Promise<unknown>) {
+    void runRecordAction(action).catch(() => {
+      if (
+        mountedRef.current &&
+        currentWorkspaceIdentityRef.current === workspaceIdentityKey
+      ) {
+        setFeedback(
+          "This saved-run action could not be completed. Review the result and retry."
+        );
+      }
+    });
+  }
 
   async function submitSavedRunFollowUp(question: string) {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     const sourceToolRunId = selectedRun ? idFor(selectedRun) : "";
     const workflow = isIpmRun(selectedRun)
       ? "ipm-result-follow-up"
@@ -1503,6 +1601,11 @@ export default function SavedToolRunsScreen({
         workspaceType
       }
     });
+    if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) {
+      throw new Error(
+        "The saved-run context changed. Reopen the current result before asking again."
+      );
+    }
     const answer = String(response?.reply || "").trim();
     if (!response?.success || !answer) {
       throw new Error("AI did not return a usable follow-up answer.");
@@ -1527,7 +1630,12 @@ export default function SavedToolRunsScreen({
     selectedRunIdRef.current = "";
     pendingFocusRunIdRef.current = "";
     handledTargetRunIdRef.current = "";
-    setToolType(initialToolType);
+    readRef.current = null;
+    actionRef.current = null;
+    setActionBusy(false);
+    setLoading(true);
+    setListError("");
+    setLoadedContextKey("");
     setRuns([]);
     setSelectedRun(null);
     setSummaryDraft("");
@@ -1558,19 +1666,19 @@ export default function SavedToolRunsScreen({
     setDeleteSourceVideo(false);
     setDeletingPermanently(false);
     setPendingHarvestDeletion(null);
-  }, [initialToolType, workspaceIdentityKey]);
+  }, [workspaceIdentityKey]);
 
   useEffect(() => {
     let active = true;
     setPendingHarvestDeletion(null);
-    if (!accountId || !workspaceIdentityKey) {
+    if (!accountId || !storageWorkspaceIdentityKey || !canReadRuns) {
       return () => {
         active = false;
       };
     }
     void loadPendingHarvestResultDeletion({
       accountId,
-      workspaceKey: workspaceIdentityKey
+      workspaceKey: storageWorkspaceIdentityKey
     }).then((pending) => {
       if (active && currentWorkspaceIdentityRef.current === workspaceIdentityKey) {
         setPendingHarvestDeletion(pending);
@@ -1579,32 +1687,101 @@ export default function SavedToolRunsScreen({
     return () => {
       active = false;
     };
-  }, [accountId, workspaceIdentityKey]);
+  }, [accountId, canReadRuns, storageWorkspaceIdentityKey, workspaceIdentityKey]);
 
-  const load = useCallback(async () => {
-    const requestWorkspaceIdentity = workspaceIdentityKey;
-    setLoading(true);
-    setFeedback("");
-    const rows = await listToolRuns({
-      growId: growId || undefined,
-      toolType: toolType || undefined,
-      ...(toolRunScope.workspaceType ? toolRunScope : {})
-    });
-    if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
-    setRuns(rows);
-    setLoading(false);
-  }, [growId, toolRunScope, toolType, workspaceIdentityKey]);
+  const load = useCallback(
+    async (afterWrite = false) => {
+      const requestWorkspaceIdentity = workspaceIdentityKey;
+      if (
+        !mountedRef.current ||
+        readRef.current ||
+        (actionRef.current && !afterWrite) ||
+        currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity
+      )
+        return;
+      if (!canReadRuns) {
+        setLoading(false);
+        setListError(
+          workspaceType === "facility" && !facilityId
+            ? "Select a Facility before loading saved runs."
+            : "Sign in and wait for your account to finish loading before viewing saved runs."
+        );
+        return;
+      }
+      const request = {};
+      const requestSnapshotVersion = ++snapshotVersionRef.current;
+      readRef.current = request;
+      readReadyRef.current = false;
+      setLoading(true);
+      setListError("");
+      try {
+        const rows = await listToolRuns({
+          growId: growId || undefined,
+          toolType: toolType || undefined,
+          ...(toolRunScope.workspaceType ? toolRunScope : {})
+        });
+        if (
+          !mountedRef.current ||
+          readRef.current !== request ||
+          currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity
+        )
+          return;
+        setRuns(rows);
+        setLoadedContextKey(requestWorkspaceIdentity);
+        setSnapshotVersion(requestSnapshotVersion);
+        if (
+          selectedRunIdRef.current &&
+          !rows.some((run) => idFor(run) === selectedRunIdRef.current) &&
+          selectedRunIdRef.current !== targetToolRunId
+        ) {
+          selectedRunIdRef.current = "";
+          setSelectedRun(null);
+          setSummaryDraft("");
+          setCorrectionDraft("");
+        }
+      } catch {
+        if (
+          !mountedRef.current ||
+          readRef.current !== request ||
+          currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity
+        )
+          return;
+        setListError(
+          "Saved runs could not be loaded. Retry to verify the current records."
+        );
+      } finally {
+        if (
+          mountedRef.current &&
+          readRef.current === request &&
+          currentWorkspaceIdentityRef.current === requestWorkspaceIdentity
+        ) {
+          readRef.current = null;
+          setLoading(false);
+        }
+      }
+    },
+    [
+      canReadRuns,
+      facilityId,
+      growId,
+      targetToolRunId,
+      toolRunScope,
+      toolType,
+      workspaceIdentityKey,
+      workspaceType
+    ]
+  );
 
   useFocusEffect(
     useCallback(() => {
-      load();
+      void load();
     }, [load])
   );
 
   useEffect(() => {
     let active = true;
     const requestWorkspaceIdentity = workspaceIdentityKey;
-    if (workspaceType !== "personal" || !fieldStudyId) {
+    if (!canReadRuns || workspaceType !== "personal" || !fieldStudyId) {
       setFieldStudy(null);
       setFieldObservations([]);
       setFieldStudyFeedback("");
@@ -1634,13 +1811,14 @@ export default function SavedToolRunsScreen({
         );
       })
       .finally(() => {
-        if (active) setFieldStudyLoading(false);
+        if (active && currentWorkspaceIdentityRef.current === requestWorkspaceIdentity)
+          setFieldStudyLoading(false);
       });
 
     return () => {
       active = false;
     };
-  }, [fieldStudyId, workspaceIdentityKey, workspaceType]);
+  }, [canReadRuns, fieldStudyId, workspaceIdentityKey, workspaceType]);
 
   useEffect(() => {
     selectedRunIdRef.current = selectedRun ? idFor(selectedRun) : "";
@@ -1679,6 +1857,8 @@ export default function SavedToolRunsScreen({
     void (async () => {
       try {
         const collection = directNatureCollection(await listFieldStudies());
+        if (!active || currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity)
+          return;
         const collectionId = String(collection?.id || collection?._id || "");
         if (!collectionId) return;
         const fullCollection = await getFieldStudy(collectionId);
@@ -1716,37 +1896,46 @@ export default function SavedToolRunsScreen({
 
   const selectRun = useCallback(
     async (run: ToolRun) => {
-      const requestWorkspaceIdentity = workspaceIdentityKey;
-      const id = idFor(run);
-      if (!id) return;
-      selectedRunIdRef.current = id;
-      pendingFocusRunIdRef.current = id;
-      setFeedback("");
-      setShowPermanentDelete(false);
-      setPermanentDeleteConfirmed(false);
-      setDeleteSourceVideo(false);
-      setPrivateLocationFeedback("");
-      const full = toolRunScope.workspaceType
-        ? await getToolRun(id, toolRunScope)
-        : await getToolRun(id);
-      if (
-        currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity ||
-        selectedRunIdRef.current !== id
-      )
-        return;
-      const nextRun = full || run;
-      setSelectedRun(nextRun);
-      setSummaryDraft(nextRun.summary || "");
-      const nextOutputs = runOutputs(nextRun);
-      const correction = savedUserCorrection(nextOutputs);
-      setCorrectionDraft(
-        isSpeciesCropRun(nextRun)
-          ? correction?.commonName || savedCropCandidate(nextOutputs)
-          : ""
-      );
-      if (!full) setFeedback("Unable to reload this run; showing cached list data.");
+      return runRecordAction(async () => {
+        const requestWorkspaceIdentity = workspaceIdentityKey;
+        const id = idFor(run);
+        if (!id) return;
+        selectedRunIdRef.current = id;
+        pendingFocusRunIdRef.current = id;
+        setFeedback("");
+        setShowPermanentDelete(false);
+        setPermanentDeleteConfirmed(false);
+        setDeleteSourceVideo(false);
+        setPrivateLocationFeedback("");
+        const full = toolRunScope.workspaceType
+          ? await getToolRun(id, toolRunScope)
+          : await getToolRun(id);
+        if (
+          currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity ||
+          selectedRunIdRef.current !== id
+        )
+          return;
+        const nextRun = full || run;
+        setSelectedRun(nextRun);
+        setSummaryDraft(nextRun.summary || "");
+        const nextOutputs = runOutputs(nextRun);
+        const correction = savedUserCorrection(nextOutputs);
+        setCorrectionDraft(
+          isSpeciesCropRun(nextRun)
+            ? correction?.commonName || savedCropCandidate(nextOutputs)
+            : ""
+        );
+        if (!full) setFeedback("Unable to reload this run; showing cached list data.");
+      }).catch(() => {
+        if (
+          mountedRef.current &&
+          currentWorkspaceIdentityRef.current === workspaceIdentityKey
+        ) {
+          setFeedback("This saved run could not be opened. Refresh the list and retry.");
+        }
+      });
     },
-    [toolRunScope, workspaceIdentityKey]
+    [runRecordAction, toolRunScope, workspaceIdentityKey]
   );
 
   useEffect(() => {
@@ -1754,7 +1943,7 @@ export default function SavedToolRunsScreen({
       handledTargetRunIdRef.current = "";
       return;
     }
-    if (loading || handledTargetRunIdRef.current === targetToolRunId) return;
+    if (!listReady || handledTargetRunIdRef.current === targetToolRunId) return;
     handledTargetRunIdRef.current = targetToolRunId;
     if (selectedRun && idFor(selectedRun) === targetToolRunId) return;
     const matchingRun = runs.find((run) => idFor(run) === targetToolRunId);
@@ -1762,7 +1951,7 @@ export default function SavedToolRunsScreen({
       void selectRun(matchingRun);
       return;
     }
-    void (async () => {
+    void runRecordAction(async () => {
       const requestWorkspaceIdentity = workspaceIdentityKey;
       selectedRunIdRef.current = targetToolRunId;
       pendingFocusRunIdRef.current = targetToolRunId;
@@ -1791,9 +1980,17 @@ export default function SavedToolRunsScreen({
           ? correction?.commonName || savedCropCandidate(fullOutputs)
           : ""
       );
-    })();
+    }).catch(() => {
+      if (
+        mountedRef.current &&
+        currentWorkspaceIdentityRef.current === workspaceIdentityKey
+      ) {
+        setFeedback("The requested saved run could not be opened. Refresh and retry.");
+      }
+    });
   }, [
-    loading,
+    listReady,
+    runRecordAction,
     runs,
     selectedRun,
     selectRun,
@@ -1816,7 +2013,8 @@ export default function SavedToolRunsScreen({
     }
     setSelectedRun(updated);
     setSummaryDraft(updated.summary || "");
-    await load();
+    await load(true);
+    if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
     setFeedback("Saved run updated.");
   }
 
@@ -1848,7 +2046,8 @@ export default function SavedToolRunsScreen({
     setSelectedRun(updated);
     setSummaryDraft(updated.summary || "");
     setCorrectionDraft(commonName);
-    await load();
+    await load(true);
+    if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
     setFeedback(
       "Identification correction saved. Add the requested photos for a new AI review."
     );
@@ -1870,7 +2069,7 @@ export default function SavedToolRunsScreen({
     selectedRunIdRef.current = "";
     setSummaryDraft("");
     setFeedback("Saved run archived.");
-    await load();
+    await load(true);
   }
 
   async function runPermanentHarvestDeletion(pending: PendingHarvestResultDeletion) {
@@ -1945,7 +2144,7 @@ export default function SavedToolRunsScreen({
     try {
       const pending = await rememberPendingHarvestResultDeletion({
         accountId,
-        workspaceKey: workspaceIdentityKey,
+        workspaceKey: storageWorkspaceIdentityKey,
         toolRunId: id,
         deleteSourceVideo
       });
@@ -1957,6 +2156,7 @@ export default function SavedToolRunsScreen({
       setPendingHarvestDeletion(pending);
       await runPermanentHarvestDeletion(pending);
     } catch (deleteError: any) {
+      if (currentWorkspaceIdentityRef.current !== workspaceIdentityKey) return;
       setFeedback(
         deleteError?.message ||
           "The permanent-deletion retry receipt could not be saved, so nothing was deleted."
@@ -1972,6 +2172,7 @@ export default function SavedToolRunsScreen({
     setPrivateLocationFeedback("");
     try {
       const coordinates = await requestCurrentCoordinates();
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       const nextInputs = {
         ...runInputs(selectedRun),
         capturedLocation: {
@@ -2231,6 +2432,7 @@ export default function SavedToolRunsScreen({
           : "Source-media capture date saved privately to this Plant ID. No location was added, and nothing was published to Nature."
       );
     } catch (locationError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setPrivateLocationFeedback(
         locationError?.message || "The photo location could not be saved."
       );
@@ -2276,7 +2478,8 @@ export default function SavedToolRunsScreen({
     setPublishingNature(true);
     setNatureFeedback("");
     try {
-      let studies = await listFieldStudies();
+      const studies = await listFieldStudies();
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       let collection = directNatureCollection(studies);
       if (!collection) {
         collection = await createFieldStudy({
@@ -2292,9 +2495,11 @@ export default function SavedToolRunsScreen({
           visibility: "public"
         });
       }
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       const collectionId = String(collection.id || collection._id || "");
       if (!collectionId) throw new Error("The Nature collection could not be prepared.");
       const fullCollection = await getFieldStudy(collectionId);
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       const existing = fullCollection.observations.find(
         (observation) => String(observation.sourceToolRunId || "") === id
       );
@@ -2585,9 +2790,12 @@ export default function SavedToolRunsScreen({
                 variant: "secondary" as const,
                 pendingLabel: "Opening...",
                 onPress: async () => {
+                  const requestWorkspaceIdentity = workspaceIdentityKey;
                   const method = await shareSignedHarvestResult(
                     selectedSignedHarvestAnalysis
                   );
+                  if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity)
+                    return;
                   setFeedback(
                     method === "web-clipboard"
                       ? "The attestation-gated Harvest summary was copied. It includes no media, private IDs, receipt secrets, or location metadata."
@@ -2691,7 +2899,7 @@ export default function SavedToolRunsScreen({
           {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
         </View>
 
-        {pendingHarvestDeletion ? (
+        {pendingHarvestDeletion && hasCurrentSnapshot ? (
           <View
             style={styles.confirmationPanel}
             accessibilityLabel="Pending Harvest result deletion cleanup"
@@ -2707,9 +2915,16 @@ export default function SavedToolRunsScreen({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Retry pending Harvest deletion cleanup"
-              disabled={deletingPermanently}
-              onPress={() => void runPermanentHarvestDeletion(pendingHarvestDeletion)}
-              style={[styles.secondary, deletingPermanently && styles.disabled]}
+              disabled={!listReady || actionBusy || deletingPermanently}
+              onPress={() =>
+                performRecordAction(() =>
+                  runPermanentHarvestDeletion(pendingHarvestDeletion)
+                )
+              }
+              style={[
+                styles.secondary,
+                (!listReady || actionBusy || deletingPermanently) && styles.disabled
+              ]}
             >
               <Text style={styles.secondaryText}>
                 {deletingPermanently ? "Checking Cleanup..." : "Retry Exact Cleanup"}
@@ -2725,8 +2940,16 @@ export default function SavedToolRunsScreen({
               <Pressable
                 key={filter.value || "all"}
                 accessibilityRole="button"
-                onPress={() => setToolType(filter.value)}
-                style={[styles.chip, active && styles.chipOn]}
+                disabled={actionBusy}
+                accessibilityState={{ selected: active, disabled: actionBusy }}
+                onPress={() => {
+                  if (!actionRef.current) setToolType(filter.value);
+                }}
+                style={[
+                  styles.chip,
+                  active && styles.chipOn,
+                  actionBusy && styles.disabled
+                ]}
               >
                 <Text style={[styles.chipText, active && styles.chipTextOn]}>
                   {filter.label}
@@ -2736,9 +2959,44 @@ export default function SavedToolRunsScreen({
           })}
         </View>
 
-        {selectedRun ? (
+        <View style={styles.card} accessibilityLiveRegion="polite">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh saved runs"
+            accessibilityState={{ disabled: loading || actionBusy || !canReadRuns }}
+            disabled={loading || actionBusy || !canReadRuns}
+            onPress={() => void load()}
+            style={[
+              styles.secondary,
+              (loading || actionBusy || !canReadRuns) && styles.disabled
+            ]}
+          >
+            <Text style={styles.secondaryText}>
+              {loading ? "Refreshing..." : listError ? "Retry" : "Refresh"}
+            </Text>
+          </Pressable>
+          {loading ? <Text style={styles.cardText}>Loading saved runs...</Text> : null}
+          {listError ? (
+            <View>
+              <Text style={styles.cardTitle}>Saved runs unavailable</Text>
+              <Text style={styles.cardText}>{listError}</Text>
+            </View>
+          ) : null}
+          {hasCurrentSnapshot && !listReady ? (
+            <Text style={styles.cardText}>
+              Showing previously loaded saved runs. Refresh to verify current records.
+            </Text>
+          ) : null}
+          {actionBusy ? (
+            <Text style={styles.cardText}>Working with the selected saved run...</Text>
+          ) : null}
+        </View>
+
+        {selectedRun && hasCurrentSnapshot ? (
           <View
-            style={styles.selectedResult}
+            style={[styles.selectedResult, !listReady && { display: "none" }]}
+            accessibilityElementsHidden={!listReady}
+            importantForAccessibility={listReady ? "auto" : "no-hide-descendants"}
             onLayout={(event) => {
               if (pendingFocusRunIdRef.current !== selectedRunId) return;
               pendingFocusRunIdRef.current = "";
@@ -2780,14 +3038,29 @@ export default function SavedToolRunsScreen({
                   <ResultQuestionCard
                     sourceKey={`${selectedRunId}:immutable`}
                     suggestions={savedRunFollowUpQuestions(selectedRun)}
-                    onSubmit={submitSavedRunFollowUp}
+                    onSubmit={async (question) => {
+                      const result = await runRecordAction(() =>
+                        submitSavedRunFollowUp(question)
+                      );
+                      if (!result)
+                        throw new Error(
+                          "Wait for the current saved-run operation to finish."
+                        );
+                      return result;
+                    }}
                   />
                 ) : null
               }
               enableDefaultAskAI={
                 !isIpmRun(selectedRun) && !isSpeciesCropRun(selectedRun)
               }
-              actions={actions}
+              actions={actions.map((action) => ({
+                ...action,
+                disabled: !listReady || actionBusy || action.disabled,
+                onPress: async () => {
+                  await runRecordAction(async () => action.onPress());
+                }
+              }))}
               feedback={feedback}
               copyPayload={selectedRun}
             />
@@ -2867,7 +3140,9 @@ export default function SavedToolRunsScreen({
                       accessibilityState={{
                         disabled: Boolean(pendingHarvestDeletion || !accountId)
                       }}
-                      disabled={Boolean(pendingHarvestDeletion || !accountId)}
+                      disabled={
+                        actionBusy || Boolean(pendingHarvestDeletion || !accountId)
+                      }
                       onPress={() => {
                         setShowPermanentDelete(true);
                         setPermanentDeleteConfirmed(false);
@@ -2913,6 +3188,7 @@ export default function SavedToolRunsScreen({
                       accessibilityRole="radio"
                       accessibilityState={{ checked: !deleteSourceVideo }}
                       accessibilityLabel="Keep the private source video"
+                      disabled={actionBusy}
                       onPress={() => setDeleteSourceVideo(false)}
                       style={[
                         styles.secondary,
@@ -2927,6 +3203,7 @@ export default function SavedToolRunsScreen({
                       accessibilityRole="radio"
                       accessibilityState={{ checked: deleteSourceVideo }}
                       accessibilityLabel="Delete the private source video"
+                      disabled={actionBusy}
                       onPress={() => setDeleteSourceVideo(true)}
                       style={[
                         styles.secondary,
@@ -2941,6 +3218,7 @@ export default function SavedToolRunsScreen({
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: permanentDeleteConfirmed }}
                       accessibilityLabel="I understand permanent Harvest deletion cannot be undone"
+                      disabled={actionBusy}
                       onPress={() =>
                         setPermanentDeleteConfirmed((confirmed) => !confirmed)
                       }
@@ -2958,8 +3236,12 @@ export default function SavedToolRunsScreen({
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel="Confirm permanent Harvest deletion"
-                        disabled={!permanentDeleteConfirmed || deletingPermanently}
-                        onPress={() => void permanentlyDeleteSelectedHarvest()}
+                        disabled={
+                          actionBusy || !permanentDeleteConfirmed || deletingPermanently
+                        }
+                        onPress={() =>
+                          performRecordAction(permanentlyDeleteSelectedHarvest)
+                        }
                         style={[
                           styles.primary,
                           (!permanentDeleteConfirmed || deletingPermanently) &&
@@ -2974,7 +3256,7 @@ export default function SavedToolRunsScreen({
                       </Pressable>
                       <Pressable
                         accessibilityRole="button"
-                        disabled={deletingPermanently}
+                        disabled={actionBusy || deletingPermanently}
                         onPress={() => {
                           setShowPermanentDelete(false);
                           setPermanentDeleteConfirmed(false);
@@ -3047,6 +3329,7 @@ export default function SavedToolRunsScreen({
                 <TextInput
                   accessibilityLabel="Corrected plant or crop name"
                   value={correctionDraft}
+                  editable={listReady && !actionBusy}
                   onChangeText={setCorrectionDraft}
                   style={styles.input}
                   placeholder="Enter corrected common plant name"
@@ -3055,8 +3338,9 @@ export default function SavedToolRunsScreen({
                 />
                 <Pressable
                   accessibilityRole="button"
-                  onPress={saveIdentificationCorrection}
-                  style={styles.primary}
+                  disabled={actionBusy}
+                  onPress={() => performRecordAction(saveIdentificationCorrection)}
+                  style={[styles.primary, actionBusy && styles.disabled]}
                 >
                   <Text style={styles.primaryText}>Save Identification Correction</Text>
                 </Pressable>
@@ -3091,8 +3375,10 @@ export default function SavedToolRunsScreen({
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Include current location privately with this saved Plant ID"
-                    disabled={capturingFieldLocation || savingFieldObservation}
-                    onPress={capturePrivateFieldLocation}
+                    disabled={
+                      actionBusy || capturingFieldLocation || savingFieldObservation
+                    }
+                    onPress={() => performRecordAction(capturePrivateFieldLocation)}
                     style={[
                       styles.secondary,
                       (capturingFieldLocation || savingFieldObservation) &&
@@ -3111,11 +3397,12 @@ export default function SavedToolRunsScreen({
                     accessibilityRole="button"
                     accessibilityLabel="Check original saved photos or video for a private location"
                     disabled={
+                      actionBusy ||
                       checkingPhotoMetadata ||
                       capturingFieldLocation ||
                       savingFieldObservation
                     }
-                    onPress={checkSavedPhotoLocation}
+                    onPress={() => performRecordAction(checkSavedPhotoLocation)}
                     style={[
                       styles.secondary,
                       (checkingPhotoMetadata ||
@@ -3133,7 +3420,9 @@ export default function SavedToolRunsScreen({
                   <Pressable
                     accessibilityRole="button"
                     accessibilityState={{ expanded: showManualLocation }}
-                    disabled={capturingFieldLocation || savingFieldObservation}
+                    disabled={
+                      actionBusy || capturingFieldLocation || savingFieldObservation
+                    }
                     onPress={() => {
                       setShowManualLocation((value) => !value);
                       setManualLocationDraft(null);
@@ -3153,8 +3442,10 @@ export default function SavedToolRunsScreen({
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel="Remove private location from this saved Plant ID"
-                      disabled={capturingFieldLocation || savingFieldObservation}
-                      onPress={removePrivateFieldLocation}
+                      disabled={
+                        actionBusy || capturingFieldLocation || savingFieldObservation
+                      }
+                      onPress={() => performRecordAction(removePrivateFieldLocation)}
                       style={[
                         styles.secondary,
                         (capturingFieldLocation || savingFieldObservation) &&
@@ -3179,8 +3470,10 @@ export default function SavedToolRunsScreen({
                       <View style={styles.buttonRow}>
                         <Pressable
                           accessibilityRole="button"
-                          disabled={capturingFieldLocation}
-                          onPress={() => void saveManualPrivateFieldLocation()}
+                          disabled={actionBusy || capturingFieldLocation}
+                          onPress={() =>
+                            performRecordAction(saveManualPrivateFieldLocation)
+                          }
                           style={[
                             styles.primary,
                             capturingFieldLocation && styles.disabled
@@ -3192,7 +3485,7 @@ export default function SavedToolRunsScreen({
                         </Pressable>
                         <Pressable
                           accessibilityRole="button"
-                          disabled={capturingFieldLocation}
+                          disabled={actionBusy || capturingFieldLocation}
                           onPress={() => setManualLocationDraft(null)}
                           style={[
                             styles.secondary,
@@ -3229,8 +3522,8 @@ export default function SavedToolRunsScreen({
                             ? "Apply the original media location privately"
                             : "Apply the original media capture date privately"
                         }
-                        disabled={capturingFieldLocation}
-                        onPress={applySavedPhotoLocation}
+                        disabled={actionBusy || capturingFieldLocation}
+                        onPress={() => performRecordAction(applySavedPhotoLocation)}
                         style={[
                           styles.primary,
                           capturingFieldLocation && styles.disabled
@@ -3241,7 +3534,7 @@ export default function SavedToolRunsScreen({
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel="Discard the detected media location"
-                        disabled={capturingFieldLocation}
+                        disabled={actionBusy || capturingFieldLocation}
                         onPress={() => {
                           setPhotoMetadataCandidate(null);
                           setPrivateLocationFeedback(
@@ -3285,6 +3578,7 @@ export default function SavedToolRunsScreen({
                 <TextInput
                   accessibilityLabel="Nature public description"
                   value={natureNotesDraft}
+                  editable={listReady && !actionBusy}
                   onChangeText={setNatureNotesDraft}
                   style={[styles.input, styles.textArea]}
                   multiline
@@ -3331,8 +3625,8 @@ export default function SavedToolRunsScreen({
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Publish saved Plant ID to Nature"
-                    disabled={publishingNature || !fieldCoordinates}
-                    onPress={publishSavedRunToNature}
+                    disabled={actionBusy || publishingNature || !fieldCoordinates}
+                    onPress={() => performRecordAction(publishSavedRunToNature)}
                     style={[
                       styles.primary,
                       (publishingNature || !fieldCoordinates) && styles.disabled
@@ -3352,8 +3646,8 @@ export default function SavedToolRunsScreen({
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel="Withdraw saved Plant ID from Nature"
-                      disabled={publishingNature}
-                      onPress={withdrawSavedRunFromNature}
+                      disabled={actionBusy || publishingNature}
+                      onPress={() => performRecordAction(withdrawSavedRunFromNature)}
                       style={[styles.secondary, publishingNature && styles.disabled]}
                     >
                       <Text style={styles.secondaryText}>Withdraw Nature Pin</Text>
@@ -3399,7 +3693,9 @@ export default function SavedToolRunsScreen({
                               savingFieldObservation ||
                               selectedRunAlreadyLinked
                             }
-                            onPress={savePrivateFieldObservation}
+                            onPress={() =>
+                              performRecordAction(savePrivateFieldObservation)
+                            }
                             style={[
                               styles.primary,
                               (capturingFieldLocation ||
@@ -3439,7 +3735,11 @@ export default function SavedToolRunsScreen({
                                 disabled={
                                   capturingFieldLocation || savingFieldObservation
                                 }
-                                onPress={copyPrivateLocationToLinkedFieldObservation}
+                                onPress={() =>
+                                  performRecordAction(
+                                    copyPrivateLocationToLinkedFieldObservation
+                                  )
+                                }
                                 style={[
                                   styles.secondary,
                                   (capturingFieldLocation || savingFieldObservation) &&
@@ -3486,6 +3786,7 @@ export default function SavedToolRunsScreen({
               <Text style={styles.label}>Summary / note</Text>
               <TextInput
                 value={summaryDraft}
+                editable={listReady && !actionBusy}
                 onChangeText={setSummaryDraft}
                 multiline
                 style={styles.input}
@@ -3495,14 +3796,15 @@ export default function SavedToolRunsScreen({
               />
               <Pressable
                 accessibilityRole="button"
-                onPress={saveSummary}
-                style={styles.primary}
+                disabled={actionBusy}
+                onPress={() => performRecordAction(saveSummary)}
+                style={[styles.primary, actionBusy && styles.disabled]}
               >
                 <Text style={styles.primaryText}>Save Note</Text>
               </Pressable>
             </View>
           </View>
-        ) : feedback ? (
+        ) : hasCurrentSnapshot && feedback ? (
           <Text style={styles.feedback}>{feedback}</Text>
         ) : null}
 
@@ -3514,11 +3816,11 @@ export default function SavedToolRunsScreen({
 
         <Text style={styles.sectionTitle}>Saved run history</Text>
 
-        {loading ? (
+        {loading && !hasCurrentSnapshot ? (
           <View style={styles.card}>
             <ActivityIndicator color={palette.accent} />
           </View>
-        ) : runs.length ? (
+        ) : hasCurrentSnapshot && runs.length ? (
           <View style={styles.list}>
             {runs.map((run) => {
               const active = selectedRunId && selectedRunId === idFor(run);
@@ -3531,8 +3833,14 @@ export default function SavedToolRunsScreen({
                       : `Saved tool run ${idFor(run)}`
                   }
                   accessibilityRole="button"
-                  onPress={() => selectRun(run)}
-                  style={[styles.card, active && styles.cardOn]}
+                  disabled={!listReady || actionBusy}
+                  accessibilityState={{ disabled: !listReady || actionBusy }}
+                  onPress={() => void selectRun(run)}
+                  style={[
+                    styles.card,
+                    active && styles.cardOn,
+                    (!listReady || actionBusy) && styles.disabled
+                  ]}
                 >
                   <Text style={styles.cardTitle}>{runTitle(run)}</Text>
                   <Text style={styles.meta}>
@@ -3546,14 +3854,14 @@ export default function SavedToolRunsScreen({
               );
             })}
           </View>
-        ) : (
+        ) : listReady ? (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>No saved runs</Text>
             <Text style={styles.cardText}>
               Run a tool and it will appear here as a saved ToolRun record.
             </Text>
           </View>
-        )}
+        ) : null}
 
         <PersonalFeedPlacement
           placement="bottom"
