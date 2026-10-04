@@ -213,6 +213,14 @@ function FacilityReportsContent() {
   const [exportSummary, setExportSummary] = useState<ExportSummary | null>(null);
   const loadInFlightRef = useRef(false);
   const exportInFlightRef = useRef(false);
+  const exportObjectUrlRef = useRef<string | null>(null);
+  const releaseExportObjectUrl = useCallback(() => {
+    if (exportObjectUrlRef.current) {
+      URL.revokeObjectURL(exportObjectUrlRef.current);
+      exportObjectUrlRef.current = null;
+    }
+  }, []);
+  useEffect(() => releaseExportObjectUrl, [releaseExportObjectUrl]);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -264,6 +272,7 @@ function FacilityReportsContent() {
     setExporting(true);
     setExportFeedback("");
     setExportSummary(null);
+    releaseExportObjectUrl();
     try {
       clearError();
       const packet = await getFacilityComplianceExport(facilityId);
@@ -314,6 +323,9 @@ function FacilityReportsContent() {
       if (typeof document !== "undefined") {
         const blob = new Blob([json], { type: "application/json" });
         const url = URL.createObjectURL(blob);
+        // Keep the resource alive while the browser consumes the download.
+        // A new export or a scope change/unmount releases the previous packet.
+        exportObjectUrlRef.current = url;
         const a = document.createElement("a");
         try {
           a.href = url;
@@ -322,14 +334,16 @@ function FacilityReportsContent() {
           a.click();
         } finally {
           a.remove();
-          URL.revokeObjectURL(url);
         }
-        setExportFeedback(`Export ready: ${filename}`);
+        setExportFeedback(
+          `Download requested: ${filename}. Check your browser's downloads.`
+        );
       } else {
         setExportFeedback(`Export ready with ${totalRecords} records.`);
       }
       setExportSummary(nextSummary);
     } catch (e) {
+      releaseExportObjectUrl();
       handleApiError(e);
     } finally {
       exportInFlightRef.current = false;

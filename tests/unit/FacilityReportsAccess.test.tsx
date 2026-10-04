@@ -119,6 +119,72 @@ describe("FacilityReportsTab viewer access", () => {
     });
   });
 
+  it("keeps a dispatched web file alive and releases it on replacement, scope exit and failure", async () => {
+    mockCanExport = true;
+    const previousDocument = Object.getOwnPropertyDescriptor(globalThis, "document");
+    const previousCreate = Object.getOwnPropertyDescriptor(URL, "createObjectURL");
+    const previousRevoke = Object.getOwnPropertyDescriptor(URL, "revokeObjectURL");
+    const revoke = jest.fn();
+    const click = jest.fn();
+    const remove = jest.fn();
+    Object.defineProperty(globalThis, "document", {
+      configurable: true,
+      value: {
+        createElement: () => ({ href: "", download: "", click, remove }),
+        body: { appendChild: jest.fn() }
+      }
+    });
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      value: jest
+        .fn()
+        .mockReturnValueOnce("blob:packet-1")
+        .mockReturnValueOnce("blob:packet-2")
+        .mockReturnValueOnce("blob:packet-3")
+    });
+    Object.defineProperty(URL, "revokeObjectURL", { configurable: true, value: revoke });
+    let screen: ReturnType<typeof render> | undefined;
+    try {
+      screen = render(<FacilityReportsTab />);
+      await screen.findByText("Tasks");
+      fireEvent.press(screen.getByLabelText("Export compliance packet"));
+      await screen.findByText(/Download requested:/);
+      expect(click).toHaveBeenCalledTimes(1);
+      expect(remove).toHaveBeenCalledTimes(1);
+      expect(revoke).not.toHaveBeenCalled();
+      expect(screen.queryByText(/Export ready/)).toBeNull();
+      fireEvent.press(screen.getByLabelText("Export compliance packet"));
+      await waitFor(() => expect(click).toHaveBeenCalledTimes(2));
+      expect(revoke.mock.calls).toEqual([["blob:packet-1"]]);
+      mockAuth = { user: { id: "another-owner" }, token: "another-session" };
+      screen.rerender(<FacilityReportsTab />);
+      expect(revoke.mock.calls).toEqual([["blob:packet-1"], ["blob:packet-2"]]);
+      expect(screen.queryByText(/Download requested:/)).toBeNull();
+      click.mockImplementationOnce(() => {
+        throw new Error("Browser download unavailable");
+      });
+      fireEvent.press(screen.getByLabelText("Export compliance packet"));
+      await waitFor(() => expect(revoke).toHaveBeenCalledWith("blob:packet-3"));
+      expect(revoke.mock.calls).toEqual([
+        ["blob:packet-1"],
+        ["blob:packet-2"],
+        ["blob:packet-3"]
+      ]);
+      expect(screen.queryByText(/Download requested:/)).toBeNull();
+      expect(screen.queryByRole("header", { name: "Export packet coverage" })).toBeNull();
+    } finally {
+      screen?.unmount();
+      for (const [target, key, descriptor] of [
+        [globalThis, "document", previousDocument],
+        [URL, "createObjectURL", previousCreate],
+        [URL, "revokeObjectURL", previousRevoke]
+      ] as const) {
+        if (descriptor) Object.defineProperty(target, key, descriptor);
+        else Reflect.deleteProperty(target, key);
+      }
+    }
+  });
+
   it("prevents duplicate compliance exports and announces the completed packet", async () => {
     mockCanExport = true;
     let finishExport: ((value: any) => void) | undefined;
@@ -202,7 +268,14 @@ describe("FacilityReportsTab viewer access", () => {
     await screen.findByText("Retry");
     expect(screen.getByText("11")).toBeTruthy();
     expect(screen.getByText(/Previously loaded report/)).toBeTruthy();
-    fireEvent.press(screen.getByLabelText("Refresh facility reports"));
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Refresh facility reports").props.accessibilityState.busy
+      ).toBe(false)
+    );
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("Refresh facility reports"));
+    });
     await waitFor(() =>
       expect(screen.queryByText(/Previously loaded report/)).toBeNull()
     );
@@ -244,12 +317,10 @@ describe("FacilityReportsTab viewer access", () => {
       if (kind === "facility") mockFacilityId = "facility-2";
       if (kind === "role") mockRole = "STAFF";
       if (kind === "capability") mockCanExport = false;
-      jest
-        .mocked(getFacilityReport)
-        .mockResolvedValue({
-          ...reportFixture(mockFacilityId),
-          tasks: { ...reportFixture().tasks, total: 22 }
-        });
+      jest.mocked(getFacilityReport).mockResolvedValue({
+        ...reportFixture(mockFacilityId),
+        tasks: { ...reportFixture().tasks, total: 22 }
+      });
       screen.rerender(<FacilityReportsTab />);
       await screen.findByText("22");
       await act(async () => {
