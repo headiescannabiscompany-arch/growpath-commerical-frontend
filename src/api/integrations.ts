@@ -99,9 +99,55 @@ function dataOf(response: any) {
   return response?.data ?? response;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isNonblankString(value: unknown): value is string {
+  return typeof value === "string" && Boolean(value.trim());
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every(isNonblankString);
+}
+
+function collectionOf<T>(
+  response: unknown,
+  key: "providers" | "connections" | "spaces",
+  validRow: (row: Record<string, unknown>) => boolean
+): T[] {
+  const data = isRecord(response) && "data" in response ? response.data : response;
+  const rows = isRecord(data) ? data[key] : undefined;
+  const ids = new Set<string>();
+  if (
+    !isRecord(response) ||
+    response.ok === false ||
+    !Array.isArray(rows) ||
+    !rows.every((row) => {
+      if (!isRecord(row) || !isNonblankString(row.id) || ids.has(row.id)) return false;
+      ids.add(row.id);
+      return validRow(row);
+    })
+  ) {
+    throw new Error(`Integration ${key} could not be verified. Please retry.`);
+  }
+  return rows as T[];
+}
+
 export async function listIntegrationProviders(): Promise<IntegrationProvider[]> {
   const response = await apiRequest("/api/integrations/providers");
-  return dataOf(response)?.providers ?? [];
+  return collectionOf<IntegrationProvider>(
+    response,
+    "providers",
+    (row) =>
+      isNonblankString(row.name) &&
+      ["implemented", "access_required", "contract_pending", "gateway_required"].includes(
+        row.contractStatus as string
+      ) &&
+      isStringArray(row.capabilities) &&
+      (row.credentialRequired == null || typeof row.credentialRequired === "boolean") &&
+      (row.setupNote == null || typeof row.setupNote === "string")
+  );
 }
 
 export async function listIntegrationConnections(
@@ -111,7 +157,16 @@ export async function listIntegrationConnections(
   if (scope.workspaceId) query.set("workspaceId", scope.workspaceId);
   if (scope.facilityId) query.set("facilityId", scope.facilityId);
   const response = await apiRequest(`/api/integrations/connections?${query.toString()}`);
-  return dataOf(response)?.connections ?? [];
+  return collectionOf<IntegrationConnection>(
+    response,
+    "connections",
+    (row) =>
+      isNonblankString(row.provider) &&
+      isNonblankString(row.label) &&
+      ["draft", "configured", "connected", "error", "access_requested"].includes(
+        row.status as string
+      )
+  );
 }
 
 export async function createIntegrationConnection(input: {
@@ -208,7 +263,23 @@ export async function listIntegrationSpaces(input: {
   if (input.facilityId) query.set("facilityId", input.facilityId);
   if (input.targetType) query.set("targetType", input.targetType);
   const response = await apiRequest(`/api/integrations/spaces?${query.toString()}`);
-  return dataOf(response)?.spaces ?? [];
+  return collectionOf<IntegrationGrowSpace>(
+    response,
+    "spaces",
+    (row) =>
+      isNonblankString(row.connectionId) &&
+      isNonblankString(row.provider) &&
+      isNonblankString(row.name) &&
+      (row.zoneName == null || typeof row.zoneName === "string") &&
+      Array.isArray(row.devices) &&
+      row.devices.every(
+        (device) =>
+          isRecord(device) &&
+          isNonblankString(device.providerDeviceId) &&
+          isNonblankString(device.name) &&
+          isStringArray(device.metrics)
+      )
+  );
 }
 
 export type IntegrationHistoryImportSummary = {

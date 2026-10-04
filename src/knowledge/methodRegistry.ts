@@ -290,6 +290,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "normalized streams",
       "raw metric evidence",
       "workspace-isolated connections",
+      "validated provider/connection/space collections with single-flight read recovery, labeled retained snapshots and context-bound operation continuations",
       "Facility destination-grow read recovery with validated collections, labeled retained choices, stale-action guards and account/session/Facility/role isolation",
       "file import review provenance",
       "reviewed lighting-column meaning separated from raw provider values",
@@ -301,6 +302,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Read-only first; never invent metrics, units, mappings, or control access.",
+      "Failed integration reads are not empty collections; keep writes locked until recovery and never continue an old context's operation or confuse saved credentials with a successful connection test.",
       "Never use a Facility identifier as a grow target or mix a provider export into an unrelated source.",
       "Never infer an illuminance detector from a LIGHT column, convert controller lighting state to lux, or reconstruct transitions and duration from sparse snapshots.",
       "Never substitute fixture model/count for measured lux, PPFD, DLI, uniformity, dimmer output, photoperiod, or light-leak evidence.",

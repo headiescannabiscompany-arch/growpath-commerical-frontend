@@ -1,5 +1,16 @@
 # Integration Workflow
 
+The shared connection/provider/space panel must distinguish unread, failed and
+validated-empty collections. Refresh and Retry are read-only, single-flight
+actions; label retained same-context snapshots and withhold setup, mapping,
+build and history writes until recovery. A confirmed write receipt must remain
+separate from a failed follow-up read. Bind requests and review state to the
+current account/session, workspace, Facility, grow and configuration authority;
+after any asynchronous boundary, discard superseded results and do not start a
+follow-on write or reload for the old context. Serialize operations and lock
+competing provider, credential and mapping edits. A saved credential is not a
+successful connection test; report the returned status without inventing readiness.
+
 Facility integration destination choices require a successful, valid grow collection.
 Pending, malformed or failed reads are not an empty workspace. Offer single-flight
 Refresh/Retry; retain and label previous choices and the same-context selected grow
