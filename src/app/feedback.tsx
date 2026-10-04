@@ -11,6 +11,7 @@ import {
 import { Link } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { ApiError } from "@/api/apiRequest";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { useTestimonialBoundary } from "@/components/testimonials/useTestimonialBoundary";
 import PrivateTestimonialPhoto from "@/components/testimonials/PrivateTestimonialPhoto";
@@ -389,11 +390,30 @@ export default function FeedbackScreen() {
               ? "Feedback submitted for Admin review. Nothing is published automatically."
               : "Private feedback saved. You did not give publication permission."
       );
-    } catch {
-      if (current(operation.key))
+    } catch (error) {
+      if (!current(operation.key)) return;
+      if (
+        error instanceof ApiError &&
+        error.status === 409 &&
+        [
+          "TESTIMONIAL_PHOTO_UNAVAILABLE",
+          "TESTIMONIAL_PHOTO_CHANGED",
+          "TESTIMONIAL_PREVIEW_CHANGED"
+        ].includes(error.code)
+      ) {
+        // These server responses reject the preview before a submission commits.
+        // Unknown outcomes and busy-source conflicts keep the exact retry key below.
+        attemptRef.current = null;
+        setAttempt(null);
+        clearPreview();
+        setMessage(
+          "The server rejected this preview because the photo or content is no longer available in that version. Your text is kept. Remove or replace the photo if needed, then preview again and choose publication permission again."
+        );
+      } else {
         setMessage(
           "Submission could not be confirmed. Retry this exact submission, or refresh to check whether it was saved. Your request key and permission choice are unchanged."
         );
+      }
     } finally {
       finish(operation);
     }

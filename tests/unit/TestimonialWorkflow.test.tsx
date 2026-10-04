@@ -1,6 +1,7 @@
 import React from "react";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { AppState } from "react-native";
+import { ApiError } from "@/api/apiRequest";
 import FeedbackScreen from "@/app/feedback";
 import TestimonialReviewPanel from "@/components/admin/TestimonialReviewPanel";
 import PublicTestimonials from "@/components/marketing/PublicTestimonials";
@@ -301,6 +302,64 @@ describe("genuine feedback owner and Admin workflows", () => {
       "Private feedback saved. You did not give publication permission."
     );
     expect(mockSubmit.mock.calls[1][0]).toEqual(first);
+  });
+  it.each([
+    "TESTIMONIAL_PHOTO_UNAVAILABLE",
+    "TESTIMONIAL_PHOTO_CHANGED",
+    "TESTIMONIAL_PREVIEW_CHANGED"
+  ])("lets a confirmed %s rejection recover without carrying old consent", async (code) => {
+    mockPicker.mockResolvedValue({ canceled: false, assets: [{ uri: "file:///photo.jpg" }] });
+    mockPreview.mockResolvedValue(
+      preview({ photoEvidenceAssetId: "photo-1", photoSourceVersion: "generation-1" })
+    );
+    mockSubmit.mockRejectedValueOnce(new ApiError(code, 409));
+    await ownerForm();
+    const draftText = screen.getByLabelText("Your feedback").props.value;
+    fireEvent.press(screen.getByText("Add optional photo"));
+    await screen.findByText("Protected photo ready for preview.");
+    fireEvent.press(screen.getByText("Preview exact submission"));
+    await screen.findByLabelText("Allow publication of this exact preview");
+    fireEvent.press(screen.getByText("Confirm exact photo loaded"));
+    fireEvent.press(screen.getByLabelText("Allow publication of this exact preview"));
+    const oldSubmit = handler(screen.getByText("Submit for Admin review"));
+    fireEvent.press(screen.getByText("Submit for Admin review"));
+    await screen.findByText(/The server rejected this preview/);
+    expect(screen.queryByText("Retry exact submission")).toBeNull();
+    expect(screen.getByLabelText("Your feedback").props.value).toBe(draftText);
+    expect(screen.getByLabelText("Your feedback")).not.toBeDisabled();
+    expect(screen.getByText("Remove draft photo")).not.toBeDisabled();
+    expect(screen.queryByLabelText("Allow publication of this exact preview")).toBeNull();
+    await act(async () => oldSubmit());
+    expect(mockSubmit).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByText("Remove draft photo"));
+    await screen.findByText("Photo removed from this draft. Nothing was published.");
+    expect(mockRemove).toHaveBeenCalledWith("photo-1", expect.any(AbortSignal));
+    mockPreview.mockResolvedValue(preview());
+    fireEvent.press(screen.getByText("Preview exact submission"));
+    await screen.findByLabelText("Allow publication of this exact preview");
+    expect(screen.getByLabelText("Allow publication of this exact preview")).not.toBeChecked();
+    fireEvent.press(screen.getByText("Submit private feedback"));
+    await waitFor(() => expect(mockSubmit).toHaveBeenCalledTimes(2));
+    expect(mockSubmit.mock.calls[1][0].clientSubmissionId).not.toBe(
+      mockSubmit.mock.calls[0][0].clientSubmissionId
+    );
+    expect(mockSubmit.mock.calls[1][0].consent.granted).toBe(false);
+    expect(mockSubmit.mock.calls[1][0].photoEvidenceAssetId).toBeNull();
+  });
+  it.each([
+    [409, "TESTIMONIAL_PHOTO_BUSY"],
+    [409, "TESTIMONIAL_REQUEST_CONFLICT"],
+    [500, "TESTIMONIAL_PHOTO_UNAVAILABLE"],
+    [null, "NETWORK_ERROR"]
+  ])("keeps the exact retry for non-definitive %s/%s failures", async (status, code) => {
+    mockSubmit.mockRejectedValueOnce(new ApiError(String(code), status as number | null));
+    await ownerPreview();
+    fireEvent.press(screen.getByText("Submit private feedback"));
+    await screen.findByText("Retry exact submission");
+    expect(screen.getByLabelText("Your feedback")).toBeDisabled();
+    fireEvent.press(screen.getByText("Retry exact submission"));
+    await waitFor(() => expect(mockSubmit).toHaveBeenCalledTimes(2));
+    expect(mockSubmit.mock.calls[1][0]).toEqual(mockSubmit.mock.calls[0][0]);
   });
   it("resolves a withdrawn idempotent receipt as history without reviving it", async () => {
     mockSubmit.mockResolvedValue({

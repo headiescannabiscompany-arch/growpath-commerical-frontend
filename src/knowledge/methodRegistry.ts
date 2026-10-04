@@ -67,6 +67,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Private feedback does not require publicity permission; never invent testimonials or verified outcomes.",
+      "A confirmed rejected photo/content preview permits draft correction with fresh preview and consent; unknown outcomes retain the exact retry request.",
       "Admins cannot edit consented words, name or photo and must explicitly review generic-public-audience suitability before publication.",
       "Synthetic records never enter ordinary public proof; no AI training, incentives or separate advertising permission are included.",
       "Public photo reads recheck access and source version without exposing storage URLs; never bake testimonials into static public HTML.",

@@ -1,10 +1,18 @@
 # W05 Genuine Feedback Collection and Reviewed Testimonials
 
-Status: implemented and locally verified October 4, 2026; staging-specific Vault
-integration and hosted acceptance remain open. Not yet released. Local evidence:
-260 backend tests, 320 frontend tests, 14 static export tests, production export,
-and synthetic real-Chrome metadata/orientation verification. See the execution
-checkpoint for exact workspaces and release boundaries.
+Status: staging acceptance in progress October 4, 2026; NOT production released.
+Backend a6adad5 is live with both signed Sandbox webhook checks passing and
+commit-verification markers restored. Frontend 2313314c is live on staging.
+Hosted private submission, exact photo preview, Admin publication/hiding/rejection,
+synthetic public exclusion, and owner withdrawal passed. Current private feedback
+also visibly has no Admin publish/edit action. All four submitted QA
+records were withdrawn. A definitive rejected-photo response exposed a retry-loop
+defect: its narrow frontend recovery correction passes 88 focused tests locally
+but still needs frontend-only staging release and hosted verification.
+Additional local evidence includes 260 backend tests, 320 initial frontend tests,
+141 bound-deletion/archive/auth tests, 237 staging route/service tests, and both
+backend router corrections passing 80 focused tests. See the execution checkpoint
+for exact workspaces, historical failures, and release boundaries.
 
 The owner approved a workflow for collecting actual user feedback, a chosen public
 name, an optional photo, explicit publication consent, Admin review, and withdrawal.
@@ -258,7 +266,7 @@ acceptance and production verification are separately required before completion
 - [x] Photo ownership, source-generation changes, concurrent deletion, bounded
   uploads, metadata removal, and cleanup are covered.
 - [x] Public responses redact all private fields and exclude synthetic records.
-- [ ] Account export, deletion, quarantine, media reference, and model-coverage
+- [x] Account export, deletion, quarantine, media reference, and model-coverage
   tests pass; restoration never restores revoked consent.
 - [x] Tests cover absent/false/invalid consent, stale digest/revision, duplicate
   submission, non-owner/non-Admin requests, stale session/UI responses, and

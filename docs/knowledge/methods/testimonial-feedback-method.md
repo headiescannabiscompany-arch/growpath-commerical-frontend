@@ -24,6 +24,11 @@ ordinary public testimonial feed, including when an Admin approves them in a tes
 3. Show the exact canonical text/name/photo preview. Explain the limited website
    publication permission, withdrawal, and the inability to recall outside screenshots.
    Publicity consent starts unchecked and is separate from submitting private feedback.
+   A definite server 409 rejecting an unavailable/changed photo or changed preview
+   clears that preview and its permission choice, but keeps the draft text and photo
+   removal control. Require a new preview and permission choice before resubmission.
+   Network uncertainty, busy-photo conflicts and unknown errors retain the exact
+   original request key and consent choice; never silently create another request.
 4. Save one current immutable submission, with idempotent retries, its content/photo
    version, original consent statement/version/time and server-derived QA provenance.
 5. An authorized platform Admin reads the exact preview and can reject, hide or approve
