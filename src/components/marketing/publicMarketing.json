@@ -1,0 +1,416 @@
+{
+  "pages": {
+    "home": {
+      "eyebrow": "A grow journal for personal growers",
+      "title": "The grow journal that remembers every run.",
+      "intro": "Plan your grow, log feeds and photos, and ask AI with your grow's history attached — free to start.",
+      "sections": [
+        {
+          "title": "Personal growers",
+          "body": "Stop piecing together phone photos, feeding notes, and calendar reminders. Keep tasks, feeds, readings, and photos in one grow timeline so you can look back at what changed.",
+          "href": "/personal-grower",
+          "linkLabel": "Explore the grow journal"
+        },
+        {
+          "title": "Commercial creators",
+          "body": "Keep product trials and grow results together, then share what you know through courses, eligible storefront products, and live sessions.",
+          "href": "/commercial-cultivation",
+          "linkLabel": "Explore Commercial"
+        },
+        {
+          "title": "Facilities",
+          "body": "Know which room needs attention, who is doing the work, and what was recorded. Keep room readings, tasks, SOP checklists, and reports connected.",
+          "href": "/facility-management",
+          "linkLabel": "Explore Facility"
+        }
+      ]
+    },
+    "features": {
+      "eyebrow": "Connected workflows",
+      "title": "Tools appear where the work happens",
+      "intro": "The Tools page is a library. GrowPathAI also launches the same tools from grows, plants, logs, tasks, photos, harvests, courses, and facility workspaces.",
+      "sections": [
+        {
+          "title": "Plan and schedule",
+          "body": "Start-a-grow planning, grow calendars, watering, feeding, timelines, and recurring tasks create real work items."
+        },
+        {
+          "title": "Observe and diagnose",
+          "body": "Journal entries, photos, environmental history, plant diagnosis, IPM review, and harvest-readiness results stay connected to the grow timeline."
+        },
+        {
+          "title": "Learn and share",
+          "body": "Courses, live sessions, forums, feeds, and public creator pages connect education with documented grow workflows."
+        }
+      ]
+    },
+    "pricing": {
+      "eyebrow": "Plans and access",
+      "title": "Start free and keep what you create",
+      "intro": "All GrowPathAI users can create and publish free or paid courses, including users on the Free plan. Paid plans add higher limits and advanced workspace features.",
+      "sections": [
+        {
+          "title": "Free",
+          "body": "Track 1 grow and 1 plant, with 5 AI credits each week. Keep a journal and use core grow tools. All plans can create and publish courses within their plan limits."
+        },
+        {
+          "title": "Pro Grower — $10/month or $100/year",
+          "body": "For growers who need more room: 10 grows, 50 plants, and 100 AI credits each week. Annual billing is charged as one $100 payment; save $20 compared with 12 monthly payments."
+        },
+        {
+          "title": "Commercial — $50/month or $500/year",
+          "body": "For brands and sellers: 50 grows, 500 plants, and 500 AI credits each week, plus storefront, course, campaign, inventory, and trial workflows. Annual billing is charged as one $500 payment; save $100 compared with 12 monthly payments."
+        },
+        {
+          "title": "Facility — $100/month or $1,000/year",
+          "body": "For room-based team work: 200 grows, 2,000 plants, and a shared Facility pool of 2,000 AI credits each week. Annual billing is charged as one $1,000 payment; save $200 compared with 12 monthly payments."
+        }
+      ]
+    },
+    "personal-grower": {
+      "eyebrow": "For personal growers",
+      "title": "A grow journal that helps decide what comes next",
+      "intro": "Keep your feeding schedule, photos, readings, and finished tasks in one timeline, from setup to harvest. Look back at the last run without hunting through notebooks and camera rolls.",
+      "sections": [
+        {
+          "title": "Grow your way",
+          "body": "Support for tents, rooms, greenhouses, containers, raised beds, hydroponics, living soil, fruit trees, vegetables, flowers, and other selected interests."
+        },
+        {
+          "title": "Context-aware help",
+          "body": "Ask AI from a grow, plant, log, task, or photo so the relevant stage and recent history can travel with the question."
+        },
+        {
+          "title": "Keep a useful record",
+          "body": "Review what you fed, what you saw, and what you changed. Keep the results attached to the run, then export supported timelines and reports for your own records."
+        }
+      ]
+    },
+    "commercial-cultivation": {
+      "eyebrow": "For commercial operators",
+      "title": "Cultivation evidence with business context",
+      "intro": "Follow a trial from recipe and batch to recorded grow result. Keep the evidence with the product line, then use it in your storefront or course.",
+      "sections": [
+        {
+          "title": "Trials and formulas",
+          "body": "Link recipes, batches, grow trials, evidence runs, and final results instead of leaving them in disconnected calculators."
+        },
+        {
+          "title": "Eligible commerce",
+          "body": "Publish lawful products and education. Cannabis sales are not processed through ordinary public storefronts."
+        },
+        {
+          "title": "Audience workflows",
+          "body": "Connect feeds, forums, courses, live sessions, creator pages, and approved product education."
+        }
+      ]
+    },
+    "facility-management": {
+      "eyebrow": "For cultivation facilities",
+      "title": "Facility → Room → Grow → Plant",
+      "intro": "See what needs doing in each room, assign it to the right person, and review the recorded result without chasing messages.",
+      "sections": [
+        {
+          "title": "Roles that match responsibility",
+          "body": "Give owners, managers, staff, and viewers access that matches their jobs, so people can find their work without seeing records they should not."
+        },
+        {
+          "title": "Operational records",
+          "body": "Assign recurring work, run SOP checklists, record inventory usage, and preserve completion and audit history."
+        },
+        {
+          "title": "Environmental context",
+          "body": "Review imported controller history alongside the room and grow it belongs to. AC Infinity and Bluelab CSV history are import workflows, not a promise of live device control. Check supported provider setup before connecting equipment."
+        }
+      ]
+    },
+    "nurseries-breeders": {
+      "eyebrow": "For nurseries and breeders",
+      "title": "Track plants, propagation, and selection decisions",
+      "intro": "Connect mother plants, clones, tissue culture, genetics notes, pheno scores, stress tests, and harvest outcomes to the grows that produced the evidence.",
+      "sections": [
+        {
+          "title": "Propagation",
+          "body": "Plan clone and tissue-culture checks, assign work, attach photos, and document results."
+        },
+        {
+          "title": "Selection",
+          "body": "Compare phenotypes, crop steering, stress response, final product scores, and run-to-run performance."
+        },
+        {
+          "title": "Education and profiles",
+          "body": "Share approved genetics education through courses, discussions, and public commercial profiles."
+        }
+      ]
+    },
+    "grow-stores": {
+      "eyebrow": "For grow stores",
+      "title": "Products, education, and community in one public presence",
+      "intro": "Build a storefront for eligible products, publish courses and live education, and connect helpful content to community conversations.",
+      "sections": [
+        {
+          "title": "Storefront",
+          "body": "Organize product lines, product pages, links, inventory context, and public brand information."
+        },
+        {
+          "title": "Education",
+          "body": "Turn product knowledge into courses, live sessions, and reusable grow guidance."
+        },
+        {
+          "title": "Responsible publishing",
+          "body": "Moderation and product rules help keep prohibited sales language and inappropriate content out of public spaces."
+        }
+      ]
+    },
+    "creators-educators": {
+      "eyebrow": "For creators and educators",
+      "title": "Publish courses on every plan",
+      "intro": "All users can create and publish free or paid courses. Paid plans add higher limits and advanced creator tools.",
+      "sections": [
+        {
+          "title": "Build from real work",
+          "body": "Use grow timelines, logs, photos, recipes, tool results, and forum answers as course source material."
+        },
+        {
+          "title": "Teach live",
+          "body": "Schedule live sessions, add stream links, notify learners, and place sessions on calendars."
+        },
+        {
+          "title": "Grow an audience",
+          "body": "Connect courses, live sessions, community answers, and public creator pages in one learning experience."
+        }
+      ]
+    },
+    "about": {
+      "eyebrow": "About GrowPathAI",
+      "title": "Software for clearer cultivation decisions",
+      "intro": "GrowPathAI is designed to connect planning, observation, analysis, work, learning, and documentation without forcing users to hunt through disconnected tools.",
+      "sections": [
+        {
+          "title": "One shared engine",
+          "body": "Contextual tool launches create reusable results that can feed logs, tasks, timelines, reports, and lessons."
+        },
+        {
+          "title": "Many grow types",
+          "body": "Recommendations and discovery follow user grow interests instead of assuming every grow is the same crop or environment."
+        },
+        {
+          "title": "Human decisions",
+          "body": "AI assists with questions and structured analysis; users remain responsible for reviewing information and choosing actions."
+        },
+        {
+          "title": "Meet Jay",
+          "body": "Jay is the founder behind GrowPathAI and hosts Exploring the Growing Universe, a grow show. GrowPathAI is a brand of Triplebag Genetics, LLC, registered in Maryland.",
+          "href": "https://youtube.com/@etgujay",
+          "linkLabel": "Watch Exploring the Growing Universe on YouTube"
+        }
+      ]
+    },
+    "contact": {
+      "eyebrow": "Contact and support",
+      "title": "Reach the GrowPathAI team",
+      "intro": "Email support@growpathai.com for account help, creator-trial applications, billing questions, facility onboarding, partnerships, or bug reports.",
+      "sections": [
+        {
+          "title": "Support requests",
+          "body": "Include your GrowPathAI account email, workspace type, page, what you expected, and what happened."
+        },
+        {
+          "title": "Creator applications",
+          "body": "Include your name, account email, channel information, social links, requested account type, and what you plan to test."
+        },
+        {
+          "title": "Security and safety",
+          "body": "Do not send passwords, controller credentials, payment details, or sensitive evidence through ordinary support messages."
+        }
+      ]
+    },
+    "ai-cultivation-disclaimer": {
+      "eyebrow": "AI and cultivation disclaimer",
+      "title": "AI is decision support, not a guarantee",
+      "intro": "GrowPathAI can organize context, calculate values, identify patterns, and suggest questions or next steps. Its output may be incomplete or wrong and must be reviewed.",
+      "sections": [
+        {
+          "title": "Cultivation",
+          "body": "Confirm diagnoses and treatments using direct observation, labels, trusted references, testing, and qualified local professionals."
+        },
+        {
+          "title": "Safety and compliance",
+          "body": "Follow product labels, workplace procedures, local laws, licensing rules, and environmental and food-safety requirements."
+        },
+        {
+          "title": "Privacy",
+          "body": "Avoid entering secrets or unnecessary personal information. Review what grow, plant, photo, and account context is attached before submitting."
+        }
+      ]
+    },
+    "vs/plntrk": {
+      "eyebrow": "Grow journal comparison · reviewed October 4, 2026",
+      "title": "GrowPathAI and PLNTRK: compare the work you need to do",
+      "intro": "Both keep grow records and offer AI help. Choose by your plant count, day-to-day logging, export needs, and whether you also need courses, storefront work, or a facility workspace.",
+      "sections": [
+        {
+          "title": "PLNTRK: plant-first tracking",
+          "body": "PLNTRK's published Pro plans include plant photos, logs, AI help, and QR/NFC logging. Pro 25 is $35/year for up to 25 plants; Pro 100 is $90/year for up to 100 plants. Check its checkout for current prices and terms.",
+          "href": "https://software.plntrk.com/",
+          "linkLabel": "Source: PLNTRK Pro plans"
+        },
+        {
+          "title": "GrowPathAI: a grow record connected to your next task",
+          "body": "Start Free with 1 grow, 1 plant, and 5 AI credits per week. Pro Grower is $10/month or $100/year for 10 grows, 50 plants, and 100 weekly AI credits. Commercial and Facility plans cover different business and team workflows.",
+          "href": "/pricing",
+          "linkLabel": "Compare GrowPathAI allowances"
+        },
+        {
+          "title": "Can I export my records?",
+          "body": "PLNTRK documents CSV grow-data exports and a plant PDF with photos and logs. GrowPathAI offers supported timeline/report exports plus an account-export request in Profile privacy controls. Check the export you need before committing a season of records.",
+          "href": "https://www.plntrk.com/Faq",
+          "linkLabel": "Source: PLNTRK export and privacy FAQ"
+        },
+        {
+          "title": "Where does my data live?",
+          "body": "These are cloud-backed services, not a guarantee of local-only storage. PLNTRK's FAQ describes cloud backup. GrowPathAI's Terms say you retain ownership of your content; its Privacy page explains processing and export/deletion requests.",
+          "href": "/privacy",
+          "linkLabel": "GrowPathAI privacy and export choices"
+        },
+        {
+          "title": "Is GrowPathAI always the cheaper choice?",
+          "body": "No. PLNTRK's advertised Pro 25 annual price is lower than GrowPathAI Pro Grower. Compare the plant limit and workflows you will actually use, not just a feature count. This comparison is written by GrowPathAI, not an independent review.",
+          "href": "https://www.plntrk.com/blogs/blogitem/new-feature-export-your-cannabis-plant-data-to-pdfcomplete-with-photos-logs-and-a-qr-code-66",
+          "linkLabel": "Source: PLNTRK PDF export"
+        }
+      ]
+    },
+    "vs/grow-with-jane": {
+      "eyebrow": "Grow journal comparison · reviewed October 4, 2026",
+      "title": "GrowPathAI and Grow with Jane: choose your grow journal",
+      "intro": "Both organize grow records and offer contextual AI assistance. Try the logging workflow, check the limits, and test an export before you commit a whole grow.",
+      "sections": [
+        {
+          "title": "Grow with Jane: a mobile grow journal and community",
+          "body": "Grow with Jane offers plant and environment tracking, public growlogs, growing guides, and community discussions. Its website links to iOS and Android downloads. Check the app store for current subscription prices in your country; we have not verified a single universal price.",
+          "href": "https://growithjane.com/",
+          "linkLabel": "Source: Grow with Jane"
+        },
+        {
+          "title": "GrowPathAI: journal, tasks, and connected workspaces",
+          "body": "Free includes 1 grow, 1 plant, and 5 weekly AI credits. Pro Grower is $10/month or $100/year for 10 grows, 50 plants, and 100 weekly AI credits. Commercial and Facility plans add separate brand or team workflows.",
+          "href": "/pricing",
+          "linkLabel": "Compare GrowPathAI plans"
+        },
+        {
+          "title": "Does only GrowPathAI use grow history with AI?",
+          "body": "No. Jane AI also accepts selected plants, environments, photos, and supported growlog context. GrowPathAI likewise attaches relevant grow history when you start from supported records. Neither AI system guarantees a correct diagnosis.",
+          "href": "https://growithjane.com/about-jane-ai/",
+          "linkLabel": "Source: Jane AI's context and limitations"
+        },
+        {
+          "title": "Can I keep an export?",
+          "body": "Grow with Jane's support discussion describes browser Print → Save as PDF as a growlog workaround, rather than a complete in-app export. GrowPathAI has supported timeline/report exports and account-export requests. Test whether the output includes the photos and records you need.",
+          "href": "https://social.growithjane.com/t/verbesserungs-vorschlag/71415",
+          "linkLabel": "Source: Grow with Jane export discussion"
+        },
+        {
+          "title": "Who owns my records?",
+          "body": "GrowPathAI's Terms say your content remains yours and its Privacy page describes cloud processing and account-export requests. Review each service's privacy terms separately before uploading sensitive records. This is GrowPathAI's comparison, not an independent review.",
+          "href": "/privacy",
+          "linkLabel": "GrowPathAI privacy"
+        }
+      ]
+    }
+  },
+  "founder": {
+    "photo": null,
+    "photoAlt": null,
+    "story": null,
+    "showUrl": "https://youtube.com/@etgujay",
+    "socialUrl": null
+  },
+  "proof": {
+    "verifiedGrowerCount": null,
+    "stories": [],
+    "thirdPartyMentions": [],
+    "screenshots": []
+  },
+  "plans": [
+    {
+      "id": "free",
+      "name": "Free",
+      "monthly": 0,
+      "annual": 0,
+      "bestFor": "Try a grow journal",
+      "grows": 1,
+      "plants": 1,
+      "credits": 5,
+      "paidCourses": 1,
+      "lessons": 7
+    },
+    {
+      "id": "pro",
+      "name": "Pro Grower",
+      "monthly": 10,
+      "annual": 100,
+      "bestFor": "Personal growers who need more than Free",
+      "grows": 10,
+      "plants": 50,
+      "credits": 100,
+      "paidCourses": 5,
+      "lessons": 20
+    },
+    {
+      "id": "commercial",
+      "name": "Commercial",
+      "monthly": 50,
+      "annual": 500,
+      "bestFor": "Brands, stores, and educators",
+      "grows": 50,
+      "plants": 500,
+      "credits": 500,
+      "paidCourses": 50,
+      "lessons": 100
+    },
+    {
+      "id": "facility",
+      "name": "Facility",
+      "monthly": 100,
+      "annual": 1000,
+      "bestFor": "Room-based teams",
+      "grows": 200,
+      "plants": 2000,
+      "credits": 2000,
+      "paidCourses": 50,
+      "lessons": 100
+    }
+  ],
+  "pricingFaq": [
+    {
+      "title": "Is Free a trial that turns into a bill?",
+      "body": "No. The Free plan has no subscription charge and does not require a payment card. It includes 1 tracked grow, 1 tracked plant, and 5 AI credits per week. A paid plan is a separate checkout choice. Plan terms and limits may change; see the Terms of Service."
+    },
+    {
+      "title": "What does one AI credit buy?",
+      "body": "A standard AI assistant request uses 1 credit and a standard plant diagnosis uses 3. For example, Free's 5 weekly credits can cover 5 assistant requests, or 1 diagnosis and 2 assistant requests. Other AI workflows can have different costs; check the displayed cost before starting. Credits reset weekly, not monthly. Facility work uses the Facility's shared pool, not 2,000 credits for each team member."
+    },
+    {
+      "title": "What happens when I reach a limit?",
+      "body": "An AI action needs enough credits before it can run; wait for the next weekly reset or review the available plan options. Grow and plant limits restrict adding more tracked records. They do not mean that existing records are automatically deleted. You do not have to buy a plan just to keep your account."
+    },
+    {
+      "title": "Do I still own my photos and grow records?",
+      "body": "Yes. Under our Terms, you retain ownership of the content you add. GrowPathAI is a cloud service, not an offline-only local notebook. We store and process records through service providers to run the app. Review Privacy for how account information, photos, and other records are handled."
+    },
+    {
+      "title": "Can I take my records with me?",
+      "body": "Supported timeline and report screens provide exports where your plan and role allow them. You can also request an account export from Profile's privacy controls. These are different export paths: do not assume a timeline PDF is a complete backup of every original photo or every account record."
+    },
+    {
+      "title": "How do payments and cancellation work?",
+      "body": "Paid checkout is handled by Stripe; GrowPathAI does not store full card numbers. Manage an existing subscription from Account Billing. Review the cancellation effective date before confirming. Annual prices are charged in one payment, not monthly installments. Refund eligibility follows the terms shown for the purchase; we do not promise an unconditional money-back guarantee."
+    },
+    {
+      "title": "Which plan should I choose?",
+      "body": "Start Free for one grow and one plant. Pro Grower adds room for 10 grows and 50 plants at $10/month or $100/year. Choose Commercial for brand and storefront workflows, or Facility for room-based team operations. Facility credits are shared within that workspace. These are different workflow plans, not a promise of unlimited seats, usage, or device integrations."
+    }
+  ],
+  "scope": "GrowPathAI keeps records and helps you review them. It is not an automatic grow controller, a guarantee of plant health or yield, or a substitute for professional advice. Ordinary public storefronts do not process cannabis sales."
+}

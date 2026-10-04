@@ -28,7 +28,7 @@ describe("PublicLandingPage", () => {
     const screen = render(<PublicLandingPage page="home" />);
 
     expect(
-      screen.getByText("One connected path from grow setup to harvest").props[
+      screen.getByText("The grow journal that remembers every run.").props[
         "aria-level"
       ]
     ).toBe(1);

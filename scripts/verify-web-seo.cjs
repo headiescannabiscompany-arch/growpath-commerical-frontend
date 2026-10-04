@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const DIST = path.join(ROOT, "dist");
+const DIST = path.resolve(ROOT, process.argv[2] || "dist");
 
 function read(relPath) {
   const fullPath = path.join(DIST, relPath);
@@ -63,7 +63,7 @@ function main() {
   const home = read("index.html");
   requireIncludes(
     home,
-    "<title>GrowPath | Grow planning, tracking, and facility tools</title>",
+    "<title>GrowPathAI | The grow journal that remembers every run</title>",
     "root HTML"
   );
   requireIncludes(home, '<meta name="robots" content="index,follow" />', "root HTML");
@@ -75,15 +75,15 @@ function main() {
   requireIncludes(home, '<meta property="og:title"', "root HTML");
   requireIncludes(home, '<script type="application/ld+json">', "root HTML");
   requireIncludes(home, '"@type":"SoftwareApplication"', "root HTML");
-  requireIncludes(home, '<main id="seo-content">', "root HTML");
+  requireIncludes(home, '<main id="seo-content"', "root HTML");
   requireIncludes(
     home,
-    "<h1>One connected path from grow setup to harvest</h1>",
+    "<h1>The grow journal that remembers every run.</h1>",
     "root HTML"
   );
 
   const courses = read(path.join("courses", "index.html"));
-  requireIncludes(courses, "<title>GrowPath Courses</title>", "courses HTML");
+  requireIncludes(courses, "<title>GrowPathAI Courses</title>", "courses HTML");
   requireIncludes(
     courses,
     '<link rel="canonical" href="https://growpathai.com/courses" />',
@@ -132,15 +132,32 @@ function main() {
       `<link rel="canonical" href="https://growpathai.com/${publicPath}" />`,
       publicPath
     );
-    requireIncludes(html, '<main id="seo-content">', publicPath);
+    requireIncludes(html, '<main id="seo-content"', publicPath);
     requireIncludes(html, '"@type":"WebPage"', publicPath);
     requireIncludes(html, '"@type":"BreadcrumbList"', publicPath);
   }
 
   const manifest = JSON.parse(read("site.webmanifest"));
-  if (manifest.name !== "GrowPath" || manifest.start_url !== "/") {
+  if (manifest.name !== "GrowPathAI" || manifest.start_url !== "/") {
     throw new Error("site.webmanifest does not describe the GrowPath web app");
   }
+  for (const route of [
+    "pricing",
+    "about",
+    "features",
+    "vs/plntrk",
+    "vs/grow-with-jane"
+  ]) {
+    const html = read(path.join(route, "index.html"));
+    if ((html.match(/rel="canonical"/g) || []).length !== 1)
+      throw new Error("Duplicate canonical: " + route);
+    requireIncludes(html, 'href="https://growpathai.com/' + route + '"', route);
+  }
+  const pricing = read(path.join("pricing", "index.html"));
+  requireIncludes(pricing, '"@type":"FAQPage"', "pricing");
+  for (const price of ["0", "10", "50", "100"])
+    requireIncludes(pricing, '"price":"' + price + '"', "pricing");
+  requireIncludes(read("llms.txt"), "# GrowPathAI", "llms");
 
   console.log("Web SEO verification passed.");
 }

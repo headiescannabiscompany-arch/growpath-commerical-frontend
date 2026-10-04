@@ -1,0 +1,164 @@
+"use strict";
+const marketing = require("../src/components/marketing/publicMarketing.json");
+const escape = (value) =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+const routeKey = (route) => route || "home";
+const comparisonRows = [
+  ["Tracked grows", "grows"],
+  ["Tracked plants", "plants"],
+  ["AI credits per week", "credits"],
+  ["Published paid courses", "paidCourses"],
+  ["Lessons per course", "lessons"]
+];
+const links = [
+  ["Features", "/features"],
+  ["Pricing", "/pricing"],
+  ["Store", "/store"],
+  ["Courses", "/courses"],
+  ["Forum", "/forum"],
+  ["About", "/about"],
+  ["Sign in", "/login"]
+];
+const footer = [
+  ["About", "/about"],
+  ["Contact", "/contact"],
+  ["Updates", "/updates"],
+  ["Nurseries & breeders", "/nurseries-breeders"],
+  ["Grow stores", "/grow-stores"],
+  ["Compare PLNTRK", "/vs/plntrk"],
+  ["Compare Grow with Jane", "/vs/grow-with-jane"],
+  ["Privacy", "/privacy"],
+  ["Terms", "/terms"],
+  ["AI disclaimer", "/ai-cultivation-disclaimer"]
+];
+const anchor = ([label, href]) =>
+  '<a href="' + escape(href) + '">' + escape(label) + "</a>";
+
+function publicMarketingMarkup(route) {
+  const page = routeKey(route);
+  const copy = marketing.pages[page];
+  if (!copy) return null;
+  const grower = page === "home" || page === "personal-grower";
+  const sections = copy.sections
+    .map(
+      (section, i) =>
+        '<section class="marketing-card' +
+        (page === "home" && i === 0 ? " primary-path" : "") +
+        (page === "pricing" && i === 1 ? " recommended" : "") +
+        '">' +
+        (page === "pricing" && i === 1
+          ? "<p><strong>Recommended for growing beyond Free</strong></p>"
+          : "") +
+        "<h2>" +
+        escape(section.title) +
+        "</h2><p>" +
+        escape(section.body) +
+        "</p>" +
+        (section.href ? anchor([section.linkLabel, section.href]) : "") +
+        (page === "pricing" && i > 0
+          ? "<p>Annual billing saves 2 months compared with paying monthly for a year.</p>"
+          : "") +
+        "</section>"
+    )
+    .join("");
+  const table =
+    '<section class="marketing-card"><h2>Compare plan allowances</h2><p>Standard plan limits. Facility AI credits are shared by its workspace. Individual grants or trials can differ; your account shows your current allowance.</p><div class="table-scroll" role="region" tabindex="0" aria-label="Plan comparison, scroll horizontally on small screens"><table><caption>Choose by the work you need to do</caption><thead><tr><th scope="col">Allowance</th>' +
+    marketing.plans.map((p) => '<th scope="col">' + escape(p.name) + "</th>").join("") +
+    "</tr></thead><tbody>" +
+    comparisonRows
+      .map(
+        ([label, key]) =>
+          '<tr><th scope="row">' +
+          label +
+          "</th>" +
+          marketing.plans
+            .map((p) => "<td>" + p[key].toLocaleString("en-US") + "</td>")
+            .join("") +
+          "</tr>"
+      )
+      .join("") +
+    "</tbody></table></div></section>";
+  const faq =
+    '<section class="marketing-card"><h2>Before you choose a plan</h2>' +
+    marketing.pricingFaq
+      .map((f) => "<h3>" + escape(f.title) + "</h3><p>" + escape(f.body) + "</p>")
+      .join("") +
+    "<p>" +
+    anchor(["Read Terms of Service", "/terms"]) +
+    " · " +
+    anchor(["Read Privacy Policy", "/privacy"]) +
+    "</p></section>";
+  return (
+    '<main id="seo-content" class="marketing"><nav aria-label="GrowPathAI public pages"><a class="brand" href="/">GrowPathAI</a>' +
+    links.map(anchor).join(" ") +
+    '</nav><header class="marketing-hero"><p>' +
+    escape(copy.eyebrow) +
+    "</p><h1>" +
+    escape(copy.title) +
+    "</h1><p>" +
+    escape(copy.intro) +
+    '</p><div class="marketing-actions"><a class="primary" href="/register">Create free account</a><a class="secondary" href="/features">Explore features</a></div></header>' +
+    (grower || page === "pricing"
+      ? "<p>Free account. No payment card required. Your content stays yours.</p>"
+      : "") +
+    '<div class="marketing-grid">' +
+    sections +
+    "</div>" +
+    (page === "pricing" ? table + faq : "") +
+    (grower
+      ? '<section class="marketing-card"><h2>Your records, your decisions</h2><p>' +
+        escape(marketing.scope) +
+        "</p>" +
+        anchor(["See exact limits, exports, and data-ownership answers", "/pricing"]) +
+        "</section>"
+      : "") +
+    (page === "home" || page === "about"
+      ? '<section class="marketing-card"><h2>See what has actually shipped</h2><p>Our Updates page separates live releases from work still in progress. Read the dated release notes before counting on a feature.</p>' +
+        anchor(["Read product updates", "/updates"]) +
+        "</section>"
+      : "") +
+    "<footer>" +
+    footer.map(anchor).join(" ") +
+    "</footer></main>"
+  );
+}
+function marketingSchema(route) {
+  const graph = [];
+  if (route === "" || route === "pricing")
+    graph.push({
+      "@type": "SoftwareApplication",
+      name: "GrowPathAI",
+      applicationCategory: "LifestyleApplication",
+      operatingSystem: "Web",
+      offers: marketing.plans.map((p) => ({
+        "@type": "Offer",
+        name: p.name + " monthly plan",
+        price: String(p.monthly),
+        priceCurrency: "USD",
+        url: "https://growpathai.com/pricing",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: String(p.monthly),
+          priceCurrency: "USD",
+          unitText: "MONTH"
+        }
+      }))
+    });
+  if (route === "pricing")
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: marketing.pricingFaq.map((f) => ({
+        "@type": "Question",
+        name: f.title,
+        acceptedAnswer: { "@type": "Answer", text: f.body }
+      }))
+    });
+  return graph;
+}
+const marketingCss =
+  ".marketing{max-width:1120px;margin:auto;padding:24px;color:#172a1d;font:16px/1.6 system-ui,sans-serif}.marketing a{color:#176537}.marketing nav,.marketing footer,.marketing-actions{display:flex;flex-wrap:wrap;gap:16px;align-items:center}.marketing .brand{font-size:22px;font-weight:900;margin-right:auto}.marketing-hero{background:#e9f6eb;border-radius:24px;padding:32px;margin:28px 0}.marketing h1{font-size:42px;line-height:1.15;max-width:820px}.marketing h2{font-size:23px;line-height:1.3}.marketing-actions a{padding:12px 18px;border-radius:12px;font-weight:700}.marketing-actions .primary{background:#176537;color:white}.marketing-actions .secondary{border:1px solid #176537}.marketing-grid{display:flex;flex-wrap:wrap;gap:16px}.marketing-card{flex:1 1 280px;border:1px solid #d4e1d6;border-radius:18px;padding:22px;margin-bottom:24px;min-width:0}.marketing-card.primary-path{flex-basis:100%}.marketing-card.recommended{border:2px solid #176537}.table-scroll{overflow-x:auto;max-width:100%}.marketing table{border-collapse:collapse;min-width:620px;width:100%}.marketing th,.marketing td{padding:12px;border-top:1px solid #d4e1d6;text-align:left}.marketing caption{text-align:left;padding:12px}.marketing footer{border-top:1px solid #d4e1d6;padding:22px 0}.marketing a:focus-visible,.table-scroll:focus-visible{outline:3px solid #176537;outline-offset:3px}@media(max-width:599px){.marketing{padding:16px}.marketing-hero{padding:20px}.marketing h1{font-size:32px}.marketing-actions{align-items:stretch;flex-direction:column}.marketing-actions a{text-align:center}.marketing nav{gap:12px}.marketing .brand{flex-basis:100%}}";
+module.exports = { publicMarketingMarkup, marketingSchema, marketingCss, marketing };

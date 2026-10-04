@@ -387,6 +387,12 @@ function revisionStaticJavaScript(html) {
 const revisionedIndexHtml = revisionStaticJavaScript(rawIndexHtml);
 const indexNowKey = "growpathai-2026-indexnow-7f4b2a91c6d8e305";
 const publicRouteMetadata = require("../src/seo/publicRouteMetadata.json");
+const {
+  publicMarketingMarkup,
+  marketingSchema,
+  marketingCss,
+  marketing
+} = require("./public-marketing.cjs");
 
 const defaultSeo = publicRouteMetadata.default;
 
@@ -626,10 +632,7 @@ const routeSeo = new Map(
           "Get GrowPath support for accounts, billing, subscriptions, privacy, grows, courses, commercial profiles, and facilities."
       }
     ],
-    [
-      "updates",
-      publicRouteMetadata.routes.updates
-    ],
+    ["updates", publicRouteMetadata.routes.updates],
     [
       "account/delete",
       {
@@ -683,10 +686,12 @@ function escapeXml(value) {
 }
 
 function seoForRoute(route) {
+  if (publicRouteMetadata.routes[route])
+    return { ...defaultSeo, ...publicRouteMetadata.routes[route] };
   if (routeSeo.has(route)) return routeSeo.get(route);
   return {
     ...defaultSeo,
-    title: "GrowPath App",
+    title: "GrowPathAI App",
     description: defaultSeo.description,
     index: false
   };
@@ -731,25 +736,15 @@ function structuredDataForRoute(route, seo, canonical) {
     }
   ];
   if (route === "") {
-    graph.push(
-      {
-        "@type": "Organization",
-        "@id": `${siteUrl}#organization`,
-        name: "GrowPathAI",
-        url: siteUrl,
-        email: "support@growpathai.com"
-      },
-      {
-        "@type": "SoftwareApplication",
-        name: "GrowPathAI",
-        applicationCategory: "BusinessApplication",
-        operatingSystem: "Web",
-        url: siteUrl,
-        description: seo.description,
-        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }
-      }
-    );
+    graph.push({
+      "@type": "Organization",
+      "@id": `${siteUrl}#organization`,
+      name: "GrowPathAI",
+      url: siteUrl,
+      email: "support@growpathai.com"
+    });
   }
+  graph.push(...marketingSchema(route));
   return JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(
     /</g,
     "\\u003c"
@@ -758,6 +753,8 @@ function structuredDataForRoute(route, seo, canonical) {
 
 function staticPublicMarkup(route, seo) {
   if (!seo.index) return "";
+  const marketingMarkup = publicMarketingMarkup(route);
+  if (marketingMarkup) return marketingMarkup;
   const topics = Array.isArray(seo.topics) ? seo.topics : [];
   const links = [
     ["Features", "/features"],
@@ -805,7 +802,7 @@ function applySeo(html, route) {
     `<link rel="manifest" href="/site.webmanifest" />`,
     `<meta name="theme-color" content="#0f5132" />`,
     `<meta property="og:type" content="website" />`,
-    `<meta property="og:site_name" content="GrowPath" />`,
+    `<meta property="og:site_name" content="GrowPathAI" />`,
     `<meta property="og:title" content="${title}" />`,
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:url" content="${escapeHtml(canonical)}" />`,
@@ -819,10 +816,19 @@ function applySeo(html, route) {
   const staticMarkup = staticPublicMarkup(route, seo);
 
   return html
+    .replace(/<link\b[^>]*rel=["']canonical["'][^>]*>/gi, "")
+    .replace(
+      /<meta\b[^>]*(?:name=["'](?:description|robots|twitter:[^"']+)["']|property=["']og:[^"']+["'])[^>]*>/gi,
+      ""
+    )
+    .replace(
+      /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi,
+      ""
+    )
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`)
     .replace(
       "</head>",
-      `    ${tags}\n    <script type="application/ld+json">${structuredData}</script>\n  </head>`
+      `    ${tags}\n    <script type="application/ld+json">${structuredData}</script>\n    <style>${marketingCss}</style>\n  </head>`
     )
     .replace(
       /<noscript>[\s\S]*?<\/noscript>/i,
@@ -835,7 +841,10 @@ function applySeo(html, route) {
 
 fs.writeFileSync(indexHtml, applySeo(revisionedIndexHtml, ""));
 
-for (const route of fallbackRoutes) {
+for (const route of new Set([
+  ...fallbackRoutes,
+  ...Object.keys(marketing.pages).filter((key) => key !== "home")
+])) {
   const routeDir = path.join(absoluteOutputDir, route);
   fs.mkdirSync(routeDir, { recursive: true });
   fs.writeFileSync(
@@ -871,11 +880,36 @@ const robotsTxt = (
       ]
 ).join("\n");
 fs.writeFileSync(path.join(absoluteOutputDir, "robots.txt"), robotsTxt);
+fs.writeFileSync(
+  path.join(absoluteOutputDir, "llms.txt"),
+  [
+    "# GrowPathAI",
+    "",
+    "> A grow journal connecting plans, tasks, feeds, photos, and contextual AI assistance.",
+    "",
+    "## Public product information",
+    ...Object.keys(marketing.pages).map((key) => {
+      const route = key === "home" ? "" : key;
+      return "- [" + marketing.pages[key].title + "](" + canonicalUrl(route) + ")";
+    }),
+    "- [Dated release notes](" + siteUrl + "/updates)",
+    "- [Terms](" + siteUrl + "/terms)",
+    "- [Privacy](" + siteUrl + "/privacy)",
+    "",
+    "Plan prices, limits and restrictions are on the pricing page. AI output needs human review.",
+    "Public pages do not grant access to private grow records. Do not infer usage counts, testimonials, or guaranteed outcomes.",
+    ""
+  ].join("\n")
+);
 
 const sitemapXml = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...sitemapRoutes.map(({ route, priority, changefreq }) =>
+  ...[
+    ...sitemapRoutes,
+    { route: "vs/plntrk", priority: "0.6", changefreq: "monthly" },
+    { route: "vs/grow-with-jane", priority: "0.6", changefreq: "monthly" }
+  ].map(({ route, priority, changefreq }) =>
     [
       "  <url>",
       `    <loc>${escapeXml(canonicalUrl(route))}</loc>`,
@@ -896,8 +930,8 @@ fs.writeFileSync(
   path.join(absoluteOutputDir, "site.webmanifest"),
   `${JSON.stringify(
     {
-      name: "GrowPath",
-      short_name: "GrowPath",
+      name: "GrowPathAI",
+      short_name: "GrowPathAI",
       start_url: "/",
       scope: "/",
       display: "standalone",

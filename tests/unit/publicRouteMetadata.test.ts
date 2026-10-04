@@ -7,6 +7,21 @@ import {
 } from "@/seo/publicRouteMetadata";
 
 describe("public route metadata", () => {
+  it("replaces price and FAQ schema when navigating without a reload", () => {
+    document.head.innerHTML = "";
+    applyPublicRouteMetadata("/pricing");
+    const script = () =>
+      document.querySelector('script[type="application/ld+json"]')?.textContent || "";
+    expect(script()).toContain('"@type":"FAQPage"');
+    expect(script()).toContain('"price":"100"');
+    applyPublicRouteMetadata("/about");
+    expect(script()).not.toContain("FAQPage");
+    expect(document.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(
+      1
+    );
+    applyPublicRouteMetadata("/home/personal");
+    expect(script()).toBe("");
+  });
   it("normalizes paths and returns the shared route-specific metadata", () => {
     expect(normalizePublicRoute("/facility-management/?source=test#top")).toBe(
       "facility-management"
@@ -16,14 +31,14 @@ describe("public route metadata", () => {
       index: true
     });
     expect(metadataForPathname("/account/delete")).toMatchObject({
-      title: "Delete Account | GrowPath",
+      title: "Delete Account | GrowPathAI",
       index: false
     });
   });
 
   it("fails closed for private or unknown application routes", () => {
     expect(metadataForPathname("/home/facility/dashboard")).toEqual(
-      expect.objectContaining({ title: "GrowPath App", index: false })
+      expect.objectContaining({ title: "GrowPathAI App", index: false })
     );
   });
 
@@ -47,7 +62,7 @@ describe("public route metadata", () => {
     );
 
     applyPublicRouteMetadata("/home/personal");
-    expect(document.title).toBe("GrowPath App");
+    expect(document.title).toBe("GrowPathAI App");
     expect(document.querySelector('meta[name="robots"]')?.getAttribute("content")).toBe(
       "noindex,nofollow"
     );

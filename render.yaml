@@ -59,6 +59,45 @@ services:
         source: /updates
         destination: /updates/index.html
       - type: rewrite
+        source: /features
+        destination: /features/index.html
+      - type: rewrite
+        source: /pricing
+        destination: /pricing/index.html
+      - type: rewrite
+        source: /personal-grower
+        destination: /personal-grower/index.html
+      - type: rewrite
+        source: /commercial-cultivation
+        destination: /commercial-cultivation/index.html
+      - type: rewrite
+        source: /facility-management
+        destination: /facility-management/index.html
+      - type: rewrite
+        source: /nurseries-breeders
+        destination: /nurseries-breeders/index.html
+      - type: rewrite
+        source: /grow-stores
+        destination: /grow-stores/index.html
+      - type: rewrite
+        source: /creators-educators
+        destination: /creators-educators/index.html
+      - type: rewrite
+        source: /about
+        destination: /about/index.html
+      - type: rewrite
+        source: /contact
+        destination: /contact/index.html
+      - type: rewrite
+        source: /ai-cultivation-disclaimer
+        destination: /ai-cultivation-disclaimer/index.html
+      - type: rewrite
+        source: /vs/plntrk
+        destination: /vs/plntrk/index.html
+      - type: rewrite
+        source: /vs/grow-with-jane
+        destination: /vs/grow-with-jane/index.html
+      - type: rewrite
         source: /*
         destination: /index.html
     headers:

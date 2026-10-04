@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "public-website-audit",
+        title: "Clearer grow journals, plans and public-page information",
+        date: "October 4, 2026",
+        dateLabel: "Released",
+        summary:
+          "The public website now leads with personal grow journals, shows exact grow, plant and weekly AI allowances, explains annual savings and export choices, and links source-checked comparisons. Search metadata and page addresses are aligned. Plan prices, billing behavior and the signed-in app stay unchanged. Product screenshots and permissioned customer stories remain separate open work."
+      },
+      {
         id: "course-media-playback-recovery",
         title: "Safer course video switching and playback retry",
         date: "October 2, 2026",

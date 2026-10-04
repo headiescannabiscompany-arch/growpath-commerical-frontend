@@ -23,6 +23,17 @@ export const UPDATE_STATUS_LABELS = {
 
 export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
   {
+    id: "public-website",
+    tab: "Website & plans",
+    title: "Clearer public pages and plan information",
+    status: "partial",
+    scope:
+      "Grower-focused explanations, exact plan allowances and search-readable public pages.",
+    live: "The website explains grow journals first, compares the four plans with weekly AI credits, answers export and billing questions, and links source-checked product comparisons. Public pages have their own search metadata.",
+    next: "Add reviewed product screenshots, a founder portrait and permissioned grower stories. These proof items are not presented as completed or invented.",
+    entryIds: ["public-website-audit"]
+  },
+  {
     id: "courses",
     tab: "Courses",
     title: "Course authoring and learning",

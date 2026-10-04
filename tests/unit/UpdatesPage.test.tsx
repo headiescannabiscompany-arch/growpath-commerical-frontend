@@ -247,9 +247,12 @@ describe("public Updates page", () => {
     fireEvent.press(
       screen.getByRole("button", { name: "Show Courses detailed history" })
     );
-    expect(screen.getByText(PUBLIC_UPDATE_SECTIONS[0].entries[0].title)).toBeTruthy();
+    const courseTitle = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "course-media-playback-recovery"
+    )!.title;
+    expect(screen.getByText(courseTitle)).toBeTruthy();
     fireEvent.press(screen.getByRole("tab", { name: "Billing & checkout" }));
-    expect(screen.queryByText(PUBLIC_UPDATE_SECTIONS[0].entries[0].title)).toBeNull();
+    expect(screen.queryByText(courseTitle)).toBeNull();
     expect(
       screen.getByRole("button", { name: "Show Billing & checkout detailed history" })
         .props.accessibilityState.expanded
@@ -267,7 +270,7 @@ describe("public Updates page", () => {
         (group) => group.id
       )
     ).toEqual(["journals", "billing", "hosted-live"]);
-    for (const id of ["courses", "shopping", "admin"]) {
+    for (const id of ["courses", "shopping", "admin", "public-website"]) {
       expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === id)?.status).toBe(
         "partial"
       );
@@ -302,6 +305,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "public-website-audit",
       "course-media-playback-recovery",
       "course-lesson-authoring-guards",
       "course-analytics-readiness",
