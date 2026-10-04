@@ -921,6 +921,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "Compliance overview preserves unknown and retained-read states, offers draft-preserving Retry, serializes writes and refresh, honors role exclusions and discards late context results"
     );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "Facility Reports retains labeled summaries after failed refresh, retries reads, validates report and export identity, and discards late context results without changing export permissions"
+    );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never allow a Facility deviation reference collision or persistence error to terminate the shared API service."
     );

@@ -46,6 +46,7 @@ describe("public Updates page", () => {
       "Compliance overview now keeps unread counts unknown"
     );
     expect(note?.summary).toContain("archived history stays readable");
+    expect(note?.summary).toContain("Reports now retain labeled summaries");
     expect(note?.summary).toContain(
       "Dashboard plant counts now recognize the returned plant records"
     );
@@ -179,7 +180,7 @@ describe("public Updates page", () => {
   it("shows milestone summaries first and retains dated history within each tab", () => {
     const screen = render(<UpdatesPage />);
     expect(screen.getByRole("header", { name: "Updates" })).toBeTruthy();
-    expect(screen.getByText("Last updated October 3, 2026")).toBeTruthy();
+    expect(screen.getByText(`Last updated ${PUBLIC_UPDATES_REVIEWED}`)).toBeTruthy();
     expect(
       screen.getByRole("tab", { name: "Overview" }).props.accessibilityState.selected
     ).toBe(true);

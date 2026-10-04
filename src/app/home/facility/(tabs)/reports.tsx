@@ -15,7 +15,10 @@ import { getFacilityReport } from "@/api/reports";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { useFacility } from "@/state/useFacility";
 import type { FacilityReport } from "@/types/report";
 import { radius } from "@/theme/theme";
@@ -69,6 +72,28 @@ type ExportSummary = {
     cancelledDeviations: number;
   };
 };
+
+function isRecordCount(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+}
+
+function validReport(value: FacilityReport, facilityId: string) {
+  return (
+    value?.facilityId === facilityId &&
+    [
+      value.tasks?.total,
+      value.tasks?.open,
+      value.tasks?.overdue,
+      value.tasks?.completedLast7d,
+      value.compliance?.totalLogs,
+      value.team?.totalMembers,
+      value.automation?.policiesEnabled,
+      value.automation?.triggersLast7d
+    ].every(isRecordCount) &&
+    (value.compliance?.missedLast7d == null ||
+      isRecordCount(value.compliance.missedLast7d))
+  );
+}
 
 export function buildReadinessSummary(
   counts: Record<string, number>,
@@ -160,6 +185,15 @@ export function facilityComplianceExportFilenameFromSources(
 }
 
 export default function FacilityReportsTab() {
+  const ent = useEntitlements();
+  const scope = useFacilityRecordScope([
+    "reports",
+    Boolean(ent.can?.(CAPABILITY_KEYS.EXPORT_COMPLIANCE))
+  ]);
+  return <FacilityReportsContent key={scope} />;
+}
+
+function FacilityReportsContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -168,16 +202,8 @@ export default function FacilityReportsTab() {
     entitlements.can?.(CAPABILITY_KEYS.EXPORT_COMPLIANCE)
   );
   const { selectedId: facilityId, selected: selectedFacility } = useFacility();
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const { mounted, error, handleApiError, clearError, readFailed, setReadFailed } =
+    useFacilityRecordRead();
 
   const [report, setReport] = useState<FacilityReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -190,23 +216,32 @@ export default function FacilityReportsTab() {
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId || loadInFlightRef.current) return;
+      if (!mounted.current || !facilityId || loadInFlightRef.current) return;
       loadInFlightRef.current = true;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
       try {
         clearError();
-        setReport(await getFacilityReport(facilityId));
+        const next = await getFacilityReport(facilityId);
+        if (!mounted.current) return;
+        if (!validReport(next, facilityId)) {
+          throw new Error("Report summary is unavailable. Retry to read this Facility.");
+        }
+        setReport(next);
+        setReadFailed(false);
       } catch (e) {
+        if (!mounted.current) return;
         handleApiError(e);
-        setReport(null);
+        setReadFailed(true);
       } finally {
         loadInFlightRef.current = false;
-        setLoading(false);
-        setRefreshing(false);
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [clearError, facilityId, handleApiError]
+    [clearError, facilityId, handleApiError, mounted, setReadFailed]
   );
 
   useEffect(() => {
@@ -218,13 +253,38 @@ export default function FacilityReportsTab() {
   }, [facilityId, load, router]);
 
   async function exportCompliancePacket() {
-    if (!facilityId || exportInFlightRef.current || !canExportCompliance) return;
+    if (
+      !mounted.current ||
+      !facilityId ||
+      exportInFlightRef.current ||
+      !canExportCompliance
+    )
+      return;
     exportInFlightRef.current = true;
     setExporting(true);
     setExportFeedback("");
+    setExportSummary(null);
     try {
       clearError();
       const packet = await getFacilityComplianceExport(facilityId);
+      if (!mounted.current) return;
+      if (
+        !packet ||
+        packet.success !== true ||
+        packet.exportType !== "facility_compliance_packet" ||
+        packet.facilityId !== facilityId ||
+        typeof packet.generatedAt !== "string" ||
+        !Number.isFinite(Date.parse(packet.generatedAt)) ||
+        !packet.counts ||
+        Array.isArray(packet.counts) ||
+        typeof packet.counts !== "object" ||
+        !Object.values(packet.counts).every(isRecordCount) ||
+        !packet.collections ||
+        typeof packet.collections !== "object" ||
+        Array.isArray(packet.collections)
+      ) {
+        throw new Error("Export packet is unavailable for this Facility. Retry Export.");
+      }
       const filename = facilityComplianceExportFilenameFromSources(
         packet.facilityName,
         selectedFacility?.name,
@@ -237,7 +297,7 @@ export default function FacilityReportsTab() {
         0
       );
 
-      setExportSummary({
+      const nextSummary: ExportSummary = {
         filename,
         generatedAt: packet.generatedAt,
         totalRecords,
@@ -249,27 +309,31 @@ export default function FacilityReportsTab() {
         ),
         sopEvidence: packet.evidenceSummary?.sopRuns,
         deviationEvidence: packet.evidenceSummary?.deviations
-      });
+      };
 
       if (typeof document !== "undefined") {
         const blob = new Blob([json], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
+        try {
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+        } finally {
+          a.remove();
+          URL.revokeObjectURL(url);
+        }
         setExportFeedback(`Export ready: ${filename}`);
       } else {
         setExportFeedback(`Export ready with ${totalRecords} records.`);
       }
+      setExportSummary(nextSummary);
     } catch (e) {
       handleApiError(e);
     } finally {
       exportInFlightRef.current = false;
-      setExporting(false);
+      if (mounted.current) setExporting(false);
     }
   }
 
@@ -308,7 +372,13 @@ export default function FacilityReportsTab() {
               style={[styles.button, (loading || refreshing) && styles.buttonDisabled]}
               onPress={() => load({ refresh: true })}
             >
-              <Text style={styles.buttonText}>Refresh</Text>
+              <Text style={styles.buttonText}>
+                {loading || refreshing
+                  ? "Loading report..."
+                  : readFailed
+                    ? "Retry"
+                    : "Refresh"}
+              </Text>
             </Pressable>
             {canExportCompliance ? (
               <Pressable
@@ -483,10 +553,18 @@ export default function FacilityReportsTab() {
         {!loading && !report ? (
           <View style={styles.card}>
             <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-              No report available
+              Report unavailable
             </Text>
-            <Text style={styles.muted}>The backend did not return a report summary.</Text>
+            <Text style={styles.muted}>
+              Report counts are unknown. Retry the read to check this Facility.
+            </Text>
           </View>
+        ) : null}
+
+        {report && (loading || refreshing || readFailed) ? (
+          <Text style={styles.muted}>
+            Previously loaded report — not a current summary. Retry to refresh.
+          </Text>
         ) : null}
 
         {report ? (
