@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityIntegrationsRoute, {
   createFacilityIntegrationsStyles
@@ -13,6 +13,8 @@ const mockPush = jest.fn();
 const mockBuildPanel = jest.fn();
 let mockFacilityRole = "OWNER";
 let mockSelectedFacilityId = "facility-1";
+let mockAuth = { user: { id: "owner" }, token: "session" };
+jest.mock("@/auth/AuthContext", () => ({ useAuth: () => mockAuth }));
 
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock("@/api/apiRequest", () => ({
@@ -55,6 +57,8 @@ describe("FacilityIntegrationsRoute", () => {
     jest.clearAllMocks();
     mockFacilityRole = "OWNER";
     mockSelectedFacilityId = "facility-1";
+    mockAuth = { user: { id: "owner" }, token: "session" };
+    mockApiRequest.mockReset();
     mockApiRequest.mockResolvedValue({
       grows: [
         { id: "grow-1", name: "Flower Cycle 12", roomName: "Flower A" },
@@ -62,6 +66,143 @@ describe("FacilityIntegrationsRoute", () => {
       ]
     });
   });
+
+  it.each([
+    {},
+    null,
+    { success: false, grows: [] },
+    { grows: {} },
+    { grows: [null] },
+    { grows: [{ id: { value: "grow" } }] },
+    { grows: [{ id: "grow-1" }, { id: "grow-1" }] }
+  ])("rejects malformed or unavailable grow choices: %p", async (response) => {
+    mockApiRequest.mockResolvedValueOnce(response);
+    const screen = render(<FacilityIntegrationsRoute />);
+    await screen.findByText("Retry grow choices");
+    expect(screen.queryByText(/No Facility grows are available/)).toBeNull();
+    expect(screen.getByLabelText("Import Facility grow history")).toBeDisabled();
+    fireEvent.press(
+      screen.getByLabelText("Refresh Facility grow choices for integrations")
+    );
+    await screen.findByText("Flower Cycle 12");
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("shows empty guidance only after a successful empty read", async () => {
+    let resolve!: (value: any) => void;
+    mockApiRequest.mockReturnValueOnce(
+      new Promise((r) => {
+        resolve = r;
+      })
+    );
+    const screen = render(<FacilityIntegrationsRoute />);
+    expect(screen.queryByText(/No Facility grows are available/)).toBeNull();
+    expect(screen.getByLabelText("Import Facility grow history")).toBeDisabled();
+    await act(async () => resolve({ grows: [] }));
+    await screen.findByText(/No Facility grows are available/);
+    expect(screen.getByLabelText("Open Facility grows")).toBeTruthy();
+  });
+
+  it("preserves the selected destination through a failed refresh but locks its actions", async () => {
+    const screen = render(<FacilityIntegrationsRoute />);
+    await screen.findByText("Flower Cycle 12");
+    fireEvent.press(
+      screen.getByLabelText("Use Flower Cycle 12 for Facility integrations")
+    );
+    mockApiRequest.mockRejectedValueOnce(new Error("Synthetic failed read"));
+    fireEvent.press(
+      screen.getByLabelText("Refresh Facility grow choices for integrations")
+    );
+    await screen.findByText("Retry grow choices");
+    expect(screen.getByText(/Previously loaded grow choices shown/)).toBeTruthy();
+    expect(screen.getByText("Destination: Flower Cycle 12")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Use Mother Room for Facility integrations")
+    ).toBeDisabled();
+    expect(screen.getByLabelText("Import Facility grow history")).toBeDisabled();
+    expect(mockBuildPanel).toHaveBeenLastCalledWith(
+      expect.objectContaining({ canConfigure: false, targetRef: "grow-1" })
+    );
+    fireEvent.press(
+      screen.getByLabelText("Refresh Facility grow choices for integrations")
+    );
+    await waitFor(() =>
+      expect(screen.queryByText(/Previously loaded grow choices shown/)).toBeNull()
+    );
+    expect(mockBuildPanel).toHaveBeenLastCalledWith(
+      expect.objectContaining({ canConfigure: true, targetRef: "grow-1" })
+    );
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("serializes Refresh and waits for in-progress integration work", async () => {
+    const screen = render(<FacilityIntegrationsRoute />);
+    await screen.findByText("Flower Cycle 12");
+    fireEvent.press(
+      screen.getByLabelText("Use Flower Cycle 12 for Facility integrations")
+    );
+    const props = mockBuildPanel.mock.calls.at(-1)[0];
+    act(() => props.onBusyChange(true));
+    expect(
+      screen.getByLabelText("Refresh Facility grow choices for integrations")
+    ).toBeDisabled();
+    expect(
+      screen.getByLabelText("Use Mother Room for Facility integrations")
+    ).toBeDisabled();
+    act(() => props.onBusyChange(false));
+    let resolve!: (value: any) => void;
+    mockApiRequest.mockReturnValueOnce(
+      new Promise((r) => {
+        resolve = r;
+      })
+    );
+    const refresh = screen.getByLabelText(
+      "Refresh Facility grow choices for integrations"
+    );
+    fireEvent.press(refresh);
+    fireEvent.press(refresh);
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
+    expect(refresh).toBeDisabled();
+    await act(async () => resolve({ grows: [] }));
+    expect(screen.queryByTestId("facility-grow-integration-panel")).toBeNull();
+    expect(screen.queryByText(/Destination:/)).toBeNull();
+  });
+
+  it.each(["account", "session", "facility", "role"])(
+    "isolates %s changes and ignores late reads",
+    async (change) => {
+      const screen = render(<FacilityIntegrationsRoute />);
+      await screen.findByText("Flower Cycle 12");
+      fireEvent.press(
+        screen.getByLabelText("Use Flower Cycle 12 for Facility integrations")
+      );
+      let resolve!: (value: any) => void;
+      mockApiRequest.mockReturnValueOnce(
+        new Promise((r) => {
+          resolve = r;
+        })
+      );
+      fireEvent.press(
+        screen.getByLabelText("Refresh Facility grow choices for integrations")
+      );
+      if (change === "account") mockAuth = { ...mockAuth, user: { id: "other" } };
+      if (change === "session") mockAuth = { ...mockAuth, token: "new-session" };
+      if (change === "facility") mockSelectedFacilityId = "facility-2";
+      if (change === "role") mockFacilityRole = "VIEWER";
+      mockApiRequest.mockResolvedValueOnce({
+        grows: [{ id: "new-grow", name: "Current grow" }]
+      });
+      screen.rerender(<FacilityIntegrationsRoute />);
+      await screen.findByText("Current grow");
+      await act(async () =>
+        resolve({ grows: [{ id: "old-grow", name: "Late old grow" }] })
+      );
+      expect(screen.queryByText("Late old grow")).toBeNull();
+      expect(screen.queryByText("Flower Cycle 12")).toBeNull();
+      expect(screen.queryByTestId("facility-grow-integration-panel")).toBeNull();
+    }
+  );
 
   it("uses the active Night palette for its page, cards, and controls", () => {
     const palette = getThemePalette("night", "dark");

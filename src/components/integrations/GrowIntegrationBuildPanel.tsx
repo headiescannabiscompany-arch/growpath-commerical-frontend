@@ -32,12 +32,16 @@ export default function GrowIntegrationBuildPanel({
   mode,
   targetRef,
   facilityId,
-  canConfigure = true
+  canConfigure = true,
+  onBusyChange,
+  unavailableReason
 }: {
   mode: WorkspaceMode;
   targetRef: string;
   facilityId?: string;
   canConfigure?: boolean;
+  onBusyChange?: (busy: boolean) => void;
+  unavailableReason?: string;
 }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -47,7 +51,11 @@ export default function GrowIntegrationBuildPanel({
   const [connectionId, setConnectionId] = useState("");
   const [mappings, setMappings] = useState<IntegrationDeviceMapping[]>([]);
   const [confirmed, setConfirmed] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusyState] = useState(false);
+  const setBusy = (value: boolean) => {
+    setBusyState(value);
+    onBusyChange?.(value);
+  };
   const [status, setStatus] = useState("");
   const [selectedProviderId, setSelectedProviderId] = useState("");
   const [credential, setCredential] = useState("");
@@ -155,6 +163,7 @@ export default function GrowIntegrationBuildPanel({
   }
 
   async function discover(connection: IntegrationConnection) {
+    if (!canConfigure || busy || !targetRef || !workspaceScopeReady) return;
     setBusy(true);
     setStatus(`Testing ${connection.label} and discovering its devices...`);
     setConfirmed(false);
@@ -185,7 +194,7 @@ export default function GrowIntegrationBuildPanel({
   }
 
   async function confirm() {
-    if (!connectionId || !mappings.length) return;
+    if (!canConfigure || busy || !connectionId || !mappings.length) return;
     setBusy(true);
     try {
       const preview = await previewIntegrationMapping(connectionId, mappings);
@@ -203,7 +212,15 @@ export default function GrowIntegrationBuildPanel({
   }
 
   async function build() {
-    if (!confirmed || !connectionId || !targetRef || !workspaceScopeReady) return;
+    if (
+      !canConfigure ||
+      busy ||
+      !confirmed ||
+      !connectionId ||
+      !targetRef ||
+      !workspaceScopeReady
+    )
+      return;
     setBusy(true);
     try {
       const result = await autoBuildIntegrationSpaces(connectionId, {
@@ -465,8 +482,8 @@ export default function GrowIntegrationBuildPanel({
       ) : null}
       {!canConfigure ? (
         <Text style={styles.warning}>
-          You can review connected data, but this workspace role cannot change device
-          mappings.
+          {unavailableReason ||
+            "You can review connected data, but this workspace role cannot change device mappings."}
         </Text>
       ) : null}
     </View>

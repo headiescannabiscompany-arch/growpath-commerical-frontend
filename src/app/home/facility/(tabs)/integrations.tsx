@@ -19,10 +19,15 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
+import { useFacilityRecordScope } from "@/features/facility/useFacilityRecordRead";
 
 const PLANNED = ["Growlink", "AROYA", "SensorPush", "Aranet", "HOBOlink", "Monnit"];
 
 function growRows(response: any) {
+  if (response?.success === false || response?.ok === false)
+    throw new Error(
+      "Facility grow choices are unavailable. Retry to verify the destination."
+    );
   const rows =
     response?.grows ??
     response?.items ??
@@ -30,11 +35,21 @@ function growRows(response: any) {
     response?.data?.items ??
     response?.data ??
     response;
-  return Array.isArray(rows) ? rows : [];
+  if (!Array.isArray(rows) || rows.some((row) => !growId(row)))
+    throw new Error(
+      "Facility grow choices are unavailable. Retry to verify the destination."
+    );
+  const ids = rows.map(growId);
+  if (new Set(ids).size !== ids.length)
+    throw new Error(
+      "Facility grow choices are ambiguous. Retry to verify the destination."
+    );
+  return rows;
 }
 
 function growId(row: any) {
-  return String(row?.id || row?._id || row?.growId || "").trim();
+  const id = row?.id || row?._id || row?.growId;
+  return typeof id === "string" && id.trim() === id ? id : "";
 }
 
 function growName(row: any) {
@@ -42,6 +57,16 @@ function growName(row: any) {
 }
 
 export default function FacilityIntegrationsRoute() {
+  const ent = useEntitlements();
+  const scope = useFacilityRecordScope([
+    "integrations",
+    ent.selectedFacilityId,
+    ent.facilityId
+  ]);
+  return <FacilityIntegrationsContent key={scope} />;
+}
+
+function FacilityIntegrationsContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilityIntegrationsStyles(palette), [palette]);
@@ -55,13 +80,17 @@ export default function FacilityIntegrationsRoute() {
   const [selected, setSelected] = useState<"pulse" | "trolmaster">("pulse");
   const [grows, setGrows] = useState<any[]>([]);
   const [selectedGrowId, setSelectedGrowId] = useState("");
-  const [loadingGrows, setLoadingGrows] = useState(false);
+  const [loadingGrows, setLoadingGrows] = useState(!!facilityId);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [panelBusy, setPanelBusy] = useState(false);
   const [growError, setGrowError] = useState("");
   const growLoadInFlight = useRef(false);
+  const generation = useRef(0);
 
   const loadGrows = useCallback(async () => {
     if (!facilityId || growLoadInFlight.current) return;
     growLoadInFlight.current = true;
+    const request = ++generation.current;
     setLoadingGrows(true);
     setGrowError("");
     try {
@@ -69,24 +98,32 @@ export default function FacilityIntegrationsRoute() {
         method: "GET",
         cache: "no-store"
       });
-      const rows = growRows(response).filter((row) => growId(row));
+      const rows = growRows(response);
+      if (generation.current !== request) return;
       setGrows(rows);
+      setHasLoaded(true);
       setSelectedGrowId((current) =>
         rows.some((row) => growId(row) === current) ? current : ""
       );
     } catch (error: any) {
+      if (generation.current !== request) return;
       setGrowError(error?.message || "Unable to load Facility grows.");
-      setGrows([]);
-      setSelectedGrowId("");
     } finally {
-      growLoadInFlight.current = false;
-      setLoadingGrows(false);
+      if (generation.current === request) {
+        growLoadInFlight.current = false;
+        setLoadingGrows(false);
+      }
     }
   }, [facilityId]);
 
+  const cancelRead = useCallback(() => {
+    generation.current++;
+    growLoadInFlight.current = false;
+  }, []);
   useEffect(() => {
     void loadGrows();
-  }, [loadGrows]);
+    return cancelRead;
+  }, [loadGrows, cancelRead]);
 
   function requestProvider(provider: string) {
     Alert.alert(
@@ -106,6 +143,7 @@ export default function FacilityIntegrationsRoute() {
   }
 
   const selectedGrow = grows.find((row) => growId(row) === selectedGrowId);
+  const choicesReady = !!facilityId && hasLoaded && !loadingGrows && !growError;
 
   return (
     <ScreenBoundary
@@ -215,6 +253,25 @@ export default function FacilityIntegrationsRoute() {
             the exact grow before discovering mappings, creating spaces, or importing
             readings.
           </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Refresh Facility grow choices for integrations"
+            accessibilityState={{
+              disabled: !facilityId || loadingGrows || panelBusy,
+              busy: loadingGrows
+            }}
+            disabled={!facilityId || loadingGrows || panelBusy}
+            onPress={() => void loadGrows()}
+            style={styles.secondaryAction}
+          >
+            <Text style={styles.secondaryActionText}>
+              {loadingGrows
+                ? "Refreshing grow choices..."
+                : growError
+                  ? "Retry grow choices"
+                  : "Refresh grow choices"}
+            </Text>
+          </Pressable>
           {loadingGrows ? (
             <View
               accessibilityLabel="Loading Facility grows for integrations"
@@ -228,17 +285,15 @@ export default function FacilityIntegrationsRoute() {
           {growError ? (
             <View accessibilityRole="alert" style={styles.errorPanel}>
               <Text style={styles.errorText}>{growError}</Text>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Retry loading Facility grows for integrations"
-                disabled={loadingGrows}
-                onPress={() => void loadGrows()}
-                style={styles.secondaryAction}
-              >
-                <Text style={styles.secondaryActionText}>Retry</Text>
-              </Pressable>
             </View>
           ) : null}
+          {hasLoaded && (loadingGrows || growError) ? (
+            <Text style={styles.body}>
+              Previously loaded grow choices shown. Destination actions wait for a
+              successful refresh.
+            </Text>
+          ) : null}
+          {!facilityId ? <Text style={styles.body}>Select a Facility first.</Text> : null}
           <View style={styles.growChoices}>
             {grows.map((grow) => {
               const id = growId(grow);
@@ -247,7 +302,11 @@ export default function FacilityIntegrationsRoute() {
                 <Pressable
                   accessibilityLabel={`Use ${name} for Facility integrations`}
                   accessibilityRole="button"
-                  accessibilityState={{ selected: selectedGrowId === id }}
+                  accessibilityState={{
+                    selected: selectedGrowId === id,
+                    disabled: !choicesReady || panelBusy
+                  }}
+                  disabled={!choicesReady || panelBusy}
                   key={id}
                   onPress={() => setSelectedGrowId(id)}
                   style={[
@@ -263,7 +322,7 @@ export default function FacilityIntegrationsRoute() {
               );
             })}
           </View>
-          {!loadingGrows && !growError && !grows.length ? (
+          {choicesReady && !grows.length ? (
             <>
               <Text style={styles.body}>
                 No Facility grows are available. Create a grow before building device
@@ -287,10 +346,17 @@ export default function FacilityIntegrationsRoute() {
               Destination: {selectedGrow ? growName(selectedGrow) : "Selected grow"}
             </Text>
             <GrowIntegrationBuildPanel
+              key={selectedGrowId}
               mode="facility"
               targetRef={selectedGrowId}
               facilityId={facilityId}
-              canConfigure={canConfigure}
+              canConfigure={canConfigure && !!choicesReady}
+              onBusyChange={setPanelBusy}
+              unavailableReason={
+                canConfigure && !choicesReady
+                  ? "Verify the destination grow with Refresh/Retry before changing mappings or importing history."
+                  : undefined
+              }
             />
           </View>
         ) : (
@@ -313,8 +379,12 @@ export default function FacilityIntegrationsRoute() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Import Facility grow history"
-            disabled={!canConfigure}
-            style={[styles.primaryAction, !canConfigure && styles.disabled]}
+            disabled={!canConfigure || !choicesReady || panelBusy}
+            accessibilityState={{ disabled: !canConfigure || !choicesReady || panelBusy }}
+            style={[
+              styles.primaryAction,
+              (!canConfigure || !choicesReady || panelBusy) && styles.disabled
+            ]}
             onPress={() =>
               router.push(
                 selectedGrowId

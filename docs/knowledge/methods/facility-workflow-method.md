@@ -1,5 +1,11 @@
 # Facility Workflow
 
+Integration destination grow reads follow the integration-workflow recovery boundary:
+validate collections, preserve labeled same-context choices on failure, offer
+single-flight Refresh/Retry and lock destination actions until recovery. Active
+integration operations block refresh and destination switching. Identity changes
+discard old choices and review state, without changing provider or permission rules.
+
 Facility audit lists, individual records and entity history offer visible single-flight
 Refresh/Retry. Failed or malformed reads are unavailable, not empty history or missing
 records. Retain and label a same-context successful snapshot during refresh/failure.

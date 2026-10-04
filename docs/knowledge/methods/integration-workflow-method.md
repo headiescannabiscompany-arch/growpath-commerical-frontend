@@ -1,5 +1,14 @@
 # Integration Workflow
 
+Facility integration destination choices require a successful, valid grow collection.
+Pending, malformed or failed reads are not an empty workspace. Offer single-flight
+Refresh/Retry; retain and label previous choices and the same-context selected grow
+after failure, but withhold mapping/build/history actions until recovery. Refresh
+and destination changes wait for active integration operations. Account, session,
+Facility and role changes reset choices and review state and discard late reads;
+changing the exact grow remounts its integration review. Existing provider contracts,
+credentials, server authorization and explicit import/build confirmations are unchanged.
+
 Provider integrations begin read-only. Credentials stay encrypted on the backend; clients receive only authentication type and configured/encrypted state. Each provider declares capabilities, status, structured errors, and last-sync state, and must implement connection testing, device discovery, and data pulling before it is registered as implemented.
 
 Every connection list and connection write carries the active Personal, Commercial, or Facility workspace scope. Personal and Commercial ownership resolves to the authenticated account; Facility ownership resolves to the selected authorized Facility and permits setup writes only for owners and managers. A connection from one workspace must never appear as an available connection in another workspace merely because the same human can enter both. A Facility identifier is an ownership boundary, never a substitute grow target.

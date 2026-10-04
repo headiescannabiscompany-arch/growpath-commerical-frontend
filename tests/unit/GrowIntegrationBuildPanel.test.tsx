@@ -148,6 +148,30 @@ describe("GrowIntegrationBuildPanel", () => {
     expect(mockTestConnection).toHaveBeenCalledWith("connection-zentra");
   });
 
+  it("notifies the destination boundary while discovery is active", async () => {
+    let finish!: (value: any) => void;
+    mockFetchStructure.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      })
+    );
+    const onBusyChange = jest.fn();
+    render(
+      <GrowIntegrationBuildPanel
+        mode="facility"
+        targetRef="grow-1"
+        facilityId="facility-1"
+        onBusyChange={onBusyChange}
+      />
+    );
+    await screen.findByText("Pulse greenhouse");
+    fireEvent.press(screen.getByText("Discover devices"));
+    await waitFor(() => expect(mockFetchStructure).toHaveBeenCalled());
+    expect(onBusyChange).toHaveBeenLastCalledWith(true);
+    await act(async () => finish({ suggestedMappings: [] }));
+    expect(onBusyChange).toHaveBeenLastCalledWith(false);
+  });
+
   it("does not show a stale Facility when two Facilities reuse the same grow ID", async () => {
     let resolveFacilityOneSpaces: (spaces: any[]) => void = () => undefined;
     const facilityOneSpaces = new Promise<any[]>((resolve) => {
