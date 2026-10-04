@@ -42,6 +42,9 @@ describe("public Updates page", () => {
     expect(note?.summary).toContain("Inventory detail now offers Retry");
     expect(note?.summary).toContain("SOP comparison now offers Retry");
     expect(note?.summary).toContain("SOP Library and Start Run now offer Refresh/Retry");
+    expect(note?.summary).toContain(
+      "Compliance overview now keeps unread counts unknown"
+    );
     expect(note?.summary).toContain("archived history stays readable");
     expect(note?.summary).toContain(
       "Dashboard plant counts now recognize the returned plant records"

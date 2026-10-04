@@ -21,6 +21,8 @@ const mockEntitlementState = {
   facilityRole: "OWNER"
 };
 let mockFacilityState: any;
+let mockAuth = { user: { id: "qa-owner" }, token: "test-token" };
+jest.mock("@/auth/AuthContext", () => ({ useAuth: () => mockAuth }));
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter
@@ -43,7 +45,8 @@ jest.mock("@/hooks/useApiErrorHandler", () => ({
   useApiErrorHandler: () => ({
     error: null,
     handleApiError: mockHandleApiError,
-    clearError: mockClearError
+    clearError: mockClearError,
+    toInlineError: (error: any) => ({ message: error.message || "Unavailable" })
   })
 }));
 
@@ -70,8 +73,19 @@ jest.mock("@/api/audit", () => ({
 }));
 
 describe("Facility Compliance facility label", () => {
+  const deferred = () => {
+    let resolve!: (value: any) => void;
+    let reject!: (error: any) => void;
+    const promise = new Promise<any>((yes, no) => {
+      resolve = yes;
+      reject = no;
+    });
+    return { promise, resolve, reject };
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAuth = { user: { id: "qa-owner" }, token: "test-token" };
     mockEntitlementState.can.mockReturnValue(true);
     mockEntitlementState.facilityRole = "OWNER";
     mockGetSOPTemplates.mockResolvedValue([]);
@@ -100,6 +114,227 @@ describe("Facility Compliance facility label", () => {
 
     expect(screen.getByText("Facility: Readable Test Facility")).toBeTruthy();
     expect(screen.queryByText(/507f1f77bcf86cd799439011/)).toBeNull();
+  });
+
+  it("keeps initial counts unknown, blocks writes and offers draft-preserving single-flight Retry", async () => {
+    const first = deferred();
+    const retry = deferred();
+    mockGetDeviations
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(retry.promise);
+    const screen = render(<FacilityComplianceTab />);
+    expect(screen.getAllByText("—")).toHaveLength(4);
+    expect(screen.queryByText("No open deviations.")).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("Deviation title"), "Unsent draft");
+    fireEvent.press(screen.getByLabelText("Create compliance deviation"));
+    expect(mockCreateDeviation).not.toHaveBeenCalled();
+    await act(async () => first.reject(new Error("Read failed")));
+    expect(screen.getByText("Retry")).toBeTruthy();
+    expect(screen.queryByText("No SOP templates yet.")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Refresh facility compliance"));
+    fireEvent.press(screen.getByLabelText("Refresh facility compliance"));
+    expect(mockGetDeviations).toHaveBeenCalledTimes(2);
+    await act(async () => retry.resolve([]));
+    expect(screen.getByDisplayValue("Unsent draft")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Create compliance deviation").props.accessibilityState
+        .disabled
+    ).toBe(false);
+    expect(screen.getByText("No open deviations.")).toBeTruthy();
+  });
+
+  it("labels a failed refresh, retains records and disables record-backed actions", async () => {
+    mockGetDeviations
+      .mockResolvedValueOnce([{ id: "dev1", title: "Saved deviation", status: "open" }])
+      .mockRejectedValueOnce(new Error("Refresh failed"));
+    mockGetVerifications.mockResolvedValue([
+      { id: "verify1", name: "Saved verification", status: "pending" }
+    ]);
+    mockGetSOPTemplates.mockResolvedValue([{ id: "sop1", title: "Saved SOP" }]);
+    const screen = render(<FacilityComplianceTab />);
+    await waitFor(() => expect(screen.getByText("Saved deviation")).toBeTruthy());
+    fireEvent.changeText(
+      screen.getByLabelText("Verification reject reason"),
+      "Unsent reason"
+    );
+    fireEvent.press(screen.getByLabelText("Refresh facility compliance"));
+    await waitFor(() => expect(screen.getByText("Retry")).toBeTruthy());
+    expect(screen.getByText(/Previously loaded compliance records/)).toBeTruthy();
+    expect(screen.getByText("Saved deviation")).toBeTruthy();
+    expect(screen.getByDisplayValue("Unsent reason")).toBeTruthy();
+    for (const name of [
+      "Resolve deviation Saved deviation",
+      "Approve verification Saved verification",
+      "Reject verification Saved verification",
+      "Start SOP run from Saved SOP"
+    ]) {
+      expect(screen.getByLabelText(name).props.accessibilityState.disabled).toBe(true);
+      fireEvent.press(screen.getByLabelText(name));
+    }
+    expect(mockResolveDeviation).not.toHaveBeenCalled();
+    expect(mockApproveVerification).not.toHaveBeenCalled();
+    expect(mockRejectVerification).not.toHaveBeenCalled();
+    expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+
+  it("serializes refresh with creation and preserves confirmed-write feedback when refresh fails", async () => {
+    const write = deferred();
+    mockCreateDeviation.mockReturnValueOnce(write.promise);
+    const screen = render(<FacilityComplianceTab />);
+    await waitFor(() => expect(screen.getByText("No open deviations.")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Deviation title"), "Reviewed draft");
+    fireEvent.press(screen.getByLabelText("Create compliance deviation"));
+    fireEvent.press(screen.getByLabelText("Create compliance deviation"));
+    fireEvent.press(screen.getByLabelText("Refresh facility compliance"));
+    const refresh = screen.UNSAFE_getByType(RefreshControl);
+    await act(async () => {
+      await refresh.props.onRefresh();
+    });
+    expect(mockCreateDeviation).toHaveBeenCalledTimes(1);
+    expect(mockGetDeviations).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("Deviation title").props.editable).toBe(false);
+    mockGetDeviations.mockRejectedValueOnce(new Error("After-write read failed"));
+    await act(async () => write.resolve({ id: "created" }));
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Deviation created\. Records could not refresh/)
+      ).toBeTruthy()
+    );
+    expect(screen.getByText("Retry")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Create compliance deviation").props.accessibilityState
+        .disabled
+    ).toBe(true);
+  });
+
+  it("retains a failed write draft for a deliberate retry", async () => {
+    mockCreateDeviation.mockRejectedValueOnce(new Error("Save failed"));
+    const screen = render(<FacilityComplianceTab />);
+    await waitFor(() => expect(screen.getByText("No open deviations.")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Deviation title"), "Keep title");
+    fireEvent.changeText(
+      screen.getByLabelText("Deviation description"),
+      "Keep description"
+    );
+    fireEvent.press(screen.getByLabelText("Create compliance deviation"));
+    await waitFor(() => expect(screen.getByText("Save failed")).toBeTruthy());
+    expect(screen.getByDisplayValue("Keep title")).toBeTruthy();
+    expect(screen.getByDisplayValue("Keep description")).toBeTruthy();
+    expect(mockGetDeviations).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ["resolve", "Resolve deviation Saved deviation", "Deviation resolved."],
+    ["approve", "Approve verification Saved verification", "Verification approved."],
+    ["reject", "Reject verification Saved verification", "Verification rejected."]
+  ])(
+    "serializes %s and keeps confirmed feedback when its follow-up read fails",
+    async (kind, label, success) => {
+      mockGetDeviations.mockResolvedValue([
+        { id: "dev1", title: "Saved deviation", status: "open" }
+      ]);
+      mockGetVerifications.mockResolvedValue([
+        { id: "ver1", name: "Saved verification", status: "pending" }
+      ]);
+      const write = deferred();
+      const mutation =
+        kind === "resolve"
+          ? mockResolveDeviation
+          : kind === "approve"
+            ? mockApproveVerification
+            : mockRejectVerification;
+      mutation.mockReturnValueOnce(write.promise);
+      const screen = render(<FacilityComplianceTab />);
+      await waitFor(() => expect(screen.getByText("Saved verification")).toBeTruthy());
+      fireEvent.press(screen.getByLabelText(label));
+      fireEvent.press(screen.getByLabelText(label));
+      fireEvent.press(screen.getByLabelText("Refresh facility compliance"));
+      expect(mutation).toHaveBeenCalledTimes(1);
+      expect(mockGetDeviations).toHaveBeenCalledTimes(1);
+      mockGetDeviations.mockRejectedValueOnce(new Error("Read unavailable"));
+      await act(async () => write.resolve({ id: "confirmed" }));
+      await waitFor(() =>
+        expect(
+          screen.getByText(
+            success + " Records could not refresh. Retry the read before another change."
+          )
+        ).toBeTruthy()
+      );
+      expect(screen.getByLabelText(label).props.accessibilityState.disabled).toBe(true);
+    }
+  );
+
+  it("rejects malformed returned collections instead of claiming no records", async () => {
+    mockGetDeviations.mockResolvedValueOnce({ unexpected: true });
+    const screen = render(<FacilityComplianceTab />);
+    await waitFor(() => expect(screen.getByText("Retry")).toBeTruthy());
+    expect(screen.queryByText("No open deviations.")).toBeNull();
+    expect(screen.getAllByText("—")).toHaveLength(4);
+  });
+
+  it.each(["account", "session", "Facility", "role"])(
+    "discards old drafts and late reads after changing %s",
+    async (kind) => {
+      const oldRead = deferred();
+      mockGetDeviations.mockReturnValueOnce(oldRead.promise);
+      const screen = render(<FacilityComplianceTab />);
+      fireEvent.changeText(screen.getByLabelText("Deviation title"), "Old draft");
+      if (kind === "account") mockAuth = { ...mockAuth, user: { id: "other" } };
+      if (kind === "session") mockAuth = { ...mockAuth, token: "other-session" };
+      if (kind === "Facility")
+        mockFacilityState = {
+          selectedId: "other-facility",
+          selected: { name: "Other Facility" }
+        };
+      if (kind === "role") mockEntitlementState.facilityRole = "MANAGER";
+      screen.rerender(<FacilityComplianceTab />);
+      await waitFor(() => expect(screen.getByText("No open deviations.")).toBeTruthy());
+      await act(async () => oldRead.resolve([{ id: "old", title: "Old late record" }]));
+      expect(screen.queryByText("Old late record")).toBeNull();
+      expect(screen.queryByDisplayValue("Old draft")).toBeNull();
+    }
+  );
+
+  it("does not add an audit or refresh after a late old-account write", async () => {
+    const write = deferred();
+    mockCreateDeviation.mockReturnValueOnce(write.promise);
+    const screen = render(<FacilityComplianceTab />);
+    await waitFor(() => expect(screen.getByText("No open deviations.")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Deviation title"), "Old write");
+    fireEvent.press(screen.getByLabelText("Create compliance deviation"));
+    mockAuth = { ...mockAuth, user: { id: "other" } };
+    screen.rerender(<FacilityComplianceTab />);
+    await waitFor(() => expect(mockGetDeviations).toHaveBeenCalledTimes(2));
+    await act(async () => write.resolve({ id: "old-created" }));
+    expect(mockCreateAuditLog).not.toHaveBeenCalled();
+    expect(mockGetDeviations).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText("Deviation created.")).toBeNull();
+  });
+
+  it("does not report unavailable audit access as zero events", async () => {
+    mockEntitlementState.can.mockImplementation((key) => key !== "AUDIT_READ");
+    const screen = render(<FacilityComplianceTab />);
+    await waitFor(() => expect(screen.getByText("No open deviations.")).toBeTruthy());
+    expect(screen.getAllByText("—")).toHaveLength(1);
+    expect(mockListAuditLogs).not.toHaveBeenCalled();
+  });
+
+  it("keeps Staff resolution excluded without changing its existing write role", async () => {
+    mockEntitlementState.facilityRole = "STAFF";
+    mockGetDeviations.mockResolvedValue([{ id: "dev1", title: "Review needed" }]);
+    const screen = render(<FacilityComplianceTab />);
+    await waitFor(() => expect(screen.getByText("Review needed")).toBeTruthy());
+    expect(screen.queryByLabelText("Resolve deviation Review needed")).toBeNull();
+    expect(screen.getByLabelText("Create compliance deviation")).toBeTruthy();
+  });
+
+  it("does not call compliance APIs without read access", async () => {
+    mockEntitlementState.can.mockReturnValue(false);
+    const screen = render(<FacilityComplianceTab />);
+    await waitFor(() => expect(screen.getByText("No Compliance Access")).toBeTruthy());
+    expect(mockGetDeviations).not.toHaveBeenCalled();
+    expect(mockGetSOPTemplates).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("Create compliance deviation")).toBeNull();
   });
 
   it("uses a neutral label when the store only has an identifier", async () => {
@@ -161,9 +396,7 @@ describe("Facility Compliance facility label", () => {
 
   it("uses explicit severity choices and prevents duplicate deviation writes", async () => {
     const screen = render(<FacilityComplianceTab />);
-    await waitFor(() =>
-      expect(screen.getByLabelText("Create compliance deviation")).toBeTruthy()
-    );
+    await waitFor(() => expect(screen.getByText("No SOP templates yet.")).toBeTruthy());
 
     expect(screen.getByLabelText("Set deviation severity minor").props).toMatchObject({
       accessibilityRole: "radio",

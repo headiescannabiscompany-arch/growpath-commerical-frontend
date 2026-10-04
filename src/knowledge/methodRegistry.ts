@@ -1334,6 +1334,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Inventory detail requires verified identity and stock, offers draft-preserving Retry, serializes parent and child actions, confirms saved-name archival, preserves archived history and discards late context results",
       "SOP comparison validates saved choices and distinct matching run pairs, preserves same-context selections on Retry, withholds stale outcomes and discards late context results",
       "SOP Library and Start Run require readable current templates, preserve drafts on Retry, serialize authoring actions, distinguish confirmed writes from refresh failures and ignore late context completions",
+      "Compliance overview preserves unknown and retained-read states, offers draft-preserving Retry, serializes writes and refresh, honors role exclusions and discards late context results",
       "saved-task-named cancelable removal confirmation with current role/read/write guards, retained soft-removal history, and exact grow-scoped task Back navigation",
       "credential-autofill-safe AI and parental-control inputs",
       "record-backed report counts with explicit untracked compliance evidence",

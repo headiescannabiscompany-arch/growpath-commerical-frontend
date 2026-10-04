@@ -28,7 +28,10 @@ import { getSOPTemplates, type SOPTemplate } from "@/api/sop";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import {
+  useFacilityRecordRead,
+  useFacilityRecordScope
+} from "@/features/facility/useFacilityRecordRead";
 import { useFacility } from "@/state/useFacility";
 import type { AuditLog } from "@/types/contracts";
 import { radius } from "@/theme/theme";
@@ -64,6 +67,17 @@ function openDeviation(row: Deviation) {
 const DEVIATION_SEVERITIES = ["minor", "major", "critical"] as const;
 
 export default function FacilityComplianceTab() {
+  const ent = useEntitlements();
+  const scope = useFacilityRecordScope([
+    "compliance",
+    ent?.can?.(CAPABILITY_KEYS.COMPLIANCE_READ),
+    ent?.can?.(CAPABILITY_KEYS.COMPLIANCE_WRITE),
+    ent?.can?.(CAPABILITY_KEYS.AUDIT_READ)
+  ]);
+  return <ComplianceContent key={scope} />;
+}
+
+function ComplianceContent() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -77,16 +91,16 @@ export default function FacilityComplianceTab() {
       : "Selected facility";
   }, [facilityId, selectedFacility?.name]);
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const {
+    mounted,
+    error,
+    handleApiError,
+    clearError,
+    hasLoaded,
+    setHasLoaded,
+    readFailed,
+    setReadFailed
+  } = useFacilityRecordRead();
 
   const [deviations, setDeviations] = useState<Deviation[]>([]);
   const [verifications, setVerifications] = useState<VerificationRecord[]>([]);
@@ -110,10 +124,18 @@ export default function FacilityComplianceTab() {
     canWriteRole(ent?.facilityRole);
   const canResolveCompliance = canWriteCompliance && canResolveRole(ent?.facilityRole);
   const canReadAudit = Boolean(ent?.can?.(CAPABILITY_KEYS.AUDIT_READ));
+  const readable =
+    canReadCompliance && hasLoaded && !readFailed && !loading && !refreshing;
+  const actionDisabled = !readable || saving;
 
   const load = useCallback(
-    async (opts?: { refresh?: boolean }) => {
-      if (!facilityId || loadInFlightRef.current) return;
+    async (opts?: { refresh?: boolean; afterWrite?: boolean }) => {
+      if (
+        !facilityId ||
+        loadInFlightRef.current ||
+        (mutationInFlightRef.current && !opts?.afterWrite)
+      )
+        return false;
       loadInFlightRef.current = true;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -125,7 +147,7 @@ export default function FacilityComplianceTab() {
           setVerifications([]);
           setSops([]);
           setAuditLogs([]);
-          return;
+          return false;
         }
         const [deviationRows, verificationRows, sopRows, auditRes] = await Promise.all([
           getDeviations(facilityId),
@@ -133,19 +155,44 @@ export default function FacilityComplianceTab() {
           getSOPTemplates(facilityId),
           canReadAudit ? listAuditLogs(facilityId) : Promise.resolve({ data: [] })
         ]);
-        setDeviations(Array.isArray(deviationRows) ? deviationRows : []);
-        setVerifications(Array.isArray(verificationRows) ? verificationRows : []);
-        setSops(Array.isArray(sopRows) ? sopRows : []);
-        setAuditLogs(Array.isArray(auditRes.data) ? auditRes.data : []);
+        if (!mounted.current) return false;
+        if (
+          ![deviationRows, verificationRows, sopRows, auditRes.data].every(Array.isArray)
+        ) {
+          throw new Error(
+            "Compliance records are unavailable. Retry before making changes."
+          );
+        }
+        setDeviations(deviationRows);
+        setVerifications(verificationRows);
+        setSops(sopRows);
+        setAuditLogs(auditRes.data);
+        setHasLoaded(true);
+        setReadFailed(false);
+        return true;
       } catch (e) {
+        if (!mounted.current) return false;
+        setReadFailed(true);
         handleApiError(e);
+        return false;
       } finally {
         loadInFlightRef.current = false;
-        setLoading(false);
-        setRefreshing(false);
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [canReadAudit, canReadCompliance, clearError, facilityId, handleApiError]
+    [
+      canReadAudit,
+      canReadCompliance,
+      clearError,
+      facilityId,
+      handleApiError,
+      mounted,
+      setHasLoaded,
+      setReadFailed
+    ]
   );
 
   useEffect(() => {
@@ -157,7 +204,7 @@ export default function FacilityComplianceTab() {
   }, [facilityId, load, router]);
 
   async function writeAudit(action: string, details: string) {
-    if (!facilityId || !canReadAudit) return;
+    if (!mounted.current || !facilityId || !canReadAudit) return;
     try {
       await createAuditLog(facilityId, {
         action,
@@ -168,10 +215,22 @@ export default function FacilityComplianceTab() {
     }
   }
 
+  async function refreshAfterWrite(success: string) {
+    if (!mounted.current) return;
+    setFeedback(success);
+    const refreshed = await load({ refresh: true, afterWrite: true });
+    if (mounted.current && !refreshed)
+      setFeedback(
+        success + " Records could not refresh. Retry the read before another change."
+      );
+  }
+
   async function addDeviation() {
     if (
       !facilityId ||
       !canWriteCompliance ||
+      actionDisabled ||
+      loadInFlightRef.current ||
       !deviationTitle.trim() ||
       mutationInFlightRef.current
     )
@@ -187,24 +246,32 @@ export default function FacilityComplianceTab() {
         status: "open",
         facilityId
       });
+      if (!mounted.current) return;
       await writeAudit(
         "COMPLIANCE_DEVIATION_CREATED",
         `Deviation ${rowId(created) || deviationTitle.trim()} created in facility ${facilityId}`
       );
+      if (!mounted.current) return;
       setDeviationTitle("");
       setDeviationDescription("");
-      setFeedback("Deviation created.");
-      await load({ refresh: true });
+      await refreshAfterWrite("Deviation created.");
     } catch (e) {
       handleApiError(e);
     } finally {
       mutationInFlightRef.current = false;
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   }
 
   async function resolve(id: string) {
-    if (!facilityId || !id || !canResolveCompliance || mutationInFlightRef.current)
+    if (
+      !facilityId ||
+      !id ||
+      !canResolveCompliance ||
+      actionDisabled ||
+      loadInFlightRef.current ||
+      mutationInFlightRef.current
+    )
       return;
     mutationInFlightRef.current = true;
     setSaving(true);
@@ -217,18 +284,24 @@ export default function FacilityComplianceTab() {
         "COMPLIANCE_DEVIATION_RESOLVED",
         `Deviation ${id} resolved in facility ${facilityId}`
       );
-      setFeedback("Deviation resolved.");
-      await load({ refresh: true });
+      await refreshAfterWrite("Deviation resolved.");
     } catch (e) {
       handleApiError(e);
     } finally {
       mutationInFlightRef.current = false;
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   }
 
   async function verify(recordId: string) {
-    if (!facilityId || !recordId || !canWriteCompliance || mutationInFlightRef.current)
+    if (
+      !facilityId ||
+      !recordId ||
+      !canWriteCompliance ||
+      actionDisabled ||
+      loadInFlightRef.current ||
+      mutationInFlightRef.current
+    )
       return;
     mutationInFlightRef.current = true;
     setSaving(true);
@@ -239,18 +312,24 @@ export default function FacilityComplianceTab() {
         "COMPLIANCE_RECORD_VERIFIED",
         `Verification record ${recordId} approved in facility ${facilityId}`
       );
-      setFeedback("Verification approved.");
-      await load({ refresh: true });
+      await refreshAfterWrite("Verification approved.");
     } catch (e) {
       handleApiError(e);
     } finally {
       mutationInFlightRef.current = false;
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   }
 
   async function reject(recordId: string) {
-    if (!facilityId || !recordId || !canWriteCompliance || mutationInFlightRef.current)
+    if (
+      !facilityId ||
+      !recordId ||
+      !canWriteCompliance ||
+      actionDisabled ||
+      loadInFlightRef.current ||
+      mutationInFlightRef.current
+    )
       return;
     mutationInFlightRef.current = true;
     setSaving(true);
@@ -261,14 +340,14 @@ export default function FacilityComplianceTab() {
         "COMPLIANCE_RECORD_REJECTED",
         `Verification record ${recordId} rejected in facility ${facilityId}`
       );
+      if (!mounted.current) return;
       setRejectReason("");
-      setFeedback("Verification rejected.");
-      await load({ refresh: true });
+      await refreshAfterWrite("Verification rejected.");
     } catch (e) {
       handleApiError(e);
     } finally {
       mutationInFlightRef.current = false;
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   }
 
@@ -337,21 +416,54 @@ export default function FacilityComplianceTab() {
 
         {canReadCompliance ? (
           <>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Refresh facility compliance"
+              disabled={loading || refreshing || saving}
+              accessibilityState={{ disabled: loading || refreshing || saving }}
+              onPress={() => load({ refresh: true })}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryText}>
+                {loading || refreshing
+                  ? "Loading records..."
+                  : readFailed
+                    ? "Retry"
+                    : "Refresh"}
+              </Text>
+            </Pressable>
+            {hasLoaded && !readable ? (
+              <Text style={styles.muted}>
+                Previously loaded compliance records — not current readiness. Retry before
+                making changes.
+              </Text>
+            ) : null}
+            {!hasLoaded ? (
+              <Text style={styles.muted}>
+                Compliance counts are unknown until records load successfully.
+              </Text>
+            ) : null}
             <View style={styles.grid}>
               <View style={styles.tile}>
-                <Text style={styles.tileValue}>{openDeviations.length}</Text>
+                <Text style={styles.tileValue}>
+                  {hasLoaded ? openDeviations.length : "—"}
+                </Text>
                 <Text style={styles.tileLabel}>Open deviations</Text>
               </View>
               <View style={styles.tile}>
-                <Text style={styles.tileValue}>{pendingVerifications.length}</Text>
+                <Text style={styles.tileValue}>
+                  {hasLoaded ? pendingVerifications.length : "—"}
+                </Text>
                 <Text style={styles.tileLabel}>Pending verification</Text>
               </View>
               <View style={styles.tile}>
-                <Text style={styles.tileValue}>{sops.length}</Text>
+                <Text style={styles.tileValue}>{hasLoaded ? sops.length : "—"}</Text>
                 <Text style={styles.tileLabel}>SOP templates</Text>
               </View>
               <View style={styles.tile}>
-                <Text style={styles.tileValue}>{auditLogs.length}</Text>
+                <Text style={styles.tileValue}>
+                  {canReadAudit && hasLoaded ? auditLogs.length : "—"}
+                </Text>
                 <Text style={styles.tileLabel}>Audit events</Text>
               </View>
             </View>
@@ -417,6 +529,7 @@ export default function FacilityComplianceTab() {
                   <TextInput
                     accessibilityLabel="Deviation title"
                     value={deviationTitle}
+                    editable={!saving}
                     onChangeText={setDeviationTitle}
                     style={styles.input}
                     placeholder="Deviation title"
@@ -432,7 +545,11 @@ export default function FacilityComplianceTab() {
                         key={severity}
                         accessibilityLabel={`Set deviation severity ${severity}`}
                         accessibilityRole="radio"
-                        accessibilityState={{ checked: deviationSeverity === severity }}
+                        disabled={saving}
+                        accessibilityState={{
+                          checked: deviationSeverity === severity,
+                          disabled: saving
+                        }}
                         onPress={() => setDeviationSeverity(severity)}
                         style={[
                           styles.severityOption,
@@ -453,6 +570,7 @@ export default function FacilityComplianceTab() {
                   <TextInput
                     accessibilityLabel="Deviation description"
                     value={deviationDescription}
+                    editable={!saving}
                     onChangeText={setDeviationDescription}
                     style={[styles.input, styles.multiline]}
                     multiline
@@ -464,13 +582,13 @@ export default function FacilityComplianceTab() {
                     accessibilityLabel="Create compliance deviation"
                     accessibilityState={{
                       busy: saving,
-                      disabled: saving || !deviationTitle.trim()
+                      disabled: actionDisabled || !deviationTitle.trim()
                     }}
                     onPress={addDeviation}
-                    disabled={saving || !deviationTitle.trim()}
+                    disabled={actionDisabled || !deviationTitle.trim()}
                     style={[
                       styles.primaryBtn,
-                      (saving || !deviationTitle.trim()) && styles.disabled
+                      (actionDisabled || !deviationTitle.trim()) && styles.disabled
                     ]}
                   >
                     <Text style={styles.primaryText}>Create Deviation</Text>
@@ -498,9 +616,9 @@ export default function FacilityComplianceTab() {
                         <Pressable
                           accessibilityRole="button"
                           accessibilityLabel={`Resolve deviation ${item.title || id}`}
-                          accessibilityState={{ busy: saving, disabled: saving }}
+                          accessibilityState={{ busy: saving, disabled: actionDisabled }}
                           onPress={() => resolve(id)}
-                          disabled={saving}
+                          disabled={actionDisabled}
                           style={styles.secondaryBtn}
                         >
                           <Text style={styles.secondaryText}>Resolve</Text>
@@ -509,9 +627,9 @@ export default function FacilityComplianceTab() {
                     </View>
                   );
                 })
-              ) : (
+              ) : readable ? (
                 <Text style={styles.muted}>No open deviations.</Text>
-              )}
+              ) : null}
             </View>
 
             <View style={styles.card}>
@@ -523,6 +641,7 @@ export default function FacilityComplianceTab() {
                   <TextInput
                     accessibilityLabel="Verification reject reason"
                     value={rejectReason}
+                    editable={!saving}
                     onChangeText={setRejectReason}
                     style={styles.input}
                     placeholder="Reject reason, optional"
@@ -541,9 +660,12 @@ export default function FacilityComplianceTab() {
                             <Pressable
                               accessibilityRole="button"
                               accessibilityLabel={`Approve verification ${record.name || id}`}
-                              accessibilityState={{ busy: saving, disabled: saving }}
+                              accessibilityState={{
+                                busy: saving,
+                                disabled: actionDisabled
+                              }}
                               onPress={() => verify(id)}
-                              disabled={saving}
+                              disabled={actionDisabled}
                               style={styles.primaryBtn}
                             >
                               <Text style={styles.primaryText}>Approve</Text>
@@ -551,9 +673,12 @@ export default function FacilityComplianceTab() {
                             <Pressable
                               accessibilityRole="button"
                               accessibilityLabel={`Reject verification ${record.name || id}`}
-                              accessibilityState={{ busy: saving, disabled: saving }}
+                              accessibilityState={{
+                                busy: saving,
+                                disabled: actionDisabled
+                              }}
                               onPress={() => reject(id)}
-                              disabled={saving}
+                              disabled={actionDisabled}
                               style={styles.dangerBtn}
                             >
                               <Text style={styles.dangerText}>Reject</Text>
@@ -564,9 +689,9 @@ export default function FacilityComplianceTab() {
                     );
                   })}
                 </>
-              ) : (
+              ) : readable ? (
                 <Text style={styles.muted}>No pending verification records.</Text>
-              )}
+              ) : null}
             </View>
 
             <View style={styles.card}>
@@ -602,6 +727,8 @@ export default function FacilityComplianceTab() {
                         <Pressable
                           accessibilityRole="link"
                           accessibilityLabel={`Start SOP run from ${title}`}
+                          disabled={actionDisabled}
+                          accessibilityState={{ disabled: actionDisabled }}
                           onPress={() =>
                             router.push({
                               pathname: "/home/facility/sop-runs/start",
@@ -616,9 +743,9 @@ export default function FacilityComplianceTab() {
                     </View>
                   );
                 })
-              ) : (
+              ) : readable ? (
                 <Text style={styles.muted}>No SOP templates yet.</Text>
-              )}
+              ) : null}
             </View>
 
             <View style={styles.card}>
