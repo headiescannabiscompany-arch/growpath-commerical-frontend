@@ -11,7 +11,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: NODE_VERSION
-        value: 20.19.4
+        value: 24.18.0
 
       # Supply the exact, public HTTPS staging origins when the Blueprint is
       # created. The export rejects blank, local, insecure, and known production

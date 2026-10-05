@@ -6,7 +6,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: NODE_VERSION
-        value: 20.19.4
+        value: 24.18.0
       - key: EXPO_PUBLIC_API_URL
         value: https://api.growpathai.com
       - key: EXPO_PUBLIC_SENTRY_DSN
