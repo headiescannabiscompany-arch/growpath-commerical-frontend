@@ -24,6 +24,19 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("groups the bounded X repair and distinguishes other provider acceptance gaps", () => {
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "forum-share-readiness"
+    );
+    expect(note?.summary).toContain("X share text now fits the standard post limit");
+    expect(note?.summary).toContain(
+      "Full Copy Post text and saved content are unchanged"
+    );
+    expect(note?.summary).toContain("signed-in composers are not yet verified");
+    expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === "app-review")?.status).toBe(
+      "progress"
+    );
+  });
   it("groups grow-interest accessibility with app review without claiming full completion", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "forum-share-readiness"

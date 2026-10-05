@@ -12,6 +12,15 @@ account/session or workspace clears the previously mounted reader. Settled capab
 record-visibility and publication checks remain authoritative; no share action grants
 access, creates an account, posts a comment or publishes private content.
 
+X share intents bound only their prefilled summary to the ordinary 280-character
+weighted limit, counting the complete versioned preview link with the official
+`twitter-text` parser. Preserve a fitting title and price before shortening the
+description, and truncate at grapheme/whole-URL boundaries (whole whitespace
+chunks on engines without grapheme segmentation). Hashtags count as text; moving
+them into another intent parameter does not create extra space. Keep the source,
+Copy Post, email/SMS, and other provider handoffs unchanged. Opening an eligible
+composer is not publication or proof of a retained external preview.
+
 Discussion-detail post and comment reads recover independently. Do not read comments
 or mount comment/share actions before the exact requested post is readable. A failed
 comment read must not hide a readable post or claim an empty discussion. Retry is
