@@ -226,11 +226,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "grow-list-readiness",
-        title: "Clearer grow loading and account-limit messages",
-        date: "September 28, 2026",
+        title: "Clearer grow and task loading",
+        date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "A failed grow-list request or expired sign-in no longer appears as a full or empty account. Loading and retries show their own status; grow counts, empty-state guidance, and limit warnings use successfully loaded records. Existing grow limits, permissions, saved records, and the normal page layout stay unchanged."
+          "A failed grow-list request or expired sign-in no longer appears as a full or empty account. Loading and retries show their own status; grow counts, empty-state guidance, and limit warnings use successfully loaded records. Grow-specific task queues now also distinguish failed reads from empty lists, offer Retry without clearing unfinished input, and label previously loaded tasks if a refresh fails. A failed read no longer says a linked task was removed. Existing grow limits, permissions, saved records, and the normal page layout stay unchanged."
       },
       {
         id: "timeline-export-return",

@@ -466,6 +466,16 @@ export default function GrowTasksScreen({
 }: {
   workspace?: GrowWorkspace;
 } = {}) {
+  const params = useLocalSearchParams<{ growId?: string | string[] }>();
+  return (
+    <GrowTasksContent
+      key={`${workspace}:${coerceParam(params.growId)}`}
+      workspace={workspace}
+    />
+  );
+}
+
+function GrowTasksContent({ workspace }: { workspace: GrowWorkspace }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowTasksStyles(palette), [palette]);
   const entitlements = useEntitlements();
@@ -483,6 +493,10 @@ export default function GrowTasksScreen({
 
   const [tasks, setTasks] = useState<PersonalTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const readSequence = useRef(0);
+  const reading = useRef(false);
+  const focused = useRef(false);
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -507,30 +521,51 @@ export default function GrowTasksScreen({
     });
   }, [focusedTaskId, tasks]);
   const focusedTaskMissing = Boolean(
-    focusedTaskId && !loading && !tasks.some((task) => getRowId(task) === focusedTaskId)
+    focusedTaskId &&
+    !loading &&
+    !loadError &&
+    !tasks.some((task) => getRowId(task) === focusedTaskId)
   );
 
-  const load = useCallback(async () => {
-    if (!growId) {
-      setTasks([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const rows = await listWorkspaceTasks(workspace, growId);
-      setTasks(Array.isArray(rows) ? rows : []);
-    } catch {
-      setTasks([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [growId, workspace]);
+  const load = useCallback(
+    async (supersede = false) => {
+      if (!focused.current || (reading.current && !supersede)) return;
+      if (!growId) {
+        setTasks([]);
+        setLoading(false);
+        return;
+      }
+      const sequence = ++readSequence.current;
+      reading.current = true;
+      setLoading(true);
+      setLoadError(false);
+      try {
+        const rows = await listWorkspaceTasks(workspace, growId, { throwOnError: true });
+        if (!focused.current || sequence !== readSequence.current) return;
+        setTasks(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (!focused.current || sequence !== readSequence.current) return;
+        setLoadError(true);
+      } finally {
+        if (focused.current && sequence === readSequence.current) {
+          reading.current = false;
+          setLoading(false);
+        }
+      }
+    },
+    [growId, workspace]
+  );
 
   useFocusEffect(
     useCallback(() => {
+      focused.current = true;
       scrolledTaskIdRef.current = "";
-      load();
+      void load();
+      return () => {
+        focused.current = false;
+        readSequence.current += 1;
+        reading.current = false;
+      };
     }, [load])
   );
 
@@ -573,7 +608,7 @@ export default function GrowTasksScreen({
         setNewReminderNote("");
         setNewRecurrenceRule("");
         setFeedback("Task created.");
-        await load();
+        await load(true);
       } else {
         setFeedback("Unable to create task.");
       }
@@ -751,6 +786,26 @@ export default function GrowTasksScreen({
       )}
 
       {feedback ? <Text style={styles.taskMeta}>{feedback}</Text> : null}
+      {loadError ? (
+        <View style={styles.card}>
+          <Text style={styles.taskTitle} accessibilityRole="alert">
+            {"Couldn't load grow tasks."}
+          </Text>
+          <Text style={styles.taskMeta}>
+            {tasks.length
+              ? "Showing previously loaded tasks. Retry to check for changes."
+              : "Your tasks could not be checked. Try again."}
+          </Text>
+          <Pressable
+            style={styles.actionBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Retry grow tasks"
+            onPress={() => void load()}
+          >
+            <Text style={styles.actionText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
       {focusedTaskMissing ? (
         <View style={[styles.card, styles.focusedCard]}>
           <Text style={styles.taskTitle}>Linked task unavailable</Text>
@@ -771,9 +826,11 @@ export default function GrowTasksScreen({
           <ActivityIndicator color={palette.accent} />
         </View>
       ) : tasks.length === 0 ? (
-        <View style={styles.card}>
-          <Text style={styles.taskMeta}>No tasks yet.</Text>
-        </View>
+        loadError ? null : (
+          <View style={styles.card}>
+            <Text style={styles.taskMeta}>No tasks yet.</Text>
+          </View>
+        )
       ) : (
         orderedTasks.map((task) => {
           const id = getRowId(task);
@@ -841,7 +898,7 @@ export default function GrowTasksScreen({
                           );
                           if (updated) {
                             setFeedback(done ? "Task reopened." : "Task completed.");
-                            await load();
+                            await load(true);
                           } else {
                             setFeedback("Unable to update task.");
                           }
@@ -868,7 +925,7 @@ export default function GrowTasksScreen({
                             );
                             if (updated) {
                               setFeedback("Task snoozed until tomorrow.");
-                              await load();
+                              await load(true);
                             } else {
                               setFeedback("Unable to snooze task.");
                             }
@@ -911,7 +968,7 @@ export default function GrowTasksScreen({
                           );
                           if (deleted) {
                             setFeedback("Task archived.");
-                            await load();
+                            await load(true);
                           } else {
                             setFeedback("Unable to archive task.");
                           }

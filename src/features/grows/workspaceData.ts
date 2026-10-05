@@ -300,9 +300,10 @@ export async function createWorkspaceLog(
 
 export async function listWorkspaceTasks(
   workspace: GrowWorkspace,
-  growId: string
+  growId: string,
+  options?: { throwOnError?: boolean }
 ): Promise<PersonalTask[]> {
-  if (workspace === "personal") return listPersonalTasks({ growId });
+  if (workspace === "personal") return listPersonalTasks({ growId, ...options });
   const response = await apiRequest(commercialGrowChildPath(growId, "tasks"), {
     method: "GET",
     cache: "no-store",

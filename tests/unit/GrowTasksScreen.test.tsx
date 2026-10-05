@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import GrowTasksScreen from "@/app/home/personal/(tabs)/grows/[growId]/tasks";
 
@@ -9,6 +9,7 @@ const mockListPersonalTasks = jest.fn();
 const mockUpdatePersonalTask = jest.fn();
 let mockCanUseTaskReminders = true;
 let mockTaskId = "";
+let mockGrowId = "grow-task-1";
 
 jest.mock("@/api/tasks", () => ({
   createPersonalTask: (...args: any[]) => mockCreatePersonalTask(...args),
@@ -31,7 +32,7 @@ jest.mock("expo-router", () => {
   const React = require("react");
   const { Text } = require("react-native");
   return {
-    useLocalSearchParams: () => ({ growId: "grow-task-1", taskId: mockTaskId }),
+    useLocalSearchParams: () => ({ growId: mockGrowId, taskId: mockTaskId }),
     Link: ({ children, href }: any) =>
       React.createElement(
         React.Fragment,
@@ -53,7 +54,9 @@ jest.mock("@react-navigation/native", () => {
 
 jest.mock("@/components/personal/GrowWorkspaceNav", () => {
   const { Text } = require("react-native");
-  return ({ active }: { active: string }) => <Text>Workspace nav: {active}</Text>;
+  return function MockGrowWorkspaceNav({ active }: { active: string }) {
+    return <Text>Workspace nav: {active}</Text>;
+  };
 });
 
 describe("GrowTasksScreen", () => {
@@ -61,6 +64,7 @@ describe("GrowTasksScreen", () => {
     jest.resetAllMocks();
     mockCanUseTaskReminders = true;
     mockTaskId = "";
+    mockGrowId = "grow-task-1";
     mockListPersonalTasks.mockResolvedValue([
       {
         id: "task-open-1",
@@ -149,7 +153,10 @@ describe("GrowTasksScreen", () => {
     const screen = render(<GrowTasksScreen />);
 
     await waitFor(() =>
-      expect(mockListPersonalTasks).toHaveBeenCalledWith({ growId: "grow-task-1" })
+      expect(mockListPersonalTasks).toHaveBeenCalledWith({
+        growId: "grow-task-1",
+        throwOnError: true
+      })
     );
     expect(screen.getByText("Source: ai diagnosis")).toBeTruthy();
     expect(screen.getByText("AI Diagnosis: diag-1")).toBeTruthy();
@@ -324,7 +331,10 @@ describe("GrowTasksScreen", () => {
     const screen = render(<GrowTasksScreen />);
 
     await waitFor(() =>
-      expect(mockListPersonalTasks).toHaveBeenCalledWith({ growId: "grow-task-1" })
+      expect(mockListPersonalTasks).toHaveBeenCalledWith({
+        growId: "grow-task-1",
+        throwOnError: true
+      })
     );
     expect(screen.getByText("Task reminders are Pro")).toBeTruthy();
     expect(screen.queryByLabelText("Task title")).toBeNull();
@@ -341,5 +351,105 @@ describe("GrowTasksScreen", () => {
       screen.getByLabelText("Focused task Review VPD result. Opened from Journal")
     ).toBeTruthy();
     expect(screen.getAllByText(/Review VPD result/)[0]).toBeTruthy();
+  });
+
+  it("does not call a failed read empty or a linked task removed, and retries without writes", async () => {
+    mockTaskId = "task-missing";
+    mockListPersonalTasks.mockRejectedValueOnce(new Error("private transport details"));
+    const screen = render(<GrowTasksScreen />);
+    await screen.findByText("Couldn't load grow tasks.");
+    expect(screen.queryByText("No tasks yet.")).toBeNull();
+    expect(screen.queryByText("Linked task unavailable")).toBeNull();
+    expect(screen.queryByText("private transport details")).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("Task title"), "Keep my draft");
+    fireEvent.press(screen.getByLabelText("Retry grow tasks"));
+    await screen.findByText("Inspect leaf spots");
+    expect(screen.getByLabelText("Task title").props.value).toBe("Keep my draft");
+    expect(screen.queryByText("Couldn't load grow tasks.")).toBeNull();
+    expect(mockCreatePersonalTask).not.toHaveBeenCalled();
+    expect(mockUpdatePersonalTask).not.toHaveBeenCalled();
+    expect(mockDeletePersonalTask).not.toHaveBeenCalled();
+  });
+
+  it("only shows empty after a successful empty response", async () => {
+    let finish!: (rows: any[]) => void;
+    mockListPersonalTasks.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      })
+    );
+    const screen = render(<GrowTasksScreen />);
+    expect(screen.queryByText("No tasks yet.")).toBeNull();
+    await act(async () => finish([]));
+    expect(screen.getByText("No tasks yet.")).toBeTruthy();
+    expect(screen.queryByLabelText("Retry grow tasks")).toBeNull();
+  });
+
+  it("keeps retry single-flight even if its handler is called twice", async () => {
+    mockListPersonalTasks.mockRejectedValueOnce(new Error("offline"));
+    const screen = render(<GrowTasksScreen />);
+    const retry = await screen.findByLabelText("Retry grow tasks");
+    let finish!: (rows: any[]) => void;
+    mockListPersonalTasks.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      })
+    );
+    act(() => {
+      fireEvent.press(retry);
+      fireEvent.press(retry);
+    });
+    expect(mockListPersonalTasks).toHaveBeenCalledTimes(2);
+    await act(async () => finish([]));
+    expect(screen.getByText("No tasks yet.")).toBeTruthy();
+  });
+
+  it("retains labeled records and successful write feedback when the post-write read fails", async () => {
+    const screen = render(<GrowTasksScreen />);
+    await screen.findByText("Inspect leaf spots");
+    mockListPersonalTasks.mockRejectedValueOnce(new Error("offline"));
+    fireEvent.press(screen.getAllByLabelText("Complete task")[0]);
+    await screen.findByText("Couldn't load grow tasks.");
+    expect(screen.getByText("Task completed.")).toBeTruthy();
+    expect(screen.getByText("Inspect leaf spots")).toBeTruthy();
+    expect(
+      screen.getByText("Showing previously loaded tasks. Retry to check for changes.")
+    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Retry grow tasks"));
+    await waitFor(() =>
+      expect(screen.queryByText("Couldn't load grow tasks.")).toBeNull()
+    );
+    expect(mockUpdatePersonalTask).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not reuse a previous grow's pending or loaded records after navigation", async () => {
+    let finish!: (rows: any[]) => void;
+    mockListPersonalTasks.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      })
+    );
+    const screen = render(<GrowTasksScreen />);
+    mockGrowId = "grow-task-2";
+    mockListPersonalTasks.mockResolvedValueOnce([]);
+    screen.rerender(<GrowTasksScreen />);
+    await screen.findByText("No tasks yet.");
+    await act(async () => finish([{ id: "old-task", title: "Wrong grow task" }]));
+    expect(screen.queryByText("Wrong grow task")).toBeNull();
+    expect(mockListPersonalTasks).toHaveBeenLastCalledWith({
+      growId: "grow-task-2",
+      throwOnError: true
+    });
+  });
+
+  it("lets Free users retry without revealing paid task actions", async () => {
+    mockCanUseTaskReminders = false;
+    mockListPersonalTasks.mockRejectedValueOnce(new Error("offline"));
+    const screen = render(<GrowTasksScreen />);
+    fireEvent.press(await screen.findByLabelText("Retry grow tasks"));
+    await screen.findByText("Inspect leaf spots");
+    expect(screen.queryByLabelText("Complete task")).toBeNull();
+    expect(screen.queryByLabelText("View grow task source")).toBeNull();
+    expect(screen.queryByLabelText("Add task")).toBeNull();
   });
 });

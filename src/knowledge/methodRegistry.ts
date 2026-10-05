@@ -767,6 +767,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "The deterministic comparison uses no AI credit; optional AI explanation must preserve the same evidence limits.",
       "Timeline exports must remain readable and must not expose raw machine payloads, evidence fingerprints, provider data or private identifiers.",
       "Saved ToolRun history distinguishes failed reads from empty collections, offers single-flight read-only Refresh/Retry, labels retained same-query snapshots and discards late account/session/workspace/Facility/filter results without AI dispatch or evidence writes.",
+      "Grow-specific task queues never interpret a failed read as empty or a linked task as removed. Single-flight read-only Retry preserves drafts; failed post-write reads label previous tasks separately from successful writes. Grow/workspace changes and blur invalidate late reads. Reminder and source-link entitlements remain unchanged.",
       "Journal uploads prepare oversized phone photos locally without overwriting device originals, retain completed uploads across draft retries, and record uploaded byte/type metadata without claiming unknown resized dimensions. This does not grant AI consent or change original-evidence policy."
     ],
     ["run-comparison"]

@@ -69,4 +69,18 @@ describe("personal persisted-record freshness", () => {
       params: { growId: "grow-1", _fresh: "1721433601123" }
     });
   });
+
+  test("opts grow-task recovery into errors without changing legacy callers or request parameters", async () => {
+    const error = new Error("offline");
+    mockApiRequest.mockRejectedValue(error);
+    await expect(
+      listPersonalTasks({ growId: "grow-1", throwOnError: true })
+    ).rejects.toBe(error);
+    await expect(listPersonalTasks({ growId: "grow-1" })).resolves.toEqual([]);
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/personal/tasks", {
+      method: "GET",
+      cache: "no-store",
+      params: { growId: "grow-1", _fresh: "1721433600123" }
+    });
+  });
 });

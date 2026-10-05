@@ -2,6 +2,12 @@
 
 ## Public shopping navigation
 
+Grow-specific Commercial task queues follow the shared grow-history read-recovery
+rule: failed reads are not empty lists, Retry is read-only, failed post-write
+refreshes label previous tasks separately from successful writes, and late
+grow/workspace responses cannot replace the current queue. Task permissions,
+source destinations and payloads remain unchanged.
+
 Commercial Brand Profile summaries and public links use successfully loaded saved records, never unfinished inputs. Canonical boolean isPublished takes precedence over legacy status text for the saved visibility display; this does not change publication payloads or permissions. Pending/failed initial reads remain unknown and cannot enable editing or Save. Single-flight Retry restores the saved form. Lock inputs during a save, retain failed drafts, distinguish confirmed writes from failed follow-up reads, label retained snapshots, and ignore unmounted/superseded completions. Existing billing, payout and privacy controls remain separate and unchanged.
 
 Commercial Product Trials and their linked-record choices remain unknown until

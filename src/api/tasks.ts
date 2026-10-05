@@ -262,6 +262,7 @@ export interface PersonalTask {
  */
 export async function listPersonalTasks(options?: {
   growId?: string;
+  throwOnError?: boolean;
 }): Promise<PersonalTask[]> {
   try {
     const listPersonalRes = await apiRequest("/api/personal/tasks", {
@@ -282,6 +283,7 @@ export async function listPersonalTasks(options?: {
     const tasks = listPersonalRes?.tasks ?? listPersonalRes?.items;
     return Array.isArray(tasks) ? (tasks as PersonalTask[]) : [];
   } catch (_err) {
+    if (options?.throwOnError) throw _err;
     return [];
   }
 }

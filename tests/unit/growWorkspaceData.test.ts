@@ -52,6 +52,19 @@ describe("Commercial grow workspace data", () => {
     mockListToolRuns.mockReset();
   });
 
+  it("propagates a failed Commercial grow-task read for retry without writing", async () => {
+    const failure = new Error("offline");
+    mockApiRequest.mockRejectedValueOnce(failure);
+    await expect(
+      listWorkspaceTasks("commercial", "grow-1", { throwOnError: true })
+    ).rejects.toBe(failure);
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/commercial/grows/grow-1/tasks",
+      expect.objectContaining({ method: "GET" })
+    );
+  });
+
   it("reads and creates owner-scoped Commercial grows", async () => {
     mockApiRequest
       .mockResolvedValueOnce({ grows: [{ _id: "grow-1", name: "Tomatoes" }] })
