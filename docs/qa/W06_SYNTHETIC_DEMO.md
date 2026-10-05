@@ -1,6 +1,6 @@
 # W06 — synthetic product preview
 
-Status: implemented locally; NOT staging-accepted or released.
+Status: W06-A no-signup journal demo CLOSED / LIVE; W06-B further reviewed demos OPEN.
 Branch: feature/public-synthetic-demo-w06, based on live frontend 13ab5e34.
 
 ## Scope
@@ -52,7 +52,24 @@ no people or identity material. NOT a screenshot or customer proof.
 - PASS: mobile pointer activation of timeline/list controls; actual 1280x1000
   interface capture with synthetic disclosure saved as public/images/synthetic-timeline-ui.jpg.
   Marketing image renders at its correct aspect ratio and loads successfully.
-- Pending: staging release/acceptance and production release/URL verification.
+- PASS: staging exact f2eaec734bc517874dd0763f1d820493934a2222,
+  dep-db1igqlg1s2s73abhl6g LIVE 2026-10-05T04:34:30.575233Z.
+  /demo rewrite saved before wildcard. Actual hosted first/last selection,
+  list/visual mode, Features screenshot loading and screenshot-to-demo navigation
+  pass. Staging canonical and social image retain the staging origin. Existing
+  QA session stays signed in; no account changes. Local 375px acceptance above is
+  separate from hosted desktop checks (the later browser viewport override did
+  not take effect, so no new hosted-phone result is claimed).
+- PASS: production exact f2eaec734bc517874dd0763f1d820493934a2222,
+  dep-db1iiqtg1s2s73abstmg LIVE 2026-10-05T04:39:06.523851Z.
+  /demo rewrite saved before wildcard. Production direct route HTTP200, all five
+  entries present without JavaScript, canonical and social image use growpathai.com,
+  image HTTP200 image/jpeg. Actual browser final-entry selection, full reading
+  mode and return to visual mode pass. Share uses the fixed demo path, not account
+  records or query parameters; social posting itself is not performed.
+  Grouped /updates Website & plans note verified; milestone remains partially live.
+  Proof: workspace outputs/W06_Demo_Production_2026-10-05.jpg and
+  outputs/W06_Updates_Production_2026-10-05.jpg.
 - Pending W06 remainder: reviewed actual diagnosis and Facility UI demo captures;
   do not fabricate tool results or expose private production examples.
 
