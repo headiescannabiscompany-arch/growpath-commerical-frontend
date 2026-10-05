@@ -19,6 +19,12 @@ export const MARKETING_PATHS = new Set([
   "/vs/grow-with-jane"
 ]);
 const ORIGIN = "https://growpathai.com";
+export const HEYCATCH_PROJECT_KEY = "hck_pk_Vu7gSIhkxVCmtc6M8S_lkn4S_EQjzMOE";
+// Public ingestion key shipped by @heycatch/sdk 0.8.0, NOT a GrowPath login
+// token or server secret. The SDK drops events when beforeSend removes it.
+// The installed-SDK contract test must be reviewed when upgrading the package.
+export const HEYCATCH_INGESTION_TOKEN =
+  "phc_oiDt6uXiBiEA2aT43SMzMAFE9D4gMVkRP3BtvYRsmHqe";
 const EVENTS = new Set(["$pageview", "$pageleave", "$autocapture", "$rageclick"]);
 // Only fixed, reviewed navigation labels, never arbitrary rendered/user text.
 const PUBLIC_LABELS = new Set([
@@ -96,6 +102,22 @@ export function filterMarketingEvent(
   const path = publicPath(event.properties.$current_url);
   if (!path || event.properties.$is_identified === true) return null;
   const properties: Record<string, unknown> = {};
+  // Admit only the reviewed public SDK routing token, never arbitrary tokens.
+  if (event.properties.token === HEYCATCH_INGESTION_TOKEN) {
+    properties.token = HEYCATCH_INGESTION_TOKEN;
+  } else if (event.properties.token !== undefined) {
+    return null;
+  }
+  // Retain project attribution without forwarding arbitrary groups/identities.
+  const groups = event.properties.$groups;
+  if (
+    groups &&
+    typeof groups === "object" &&
+    "project" in groups &&
+    groups.project === HEYCATCH_PROJECT_KEY
+  ) {
+    properties.$groups = { project: HEYCATCH_PROJECT_KEY };
+  }
   for (const [key, value] of Object.entries(event.properties)) {
     if (SCALARS.has(key) && ["string", "number", "boolean"].includes(typeof value)) {
       properties[key] = value;

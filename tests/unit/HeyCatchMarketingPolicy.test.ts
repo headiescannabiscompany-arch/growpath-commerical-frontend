@@ -1,5 +1,7 @@
 import {
   filterMarketingEvent,
+  HEYCATCH_INGESTION_TOKEN,
+  HEYCATCH_PROJECT_KEY,
   MARKETING_PATHS
 } from "../../src/analytics/marketingPolicy";
 const origin = "https://growpathai.com";
@@ -7,6 +9,8 @@ const event = (url = origin + "/pricing") => ({
   event: "$pageview",
   properties: {
     $current_url: url,
+    token: HEYCATCH_INGESTION_TOKEN,
+    $groups: { project: HEYCATCH_PROJECT_KEY },
     distinct_id: "anonymous-id",
     $is_identified: false,
     $session_id: "anonymous-session",
@@ -14,6 +18,22 @@ const event = (url = origin + "/pricing") => ({
   }
 });
 describe("public-only HeyCatch policy", () => {
+  it("retains the SDK-required ingestion token and only this public project group", () => {
+    const input = event();
+    Object.assign(input.properties.$groups, { customer: "private@example.com" });
+    const result = filterMarketingEvent(input, origin);
+    expect(result?.properties.token).toBe(HEYCATCH_INGESTION_TOKEN);
+    expect(result?.properties.$groups).toEqual({ project: HEYCATCH_PROJECT_KEY });
+    expect(JSON.stringify(result)).not.toContain("private@example.com");
+  });
+  it("rejects unexpected tokens and removes unrelated attribution groups", () => {
+    const input = event();
+    input.properties.token = "private-login-token";
+    expect(filterMarketingEvent(input, origin)).toBeNull();
+    input.properties.token = HEYCATCH_INGESTION_TOKEN;
+    input.properties.$groups.project = "another-project";
+    expect(filterMarketingEvent(input, origin)?.properties.$groups).toBeUndefined();
+  });
   it.each([...MARKETING_PATHS])("permits only the public marketing path %s", (path) => {
     expect(
       filterMarketingEvent(event(origin + path), origin + path)?.properties.$pathname
