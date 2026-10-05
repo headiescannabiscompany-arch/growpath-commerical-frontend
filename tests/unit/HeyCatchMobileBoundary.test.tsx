@@ -2,7 +2,10 @@ import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { PostHog } from "posthog-react-native";
-import { HEYCATCH_INGESTION_TOKEN } from "../../src/analytics/marketingPolicy";
+import {
+  HEYCATCH_INGESTION_TOKEN,
+  HEYCATCH_PROJECT_KEY
+} from "../../src/analytics/marketingPolicy";
 import { filterNativeEvent } from "../../src/analytics/nativePolicy";
 import {
   MobileAnalyticsBoundary,
@@ -30,6 +33,7 @@ beforeEach(() => {
   mockPath = "/about";
   transport = {
     screen: jest.fn(),
+    capture: jest.fn(),
     optIn: jest.fn(async () => {}),
     optOut: jest.fn(async () => {})
   };
@@ -146,6 +150,11 @@ it("filters the actual installed native transport before any network payload", a
   try {
     await client.ready();
     await client.optIn();
+    client.capture("$groupidentify", {
+      $group_type: "project",
+      $group_key: HEYCATCH_PROJECT_KEY,
+      $group_set: { email: "PRIVATE_SENTINEL" }
+    });
     await client.screen("/about", {
       email: "PRIVATE_SENTINEL",
       params: { secret: "PRIVATE_SENTINEL" }
@@ -159,11 +168,20 @@ it("filters the actual installed native transport before any network payload", a
     expect(batches[0].body).toContain("heycatch_project_key");
     expect(batches[0].body).not.toContain("PRIVATE_SENTINEL");
     expect(batches[0].body).not.toContain("$autocapture");
+    const registrationBatches = requests.filter((r) => r.body.includes("$groupidentify"));
+    expect(registrationBatches).toHaveLength(1);
+    expect(registrationBatches[0].body).toContain('"framework":"react-native"');
+    expect(registrationBatches[0].body).not.toContain("PRIVATE_SENTINEL");
     allowed = false;
     await client.optOut();
+    client.capture("$groupidentify", {
+      $group_type: "project",
+      $group_key: HEYCATCH_PROJECT_KEY
+    });
     await client.screen("/about");
     await client.flush();
     expect(requests.filter((r) => r.body.includes("$screen"))).toHaveLength(1);
+    expect(requests.filter((r) => r.body.includes("$groupidentify"))).toHaveLength(1);
   } finally {
     await client.shutdown(100);
     view.unmount();

@@ -14,6 +14,36 @@ const event = (path = "/about") => ({
   }
 });
 describe("native analytics privacy", () => {
+  it("registers only the public project after consent, stripping caller metadata", () => {
+    const registration = {
+      event: "$groupidentify",
+      properties: {
+        $group_type: "project",
+        $group_key: HEYCATCH_PROJECT_KEY,
+        $group_set: { email: "PRIVATE_SENTINEL", sdk_stage: "dev" },
+        distinct_id: "anonymous"
+      }
+    };
+    const safe = filterNativeEvent(registration, "/about", true);
+    expect(safe?.event).toBe("$groupidentify");
+    expect(safe?.properties.$group_set).toMatchObject({
+      key: HEYCATCH_PROJECT_KEY,
+      framework: "react-native",
+      sdk_stage: "prod"
+    });
+    expect(JSON.stringify(safe)).not.toContain("PRIVATE_SENTINEL");
+    expect(safe?.properties.$screen_name).toBeUndefined();
+    expect(filterNativeEvent(registration, "/about", false)).toBeNull();
+    expect(filterNativeEvent(registration, "/privacy", true)).toBeNull();
+    for (const properties of [
+      { ...registration.properties, $group_type: "account" },
+      { ...registration.properties, $group_key: "other-project" },
+      { ...registration.properties, $is_identified: true }
+    ])
+      expect(
+        filterNativeEvent({ ...registration, properties }, "/about", true)
+      ).toBeNull();
+  });
   it.each([...NATIVE_SCREENS])("admits only the fixed screen %s", (path) => {
     const result = filterNativeEvent(event(path), path, true);
     expect(result?.properties?.$screen_name).toBe(path);
@@ -84,6 +114,7 @@ describe("native consent controller", () => {
     let filter: any;
     const transport = {
       screen: jest.fn(),
+      capture: jest.fn(),
       optIn: jest.fn(async () => {}),
       optOut: jest.fn(async () => {})
     };
@@ -103,10 +134,27 @@ describe("native consent controller", () => {
     f.controller.setPath("/about");
     f.controller.setPath("/about");
     expect(f.transport.screen).toHaveBeenCalledTimes(1);
+    expect(f.transport.capture).toHaveBeenCalledTimes(1);
     f.controller.setPath("/admin");
     expect(f.filter()).toBeNull();
     f.controller.setPath("/about");
     expect(f.transport.screen).toHaveBeenCalledTimes(2);
+    expect(f.transport.capture).toHaveBeenCalledTimes(1);
+  });
+  it("defers registration on private routes and never registers after revocation", async () => {
+    const f = fixture();
+    f.controller.setPath("/privacy");
+    await f.controller.setConsent(true);
+    f.controller.setPath("/privacy");
+    expect(f.transport.capture).not.toHaveBeenCalled();
+    f.controller.setPath("/about");
+    expect(f.transport.capture).toHaveBeenCalledTimes(1);
+    await f.controller.setConsent(false);
+    f.controller.setPath("/pricing");
+    expect(f.transport.capture).toHaveBeenCalledTimes(1);
+    await f.controller.setConsent(true);
+    f.controller.setPath("/pricing");
+    expect(f.transport.capture).toHaveBeenCalledTimes(2);
   });
   it("closes the gate before opt-out resolves", async () => {
     const f = fixture();

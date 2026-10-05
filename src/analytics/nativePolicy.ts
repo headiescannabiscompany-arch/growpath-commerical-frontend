@@ -13,6 +13,16 @@ export const NATIVE_SCREENS = new Set([
   "/store",
   "/lives"
 ]);
+// Public project metadata only; never copy device, account or caller properties.
+export const NATIVE_PROJECT_METADATA = {
+  key: HEYCATCH_PROJECT_KEY,
+  sdk_version: "0.8.0",
+  sdk_stage: "prod",
+  framework: "react-native",
+  framework_version: "0",
+  agent: "codex",
+  api_host: "https://in.heycatch.ai"
+};
 type NativeEvent = {
   event: string;
   properties?: Record<string, unknown>;
@@ -37,10 +47,21 @@ export function filterNativeEvent(
   currentPath: string,
   consent: boolean
 ): SafeEvent | null {
-  if (!consent || !event || event.event !== "$screen" || !NATIVE_SCREENS.has(currentPath))
+  if (
+    !consent ||
+    !event ||
+    !["$screen", "$groupidentify"].includes(event.event) ||
+    !NATIVE_SCREENS.has(currentPath)
+  )
     return null;
   const source = event.properties || {};
-  if (source.$screen_name !== currentPath || source.$is_identified === true) return null;
+  if (source.$is_identified === true) return null;
+  if (event.event === "$screen" && source.$screen_name !== currentPath) return null;
+  if (
+    event.event === "$groupidentify" &&
+    (source.$group_type !== "project" || source.$group_key !== HEYCATCH_PROJECT_KEY)
+  )
+    return null;
   if (source.token !== undefined && source.token !== HEYCATCH_INGESTION_TOKEN)
     return null;
   const properties: SafeEvent["properties"] = {};
@@ -54,7 +75,6 @@ export function filterNativeEvent(
   if (source.token === HEYCATCH_INGESTION_TOKEN)
     properties.token = HEYCATCH_INGESTION_TOKEN;
   Object.assign(properties, {
-    $screen_name: currentPath,
     $is_identified: false,
     $process_person_profile: false,
     $groups: { project: HEYCATCH_PROJECT_KEY },
@@ -66,8 +86,15 @@ export function filterNativeEvent(
     heycatch_agent: "codex",
     heycatch_integration: "growpath-screen-only-v1"
   });
+  if (event.event === "$screen") properties.$screen_name = currentPath;
+  else
+    Object.assign(properties, {
+      $group_type: "project",
+      $group_key: HEYCATCH_PROJECT_KEY,
+      $group_set: { ...NATIVE_PROJECT_METADATA }
+    });
   return {
-    event: "$screen",
+    event: event.event,
     properties,
     ...(typeof event.uuid === "string" ? { uuid: event.uuid } : {}),
     ...(event.timestamp instanceof Date ? { timestamp: event.timestamp } : {})

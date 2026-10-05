@@ -2,6 +2,18 @@
 
 Implementation receipt: October 4, 2026. This is **not a mobile release receipt**.
 
+October 4 follow-up: register the fixed public project on the first consented
+allowlisted screen, once per opt-in period. No event on the Privacy page or after
+revocation. The actual transport's group() API requires person processing; instead
+the adapter captures only the filtered public $groupidentify envelope while
+keeping personProfiles=never. Caller group properties are never forwarded.
+The screen-only scope includes this public registration, not personal identity.
+
+The analytics-preview EAS profile produces an internal build using the explicit
+production API/public URLs. It does not submit to a store or change production
+version counters. .easignore excludes local dotenv files, signing files, build
+outputs and evidence folders before upload; signing remains in existing EAS storage.
+
 ## Scope and provider deviation
 
 The owner approved a privacy-safe native expansion and then a custom alternative.
