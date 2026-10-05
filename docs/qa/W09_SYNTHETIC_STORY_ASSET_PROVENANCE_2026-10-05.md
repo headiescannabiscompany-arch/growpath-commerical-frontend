@@ -1,6 +1,6 @@
 # W09 synthetic-story asset provenance — October 5, 2026
 
-## Status and evidence boundary
+## Original local checkpoint — historical; see deployment addendum below
 
 The five-story marketing integration and these 14 assets are prepared as a local
 release candidate, not staging- or production-released. The separate signed-in repairs
@@ -32,6 +32,55 @@ Localhost public-feedback API was inaccessible and showed the truthful unavailab
 state; a staging read check remains pending. This is not evidence of a production
 outage. Local gates PASS; staging acceptance remains pending and W09 remains
 OPEN / NOT LIVE. The already accepted repair/fixture checks remain closed.
+
+## October 5 chronological deployment addendum
+
+The original local-only status above is retained as history, not current status.
+Frontend `4af3b272c09a8c6cf105db7af82fa9e160b2c36d` passed staging acceptance
+at deployment `dep-db1u5nek1f9s738c4or0`, LIVE **17:50:02.75549Z**. Its served
+staging bundle was `index-7822104538c0a12fb8e5145c23551f9a.js?v=3134ce7943f7`.
+All five stories/14 images, seven audience CTAs, direct/reload/back/forward,
+keyboard controls, bounded query handling and narrow/desktop containment passed.
+Public feedback returned HTTP 200 with `{"testimonials":[]}` and no Authorization
+header. Normal existing-session account/presence requests were observed separately;
+do not claim zero authenticated requests or exhaustive network coverage.
+
+Production feature deployments are LIVE: frontend exact `4af3b272`,
+`dep-db1ulk3bc2fs73ehs290`, **18:24:13Z**; isolated backend
+`5b998726033d7154d20b22ecc24622abdee8773b`, `dep-db1uka6i0phs73cjg4hg`,
+**18:22:08Z**. The backend candidate is based directly on production `71111f2`
+and contains only the text-only response initializer repair and regression tests;
+the broader `be9f2e5` staging branch was not promoted. Its three explicit offline
+mocked suites passed 148/148 tests with zero observed network attempts.
+
+Production marker activation on exact backend `5b998726`,
+`dep-db1usj7lot8c73d7tm6g`, is LIVE **18:39:18.15734Z**. The actual `/ready`
+GET was observed after that activation was LIVE and returned `ready`, `dbReady`
+and `paymentInfrastructure.ready` true, `stale: false`, with all five payment
+checks true. Its `checkedAt` value **18:38:58.031Z** is the earlier underlying
+cached check timestamp, not the time of the post-activation response observation.
+
+The lead agent reported production browser PASS for all five stories, step
+navigation, direct/reload, keyboard activation, five journal list entries, five
+visual points and a share fallback containing the correct story link. Screenshot:
+private workspace `outputs/W09_Production_Demo_2026-10-05.jpg`. No clipboard,
+social-post or externally tested native-share claim is added. Independent HTTP
+verification at **18:40 UTC** passed seven audience CTA destinations, server-rendered
+markup and the served bundle. All 14 production-origin images matched the exact
+`4af3b272` source hashes and sizes. Canonical-host image-byte differences were
+explained by Cloudflare Polish transformations; no byte-identical CDN-image claim
+is made. The source/crop/output hashes below remain the reviewed local provenance
+record, now matched to the production-origin assets.
+
+One grouped Website & plans release note, including the bounded Personal
+comparison-scope/calendar-date and text-only AI repairs, is now prepared locally
+after the production feature gate passed. Its publication is not yet verified.
+Focused local verification of this note: `UpdatesPage.test.tsx` and
+`releaseAge.test.ts`, **45/45 tests PASS across two suites** (4.082s).
+The broader website group remains partial; genuine proof and unpublished ad
+drafts remain separate. W09's private implementation TODO is not closed until
+the grouped note is verified live. No source assets, fixture records or prior
+closed acceptance checks were changed by this addendum.
 
 ## Source and transformation
 

@@ -41,9 +41,10 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     status: "partial",
     scope:
       "Grower-focused explanations, exact plan allowances and search-readable public pages.",
-    live: "Grow-journal explanations connect each run's records to the next. The homepage includes Jay's supplied portrait, founder story and show link. Exact plan limits, a conditional comparison with separate journal costs, larger public-page tap targets, three sourced comparisons and a grow-journal guide are live. Explore Free, Pro, Commercial and Facility highlights and labeled screenshots without signing up, then try the sample journal. Approved feedback can appear separately. Updates counts days since each milestone's latest release, not its planning date. Plan prices stay unchanged.",
-    next: "Collect permissioned grower stories, verified usage proof and genuine outside endorsements. All demo records are labeled synthetic; the diagnosis image is an unsent input example, not an AI result. Accurate real-output evidence remains separate work.",
+    live: "Grow-journal explanations connect each run's records to the next. The homepage includes Jay's supplied portrait, founder story and show link. Exact plan limits, a conditional comparison with separate journal costs, larger public-page tap targets, three sourced comparisons and a grow-journal guide are live. Explore Free, Pro, Commercial and Facility highlights and labeled screenshots without signing up, then try the sample journal. Five guided stories now show a plant journal, saved observations, seller presentation, a course preview and a Facility task, with direct audience links and clear evidence limits. Approved feedback can appear separately. Updates counts days since each milestone's latest release, not its planning date. Plan prices stay unchanged.",
+    next: "Collect permissioned grower stories, verified usage proof and genuine outside endorsements. Demo records remain labeled synthetic, not customer outcome evidence; the diagnosis input example remains separate from the shown history answer. Advertising concepts remain unpublished drafts; no paid campaign or expanded tracking has launched.",
     entryIds: [
+      "public-guided-story-walkthroughs",
       "public-product-screenshots",
       "public-journal-demo",
       "public-website-audit"

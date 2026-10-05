@@ -63,6 +63,40 @@ describe("public Updates page", () => {
     );
     expect(note?.summary).toContain("You can withdraw it later");
   });
+  it("groups five synthetic stories and the bounded repairs without closing customer proof", () => {
+    const id = "public-guided-story-walkthroughs";
+    const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter((entry) => entry.id === id);
+    expect(notes).toHaveLength(1);
+    const note = notes[0];
+    expect(note.dateLabel).toBe("Released");
+    expect(note.date).toBe("October 5, 2026");
+    expect(note.summary).toContain("Free, Pro, seller, creator and Facility");
+    expect(note.summary).toContain("Labeled synthetic examples");
+    expect(note.summary).toContain(
+      "export preparation, protected-delivery readiness, author previews and recorded task history"
+    );
+    expect(note.summary).toContain(
+      "from completed downloads, sales, learner access or physical work"
+    );
+    expect(note.summary).toContain("retain the selected Personal workspace");
+    expect(note.summary).toContain("reference dates keep their saved calendar day");
+    expect(note.summary).toContain("response-assembly error affecting text-only AI answers");
+    expect(note.summary).toContain("Genuine, permissioned testimonials remain separate");
+    expect(note.summary).toContain("Plan limits and privacy rules are unchanged");
+    const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "public-website");
+    expect(group?.status).toBe("partial");
+    expect(group?.entryIds.filter((entryId) => entryId === id)).toHaveLength(1);
+    expect(group?.entryIds).toEqual(
+      expect.arrayContaining([
+        "public-product-screenshots",
+        "public-journal-demo",
+        "public-website-audit"
+      ])
+    );
+    expect(group?.next).toContain("not customer outcome evidence");
+    expect(group?.next).toContain("Advertising concepts remain unpublished drafts");
+    expect(group?.next).toContain("no paid campaign or expanded tracking has launched");
+  });
   it("groups Facility record recovery without claiming all Facility work complete", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "facility-dashboard-readiness"
@@ -344,6 +378,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "public-guided-story-walkthroughs",
       "public-product-screenshots",
       "public-journal-demo",
       "private-feedback-collection",

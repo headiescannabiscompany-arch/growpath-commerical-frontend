@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "public-guided-story-walkthroughs",
+        title: "Follow five sample workflows before signing up",
+        date: "October 5, 2026",
+        dateLabel: "Released",
+        summary:
+          "Explore Free, Pro, seller, creator and Facility stories through guided steps, reviewed screenshots and matching next actions. Audience pages link to the relevant story, with keyboard controls and narrow-screen reading layouts. Labeled synthetic examples distinguish export preparation, protected-delivery readiness, author previews and recorded task history from completed downloads, sales, learner access or physical work. Personal comparisons, saved reports and linked tasks now retain the selected Personal workspace, journal reference dates keep their saved calendar day, and a response-assembly error affecting text-only AI answers is fixed. Genuine, permissioned testimonials remain separate. Plan limits and privacy rules are unchanged."
+      },
+      {
         id: "public-product-screenshots",
         title: "See the diagnosis form and Facility workspace",
         date: "October 5, 2026",
