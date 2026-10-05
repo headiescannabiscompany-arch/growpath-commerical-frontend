@@ -56,6 +56,11 @@ describe("public Updates page", () => {
     expect(notes[0].summary).toContain(
       "Copy Link, Copy Post and recipient paths remain checked"
     );
+    expect(notes[0].summary).toContain("synthetic staging discussion");
+    expect(notes[0].summary).toContain("closed without posting");
+    expect(notes[0].summary).toContain(
+      "not a claim about every social platform or phone share sheet"
+    );
     const review = PUBLIC_UPDATE_GROUPS.find((group) => group.id === "app-review");
     expect(review?.status).toBe("progress");
     expect(review?.entryIds.filter((id) => id === "forum-share-readiness")).toHaveLength(
