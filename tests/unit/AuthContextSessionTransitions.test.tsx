@@ -203,6 +203,57 @@ describe("AuthProvider persisted-session transitions", () => {
     expect(mockPersistToken).not.toHaveBeenCalled();
   });
 
+  it.each(["OWNER", "MANAGER", "STAFF", "VIEWER"])(
+    "clears an active Facility %s session when canonical revalidation returns 401",
+    async (facilityRole) => {
+      const facilityContext = {
+        mode: "facility",
+        facilityId: "synthetic-facility",
+        facilityRole,
+        capabilities: { TASKS_READ: true, TASKS_WRITE: facilityRole !== "VIEWER" }
+      };
+      mockApiMe
+        .mockResolvedValueOnce({ ...hydratedMe, ctx: facilityContext })
+        .mockRejectedValueOnce(
+          Object.assign(new Error("Not authenticated"), {
+            status: 401,
+            code: "UNAUTHENTICATED"
+          })
+        );
+      const screen = renderProvider();
+      await waitFor(() =>
+        expect(authState(screen)).toMatchObject({
+          ctx: facilityContext,
+          meStatus: "ready",
+          isAuthed: true
+        })
+      );
+
+      fireEvent.press(screen.getByLabelText("Retry session"));
+
+      await waitFor(() =>
+        expect(authState(screen)).toMatchObject({
+          token: null,
+          user: null,
+          ctx: null,
+          meStatus: "idle",
+          meError: null,
+          isAuthed: false
+        })
+      );
+      expect(mockApiMe).toHaveBeenNthCalledWith(2, {
+        force: true,
+        invalidateOn401: false
+      });
+      expect(mockPersistToken).toHaveBeenCalledTimes(1);
+      expect(mockPersistToken).toHaveBeenCalledWith(null);
+      expect(mockResetWorkspaceSessionState).toHaveBeenCalledTimes(1);
+      expect(mockClearAdminSecurityForLogout).toHaveBeenCalledWith("session-token");
+      fireEvent.press(screen.getByLabelText("Retry session"));
+      expect(mockApiMe).toHaveBeenCalledTimes(2);
+    }
+  );
+
   it("clears account-scoped workspace state on explicit logout", async () => {
     mockApiMe.mockResolvedValue(hydratedMe);
     const screen = renderProvider();

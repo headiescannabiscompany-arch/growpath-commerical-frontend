@@ -112,11 +112,41 @@ denial) are **closed**. Do not repeat them as a generic Facility acceptance loop
 
 ## Still open — exact, bounded evidence
 
-- Hosted role/session expiry or refresh transition where its current behavior is not
-  already evidenced. Automated transition checks above remain a separate layer.
-- A hard reload is not an expired-session test. No actual expiry or token-refresh
-  lifecycle is claimed by the new Viewer acceptance above.
+- One hosted canonical-session rejection → sign-in → Facility return belongs in
+  A09 final walkthrough. It is not passed by the hard reload or automated tests.
+  Preserve the existing Owner/Viewer sign-ins; do not shorten hosted token lifetime,
+  retrieve signing secrets or repeatedly sign the owner out to manufacture evidence.
 - A09 final owner walkthrough and other A01–A07 named gaps stay separate.
+
+## Session-expiry contract clarification and regression proof
+
+Source inspection found seven-day login/signup JWTs in backend `routes/auth.js`;
+no first-party refresh-token renewal flow was found in the auth route/provider.
+`retryMe` revalidates `/api/me`; it does not renew the token. Therefore the old
+“token-refresh transition” wording must not create a requirement to implement
+automatic renewal. The finite remaining hosted journey is rejection and sign-in
+return, as described above.
+
+Added four frontend cases for active Facility OWNER/MANAGER/STAFF/VIEWER sessions:
+canonical revalidation returning 401 clears token, user, context and workspace
+state; a subsequent retry does not send another authenticated request. These
+are provider tests with mocked API responses, not browser expiry evidence.
+
+Added two backend cases in `tests/middleware/auth.test.js`: create an already
+expired JWT using a synthetic test secret and the real signing library, then use
+the real verification implementation through canonical middleware and optional
+identity resolution. Both reject before a user lookup. No hosted token or key is
+read, minted, changed or exposed; all persistence methods remain mocks.
+
+Verification: frontend auth-provider/transport **27 tests / 2 suites PASS**;
+backend auth middleware **10 tests / 1 suite PASS**. Full frontend typecheck and
+explicit test lint passed. The first backend invocation used repository-wide
+DB setup and failed to launch MongoMemoryServer (`spawn EPERM`); it is not counted
+as test proof. The successful invocation used the existing isolated unit config:
+`node node_modules/jest/bin/jest.js --config tests/jest.inventory.unit.config.js --runInBand tests/middleware/auth.test.js`.
+No database is required by this mocked-persistence suite. No runtime fix or
+deployment is necessary; this closes automated expiry coverage, not the final
+hosted sign-in-return check.
 
 No new public Updates entry or deployment is needed for this test-only receipt.
 Preserve the existing grouped Facility release history; do not label this an app
