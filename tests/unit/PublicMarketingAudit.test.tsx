@@ -6,12 +6,27 @@ import marketing from "@/components/marketing/publicMarketing.json";
 import { PLAN_LIMITS } from "@/config/planLimits";
 import { FREE_POLICY } from "@/config/freePolicy";
 import { getPublicTestimonials } from "@/api/testimonials";
+import PublicTestimonials from "@/components/marketing/PublicTestimonials";
 
 jest.mock("@/api/testimonials", () => ({
   getPublicTestimonials: jest.fn(() => new Promise(() => {}))
 }));
 
 describe("HeyCatch audit corrections", () => {
+  it.each(["home", "personal-grower", "pricing", "about"] as const)(
+    "reuses one dynamic, empty-by-default feedback surface on %s",
+    (page) => {
+      const screen = render(<PublicLandingPage page={page} />);
+      expect(screen.UNSAFE_getAllByType(PublicTestimonials)).toHaveLength(1);
+      expect(screen.queryByText("Feedback from growers")).toBeNull();
+      expect(screen.queryByText("Most popular")).toBeNull();
+    }
+  );
+  it("anchors Pro against a user's own tool spend without an invented saving", () => {
+    const screen = render(<PublicLandingPage page="pricing" />);
+    expect(screen.getByText(marketing.pricingAlternativeAnchor)).toBeTruthy();
+    expect(marketing.pricingAlternativeAnchor).toContain("Your savings depend");
+  });
   beforeEach(() => {
     jest.mocked(getPublicTestimonials).mockImplementation(() => new Promise(() => {}));
     jest

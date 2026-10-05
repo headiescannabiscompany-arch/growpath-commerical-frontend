@@ -98,7 +98,7 @@ test("About exports the supplied accessible portrait using its actual public ass
   const asset = fs.readFileSync(path.join(__dirname, "../public/images/founder-jay.jpg"));
   assert.deepEqual([...asset.subarray(0, 3)], [0xff, 0xd8, 0xff]);
   assert.ok(asset.length > 1000, "the portrait must be a real JPEG, not a placeholder");
-  assert.ok(!publicMarketingMarkup("").includes("/images/founder-jay.jpg"));
+  assert.ok(publicMarketingMarkup("").includes("/images/founder-jay.jpg"));
 });
 
 test("homepage founder mention uses the supplied channel in the footer area", () => {
@@ -112,6 +112,28 @@ test("homepage founder mention uses the supplied channel in the footer area", ()
   assert.ok(html.indexOf(mention) > html.indexOf("Your records, your decisions"));
   assert.ok(html.indexOf(mention) < html.indexOf("See what has actually shipped"));
   assert.ok(!html.slice(0, html.indexOf("</header>")).includes(mention));
+  assert.ok(html.includes(marketing.founder.homeStory));
+  assert.ok(html.includes(marketing.founder.businessLine));
+  assert.ok(html.includes("<h2>Meet Jay</h2>"));
+});
+
+test("audit delta uses grower outcomes and conditional alternative-cost anchoring", () => {
+  assert.match(
+    marketing.pages.home.sections[0].body,
+    /repeat what worked instead of guessing/
+  );
+  assert.match(marketing.pages["personal-grower"].intro, /Take your growing seriously/);
+  const html = publicMarketingMarkup("pricing");
+  assert.ok(html.includes(marketing.pricingAlternativeAnchor));
+  assert.match(
+    marketing.pricingAlternativeAnchor,
+    /Your savings depend on the tools you replace/
+  );
+  assert.ok(
+    html.indexOf(marketing.pricingAlternativeAnchor) <
+      html.indexOf("For growers who need more room")
+  );
+  assert.ok(!publicMarketingMarkup("").includes(marketing.pricingAlternativeAnchor));
 });
 
 test("Pro value anchor follows annual savings only in its pricing card", () => {

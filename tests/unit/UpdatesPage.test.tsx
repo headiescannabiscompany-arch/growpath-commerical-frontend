@@ -24,6 +24,18 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("groups the audit delta without claiming missing customer proof is complete", () => {
+    const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "public-website");
+    expect(group?.status).toBe("partial");
+    expect(group?.live).toContain("homepage includes Jay's supplied portrait");
+    expect(group?.entryIds.filter((id) => id === "public-website-audit")).toHaveLength(1);
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "public-website-audit"
+    );
+    expect(note?.date).toBe("October 5, 2026");
+    expect(note?.summary).toContain("without promising savings");
+    expect(note?.summary).toContain("still need real material");
+  });
   it("closes feedback tooling without claiming genuine stories were collected", () => {
     const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "feedback");
     expect(group?.status).toBe("complete");
@@ -33,7 +45,9 @@ describe("public Updates page", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "private-feedback-collection"
     );
-    expect(note?.summary).toContain("genuine customer stories still need to be submitted");
+    expect(note?.summary).toContain(
+      "genuine customer stories still need to be submitted"
+    );
     expect(note?.summary).toContain("You can withdraw it later");
   });
   it("groups Facility record recovery without claiming all Facility work complete", () => {

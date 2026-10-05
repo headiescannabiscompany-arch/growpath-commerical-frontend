@@ -152,6 +152,9 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
             <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
               {section.title}
             </Text>
+            {page === "pricing" && index === 1 && (
+              <Text style={styles.cardBody}>{marketing.pricingAlternativeAnchor}</Text>
+            )}
             {page === "about" && section.title === "Meet Jay" && <FounderPortrait />}
             <Text style={styles.cardBody}>{section.body}</Text>
             {page === "about" &&
@@ -175,8 +178,9 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
           </View>
         ))}
       </View>
+      {["home", "personal-grower", "pricing"].includes(page) && <PublicTestimonials />}
       <MarketingDetails page={page} />
-      {(page === "home" || page === "about") && <PublicTestimonials />}
+      {page === "about" && <PublicTestimonials />}
       <View style={styles.footer}>
         <Link href="/about" style={styles.navigationLink}>
           About

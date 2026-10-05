@@ -68,6 +68,9 @@ function publicMarketingMarkup(route) {
         "<h2>" +
         escape(section.title) +
         "</h2>" +
+        (page === "pricing" && i === 1
+          ? "<p>" + escape(marketing.pricingAlternativeAnchor) + "</p>"
+          : "") +
         (page === "about" &&
         section.title === "Meet Jay" &&
         marketing.founder.photo &&
@@ -158,10 +161,21 @@ function publicMarketingMarkup(route) {
         "</section>"
       : "") +
     (page === "home" && marketing.founder.homeMention
-      ? '<section class="marketing-card"><p>' +
+      ? '<section class="marketing-card"><h2>Meet Jay</h2><img src="' +
+        escape(marketing.founder.photo) +
+        '" alt="' +
+        escape(marketing.founder.photoAlt) +
+        '" width="192" height="240" loading="lazy" style="max-width:100%;object-fit:contain" /><p>' +
         escape(marketing.founder.homeMention) +
+        "</p><p>" +
+        escape(marketing.founder.homeStory) +
+        "</p><p>" +
+        escape(marketing.founder.businessLine) +
         "</p>" +
         anchor(["Watch the show on YouTube", marketing.founder.showUrl]) +
+        "<p>" +
+        anchor(["Read Jay's founder story", "/about"]) +
+        "</p>" +
         "</section>"
       : "") +
     (page === "about"

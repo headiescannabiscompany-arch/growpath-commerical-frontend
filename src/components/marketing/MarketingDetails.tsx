@@ -155,9 +155,18 @@ export default function MarketingDetails({ page }: { page: string }) {
       )}
       {page === "home" && marketing.founder.homeMention && (
         <View style={card}>
+          <Text accessibilityRole="header" aria-level={2} style={heading}>
+            Meet Jay
+          </Text>
+          <FounderPortrait />
           <Text style={text}>{marketing.founder.homeMention}</Text>
+          <Text style={text}>{marketing.founder.homeStory}</Text>
+          <Text style={text}>{marketing.founder.businessLine}</Text>
           <Link href={marketing.founder.showUrl as never} style={{ color: palette.link }}>
             Watch the show on YouTube
+          </Link>
+          <Link href="/about" style={{ color: palette.link }}>
+            Read Jay&apos;s founder story
           </Link>
         </View>
       )}

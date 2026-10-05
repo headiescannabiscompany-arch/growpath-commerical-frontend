@@ -35,10 +35,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "public-website-audit",
         title: "Clearer grow journals, plans and public-page information",
-        date: "October 4, 2026",
+        date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "The public website explains how to keep this run's lessons for the next one, shows exact plan allowances, and answers export and billing questions. About now includes the founder's supplied portrait and show link. Pricing explains workflow-based plans and the Pro allowance value; public navigation has larger tap targets. Three source-linked comparisons and a grow-journal guide are available. Plan prices, billing behavior and the signed-in app stay unchanged. Reviewed product previews, permissioned customer stories and outside endorsements remain open."
+          "The homepage and personal-grower page explain how to keep this run's lessons for the next one. The homepage now includes Jay's supplied portrait, founder story, show link and company context. Pro pricing adds a comparison with the separate journal tools you actually use, without promising savings. The existing permission-controlled customer-story feed is also available on personal-grower and pricing pages; it stays hidden when there are no approved stories. Synthetic previews remain labeled. Plan prices, billing behavior, private analytics boundaries and the signed-in app stay unchanged. Genuine grower stories, verified usage proof, outside endorsements and an accurate paid-output preview still need real material."
       },
       {
         id: "course-media-playback-recovery",

@@ -161,7 +161,9 @@ describe("PublicLandingPage", () => {
 
     expect(screen.getAllByText(mention)).toHaveLength(1);
     expect(rendered).toContain("Watch the show on YouTube");
-    expect(screen.queryByLabelText("Jay, founder of GrowPathAI")).toBeNull();
+    expect(screen.getByLabelText("Jay, founder of GrowPathAI")).toBeTruthy();
+    expect(screen.getByText(marketing.founder.homeStory)).toBeTruthy();
+    expect(screen.getByText(marketing.founder.businessLine)).toBeTruthy();
     expect(rendered.indexOf(mention)).toBeGreaterThan(
       rendered.indexOf("Your records, your decisions")
     );

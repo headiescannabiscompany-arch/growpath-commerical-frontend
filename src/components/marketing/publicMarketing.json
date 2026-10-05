@@ -7,7 +7,7 @@
       "sections": [
         {
           "title": "Personal growers",
-          "body": "Stop piecing together phone photos, feeding notes, and calendar reminders. Keep tasks, feeds, readings, and photos in one grow timeline so you can look back at what changed.",
+          "body": "Keep tasks, feeds, readings, and photos in one grow timeline so you can look back at what changed. Your run's lessons survive to the next run, so you can repeat what worked instead of guessing between harvests.",
           "href": "/personal-grower",
           "linkLabel": "Explore the grow journal"
         },
@@ -70,7 +70,7 @@
     "personal-grower": {
       "eyebrow": "For personal growers",
       "title": "A grow journal that helps decide what comes next",
-      "intro": "Keep your feeding schedule, photos, readings, and finished tasks in one timeline, from setup to harvest. This run's lessons survive to the next run, without hunting through notebooks and camera rolls.",
+      "intro": "Take your growing seriously without hunting through notebooks and camera rolls. Keep your feeding schedule, photos, readings, and finished tasks in one timeline, so this run's lessons survive to the next run and you can repeat what worked.",
       "sections": [
         {
           "title": "Grow your way",
@@ -403,6 +403,8 @@
     "photo": "/images/founder-jay.jpg",
     "photoAlt": "Jay, founder of GrowPathAI",
     "homeMention": "Built by Jay, host of Exploring the Growing Universe.",
+    "homeStory": "I wanted practical tools, grow records, education and community in one place, instead of scattering a grow's history across ten apps.",
+    "businessLine": "GrowPathAI is a brand of Triplebag Genetics, LLC, registered in Maryland.",
     "story": "I built GrowPathAI because I wanted social software and AI to empower the people using them, not feed arguments or turn their interests into someone else's product. I wanted a place for growers: community alongside practical tools of the trade. My longer-term goal is to bring that same approach to other industries. GrowPathAI is where I'm starting.",
     "historyTitle": "The GrowPathAI founder story",
     "historyNote": "In Jay's words, adapted from his founder story and clarifications supplied October 4, 2026. The dates describe remembered milestones, not a confirmed first-concept date or a public product launch. Future ambitions below are not a list of shipped features.",
@@ -522,5 +524,6 @@
     }
   ],
   "pricingValueAnchor": "At the 10-grow plan limit, $10/month works out to $1 per tracked grow per month.",
+  "pricingAlternativeAnchor": "Compare $10/month with what you spend on separate notebooks and journal apps: keep up to 10 grows' notes, feeds and photos together. Your savings depend on the tools you replace.",
   "scope": "GrowPathAI keeps records and helps you review them. It is not an automatic grow controller, a guarantee of plant health or yield, or a substitute for professional advice. Ordinary public storefronts do not process cannabis sales. If you only want a photo feed for bud shots, this is probably more structure than you need."
 }
