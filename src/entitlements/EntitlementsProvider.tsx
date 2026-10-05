@@ -490,6 +490,23 @@ export function resolveRequestedPlan(
   return ctx?.requestedPlan ?? ctx?.plan ?? user?.plan ?? previousPlan ?? "free";
 }
 
+export function resolveForumParticipationPlan(ctx: any, user: any) {
+  // /me resolves individual trial, gift and subscription authority in ctx.plan.
+  // A selected Facility's subscription (or a previous workspace) is not that
+  // authority. Explicit canonical Free must also override stale paid intent.
+  const individualPlan =
+    ctx?.plan !== undefined ? ctx.plan : resolveRequestedPlan(ctx, user);
+  const subscriptionStatus =
+    ctx?.subscriptionStatus ?? ctx?.user?.subscriptionStatus ?? user?.subscriptionStatus;
+  if (typeof individualPlan !== "string" || typeof subscriptionStatus !== "string") {
+    return "free";
+  }
+  const effectivePlan = getEffectivePlan(individualPlan, subscriptionStatus);
+  return ["pro", "commercial", "facility"].includes(effectivePlan)
+    ? effectivePlan
+    : "free";
+}
+
 // Pure "apply" function (no side effects other than returning next state)
 function applyServerCtx(
   prev: Omit<EntitlementsState, "can">,
@@ -547,7 +564,10 @@ function applyServerCtx(
     }
   }
   warnUnknownCapsOnce(unknownKeys);
-  applyUniversalCapabilities(normalized, plan);
+  applyUniversalCapabilities(
+    normalized,
+    devPlan ?? resolveForumParticipationPlan(effectiveCtx, user)
+  );
   applyPlanCapabilities(normalized, plan, mode);
   applyCommercialBusinessDeskCapabilities(normalized, mode, commercialWorkspaceAccess);
   if (shouldApplyFacilityRoleCapabilities(mode, plan)) {

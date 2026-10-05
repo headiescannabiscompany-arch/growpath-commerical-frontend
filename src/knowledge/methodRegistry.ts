@@ -1287,6 +1287,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never silently coerce invalid Commercial inventory quantity or reorder values to zero, submit the same creation twice, discard the owner's failed draft, or depend on a native-only create-failure alert.",
       "Never silently omit an invalid Commercial Inventory Support detail quantity or reorder point, submit a detail write twice, overwrite its failed draft, or hide a load/save failure.",
       "Never require a page transition merely to read or write an ordinary Forum text reply from a canonical post preview.",
+      "Shared Forum posting follows the current individual's canonical effective plan and subscription status, not Facility subscription, raw signup intent, Admin role or previous workspace; unknown authority remains read-only.",
       "Never strand Forum group creation in a legacy compatibility screen or hide public-versus-private discoverability.",
       "Never leave hidden or soft-removed Forum content in shared feeds, accept replies on locked threads, hard-delete moderation evidence, or perform a moderator action without a case and platform audit event.",
       "Never count repeated Forum reports from the same account toward an automatic hold threshold.",
@@ -1425,6 +1426,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "A selected facility and authorization are required.",
+      "Keep shared Forum participation separate from Facility operational access: active Facility membership cannot grant it to Free individuals, and an inactive Facility cannot remove it from eligible paid individuals.",
       "Facility course event projections must recheck requester access, preserve separate sessions, remove canceled RSVP reminders without removing the calendar event, reject stale account/Facility results, and never expose private notes or claim on-page cards prove background notification delivery.",
       "Facility AI must use the selected authorized Facility subscription balance for display, reservation, refund, and usage history; never fall back to a member's individual balance.",
       "Only a missing legacy Facility balance with an effective active or trialing owner Facility entitlement may be materialized; existing canceled or delinquent Facility subscription state remains authoritative.",

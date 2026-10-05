@@ -18,6 +18,7 @@ import {
   resolveDevEntitlementsPlan,
   resolveCommercialWorkspaceAccess,
   resolveEntitlementsMode,
+  resolveForumParticipationPlan,
   resolveRequestedPlan,
   resolveWorkspaceAccessPlan,
   resolveWorkspaceMode,
@@ -26,6 +27,76 @@ import {
 } from "../../src/entitlements/EntitlementsProvider";
 
 describe("entitlement mode access", () => {
+  it.each([null, ["pro"], { toString: "pro" }, 1, true])(
+    "does not coerce malformed canonical Forum authority %p into paid access",
+    (plan) => {
+      expect(
+        resolveForumParticipationPlan(
+          { plan, requestedPlan: "pro", subscriptionStatus: "active" },
+          {}
+        )
+      ).toBe("free");
+    }
+  );
+
+  it.each([["active"], { toString: "active" }, 1, true])(
+    "does not coerce malformed individual status %p into active Forum access",
+    (subscriptionStatus) => {
+      expect(resolveForumParticipationPlan({ plan: "pro", subscriptionStatus }, {})).toBe(
+        "free"
+      );
+    }
+  );
+
+  it("uses canonical individual Forum authority and fails closed for unknown plans", () => {
+    expect(
+      resolveForumParticipationPlan(
+        { plan: "pro", requestedPlan: "free", subscriptionStatus: "trial" },
+        {}
+      )
+    ).toBe("pro");
+    expect(
+      resolveForumParticipationPlan(
+        { plan: "free", requestedPlan: "pro", subscriptionStatus: "active" },
+        {}
+      )
+    ).toBe("free");
+    expect(
+      resolveForumParticipationPlan(
+        { plan: "unknown", requestedPlan: "pro", subscriptionStatus: "active" },
+        {}
+      )
+    ).toBe("free");
+    expect(
+      resolveForumParticipationPlan(
+        { plan: "", requestedPlan: "pro", subscriptionStatus: "active" },
+        {}
+      )
+    ).toBe("free");
+    expect(
+      resolveForumParticipationPlan({ plan: "pro", subscriptionStatus: "expired" }, {})
+    ).toBe("free");
+  });
+
+  it("falls back only to the current individual's plan when canonical Forum authority is absent", () => {
+    expect(
+      resolveForumParticipationPlan(
+        { requestedPlan: "commercial", subscriptionStatus: "active" },
+        {}
+      )
+    ).toBe("commercial");
+    expect(
+      resolveForumParticipationPlan({}, { plan: "pro", subscriptionStatus: "active" })
+    ).toBe("pro");
+    expect(
+      resolveForumParticipationPlan(
+        { facilityPlan: "facility", facilitySubscriptionStatus: "active" },
+        {}
+      )
+    ).toBe("free");
+    expect(resolveForumParticipationPlan({}, {})).toBe("free");
+  });
+
   it("reapplies unchanged server entitlements when the preferred workspace changes", () => {
     const ctx = { mode: "facility", facilityId: "facility-1" };
     const user = { id: "user-1" };

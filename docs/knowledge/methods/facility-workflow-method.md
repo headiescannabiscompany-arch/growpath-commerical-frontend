@@ -1,5 +1,7 @@
 # Facility Workflow
 
+Shared Forum participation uses the individual's canonical effective plan, separately from the selected Facility subscription and membership role. An active Facility does not grant shared Forum posting to a Free/expired member, and an inactive Facility does not remove a paid individual's shared Forum access. This separation must not change Facility operational permissions, internal content visibility, limits or server authorization.
+
 Facility Saved AI Runs follows the shared history read-recovery boundary: scoped
 failed or malformed reads are unavailable, not empty history. Refresh/Retry is
 read-only and single-flight; retained same-query results are labeled and old
