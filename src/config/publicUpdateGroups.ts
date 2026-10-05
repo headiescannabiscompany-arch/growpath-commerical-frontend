@@ -23,6 +23,16 @@ export const UPDATE_STATUS_LABELS = {
 
 export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
   {
+    id: "feedback",
+    tab: "Feedback",
+    title: "Private feedback and optional customer stories",
+    status: "complete",
+    scope: "The feedback collection, exact-preview permission, Admin review and withdrawal workflow.",
+    live: "Private feedback, optional protected photos, separate publication permission, Admin review and withdrawal are live. Test submissions are excluded from the public feed. Feedback is not sent for AI use.",
+    next: "Collect genuine experiences and review permissioned stories. No customer quotes, results or endorsements have been invented; collecting them is separate from completing this workflow.",
+    entryIds: ["private-feedback-collection"]
+  },
+  {
     id: "public-website",
     tab: "Website & plans",
     title: "Clearer public pages and plan information",

@@ -24,6 +24,18 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("closes feedback tooling without claiming genuine stories were collected", () => {
+    const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "feedback");
+    expect(group?.status).toBe("complete");
+    expect(group?.live).toContain("separate publication permission");
+    expect(group?.next).toContain("Collect genuine experiences");
+    expect(group?.entryIds).toEqual(["private-feedback-collection"]);
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "private-feedback-collection"
+    );
+    expect(note?.summary).toContain("genuine customer stories still need to be submitted");
+    expect(note?.summary).toContain("You can withdraw it later");
+  });
   it("groups Facility record recovery without claiming all Facility work complete", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "facility-dashboard-readiness"
@@ -269,7 +281,7 @@ describe("public Updates page", () => {
       PUBLIC_UPDATE_GROUPS.filter((group) => group.status === "complete").map(
         (group) => group.id
       )
-    ).toEqual(["journals", "billing", "hosted-live"]);
+    ).toEqual(["feedback", "journals", "billing", "hosted-live"]);
     for (const id of ["courses", "shopping", "admin", "public-website"]) {
       expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === id)?.status).toBe(
         "partial"
@@ -305,6 +317,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "private-feedback-collection",
       "public-website-audit",
       "course-media-playback-recovery",
       "course-lesson-authoring-guards",

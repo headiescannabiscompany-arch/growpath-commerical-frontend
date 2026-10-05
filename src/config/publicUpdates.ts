@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "private-feedback-collection",
+        title: "Private feedback and optional customer stories",
+        date: "October 4, 2026",
+        dateLabel: "Released",
+        summary:
+          "Share your experience from your account with an optional photo and an exact preview. Feedback stays private unless you separately allow website publication and an Admin approves that version. You can withdraw it later. Test submissions are excluded from the public feed, and feedback is not sent for AI use. The collection and review workflow is live; genuine customer stories still need to be submitted and reviewed."
+      },
+      {
         id: "public-website-audit",
         title: "Clearer grow journals, plans and public-page information",
         date: "October 4, 2026",
