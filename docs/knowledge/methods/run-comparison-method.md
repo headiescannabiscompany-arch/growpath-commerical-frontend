@@ -1,5 +1,16 @@
 # Run Comparison and Grow History
 
+Comparison and saved-result requests carry the explicitly selected workspace,
+including `personal`; a Commercial subscription does not turn an individual's
+Personal grows into Commercial records. Preserve that scope through comparison,
+history reads, reopening, log saving and reviewed task creation. Keep normal
+owner/workspace authorization and separate record collections; never recover a
+wrong-scope request by searching another workspace.
+
+Journal reference dates are calendar days. Preserve their saved day when rendered
+from date-only or UTC-midnight storage, rather than shifting them into the previous
+local day. Genuine event timestamps retain their normal local-time semantics.
+
 Grow-specific task queues distinguish failed reads from confirmed empty lists.
 Read-only Retry preserves unfinished input and makes no task mutation. A failed
 post-write read retains explicitly labeled previous tasks alongside the separate

@@ -762,6 +762,8 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Do not use demo runs or silently convert missing values to zero.",
+      "Comparison and saved-result requests preserve the explicitly selected workspace, including Personal for a Commercial-plan account, through reads, reopening and reviewed writes; never search another workspace to recover a scope mismatch.",
+      "Journal reference calendar dates preserve their saved day for date-only and UTC-midnight storage; genuine event timestamps retain local-time semantics.",
       "Do not rank an overall best run with hidden weights.",
       "Do not compare unlike stages without an explicit limitation.",
       "Do not claim causation from an observational run comparison.",

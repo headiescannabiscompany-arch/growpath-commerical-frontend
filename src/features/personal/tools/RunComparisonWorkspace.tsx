@@ -329,7 +329,7 @@ export default function RunComparisonWorkspace({
         objective,
         title,
         notes,
-        ...(workspace === "commercial" ? { workspaceType: "commercial" } : {})
+        workspaceType: workspace
       });
       setReferenceGrowId(reference);
       setOutputs(response.outputs);
@@ -351,11 +351,7 @@ export default function RunComparisonWorkspace({
       title: outputs.comparisonTitle || "Saved grow comparison",
       notes: outputs.summary || "Saved grow-history comparison"
     };
-    if (workspace === "commercial") {
-      await saveToolRunToLog(id, logInput, { workspaceType: "commercial" });
-    } else {
-      await saveToolRunToLog(id, logInput);
-    }
+    await saveToolRunToLog(id, logInput, { workspaceType: workspace });
   }
 
   async function createNextRunTasks() {
@@ -401,6 +397,7 @@ export default function RunComparisonWorkspace({
       return;
     }
     const response = await saveToolRunAndCreateTasks({
+      workspaceType: workspace,
       growId: referenceGrowId,
       toolKey: "run-comparison",
       toolRunId: id,

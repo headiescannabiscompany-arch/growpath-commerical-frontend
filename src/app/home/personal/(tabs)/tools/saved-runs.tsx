@@ -1405,13 +1405,10 @@ export default function SavedToolRunsScreen({
     facilityId
   });
   const toolRunScope = useMemo<ToolRunWorkspaceScope>(
-    () =>
-      workspaceType === "personal"
-        ? {}
-        : {
-            workspaceType,
-            ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
-          },
+    () => ({
+      workspaceType,
+      ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
+    }),
     [facilityId, workspaceType]
   );
   const sourceBackTarget = useMemo(

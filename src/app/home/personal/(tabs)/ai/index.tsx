@@ -382,6 +382,27 @@ function formatDate(value: any) {
   return new Date(time).toLocaleDateString();
 }
 
+function formatReferenceDate(reference: AssistantReference) {
+  const value = reference.timestamp;
+  // Journal dates may be stored as UTC midnight but still represent a calendar day.
+  if (
+    reference.type !== "log" ||
+    typeof value !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}(?:T00:00:00(?:\.0{1,3})?Z)?$/.test(value)
+  ) {
+    return formatDate(value);
+  }
+  const date = new Date(value);
+  if (
+    !Number.isFinite(date.getTime()) ||
+    date.getTime() <= 0 ||
+    date.toISOString().slice(0, 10) !== value.slice(0, 10)
+  ) {
+    return "no date";
+  }
+  return date.toLocaleDateString(undefined, { timeZone: "UTC" });
+}
+
 function firstQueryValue(value: string | string[] | undefined) {
   return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
 }
@@ -1475,7 +1496,7 @@ export default function AiScreen({
             {references.map((item, index) => (
               <Text key={`${item.type}-${item.id || index}`} style={styles.contextText}>
                 {item.type}: {item.title}
-                {item.timestamp ? ` (${formatDate(item.timestamp)})` : ""}
+                {item.timestamp ? ` (${formatReferenceDate(item)})` : ""}
               </Text>
             ))}
           </View>

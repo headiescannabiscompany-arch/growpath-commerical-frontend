@@ -282,7 +282,8 @@ describe("RunComparisonToolRoute", () => {
         scope: "harvest_final",
         objective: "yield",
         title: "Reference vs comparison",
-        notes: ""
+        notes: "",
+        workspaceType: "personal"
       })
     );
     await waitFor(() =>
@@ -296,7 +297,8 @@ describe("RunComparisonToolRoute", () => {
     await waitFor(() =>
       expect(mockSaveToolRunToLog).toHaveBeenCalledWith(
         "toolrun-1",
-        expect.objectContaining({ growId: "grow-1", linkedToolRunId: "toolrun-1" })
+        expect.objectContaining({ growId: "grow-1", linkedToolRunId: "toolrun-1" }),
+        { workspaceType: "personal" }
       )
     );
     await waitFor(() =>
@@ -307,6 +309,7 @@ describe("RunComparisonToolRoute", () => {
     await waitFor(() =>
       expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
         expect.objectContaining({
+          workspaceType: "personal",
           growId: "grow-1",
           toolKey: "run-comparison",
           toolRunId: "toolrun-1",
@@ -322,6 +325,50 @@ describe("RunComparisonToolRoute", () => {
         })
       )
     );
+  });
+
+  it("keeps a Commercial-plan user's Personal comparison and follow-ups explicitly Personal", async () => {
+    mockPlan = "commercial";
+    const screen = render(<RunComparisonToolRoute />);
+    await screen.findByText("Comparison grow");
+    expect(mockListPersonalGrows).toHaveBeenCalled();
+    expect(mockListCommercialGrows).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByLabelText("Compare saved grow Comparison grow"));
+    fireEvent.press(screen.getByLabelText("Use Comparison grow as reference run"));
+    fireEvent.press(screen.getByLabelText("Compare saved grow histories"));
+
+    await waitFor(() =>
+      expect(mockCompareSavedGrows).toHaveBeenCalledWith({
+        growIds: ["grow-1", "grow-2"],
+        referenceGrowId: "grow-2",
+        scope: "whole_run",
+        objective: "balanced_review",
+        title: "",
+        notes: "",
+        workspaceType: "personal"
+      })
+    );
+    fireEvent.press(await screen.findByText("Save Comparison to Grow Log"));
+    await waitFor(() =>
+      expect(mockSaveToolRunToLog).toHaveBeenCalledWith(
+        "toolrun-1",
+        expect.objectContaining({ growId: "grow-2", linkedGrowId: "grow-2" }),
+        { workspaceType: "personal" }
+      )
+    );
+    await screen.findByText("Saved comparison to the reference grow log.");
+    fireEvent.press(screen.getByText("Create Reviewed Next-Run Tasks"));
+    await waitFor(() =>
+      expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
+        expect.objectContaining({
+          workspaceType: "personal",
+          growId: "grow-2",
+          toolRunId: "toolrun-1"
+        })
+      )
+    );
+    expect(mockCreateTaskFromToolRun).not.toHaveBeenCalled();
   });
 
   it("keeps the workflow locked for Personal Free", () => {

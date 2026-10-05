@@ -10,6 +10,8 @@ import SavedToolRunsRoute, {
 
 const mockGetToolRun = jest.fn();
 const mockListToolRuns = jest.fn();
+const mockSaveToolRunToLog = jest.fn();
+const mockCreateTaskFromToolRun = jest.fn();
 const mockUpdateToolRun = jest.fn();
 const mockUpdatePlantIdCorrection = jest.fn();
 const mockPermanentlyDeleteToolRun = jest.fn();
@@ -32,6 +34,7 @@ let mockSearchParams: Record<string, string> = {
   sourceContext: "journal"
 };
 let mockEntitlementMode: "personal" | "commercial" | "facility" = "personal";
+let mockEntitlementPlan = "pro";
 let mockEntitlementFacilityId = "";
 
 jest.mock("expo-router", () => ({
@@ -58,11 +61,11 @@ jest.mock("@react-navigation/native", () => {
 
 jest.mock("@/api/toolRuns", () => ({
   archiveToolRun: jest.fn(),
-  createTaskFromToolRun: jest.fn(),
+  createTaskFromToolRun: (...args: any[]) => mockCreateTaskFromToolRun(...args),
   getToolRun: (...args: any[]) => mockGetToolRun(...args),
   listToolRuns: (...args: any[]) => mockListToolRuns(...args),
   permanentlyDeleteToolRun: (...args: any[]) => mockPermanentlyDeleteToolRun(...args),
-  saveToolRunToLog: jest.fn(),
+  saveToolRunToLog: (...args: any[]) => mockSaveToolRunToLog(...args),
   updateToolRun: (...args: any[]) => mockUpdateToolRun(...args),
   updatePlantIdCorrection: (...args: any[]) => mockUpdatePlantIdCorrection(...args)
 }));
@@ -109,6 +112,7 @@ jest.mock("@/utils/locationSearch", () => ({
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     mode: mockEntitlementMode,
+    plan: mockEntitlementPlan,
     facilityId: mockEntitlementFacilityId
   })
 }));
@@ -256,6 +260,7 @@ describe("SavedToolRunsRoute", () => {
       sourceContext: "journal"
     };
     mockEntitlementMode = "personal";
+    mockEntitlementPlan = "pro";
     mockEntitlementFacilityId = "";
     mockShareSignedHarvestResult.mockResolvedValue("web-clipboard");
     mockListToolRuns.mockResolvedValue([
@@ -370,7 +375,9 @@ describe("SavedToolRunsRoute", () => {
     const screen = render(<SavedToolRunsRoute />);
 
     await waitFor(() =>
-      expect(mockGetToolRun).toHaveBeenCalledWith("unattested-harvest-run-1")
+      expect(mockGetToolRun).toHaveBeenCalledWith("unattested-harvest-run-1", {
+        workspaceType: "personal"
+      })
     );
     expect(screen.queryByLabelText("Share signed Harvest result")).toBeNull();
     expect(mockShareSignedHarvestResult).not.toHaveBeenCalled();
@@ -457,7 +464,7 @@ describe("SavedToolRunsRoute", () => {
     expect(mockPermanentlyDeleteToolRun).toHaveBeenCalledWith(
       "harvest-delete-1",
       { confirmPermanentDelete: true, deleteSourceVideo: true },
-      {}
+      { workspaceType: "personal" }
     );
     expect(
       await screen.findByLabelText("Pending Harvest result deletion cleanup")
@@ -929,7 +936,11 @@ describe("SavedToolRunsRoute", () => {
 
     const screen = render(<SavedToolRunsRoute />);
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("legacy-ipm-run"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("legacy-ipm-run", {
+        workspaceType: "personal"
+      })
+    );
     expect(screen.queryByLabelText("Ask about this result")).toBeNull();
   });
 
@@ -1014,7 +1025,8 @@ describe("SavedToolRunsRoute", () => {
               userAuthorized: true
             })
           })
-        })
+        }),
+        { workspaceType: "personal" }
       )
     );
     expect(screen.getByText("Exact location saved privately · Not shared")).toBeTruthy();
@@ -1032,7 +1044,8 @@ describe("SavedToolRunsRoute", () => {
         "run-1",
         expect.objectContaining({
           inputs: expect.objectContaining({ capturedLocation: null })
-        })
+        }),
+        { workspaceType: "personal" }
       )
     );
     expect(screen.getByText("No device location saved")).toBeTruthy();
@@ -1110,7 +1123,8 @@ describe("SavedToolRunsRoute", () => {
               userAuthorized: true
             })
           })
-        })
+        }),
+        { workspaceType: "personal" }
       )
     );
     expect(
@@ -1182,7 +1196,8 @@ describe("SavedToolRunsRoute", () => {
               userAuthorized: true
             })
           })
-        })
+        }),
+        { workspaceType: "personal" }
       )
     );
   });
@@ -1310,7 +1325,8 @@ describe("SavedToolRunsRoute", () => {
               source: "manual_map"
             })
           })
-        })
+        }),
+        { workspaceType: "personal" }
       )
     );
     expect(
@@ -1777,7 +1793,8 @@ describe("SavedToolRunsRoute", () => {
               userAuthorized: true
             })
           })
-        })
+        }),
+        { workspaceType: "personal" }
       )
     );
     fireEvent.press(screen.getByText("Save Private Observation"));
@@ -1907,7 +1924,8 @@ describe("SavedToolRunsRoute", () => {
               userAuthorized: true
             })
           })
-        })
+        }),
+        { workspaceType: "personal" }
       )
     );
     expect(
@@ -1957,10 +1975,13 @@ describe("SavedToolRunsRoute", () => {
     await waitFor(() =>
       expect(mockListToolRuns).toHaveBeenCalledWith({
         growId: "grow-1",
-        toolType: undefined
+        toolType: undefined,
+        workspaceType: "personal"
       })
     );
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" })
+    );
 
     expect(screen.getByLabelText("Selected saved tool run run-1")).toBeTruthy();
     expect(screen.getByLabelText("Opened exact saved tool result run-1")).toBeTruthy();
@@ -1970,6 +1991,51 @@ describe("SavedToolRunsRoute", () => {
       screen.getByText("Shared Back /home/personal/grows/grow-1/journal Prefer true")
     ).toBeTruthy();
     expect(screen.getByText("vpd result: Full VPD result.")).toBeTruthy();
+  });
+
+  it("keeps a Commercial-plan user's Personal saved comparison list, reopen and actions explicitly Personal", async () => {
+    mockEntitlementPlan = "commercial";
+    const savedComparison = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "run_comparison",
+      workspaceType: "personal",
+      growId: "grow-1",
+      summary: "Synthetic saved grow comparison.",
+      inputs: { growIds: ["grow-1", "grow-2"], referenceGrowId: "grow-1" },
+      outputs: { evidenceStatus: "limited_comparison" },
+      createdAt: "2026-10-05T12:00:00.000Z"
+    };
+    mockListToolRuns.mockResolvedValue([savedComparison]);
+    mockGetToolRun.mockResolvedValue(savedComparison);
+    mockSaveToolRunToLog.mockResolvedValue({ ok: true });
+    mockCreateTaskFromToolRun.mockResolvedValue({ ok: true });
+    const screen = render(<SavedToolRunsRoute />);
+
+    await screen.findByText("run comparison result: Synthetic saved grow comparison.");
+    expect(mockListToolRuns).toHaveBeenCalledWith({
+      growId: "grow-1",
+      toolType: undefined,
+      workspaceType: "personal"
+    });
+    expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" });
+    fireEvent.press(screen.getByLabelText("Save to Grow Log"));
+    await waitFor(() =>
+      expect(mockSaveToolRunToLog).toHaveBeenCalledWith(
+        "run-1",
+        {},
+        { workspaceType: "personal" }
+      )
+    );
+    await waitFor(() => expect(screen.getByLabelText("Create Task")).not.toBeDisabled());
+    fireEvent.press(screen.getByLabelText("Create Task"));
+    await waitFor(() =>
+      expect(mockCreateTaskFromToolRun).toHaveBeenCalledWith(
+        "run-1",
+        {},
+        { workspaceType: "personal" }
+      )
+    );
   });
 
   it("surfaces saved Crop ID vision provenance instead of hiding nested metadata", async () => {
@@ -2010,7 +2076,9 @@ describe("SavedToolRunsRoute", () => {
 
     const screen = render(<SavedToolRunsRoute />);
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" })
+    );
     expect(screen.getByText("Likely crop: Mint")).toBeTruthy();
     expect(screen.getByText("Displayed output: Mint")).toBeTruthy();
     expect(screen.getByText("Still images inspected: 2")).toBeTruthy();
@@ -2066,7 +2134,9 @@ describe("SavedToolRunsRoute", () => {
 
     const screen = render(<SavedToolRunsRoute />);
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" })
+    );
     expect(
       screen.getByText("Source video: Saved; no extracted frame analyzed")
     ).toBeTruthy();
@@ -2098,7 +2168,9 @@ describe("SavedToolRunsRoute", () => {
 
     const screen = render(<SavedToolRunsRoute />);
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" })
+    );
     expect(screen.getByText("Still images inspected: Count unavailable")).toBeTruthy();
     expect(
       screen.getByText(
@@ -2152,7 +2224,9 @@ describe("SavedToolRunsRoute", () => {
     const screen = render(<SavedToolRunsRoute />);
 
     await waitFor(() =>
-      expect(mockGetToolRun).toHaveBeenCalledWith("run-limited-cannabis")
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-limited-cannabis", {
+        workspaceType: "personal"
+      })
     );
     expect(screen.getByText("Likely crop: Cannabis")).toBeTruthy();
     expect(screen.getByLabelText("Corrected plant or crop name").props.value).toBe(
@@ -2190,7 +2264,9 @@ describe("SavedToolRunsRoute", () => {
 
     const screen = render(<SavedToolRunsRoute />);
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" })
+    );
     expect(screen.getByText("Likely crop: Cannabis")).toBeTruthy();
     expect(screen.getByText(/1\. Cannabis spp\./i)).toBeTruthy();
     expect(screen.getByText(/Sharp bracts and pistils remain visible/i)).toBeTruthy();
@@ -2239,7 +2315,9 @@ describe("SavedToolRunsRoute", () => {
 
     const screen = render(<SavedToolRunsRoute />);
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" })
+    );
     expect(screen.getByLabelText("Ask about this result")).toBeTruthy();
     fireEvent.changeText(
       screen.getByLabelText("Corrected plant or crop name"),
@@ -2248,13 +2326,17 @@ describe("SavedToolRunsRoute", () => {
     fireEvent.press(screen.getByText("Save Identification Correction"));
 
     await waitFor(() =>
-      expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith("run-1", {
-        userCorrection: {
-          commonName: "Rose bush",
-          scientificName: null,
-          note: "User corrected the common identity; exact scientific species remains unverified."
-        }
-      })
+      expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith(
+        "run-1",
+        {
+          userCorrection: {
+            commonName: "Rose bush",
+            scientificName: null,
+            note: "User corrected the common identity; exact scientific species remains unverified."
+          }
+        },
+        { workspaceType: "personal" }
+      )
     );
     expect(mockUpdateToolRun).not.toHaveBeenCalled();
     expect(await screen.findByText("Likely crop: Rose bush")).toBeTruthy();
@@ -2516,7 +2598,9 @@ describe("SavedToolRunsRoute", () => {
 
     const screen = render(<SavedToolRunsRoute />);
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" })
+    );
     expect(screen.getByText("Light protection: protected")).toBeTruthy();
     expect(screen.getByText("Day in stage: 1")).toBeTruthy();
     expect(
@@ -2575,7 +2659,9 @@ describe("SavedToolRunsRoute", () => {
 
     const screen = render(<SavedToolRunsRoute />);
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" })
+    );
     expect(screen.getByText("Evidence status: measured_batch_review")).toBeTruthy();
     expect(screen.getByText("Visibly rooted: 3/12 (25%)")).toBeTruthy();
     expect(screen.getByText("Failed / culled: 3/12 (25%)")).toBeTruthy();
@@ -2651,7 +2737,9 @@ describe("SavedToolRunsRoute", () => {
 
     const screen = render(<SavedToolRunsRoute />);
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" })
+    );
     expect(
       screen.getByText("Evidence status: partial_measured_batch_review")
     ).toBeTruthy();
@@ -2689,7 +2777,9 @@ describe("SavedToolRunsRoute", () => {
 
     const screen = render(<SavedToolRunsRoute />);
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", { workspaceType: "personal" })
+    );
     expect(screen.getByText("Legacy saved warning remains available.")).toBeTruthy();
   });
 });

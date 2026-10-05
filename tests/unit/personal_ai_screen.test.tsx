@@ -291,6 +291,76 @@ describe("personal AI screen", () => {
     ).toBe(true);
   });
 
+  it("preserves journal-reference calendar days while events retain New York local dates", async () => {
+    const originalFormat = Date.prototype.toLocaleDateString;
+    const dateFormatter = jest
+      .spyOn(Date.prototype, "toLocaleDateString")
+      .mockImplementation(function (
+        this: Date,
+        _locales?: Intl.LocalesArgument,
+        options?: Intl.DateTimeFormatOptions
+      ) {
+        return originalFormat.call(this, "en-US", {
+          timeZone: "America/New_York",
+          ...options
+        });
+      });
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: "Review the recorded dates.",
+      actions: [],
+      referencedData: [
+        { type: "log", title: "Date-only journal", timestamp: "2026-10-05" },
+        { type: "log", title: "Midnight journal", timestamp: "2026-10-05T00:00:00.000Z" },
+        { type: "log", title: "Whole-second journal", timestamp: "2026-10-05T00:00:00Z" },
+        { type: "task", title: "Midnight event", timestamp: "2026-10-05T00:00:00.000Z" },
+        { type: "tool_run", title: "Timed event", timestamp: "2026-10-05T02:00:00.000Z" },
+        {
+          type: "log",
+          title: "Timed journal event",
+          timestamp: "2026-10-05T02:00:00.000Z"
+        }
+      ],
+      proposedWrites: []
+    });
+    try {
+      const screen = render(<AiScreen />);
+      await screen.findByText("Context Loaded");
+      fireEvent.changeText(screen.getByPlaceholderText("Type here..."), "Review dates");
+      fireEvent.press(screen.getByText("Send"));
+
+      expect(await screen.findByText("log: Date-only journal (10/5/2026)")).toBeTruthy();
+      expect(screen.getByText("log: Midnight journal (10/5/2026)")).toBeTruthy();
+      expect(screen.getByText("log: Whole-second journal (10/5/2026)")).toBeTruthy();
+      expect(screen.getByText("task: Midnight event (10/4/2026)")).toBeTruthy();
+      expect(screen.getByText("tool_run: Timed event (10/4/2026)")).toBeTruthy();
+      expect(screen.getByText("log: Timed journal event (10/4/2026)")).toBeTruthy();
+      expect(dateFormatter).toHaveBeenCalledWith(undefined, { timeZone: "UTC" });
+      expect(dateFormatter).toHaveBeenCalledWith();
+    } finally {
+      dateFormatter.mockRestore();
+    }
+  });
+
+  it.each(["not-a-date", "2026-02-30", "2026-02-30T00:00:00.000Z"])(
+    "handles an invalid journal-reference date safely: %s",
+    async (timestamp) => {
+      mockAskPersonalAssistant.mockResolvedValue({
+        success: true,
+        reply: "The record has no usable date.",
+        actions: [],
+        referencedData: [{ type: "log", title: "Undated journal", timestamp }],
+        proposedWrites: []
+      });
+      const screen = render(<AiScreen />);
+      await screen.findByText("Context Loaded");
+      fireEvent.changeText(screen.getByPlaceholderText("Type here..."), "Review dates");
+      fireEvent.press(screen.getByText("Send"));
+
+      expect(await screen.findByText("log: Undated journal (no date)")).toBeTruthy();
+    }
+  );
+
   it("sends the saved evidence id instead of the temporary picker id", async () => {
     mockAskPersonalAssistant.mockResolvedValue({
       success: true,

@@ -464,7 +464,11 @@ describe("Saved AI Runs collection recovery", () => {
     expect(
       screen.getByText("Back /home/personal/grows/grow-2/journal true")
     ).toBeTruthy();
-    expect(mockList.mock.calls[1][0]).toEqual({ growId: "grow-2", toolType: undefined });
+    expect(mockList.mock.calls[1][0]).toEqual({
+      growId: "grow-2",
+      toolType: undefined,
+      workspaceType: "personal"
+    });
   });
 
   it.each([
