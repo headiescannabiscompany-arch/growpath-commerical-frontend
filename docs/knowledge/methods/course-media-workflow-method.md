@@ -101,6 +101,13 @@ Playback state and provider consent belong to the current lesson/media, authenti
 
 GrowPath lesson progress changes only through the explicit lesson-completion action. Do not infer provider watch time, completion, or engagement from opening a link or loading an embed, and do not merge provider analytics into GrowPath progress unless a separately verified provider integration defines that contract.
 
+Document and audio opening must also remain bound to the requesting course and
+authenticated workspace/session. After resolving a protected resource URL, verify
+that the requesting detail is still mounted before opening it; leaving the detail
+or replacing its course/account/workspace discards late successes and errors.
+Denied access never falls back to opening the raw protected URL. An explicit
+retry rechecks access without enrollment, completion, note writes or payment.
+
 ## Evidence policy
 
 - `youtube-player-documentation` is Tier B provider documentation for YouTube player behavior and data-sharing constraints. It is not proof that an individual video is available, embeddable, licensed, captioned, or suitable.

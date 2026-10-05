@@ -45,7 +45,7 @@ import LessonMediaCard from "@/components/learning/LessonMediaCard";
 import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { listPersonalGrows } from "@/api/grows";
 import { createPersonalTask } from "@/api/tasks";
-import { getCourseMediaAccessUrl, openCourseMedia } from "@/api/uploads";
+import { getCourseMediaAccessUrl } from "@/api/uploads";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
@@ -1062,12 +1062,17 @@ function CourseDetailSession({
     }
   }
 
-  async function openCourseResource(url, options = {}) {
+  async function openCourseResource(url) {
     if (!canOpenLessons || !mountedRef.current) return;
     setFeedback("");
     try {
-      await openCourseMedia(url, options);
+      const authorizedUrl = await getCourseMediaAccessUrl(url);
+      // The session/course wrapper unmounts on every identity boundary. A delayed
+      // access response must not open private media in the replacement context.
+      if (!mountedRef.current) return;
+      await Linking.openURL(authorizedUrl);
     } catch (error) {
+      if (!mountedRef.current) return;
       setFeedback(error?.message || "Unable to open this course resource.");
     }
   }

@@ -42,11 +42,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "course-media-playback-recovery",
-        title: "Safer course video switching and playback retry",
-        date: "October 2, 2026",
+        title: "Safer course media switching and retry",
+        date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "Switching lessons, video sources, accounts or workspaces clears the previous player and requires fresh third-party playback consent. Failed protected-video reads now offer Retry while keeping the written summary available. Watching or retrying a video still does not complete a lesson, enroll you or change payments. The existing layout stays unchanged."
+          "Switching lessons, video sources, accounts or workspaces clears the previous player and requires fresh third-party playback consent. Failed protected-video reads offer Retry while keeping the written summary available. Delayed document and audio requests now stop when you leave the course or switch accounts or workspaces. Retrying media does not complete a lesson, enroll you or change payments. The existing layout stays unchanged."
       },
       {
         id: "course-lesson-authoring-guards",

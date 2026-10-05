@@ -831,6 +831,104 @@ describe("CourseDetailScreen learner player", () => {
     );
   });
 
+  it.each(["sign-out", "viewer", "token", "course", "workspace", "role", "unmount"])(
+    "does not open a delayed course document after %s",
+    async (boundary) => {
+      const pendingAccess = deferred();
+      const resourcePath = "/api/course-media/64f000000000000000000991/file";
+      mockGetCourse.mockResolvedValue({
+        ...freeCourse,
+        documents: [{ title: "Protected worksheet", storageUrl: resourcePath }]
+      });
+      mockApiRequest.mockImplementation((path: string) =>
+        path.endsWith("/access")
+          ? pendingAccess.promise
+          : Promise.resolve({ sessionIds: [] })
+      );
+      const openUrl = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+      const screen = render(
+        <CourseDetailScreen route={{ params: { id: "course-1" } }} />
+      );
+      fireEvent.press(await screen.findByText("Open Resource", {}, { timeout: 15000 }));
+      await waitFor(() =>
+        expect(mockApiRequest).toHaveBeenCalledWith(
+          resourcePath.replace("/file", "/access"),
+          { invalidateOn401: false }
+        )
+      );
+      if (boundary === "sign-out") signOut();
+      if (boundary === "viewer") mockViewerId = "learner-2";
+      if (boundary === "token") mockAuthState.token = "replacement-token";
+      if (boundary === "workspace") mockEntitlements.mode = "facility";
+      if (boundary === "role") mockEntitlements.facilityRole = "VIEWER";
+      await act(async () => {
+        if (boundary === "unmount") screen.unmount();
+        else
+          screen.rerender(
+            <CourseDetailScreen
+              route={{ params: { id: boundary === "course" ? "course-2" : "course-1" } }}
+            />
+          );
+      });
+      await act(async () => {
+        pendingAccess.resolve({ url: `${resourcePath}?access=synthetic-expiring-link` });
+      });
+      expect(openUrl).not.toHaveBeenCalled();
+      expectNoLearnerMutations();
+    }
+  );
+
+  it("allows an explicit retry after a denied document without opening the raw protected URL", async () => {
+    const resourcePath = "/api/course-media/64f000000000000000000991/file";
+    mockGetCourse.mockResolvedValue({
+      ...freeCourse,
+      documents: [{ title: "Protected worksheet", storageUrl: resourcePath }]
+    });
+    let attempts = 0;
+    mockApiRequest.mockImplementation((path: string) => {
+      if (!path.endsWith("/access")) return Promise.resolve({ sessionIds: [] });
+      attempts += 1;
+      return attempts === 1
+        ? Promise.reject(new Error("Document access unavailable. Try again."))
+        : Promise.resolve({ url: `${resourcePath}?access=synthetic-expiring-link` });
+    });
+    const openUrl = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+    fireEvent.press(await screen.findByText("Open Resource", {}, { timeout: 15000 }));
+    expect(
+      await screen.findByText("Document access unavailable. Try again.")
+    ).toBeTruthy();
+    expect(openUrl).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByText("Open Resource"));
+    await waitFor(() => expect(openUrl).toHaveBeenCalledTimes(1));
+    expect(openUrl).toHaveBeenCalledWith(
+      `https://api.growpath.test${resourcePath}?access=synthetic-expiring-link`
+    );
+    expectNoLearnerMutations();
+  });
+
+  it("opens the saved course and lesson discussion destinations without replaying learner actions", async () => {
+    mockGetCourse.mockResolvedValue({
+      ...freeCourse,
+      forumThreadId: "64f000000000000000000991",
+      lessons: [
+        {
+          id: "lesson-1",
+          title: "Discuss the worksheet",
+          content: "Synthetic lesson",
+          forumThreadId: "64f000000000000000000992"
+        }
+      ]
+    });
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+    fireEvent.press(await screen.findByText("Open Discussion", {}, { timeout: 15000 }));
+    expect(mockPush).toHaveBeenLastCalledWith("/forum/post/64f000000000000000000991");
+    fireEvent.press(screen.getByLabelText("Open lesson Discuss the worksheet"));
+    fireEvent.press(await screen.findByText("Discuss This Lesson"));
+    expect(mockPush).toHaveBeenLastCalledWith("/forum/post/64f000000000000000000992");
+    expectNoLearnerMutations();
+  });
+
   it("renders protected Facility lesson images through an authorized URL", async () => {
     const protectedImage = "/api/uploads/course-media/64f000000000000000000992/file";
     const signedImage = `${protectedImage}?access=signed`;
