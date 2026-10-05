@@ -18,6 +18,37 @@ const event = (url = origin + "/pricing") => ({
   }
 });
 describe("public-only HeyCatch policy", () => {
+  it("retains only fixed public-project installation metadata, never account groups", () => {
+    const input = {
+      ...event(),
+      event: "$groupidentify",
+      properties: {
+        ...event().properties,
+        $group_type: "project",
+        $group_key: HEYCATCH_PROJECT_KEY,
+        $group_set: { email: "PRIVATE_SENTINEL", origin: "PRIVATE_SENTINEL" }
+      }
+    };
+    const result = filterMarketingEvent(input, origin);
+    expect(result?.properties.$group_set).toEqual({
+      key: HEYCATCH_PROJECT_KEY,
+      sdk_version: "0.8.0",
+      sdk_stage: "prod",
+      framework: "react",
+      framework_version: "19",
+      agent: "codex",
+      origin,
+      api_host: "https://in.heycatch.ai"
+    });
+    expect(result?.properties.token).toBe(HEYCATCH_INGESTION_TOKEN);
+    expect(JSON.stringify(result)).not.toContain("PRIVATE_SENTINEL");
+    expect(filterMarketingEvent(input, origin + "/admin")).toBeNull();
+    input.properties.$group_type = "account";
+    expect(filterMarketingEvent(input, origin)).toBeNull();
+    input.properties.$group_type = "project";
+    input.properties.$group_key = "other";
+    expect(filterMarketingEvent(input, origin)).toBeNull();
+  });
   it("retains the SDK-required ingestion token and only this public project group", () => {
     const input = event();
     Object.assign(input.properties.$groups, { customer: "private@example.com" });

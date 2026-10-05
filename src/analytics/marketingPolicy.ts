@@ -25,7 +25,13 @@ export const HEYCATCH_PROJECT_KEY = "hck_pk_Vu7gSIhkxVCmtc6M8S_lkn4S_EQjzMOE";
 // The installed-SDK contract test must be reviewed when upgrading the package.
 export const HEYCATCH_INGESTION_TOKEN =
   "phc_oiDt6uXiBiEA2aT43SMzMAFE9D4gMVkRP3BtvYRsmHqe";
-const EVENTS = new Set(["$pageview", "$pageleave", "$autocapture", "$rageclick"]);
+const EVENTS = new Set([
+  "$pageview",
+  "$pageleave",
+  "$autocapture",
+  "$rageclick",
+  "$groupidentify"
+]);
 // Only fixed, reviewed navigation labels, never arbitrary rendered/user text.
 const PUBLIC_LABELS = new Set([
   "Create free account",
@@ -102,6 +108,28 @@ export function filterMarketingEvent(
   const path = publicPath(event.properties.$current_url);
   if (!path || event.properties.$is_identified === true) return null;
   const properties: Record<string, unknown> = {};
+  if (event.event === "$groupidentify") {
+    // SDK init registers the public PROJECT, not a person. Preserve that part
+    // of the installation protocol without admitting customer/account groups.
+    if (
+      event.properties.$group_type !== "project" ||
+      event.properties.$group_key !== HEYCATCH_PROJECT_KEY
+    )
+      return null;
+    properties.$group_type = "project";
+    properties.$group_key = HEYCATCH_PROJECT_KEY;
+    // Never forward arbitrary group properties, identities or origin values.
+    properties.$group_set = {
+      key: HEYCATCH_PROJECT_KEY,
+      sdk_version: "0.8.0",
+      sdk_stage: "prod",
+      framework: "react",
+      framework_version: "19",
+      agent: "codex",
+      origin: ORIGIN,
+      api_host: "https://in.heycatch.ai"
+    };
+  }
   // Admit only the reviewed public SDK routing token, never arbitrary tokens.
   if (event.properties.token === HEYCATCH_INGESTION_TOKEN) {
     properties.token = HEYCATCH_INGESTION_TOKEN;
