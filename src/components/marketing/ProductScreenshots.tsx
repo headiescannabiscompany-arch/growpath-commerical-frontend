@@ -64,7 +64,8 @@ export default function ProductScreenshots({ page }: { page: string }) {
               }}
             >
               Open full-size{" "}
-              {shot.id === "diagnosis" ? "diagnosis form" : "Facility dashboard"}{" "}
+              {shot.fullSizeLabel ??
+                (shot.id === "diagnosis" ? "diagnosis form" : "Facility dashboard")}{" "}
               screenshot
             </Link>
           </View>

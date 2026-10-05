@@ -1,0 +1,197 @@
+{
+  "free": {
+    "id": "free",
+    "title": "Keep one plant's story together",
+    "description": "A photo in your camera roll does not tell you when you watered. Keep the picture, the note and the date in one journal.",
+    "result": "The starting photo, care note and later review stay in the same dated sequence. Try the interactive five-entry journal below.",
+    "limits": "Free tracks 1 grow and 1 plant, with 5 AI credits per week. Available plant-care tools can help with other household plants, but they do not add unlimited tracked records or AI use. No payment card required.",
+    "ctaHref": "/register",
+    "ctaLabel": "Start your free plant journal",
+    "scenes": [
+      {
+        "id": "start",
+        "title": "Start with a photo",
+        "body": "Give later notes a starting point. Open a dated entry to see its photo and what you recorded.",
+        "image": "/images/synthetic-story-free-start.jpg",
+        "alt": "Sample basil journal with the first dated photo entry open",
+        "caption": "Actual demo interface, captured October 5, 2026. Dates and notes are synthetic; the basil image is AI-generated, not a real grow result. Cropped screenshot.",
+        "width": 883,
+        "height": 1048
+      },
+      {
+        "id": "care",
+        "title": "Record what you did",
+        "body": "Keep a care action with its date instead of trying to remember it later. The sample amount is invented, not a watering recommendation.",
+        "image": "/images/synthetic-story-free-care.jpg",
+        "alt": "The same sample journal showing its September 4 watering note",
+        "caption": "Actual demo interface with synthetic care notes, captured October 5, 2026. Cropped screenshot; no real action or plant outcome is claimed.",
+        "width": 883,
+        "height": 816
+      },
+      {
+        "id": "review",
+        "title": "Find it again",
+        "body": "Look back through the same sequence. In your own account, you choose what to record and separately review anything you share.",
+        "image": "/images/synthetic-story-free-review.jpg",
+        "alt": "The same five-point sample timeline with its review entry selected",
+        "caption": "Actual demo interface with synthetic review notes, captured October 5, 2026. Cropped screenshot, not a customer testimonial.",
+        "width": 883,
+        "height": 816
+      }
+    ]
+  },
+  "pro": {
+    "id": "pro",
+    "title": "Use the records from your grows",
+    "description": "When you have several runs, keep their notes available for questions, comparisons and a record you can take away.",
+    "result": "This example connects saved notes, a bounded history answer, an honest comparison and an export package. It does not establish why the plants differed or which run was better.",
+    "limits": "Pro includes 10 grows, 50 plants and 100 AI credits per week. These tools are also available on eligible higher plans; this is not an exclusive Pro feature claim. AI uses the displayed action cost. Web exports support CSV and viewer-friendly timeline HTML, not a completed native PDF or offline original-photo archive.",
+    "ctaHref": "/pricing",
+    "ctaLabel": "Compare Free and Pro allowances",
+    "scenes": [
+      {
+        "id": "history",
+        "title": "Ask about saved observations",
+        "body": "The answer refers to two saved entries and separates their recorded changes from unknown causes. The provider label stays visible.",
+        "image": "/images/synthetic-story-history-answer.jpg",
+        "alt": "History answer citing two synthetic Basil A entries with their dates, observations and unknowns",
+        "caption": "Actual staging response, October 5, 2026, using synthetic basil records. Cropped to the answer and source context. One example is not a general AI-accuracy claim or growing advice.",
+        "width": 928,
+        "height": 535
+      },
+      {
+        "id": "compare",
+        "title": "Compare without inventing a winner",
+        "body": "Two saved grows supply three notes. Here they lack comparable structured measurements, so the result says insufficient evidence and low confidence instead of declaring a winner.",
+        "image": "/images/synthetic-story-comparison-result.jpg",
+        "alt": "Comparison summary showing two grows, three records, zero comparable metrics and low confidence",
+        "caption": "Actual staging result, October 5, 2026. Cropped summary excludes private record identifiers. Synthetic notes are not measured performance evidence.",
+        "width": 891,
+        "height": 145
+      },
+      {
+        "id": "export",
+        "title": "Review the export package",
+        "body": "The same sample's journal and saved comparison appear together in the export package. Review the included records before using the available export controls.",
+        "image": "/images/synthetic-story-export-package.jpg",
+        "alt": "Export package with two synthetic journal entries, one comparison run and available CSV and timeline controls",
+        "caption": "Actual staging package with synthetic records, October 5, 2026. Cropped to exclude the private grow identifier. This is the preparation screen, not a picture of a downloaded file or proof of offline media availability.",
+        "width": 906,
+        "height": 583
+      }
+    ]
+  },
+  "seller": {
+    "id": "seller",
+    "title": "Review your offer and its customer view",
+    "description": "Keep an offer as a draft while you prepare it. Then check the published presentation and any purchase requirements from the same offer.",
+    "result": "The owner can distinguish drafts from published offers and open the matching customer-facing page. Publication and payment readiness are separate checks.",
+    "limits": "Commercial includes 50 grows, 500 plants and 500 AI credits per week. Seller and product eligibility still apply. Protected delivery is not ready in this retained staging example, so Purchase is disabled; no sale, delivery, earnings or customer endorsement is demonstrated. Downloadable offers and Commercial product/trial records are different workflows.",
+    "ctaHref": "/grow-stores",
+    "ctaLabel": "Explore seller workflows and setup",
+    "scenes": [
+      {
+        "id": "draft",
+        "title": "Keep unfinished offers private",
+        "body": "This separate sample offer remains a draft with an explicit Publish action. Nothing is published by opening the page.",
+        "image": "/images/synthetic-story-seller-draft.jpg",
+        "alt": "Synthetic storefront offer marked Draft with a Publish button",
+        "caption": "Actual staging interface, October 5, 2026. Synthetic title and price; cropped to exclude test ratings and activity counters. No publication performed for this capture.",
+        "width": 914,
+        "height": 199
+      },
+      {
+        "id": "published",
+        "title": "Open the published presentation",
+        "body": "A previously published sample has its own View public offer link. The next scene follows that exact offer, not a different product.",
+        "image": "/images/synthetic-story-seller-published.jpg",
+        "alt": "Published synthetic protected-download offer with View public offer control",
+        "caption": "Actual staging interface, October 5, 2026. Test price only; cropped to exclude synthetic ratings and activity counters. Publication does not confirm delivery readiness.",
+        "width": 914,
+        "height": 199
+      },
+      {
+        "id": "customer-view",
+        "title": "Check purchase readiness too",
+        "body": "The matching page shows the offer description and its delivery warning. Until protected delivery is ready, new checkout stays disabled.",
+        "image": "/images/synthetic-story-seller-view.jpg",
+        "alt": "Matching synthetic offer page with protected-delivery warning and disabled Purchase button",
+        "caption": "Actual staging customer-facing view opened by the owner, October 5, 2026. Synthetic fixture, not an independent buyer purchase or successful delivery. Cropped screenshot.",
+        "width": 946,
+        "height": 345
+      }
+    ]
+  },
+  "creator": {
+    "id": "creator",
+    "title": "See a course from both sides",
+    "description": "Review the saved course and its lesson as the author, then see what a visitor can discover before they have access.",
+    "result": "The same course has author controls, a saved lesson preview and a visitor outline with paid content locked. Opening a course is not enrollment or lesson completion.",
+    "limits": "This example uses Commercial, one of the four account types, not a separate creator tier. Course publishing is available on every plan within its limits. A paid course still requires eligible seller setup and verified paid access. No earnings or learning outcome is promised. Existing hosted Lives can use broadcast tools such as OBS; guest backstage, tips and course gifting are separate future work, not shown here.",
+    "ctaHref": "/creators-educators",
+    "ctaLabel": "Explore educator and host workflows",
+    "scenes": [
+      {
+        "id": "author",
+        "title": "Review the saved course",
+        "body": "The author sees the saved fee, sharing controls and lesson list. The published lesson stays locked for editing until the course is deliberately unpublished.",
+        "image": "/images/synthetic-story-course-owner.jpg",
+        "alt": "Author view of a synthetic published course with pricing, sharing and Open Lesson controls",
+        "caption": "Actual staging author view, October 5, 2026. Synthetic course and price, cropped screenshot. No fee, publication or lesson was changed.",
+        "width": 866,
+        "height": 957
+      },
+      {
+        "id": "lesson",
+        "title": "Inspect the lesson experience",
+        "body": "The author opens the saved text lesson. Notes, lesson tasks and completion are separate controls; this read-only preview did not use them.",
+        "image": "/images/synthetic-story-course-lesson.jpg",
+        "alt": "Synthetic saved text lesson with empty private notes and explicit task and completion controls",
+        "caption": "Actual staging owner preview, October 5, 2026. The lesson text is a synthetic access-test fixture, not paid customer material or horticultural instruction. Cropped screenshot.",
+        "width": 866,
+        "height": 387
+      },
+      {
+        "id": "visitor",
+        "title": "Keep paid lessons protected",
+        "body": "A signed-out visitor can see the lesson title, but the paid lesson remains locked. Signing in does not start checkout or enroll the visitor automatically.",
+        "image": "/images/synthetic-story-course-visitor.jpg",
+        "alt": "Signed-out view of the same synthetic course showing sign-in guidance and a payment-required lesson lock",
+        "caption": "Accepted staging visitor view of the same course, captured September 27, 2026. Synthetic fixture. Cropped to the sign-in and lesson-access sections; no new purchase was run.",
+        "width": 1400,
+        "height": 246
+      }
+    ]
+  },
+  "facility": {
+    "id": "facility",
+    "title": "Connect assigned work with its record",
+    "description": "Let the team see the task, its recorded status and the history behind it, with controls that follow each person's role.",
+    "result": "The completed task and its creation/update history refer to the same synthetic record. A Viewer can read it without receiving task-edit controls.",
+    "limits": "Facility includes 200 grows, 2,000 plants and a shared pool of 2,000 AI credits per week. These screenshots show recorded state, not proof of physical work or compliance certification. This retained July history is legacy/unverified, not proof of a modern cryptographically verified audit chain.",
+    "ctaHref": "/facility-management",
+    "ctaLabel": "Explore Facility team workflows",
+    "scenes": [
+      {
+        "id": "task",
+        "title": "Read the assigned task",
+        "body": "The same task keeps its room, assignee and recorded completion together. This Viewer account cannot update it.",
+        "image": "/images/synthetic-story-facility-task.jpg",
+        "alt": "Synthetic assigned Facility task shown as Completed with a read-only Viewer notice",
+        "caption": "Actual staging Viewer screen, captured October 5, 2026, showing a retained July 20 synthetic test record. Cropped screenshot, not evidence that physical work occurred.",
+        "width": 1100,
+        "height": 433
+      },
+      {
+        "id": "history",
+        "title": "Review the corresponding history",
+        "body": "The task's history records its creation and later update. The update time matches the completed task above.",
+        "image": "/images/synthetic-story-facility-history.jpg",
+        "alt": "History for the same synthetic Facility task showing July 20 creation and update entries",
+        "caption": "Actual staging history screen, captured October 5, 2026. Cropped synthetic legacy record; not legal certification or a cryptographic verification claim.",
+        "width": 1100,
+        "height": 350
+      }
+    ]
+  }
+}

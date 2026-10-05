@@ -91,8 +91,13 @@ exception. It accepts no record IDs, tokens or user-supplied data and makes no g
 API calls. Keep its synthetic disclosure visible before the shared timeline viewer.
 Invented readings and dates demonstrate record organization only; they are not
 recommendations, real measurements, diagnoses, customer proof or outcome evidence.
-AI-generated illustrative media must be identified as such. Share only `/demo`,
-never the current location's query or a signed-in user's URL. Provide a vertical
+AI-generated illustrative media must be identified as such. Demo links are rebuilt
+only from the allowlisted story names `free`, `pro`, `seller`, `creator`, and
+`facility`: Free uses `/demo`; other stories use `/demo?story=<name>`. Invalid or
+array values select Free. Never copy the current location's query, arbitrary
+parameters, record IDs, tokens, tracking values, or a signed-in user's URL. Story
+selection, reload and browser Back/Forward preserve only that public story choice.
+Canonical indexing remains `/demo`. Provide a vertical
 reading alternative and readable static HTML for users without JavaScript.
 Marketing screenshots must be captured from the rendered app, labeled with the
 synthetic-data context, and never represented as real customer records.
@@ -101,7 +106,14 @@ and reviewed synthetic screenshots, not impersonated accounts or private record 
 Show current plan limits and distinguish intake forms from produced results. Explain
 Free's one tracked plant separately from available care tools for other household plants;
 never imply unlimited tracking or AI. Keep screenshot controls visibly non-interactive,
-offer full-size images and a static reading alternative, and share only the fixed demo URL.
+offer full-size images and a static reading alternative, and share only the rebuilt
+allowlisted demo-story URL. Seller and creator stories are two Commercial jobs,
+not additional subscription plans. A screenshot sequence shows only its recorded
+state: distinguish export preparation from a downloaded file, published offers
+from payment/delivery readiness, author previews from learner entitlement, and
+recorded task completion from verified physical work. Cropped synthetic screenshots
+must retain the conditions material to the claim and omit private identifiers and
+test ratings/counters that could be mistaken for real customer proof.
 Real testimonials remain a separate dynamic, approved/consented public feed, never
 synthetic proof or statically baked quotes.
 

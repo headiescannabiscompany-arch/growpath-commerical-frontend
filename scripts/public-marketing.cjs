@@ -2,7 +2,9 @@
 const marketing = require("../src/components/marketing/publicMarketing.json");
 const demo = require("../src/components/marketing/syntheticGrowDemo.json");
 const demoAudiences = require("../src/components/marketing/demoAudiences.json");
+const demoStories = require("../src/components/marketing/demoStories.json");
 const screenshots = require("../src/components/marketing/productScreenshots.json");
+const demoStoryIds = ["free", "pro", "seller", "creator", "facility"];
 const escape = (value) =>
   String(value)
     .replace(/&/g, "&amp;")
@@ -56,6 +58,14 @@ function publicMarketingMarkup(route) {
     "pricing",
     "grow-journal-app"
   ].includes(page);
+  const primaryAction = copy.primaryAction ?? {
+    href: "/register",
+    label: "Create free account"
+  };
+  const demoAction = copy.demoAction ?? {
+    href: showDemo ? "/demo" : "/features",
+    label: showDemo ? "Try the sample journal" : "Explore features"
+  };
   const sections = copy.sections
     .map(
       (section, i) =>
@@ -134,8 +144,14 @@ function publicMarketingMarkup(route) {
     escape(copy.title) +
     "</h1><p>" +
     escape(copy.intro) +
-    '</p><div class="marketing-actions"><a class="primary" href="/register">Create free account</a><a class="secondary" href="' +
-    (showDemo ? '/demo">Try the sample journal' : '/features">Explore features') +
+    '</p><div class="marketing-actions"><a class="primary" href="' +
+    escape(primaryAction.href) +
+    '">' +
+    escape(primaryAction.label) +
+    '</a><a class="secondary" href="' +
+    escape(demoAction.href) +
+    '">' +
+    escape(demoAction.label) +
     "</a></div></header>" +
     (grower || page === "pricing"
       ? "<p>Free account. No payment card required. Your content stays yours.</p>"
@@ -228,14 +244,17 @@ function productScreenshotMarkup(page) {
         '<a href="' +
         escape(shot.image) +
         '">Open full-size ' +
-        (shot.id === "diagnosis" ? "diagnosis form" : "Facility dashboard") +
+        escape(
+          shot.fullSizeLabel ??
+            (shot.id === "diagnosis" ? "diagnosis form" : "Facility dashboard")
+        ) +
         " screenshot</a></section>"
     )
     .join("");
 }
 function demoExplorerMarkup() {
   return (
-    "<section><h2>Explore by account type</h2><p>Choose the work you want to do. These are guided highlights with screenshots, not signed-in workspaces. The interactive sample journal follows below.</p>" +
+    "<section><h2>More account-type highlights</h2><p>Explore the four existing plans. Sellers and creators both use Commercial; these bundled examples do not open a signed-in workspace.</p>" +
     '<nav aria-label="Demo account types">' +
     demoAudiences
       .map(
@@ -284,6 +303,77 @@ function demoExplorerMarkup() {
     "</section>"
   );
 }
+function demoStoriesMarkup() {
+  return (
+    "<section><h2>Explore by story</h2><p>Choose the work you want to do. Five stories use four account types: sellers and creators both use Commercial. These are guided highlights with screenshots, not signed-in workspaces. The interactive sample journal follows below.</p>" +
+    '<nav aria-label="Demo stories">' +
+    demoStoryIds
+      .map(
+        (id) =>
+          '<a href="#demo-story-' + id + '">' + escape(demoStories[id].title) + "</a>"
+      )
+      .join(" ") +
+    "</nav>" +
+    demoStoryIds
+      .map((id) => {
+        const story = demoStories[id];
+        // Only these bundled enum keys construct destinations; no incoming URL data.
+        const storyPath = id === "free" ? "/demo" : "/demo?story=" + id;
+        return (
+          '<section class="marketing-card" id="demo-story-' +
+          id +
+          '"><h3>' +
+          escape(story.title) +
+          "</h3><p>" +
+          escape(story.description) +
+          "</p><p>Read-only walkthrough with synthetic example records. Screenshot controls are not interactive.</p><ol>" +
+          story.scenes
+            .map(
+              (scene, index) =>
+                "<li><h4>Step " +
+                (index + 1) +
+                " of " +
+                story.scenes.length +
+                ": " +
+                escape(scene.title) +
+                "</h4><p>" +
+                escape(scene.body) +
+                '</p><figure style="margin:0 0 24px"><figcaption>' +
+                escape(scene.caption) +
+                '</figcaption><img src="' +
+                escape(scene.image) +
+                '" alt="' +
+                escape(scene.alt) +
+                '" width="' +
+                escape(scene.width) +
+                '" height="' +
+                escape(scene.height) +
+                '" loading="lazy" decoding="async" style="display:block;width:100%;max-width:' +
+                escape(scene.width) +
+                'px;height:auto;margin:auto" /><p><a href="' +
+                escape(scene.image) +
+                '">Open full-size screenshot: ' +
+                escape(scene.title) +
+                "</a></p></figure></li>"
+            )
+            .join("") +
+          "</ol><h4>What this example shows</h4><p>" +
+          escape(story.result) +
+          "</p><h4>Fit and limits</h4><p>" +
+          escape(story.limits) +
+          '</p><div class="marketing-actions"><a class="primary" href="' +
+          escape(story.ctaHref) +
+          '">' +
+          escape(story.ctaLabel) +
+          '</a><a class="secondary" href="' +
+          storyPath +
+          '">Open this story in the interactive demo</a></div></section>'
+        );
+      })
+      .join("") +
+    "</section>"
+  );
+}
 function publicDemoMarkup() {
   return (
     '<main id="seo-content" class="marketing"><nav aria-label="GrowPathAI public pages"><a class="brand" href="/">GrowPathAI</a>' +
@@ -293,6 +383,7 @@ function publicDemoMarkup() {
     "</h1><p>" +
     escape(demo.description) +
     "</p></header>" +
+    demoStoriesMarkup() +
     demoExplorerMarkup() +
     '<section class="marketing-card"><h2>' +
     escape(demo.growTitle) +

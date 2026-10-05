@@ -31,6 +31,8 @@ type PageCopy = {
   eyebrow: string;
   title: string;
   intro: string;
+  primaryAction?: { href: string; label: string };
+  demoAction?: { href: string; label: string };
   sections: Array<{ title: string; body: string; href?: string; linkLabel?: string }>;
 };
 
@@ -53,6 +55,14 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
     "pricing",
     "grow-journal-app"
   ].includes(page);
+  const primaryAction = copy.primaryAction ?? {
+    href: "/register",
+    label: "Create free account"
+  };
+  const demoAction = copy.demoAction ?? {
+    href: showDemo ? "/demo" : "/features",
+    label: showDemo ? "Try the sample journal" : "Explore features"
+  };
   return (
     <ScrollView
       style={styles.page}
@@ -110,18 +120,18 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
           style={isCompact ? [styles.actions, styles.actionsCompact] : styles.actions}
         >
           <Link
-            href="/register"
+            href={primaryAction.href as never}
             style={isCompact ? [styles.primary, styles.actionCompact] : styles.primary}
           >
-            Create free account
+            {primaryAction.label}
           </Link>
           <Link
-            href={showDemo ? "/demo" : "/features"}
+            href={demoAction.href as never}
             style={
               isCompact ? [styles.secondary, styles.actionCompact] : styles.secondary
             }
           >
-            {showDemo ? "Try the sample journal" : "Explore features"}
+            {demoAction.label}
           </Link>
         </View>
       </View>

@@ -32,12 +32,12 @@
       "Use supported timeline exports and reviewed sharing while keeping private records private.",
       "Keep access to community, course and shopping paths without a Facility workspace."
     ],
-    "limits": "Pro includes 10 grows, 50 plants and 100 AI credits per week. A standard diagnosis uses 3 credits; check each action's displayed cost. This screenshot shows the intake form, not an AI result.",
+    "limits": "Pro includes 10 grows, 50 plants and 100 AI credits per week. A standard diagnosis uses 3 credits; check each action's displayed cost.",
     "image": "/images/synthetic-diagnosis-intake-ui.jpg",
     "width": 836,
     "height": 1100,
     "alt": "Actual plant diagnosis intake form with synthetic unsent basil observations",
-    "caption": "Actual staging interface captured October 5, 2026. Synthetic, unsent example: no AI analysis, diagnosis or treatment recommendation was produced. This form is not exclusive to Pro.",
+    "caption": "Actual staging interface captured October 5, 2026. This screenshot shows the intake form, not an AI result. Synthetic, unsent example: no AI analysis, diagnosis or treatment recommendation was produced. This form is not exclusive to Pro.",
     "href": "/pricing",
     "linkLabel": "Compare Pro and Free allowances"
   },

@@ -98,6 +98,8 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "Never publish private data merely because Share was pressed.",
       "Public role demos use bundled synthetic screenshots and accurate limits, never private account reads; distinguish intake forms from results and one tracked Free plant from available household care tools. Keep genuine testimonials in the separate dynamic consented feed.",
+      "Rebuild demo links only from free/pro/seller/creator/facility: /demo for Free, otherwise /demo?story=<enum>; reject array or invalid values and never copy arbitrary URL data. Preserve the chosen story through route history while canonical indexing stays /demo.",
+      "Synthetic story screenshots distinguish export preparation, publication, purchase readiness, author preview and recorded completion; none implies completed delivery, learner entitlement, customer outcomes or physical/compliance proof. Omit private identifiers and misleading test ratings.",
       "Forum directories and shared discussions must wait for account and entitlement readiness before capability denial or record reads; failed initial access checks offer Retry without granting permissions or publishing content.",
       "Forum details read the exact post before comments/actions, recover post and comments independently without false empty results, preserve same-discussion drafts, clear state on discussion or linked-grow changes, and discard late or mismatched reads; Retry never resubmits a confirmed comment.",
       "Private Visual Flow and Detailed List attach photo events to the matching selected journal by source identity; preserve standalone photos and distinct same-date/title journals without changing stored activity or frozen snapshots.",

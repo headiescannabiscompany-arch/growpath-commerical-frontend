@@ -47,7 +47,7 @@ describe("PublicLandingPage", () => {
     expect(screen.getByText("Facility → Room → Grow → Plant")).toBeTruthy();
     expect(screen.getByText("Roles that match responsibility")).toBeTruthy();
     expect(JSON.stringify(screen.toJSON())).toContain("Store");
-    expect(JSON.stringify(screen.toJSON())).toContain("Create free account");
+    expect(JSON.stringify(screen.toJSON())).toContain("See Facility pricing");
     expect(JSON.stringify(screen.toJSON())).toContain("AI disclaimer");
   });
 

@@ -71,6 +71,10 @@
       "eyebrow": "For personal growers",
       "title": "A grow journal that helps decide what comes next",
       "intro": "Take your growing seriously without hunting through notebooks and camera rolls. Keep your feeding schedule, photos, readings, and finished tasks in one timeline, so this run's lessons survive to the next run and you can repeat what worked.",
+      "demoAction": {
+        "href": "/demo?story=free",
+        "label": "See the Free plant journal"
+      },
       "sections": [
         {
           "title": "Grow your way",
@@ -89,19 +93,37 @@
     "commercial-cultivation": {
       "eyebrow": "For commercial operators",
       "title": "Cultivation evidence with business context",
-      "intro": "Follow a trial from recipe and batch to recorded grow result. Keep the evidence with the product line, then use it in your storefront or course.",
+      "intro": "Keep product information, trials, and grow records together, then review what you want customers or learners to see. Commercial brings seller and creator work into the same plan.",
+      "primaryAction": {
+        "href": "/pricing",
+        "label": "See Commercial pricing"
+      },
+      "demoAction": {
+        "href": "/demo?story=seller",
+        "label": "See the seller workflow"
+      },
       "sections": [
         {
           "title": "Trials and formulas",
-          "body": "Link recipes, batches, grow trials, evidence runs, and final results instead of leaving them in disconnected calculators."
+          "body": "Connect recipes, batches, grow trials, and evidence runs to the product line they support. A saved calculation or trial observation does not establish a product-performance claim; review the evidence before using it publicly."
         },
         {
-          "title": "Eligible commerce",
-          "body": "Publish lawful products and education. Cannabis sales are not processed through ordinary public storefronts."
+          "title": "Selling products or downloads?",
+          "body": "Start with a saved draft, review its description, price, and delivery setup, then explicitly publish. Public presentation and payment readiness are separate checks; a Commercial subscription does not make every product eligible for checkout.",
+          "href": "/grow-stores",
+          "linkLabel": "Review store and seller setup"
         },
         {
-          "title": "Audience workflows",
-          "body": "Connect feeds, forums, courses, live sessions, creator pages, and approved product education."
+          "title": "Teaching or hosting?",
+          "body": "Connect courses, live sessions, and Forum Q&A to your public business presence. Use Feed campaigns for reviewed promotions and Forum discussions for questions and help. Course publication includes media review; hosted broadcasting uses an encoder such as OBS and the available hosting allowance.",
+          "href": "/creators-educators",
+          "linkLabel": "Review creator workflows and requirements"
+        },
+        {
+          "title": "What does Commercial include?",
+          "body": "Commercial is $50/month or $500/year, with 50 grows, 500 plants, and 500 AI credits each week. Seller payment setup, eligible products, and reviewed publication are still required. Team assignment, formal SOP control, and Facility audit workflows belong to Facility.",
+          "href": "/facility-management",
+          "linkLabel": "Need a shared team workspace?"
         }
       ]
     },
@@ -109,75 +131,137 @@
       "eyebrow": "For cultivation facilities",
       "title": "Facility → Room → Grow → Plant",
       "intro": "See what needs doing in each room, assign it to the right person, and review the recorded result without chasing messages.",
+      "primaryAction": {
+        "href": "/pricing",
+        "label": "See Facility pricing"
+      },
+      "demoAction": {
+        "href": "/demo?story=facility",
+        "label": "See the Facility team workflow"
+      },
       "sections": [
         {
           "title": "Roles that match responsibility",
-          "body": "Give owners, managers, staff, and viewers access that matches their jobs, so people can find their work without seeing records they should not."
+          "body": "Set up the selected Facility, rooms, and team memberships, then use owner, manager, staff, and viewer roles to match access to the work. Each person keeps their individual account and enters the shared workspace through their Facility membership."
         },
         {
           "title": "Operational records",
-          "body": "Assign recurring work, run SOP checklists, record inventory usage, and preserve completion and audit history."
+          "body": "Assign recurring work, run reviewed SOP checklists, and record inventory usage with the selected Facility. The authorized team member records the work; the manager can return to the task, journal evidence, and completion history. Recorded completion is not automatic compliance certification."
         },
         {
           "title": "Environmental context",
           "body": "Review imported controller history alongside the room and grow it belongs to. AC Infinity and Bluelab CSV history are import workflows, not a promise of live device control. Check supported provider setup before connecting equipment."
+        },
+        {
+          "title": "What does the team need to start?",
+          "body": "An owner sets up the Facility subscription and invites the team. Facility is $100/month or $1,000/year for 200 grows, 2,000 plants, and a shared pool of 2,000 AI credits each week. One subscription covers the team workspace within those shared limits; it is not priced per seat.",
+          "href": "/contact",
+          "linkLabel": "Ask about Facility setup"
         }
       ]
     },
     "nurseries-breeders": {
       "eyebrow": "For nurseries and breeders",
       "title": "Track plants, propagation, and selection decisions",
-      "intro": "Connect mother plants, clones, tissue culture, genetics notes, pheno scores, stress tests, and harvest outcomes to the grows that produced the evidence.",
+      "intro": "Keep plant photos, observations, and follow-up work connected to the grow that produced them. Choose Commercial for product and education work, or Facility when a team needs shared assignments and operational records.",
+      "primaryAction": {
+        "href": "/pricing",
+        "label": "Compare business and team plans"
+      },
+      "demoAction": {
+        "href": "/demo?story=facility",
+        "label": "See shared team records"
+      },
       "sections": [
         {
           "title": "Propagation",
-          "body": "Plan clone and tissue-culture checks, assign work, attach photos, and document results."
+          "body": "Keep mother-plant, clone and tissue-culture checks connected to their source records. Attach photos, plan follow-up work and document observations within the supported crop and workspace context. Recorded counts and direct inspections matter; elapsed time or a photo alone does not establish successful propagation."
         },
         {
           "title": "Selection",
-          "body": "Compare phenotypes, crop steering, stress response, final product scores, and run-to-run performance."
+          "body": "Keep genetics notes, phenotype scores, stress and recovery records, and harvest observations available for selection and run comparisons. Record the evidence and reasoning behind a decision; incomplete observations do not establish a cultivar guarantee or a winning run."
+        },
+        {
+          "title": "Keep the observation with the plant",
+          "body": "Record what you saw, attach owned photos, and schedule the next check. Missing measurements stay unknown; a photograph or elapsed time does not prove successful propagation. Crop-specific tools depend on the selected crop and eligible workspace context."
+        },
+        {
+          "title": "Choose the workspace for the job",
+          "body": "Commercial connects product lines, trials, and education. Facility adds shared rooms, staff assignments, reviewed SOPs, and operational history. Decide whether you need an individual business record or a team handoff before choosing a plan.",
+          "href": "/commercial-cultivation",
+          "linkLabel": "Explore Commercial records"
         },
         {
           "title": "Education and profiles",
-          "body": "Share approved genetics education through courses, discussions, and public commercial profiles."
+          "body": "Review the exact material before publishing a course or public profile. Private grow and Facility records remain private. A published profile or subscription does not establish product eligibility, transaction permission, or a verified growing outcome.",
+          "href": "/creators-educators",
+          "linkLabel": "Explore reviewed education workflows"
         }
       ]
     },
     "grow-stores": {
       "eyebrow": "For grow stores",
       "title": "Products, education, and community in one public presence",
-      "intro": "Build a storefront for eligible products, publish courses and live education, and connect helpful content to community conversations.",
+      "intro": "Show customers the offer you have reviewed, with its description, price, and supported next step. Keep owner drafts, published products, and the customer's buying or download experience distinct.",
+      "primaryAction": {
+        "href": "/pricing",
+        "label": "See Commercial pricing"
+      },
+      "demoAction": {
+        "href": "/demo?story=seller",
+        "label": "See the seller workflow"
+      },
       "sections": [
         {
           "title": "Storefront",
-          "body": "Organize product lines, product pages, links, inventory context, and public brand information."
+          "body": "Organize product lines, product pages, links, inventory context, and public brand information. Review the saved public presentation and publish when ready. Storefront Offers keeps downloadable offers in a separate draft-and-publish workflow. The example above shows owner controls, not a live shopping cart."
         },
         {
           "title": "Education",
-          "body": "Turn product knowledge into courses, live sessions, and reusable grow guidance."
+          "body": "Explain how a product fits a growing workflow through reviewed courses or live education. Use Forum Q&A for customer questions and Feed campaigns for reviewed promotions. Keep supporting trial records connected, and qualify claims to the evidence you actually have.",
+          "href": "/creators-educators",
+          "linkLabel": "See the creator workflow"
         },
         {
-          "title": "Responsible publishing",
-          "body": "Moderation and product rules help keep prohibited sales language and inappropriate content out of public spaces."
+          "title": "What is needed before a customer can buy?",
+          "body": "Complete seller payment setup and the product's price, publication, and delivery requirements. A paid download needs an active private file you own. Publishing alone does not verify payment readiness or permit every transaction; product and buyer eligibility still apply."
+        },
+        {
+          "title": "Commercial plan fit",
+          "body": "Commercial is $50/month or $500/year, with 50 grows, 500 plants, and 500 AI credits each week alongside storefront and creator workflows. Sales, earnings, and customer demand are not guaranteed."
         }
       ]
     },
     "creators-educators": {
       "eyebrow": "For creators and educators",
       "title": "Publish courses on every plan",
-      "intro": "All users can create and publish free or paid courses. Paid plans add higher limits and advanced creator tools.",
+      "intro": "Give learners a course they can follow and viewers a place to find your sessions. All users can create and publish free or paid courses within plan limits; Commercial adds business and storefront workflows.",
+      "primaryAction": {
+        "href": "/pricing",
+        "label": "Compare creator plan limits"
+      },
+      "demoAction": {
+        "href": "/demo?story=creator",
+        "label": "See the creator workflow"
+      },
       "sections": [
         {
           "title": "Build from real work",
-          "body": "Use grow timelines, logs, photos, recipes, tool results, and forum answers as course source material."
+          "body": "Use grow timelines, logs, photos, recipes, tool results, and forum answers you own or have permission to share as course source material. Prepare a private draft, add lessons, and review the learner-facing preview before publishing. Selecting a private grow record never publishes it automatically."
         },
         {
           "title": "Teach live",
-          "body": "Schedule live sessions, add stream links, notify learners, and place sessions on calendars."
+          "body": "Schedule and explicitly publish a session so eligible viewers can RSVP and use in-app reminders. For GrowPath-hosted broadcasts, use OBS or another compatible encoder for cameras, microphones, and scenes; GrowPath provides the session, player, and chat. Check your hosting allowance and setup before broadcasting."
         },
         {
-          "title": "Grow an audience",
-          "body": "Connect courses, live sessions, community answers, and public creator pages in one learning experience."
+          "title": "What must be ready before publication?",
+          "body": "For lessons with video, review media rights, availability, captions or transcript status, a written learner summary, and a fallback link. Video is optional; text lessons are supported too. Paid courses also need a positive saved price and verified seller payment readiness. A course preview does not purchase or enroll a learner."
+        },
+        {
+          "title": "When does Commercial fit?",
+          "body": "Choose Commercial when your teaching also needs storefront and business records: $50/month or $500/year, with 50 grows, 500 plants, and 500 weekly AI credits. Compare course, lesson, and hosting limits before choosing.",
+          "href": "/commercial-cultivation",
+          "linkLabel": "Explore the Commercial plan's workflows"
         }
       ]
     },
@@ -285,6 +369,10 @@
       "eyebrow": "Choosing a grow journal app",
       "title": "Keep the details you will want next run",
       "intro": "A useful grow journal puts feeds, photos, readings, and completed work in order. Start with the records you already keep, then choose an app that makes them easier to find and use.",
+      "demoAction": {
+        "href": "/demo?story=pro",
+        "label": "See the Pro grow-record workflow"
+      },
       "sections": [
         {
           "title": "Put a date and a grow on each observation",

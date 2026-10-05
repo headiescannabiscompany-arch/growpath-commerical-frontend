@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const demo = require("../src/components/marketing/syntheticGrowDemo.json");
 const audiences = require("../src/components/marketing/demoAudiences.json");
+const demoStories = require("../src/components/marketing/demoStories.json");
 const screenshots = require("../src/components/marketing/productScreenshots.json");
 const {
   publicMarketingMarkup,
@@ -19,7 +20,10 @@ test("no-signup demo includes all synthetic entries without JavaScript or privat
   assert.ok(html.includes(demo.disclosure));
   for (const event of demo.events) assert.ok(html.includes(event.summary));
   assert.ok(html.includes(demo.photoAlt));
-  assert.doesNotMatch(html, /growId=|token=|api\/grows|customer testimonial/i);
+  assert.doesNotMatch(
+    html.replaceAll("not a customer testimonial", ""),
+    /growId=|token=|api\/grows|customer testimonial/i
+  );
 });
 test("all demo roles have readable static highlights, labeled images and no baked testimonials", () => {
   const html = publicMarketingMarkup("demo");
@@ -36,12 +40,235 @@ test("all demo roles have readable static highlights, labeled images and no bake
   }
   assert.doesNotMatch(html, /Feedback from growers|test-public-feedback|aggregateRating/);
 });
-test("public acquisition pages offer the preview before registration", () => {
-  for (const route of ["", "features", "personal-grower", "pricing", "grow-journal-app"])
+test("all five shared stories and their scenes are readable without JavaScript", () => {
+  const html = publicMarketingMarkup("demo");
+  const escape = (value) =>
+    String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  assert.deepEqual(Object.keys(demoStories), [
+    "free",
+    "pro",
+    "seller",
+    "creator",
+    "facility"
+  ]);
+  assert.ok(html.includes("Five stories use four account types"));
+  assert.ok(html.includes("Screenshot controls are not interactive."));
+  const sections =
+    html.match(
+      /<section class="marketing-card" id="demo-story-[^>]+>[\s\S]*?<\/section>/g
+    ) || [];
+  assert.equal(sections.length, 5);
+  for (const [id, story] of Object.entries(demoStories)) {
+    const section = sections.find((value) =>
+      value.includes('id="demo-story-' + id + '"')
+    );
+    assert.ok(section);
+    assert.equal(story.id, id);
+    assert.ok(html.includes('href="#demo-story-' + id + '"'));
+    for (const value of [story.title, story.description, story.result, story.limits]) {
+      assert.ok(section.includes(escape(value)), id + " includes its shared narrative");
+    }
     assert.ok(
-      publicMarketingMarkup(route).includes('href="/demo">Try the sample journal')
+      section.includes('href="' + story.ctaHref + '">' + escape(story.ctaLabel) + "</a>")
+    );
+    assert.equal((section.match(/<li>/g) || []).length, story.scenes.length);
+    assert.ok(story.scenes.length >= 2 && story.scenes.length <= 6);
+    story.scenes.forEach((scene, index) => {
+      assert.ok(
+        section.includes(
+          "Step " +
+            (index + 1) +
+            " of " +
+            story.scenes.length +
+            ": " +
+            escape(scene.title)
+        )
+      );
+      assert.ok(section.includes(escape(scene.body)));
+      assert.ok(
+        section.includes("<figcaption>" + escape(scene.caption) + "</figcaption>")
+      );
+      const image = '<img src="' + scene.image + '"';
+      assert.ok(section.indexOf(escape(scene.caption)) < section.indexOf(image));
+      assert.ok(section.includes('alt="' + escape(scene.alt) + '"'));
+      assert.ok(
+        section.includes(
+          'width="' +
+            scene.width +
+            '" height="' +
+            scene.height +
+            '" loading="lazy" decoding="async"'
+        )
+      );
+      assert.ok(
+        section.includes(
+          'href="' +
+            scene.image +
+            '">Open full-size screenshot: ' +
+            escape(scene.title) +
+            "</a>"
+        )
+      );
+    });
+  }
+  assert.doesNotMatch(
+    html,
+    /<script|<iframe|<form|onload=|onclick=|aggregateRating|Feedback from growers/i
+  );
+});
+test("story links use only fixed public enums and keep one demo document", () => {
+  const html = publicMarketingMarkup("demo");
+  const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+  const storyLinks = hrefs.filter((href) => href.startsWith("/demo"));
+  assert.deepEqual(
+    [...new Set(storyLinks)],
+    [
+      "/demo",
+      "/demo?story=pro",
+      "/demo?story=seller",
+      "/demo?story=creator",
+      "/demo?story=facility"
+    ]
+  );
+  for (const href of storyLinks) {
+    const url = new URL(href, "https://growpathai.com");
+    assert.equal(url.pathname, "/demo");
+    assert.equal(url.hash, "");
+    assert.ok([...url.searchParams.keys()].every((key) => key === "story"));
+  }
+  for (const story of Object.values(demoStories)) {
+    assert.ok(
+      [
+        "/register",
+        "/pricing",
+        "/grow-stores",
+        "/creators-educators",
+        "/facility-management"
+      ].includes(story.ctaHref)
+    );
+  }
+  for (const value of [
+    "demo?story=pro",
+    "demo?story=pro&token=private",
+    "demo?story=constructor"
+  ]) {
+    assert.equal(publicMarketingMarkup(value), null);
+  }
+  assert.deepEqual(marketingSchema("demo"), []);
+  assert.doesNotMatch(
+    html,
+    /rel="canonical"|growId=|recordId=|token=|referrer=|utm_|\/api\/|\/home\/|qa\.invalid|[a-f0-9]{24}/i
+  );
+});
+test("every story uses existing bounded public synthetic screenshots", () => {
+  const seenImages = new Set();
+  for (const story of Object.values(demoStories)) {
+    for (const scene of story.scenes) {
+      assert.match(scene.image, /^\/images\/synthetic-story-[a-z0-9-]+\.jpg$/);
+      assert.match(scene.caption, /synthetic|invented/i);
+      assert.ok(scene.alt.length > 20);
+      assert.ok(Number.isInteger(scene.width) && scene.width > 0 && scene.width <= 4096);
+      assert.ok(
+        Number.isInteger(scene.height) && scene.height > 0 && scene.height <= 4096
+      );
+      const bytes = fs.readFileSync(path.join(__dirname, "../public", scene.image));
+      assert.deepEqual([...bytes.subarray(0, 3)], [255, 216, 255]);
+      assert.ok(bytes.length > 1000, "story scene must have an actual image");
+      seenImages.add(scene.image);
+    }
+  }
+  assert.equal(seenImages.size, 14);
+});
+test("story prose is escaped and destination enums never come from supplied record fields", () => {
+  const originalTitle = demoStories.free.title;
+  const originalId = demoStories.free.id;
+  try {
+    demoStories.free.title = '<script>alert("unsafe")</script> & story';
+    demoStories.free.id = "free&token=private";
+    demoStories.unreviewed = { title: "Unreviewed extra story" };
+    const html = publicMarketingMarkup("demo");
+    assert.ok(
+      html.includes("&lt;script&gt;alert(&quot;unsafe&quot;)&lt;/script&gt; &amp; story")
+    );
+    assert.doesNotMatch(html, /<script|free&token=|Unreviewed extra story/);
+    assert.ok(html.includes('id="demo-story-free"'));
+  } finally {
+    demoStories.free.title = originalTitle;
+    demoStories.free.id = originalId;
+    delete demoStories.unreviewed;
+  }
+});
+test("public acquisition pages offer the preview before registration", () => {
+  for (const [route, href, label] of [
+    ["", "/demo", "Try the sample journal"],
+    ["features", "/demo", "Try the sample journal"],
+    ["personal-grower", "/demo?story=free", "See the Free plant journal"],
+    ["pricing", "/demo", "Try the sample journal"],
+    ["grow-journal-app", "/demo?story=pro", "See the Pro grow-record workflow"]
+  ])
+    assert.ok(
+      publicMarketingMarkup(route).includes(
+        '<a class="secondary" href="' + href + '">' + label + "</a>"
+      )
     );
   assert.ok(publicMarketingMarkup("about").includes('href="/features">Explore features'));
+});
+test("audience crawler CTAs and explanations match the reviewed public page copy", () => {
+  const escape = (text) =>
+    text
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  for (const [route, story, label] of [
+    ["personal-grower", "free", "See the Free plant journal"],
+    ["grow-journal-app", "pro", "See the Pro grow-record workflow"],
+    ["commercial-cultivation", "seller", "See the seller workflow"],
+    ["grow-stores", "seller", "See the seller workflow"],
+    ["creators-educators", "creator", "See the creator workflow"],
+    ["facility-management", "facility", "See the Facility team workflow"],
+    ["nurseries-breeders", "facility", "See shared team records"]
+  ]) {
+    const copy = marketing.pages[route];
+    const html = publicMarketingMarkup(route);
+    const hero = html.match(/<header\b[^>]*>[\s\S]*?<\/header>/)?.[0];
+    assert.ok(hero);
+    assert.deepEqual(copy.demoAction, { href: "/demo?story=" + story, label });
+    assert.ok(
+      hero.includes(
+        '<a class="secondary" href="/demo?story=' + story + '">' + label + "</a>"
+      )
+    );
+    const primary = copy.primaryAction ?? {
+      href: "/register",
+      label: "Create free account"
+    };
+    assert.ok(
+      hero.includes(
+        '<a class="primary" href="' +
+          escape(primary.href) +
+          '">' +
+          escape(primary.label) +
+          "</a>"
+      )
+    );
+    assert.ok(hero.includes(escape(copy.intro)));
+    for (const section of copy.sections) {
+      assert.ok(html.includes("<h2>" + escape(section.title) + "</h2>"));
+      assert.ok(html.includes(escape(section.body)));
+      if (section.href)
+        assert.ok(
+          html.includes(
+            '<a href="' + escape(section.href) + '">' + escape(section.linkLabel) + "</a>"
+          )
+        );
+    }
+    assert.doesNotMatch(hero, /growId=|recordId=|token=|utm_|\/home\//i);
+  }
 });
 test("actual screenshot has an explicit synthetic caption and is not an empty placeholder", () => {
   for (const route of ["", "features", "personal-grower"]) {
@@ -61,7 +288,7 @@ test("crawler markup and displayed content use one copy source and one h1", () =
     assert.ok(html.includes('href="/pricing"'));
   }
 });
-test("reviewed product images have matching public captions, alt text and real JPEG assets", () => {
+test("reviewed product images have matching public captions, alt text and real JPEG or PNG assets", () => {
   for (const shot of screenshots) {
     for (const route of shot.pages) {
       const html = publicMarketingMarkup(route);
@@ -71,7 +298,13 @@ test("reviewed product images have matching public captions, alt text and real J
       assert.ok(html.indexOf(shot.caption) < html.indexOf('src="' + shot.image + '"'));
     }
     const bytes = fs.readFileSync(path.join(__dirname, "../public", shot.image));
-    assert.deepEqual([...bytes.subarray(0, 3)], [255, 216, 255]);
+    const signatures = {
+      ".jpg": [255, 216, 255],
+      ".png": [137, 80, 78, 71, 13, 10, 26, 10]
+    };
+    const signature = signatures[path.extname(shot.image)];
+    assert.ok(signature, "reviewed screenshots must use a supported image format");
+    assert.deepEqual([...bytes.subarray(0, signature.length)], signature);
     assert.ok(bytes.length > 10000);
     assert.match(shot.caption, /synthetic/i);
   }
@@ -79,6 +312,32 @@ test("reviewed product images have matching public captions, alt text and real J
     assert.ok(!publicMarketingMarkup(route).includes(screenshots[0].image));
     assert.ok(!publicMarketingMarkup(route).includes(screenshots[1].image));
   }
+});
+test("Commercial crawler pages use Commercial offers evidence instead of Facility imagery", () => {
+  const commercial = screenshots.find((shot) => shot.id === "commercial");
+  const facility = screenshots.find((shot) => shot.id === "facility");
+  assert.ok(commercial && facility);
+  for (const route of ["commercial-cultivation", "grow-stores"]) {
+    const html = publicMarketingMarkup(route);
+    assert.ok(html.includes('src="' + commercial.image + '"'));
+    assert.ok(html.includes(commercial.caption));
+    assert.match(
+      commercial.caption,
+      /synthetic QA fixtures, not real sales, customer reviews/
+    );
+    assert.ok(
+      html.includes(
+        '<a href="' +
+          commercial.image +
+          '">Open full-size Commercial offers screenshot</a>'
+      )
+    );
+    assert.ok(
+      html.includes('width="' + commercial.width + '" height="' + commercial.height + '"')
+    );
+    assert.ok(!html.includes(facility.image));
+  }
+  assert.ok(publicMarketingMarkup("facility-management").includes(facility.image));
 });
 test("all four actual monthly offers are represented without fake reviews", () => {
   for (const route of ["", "pricing"]) {

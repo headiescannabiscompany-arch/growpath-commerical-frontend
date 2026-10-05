@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { Link } from "expo-router";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import {
   Platform,
   Pressable,
@@ -15,16 +15,31 @@ import { useAppTheme } from "@/theme/appTheme";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { sharePublicLink } from "@/utils/publicLinks";
 import DemoExplorer from "@/components/marketing/DemoExplorer";
+import DemoWalkthrough, {
+  type DemoWalkthroughStory
+} from "@/components/marketing/DemoWalkthrough";
+import demoStories from "@/components/marketing/demoStories.json";
 import PublicTestimonials from "@/components/marketing/PublicTestimonials";
+import { demoStoryPath, parseDemoStory, type DemoStoryId } from "@/utils/demoStoryLink";
 
 // This route never accepts a grow ID, token or supplied record. All examples are
 // bundled synthetic fixtures; private grow access continues through its own routes.
 export default function PublicGrowDemo() {
+  const router = useRouter();
+  const params = useLocalSearchParams<{ story?: string | string[] }>();
+  const story = parseDemoStory(params.story);
+  const storyPath = demoStoryPath(story);
+  const walkthrough = demoStories[story];
+  const currentStory = useRef(story);
   const { palette } = useAppTheme();
   const { width } = useWindowDimensions();
   const styles = useMemo(() => createPublicLandingStyles(palette), [palette]);
   const [list, setList] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
+  useEffect(() => {
+    currentStory.current = story;
+    setShareStatus("");
+  }, [story]);
   const events = useMemo(
     () =>
       demo.events.map((event) => ({
@@ -36,16 +51,24 @@ export default function PublicGrowDemo() {
     []
   );
   const compact = width < 600;
+  function selectStory(nextStory: DemoStoryId) {
+    if (nextStory === story) return;
+    setShareStatus("");
+    // Rebuild the destination: no incoming IDs, tokens, tracking or referrer data.
+    router.push(demoStoryPath(nextStory) as never);
+  }
   async function share() {
     try {
       const result = await sharePublicLink(
         "GrowPathAI — synthetic grow journal demo",
-        "/demo"
+        storyPath
       );
+      if (currentStory.current !== story) return;
       setShareStatus(
         result.method === "web-clipboard" ? "Demo link copied." : "Share options opened."
       );
     } catch {
+      if (currentStory.current !== story) return;
       setShareStatus(
         "Sharing was canceled or unavailable. You can copy the demo address below."
       );
@@ -83,8 +106,17 @@ export default function PublicGrowDemo() {
         </Text>
         <Text style={styles.intro}>{demo.description}</Text>
       </View>
-      <DemoExplorer />
-      <View style={styles.card}>
+      <DemoExplorer story={story} onStoryChange={selectStory} showScreenshot={false} />
+      <DemoWalkthrough story={walkthrough as DemoWalkthroughStory} />
+      <View style={styles.actions}>
+        <Link href={walkthrough.ctaHref as never} style={styles.primary}>
+          {walkthrough.ctaLabel}
+        </Link>
+      </View>
+      <View
+        testID="demo-journal-card"
+        style={[styles.card, { flexBasis: "auto", flexGrow: 0 }]}
+      >
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           {demo.growTitle}
         </Text>
@@ -97,6 +129,7 @@ export default function PublicGrowDemo() {
           <Pressable
             accessibilityRole="button"
             accessibilityState={{ selected: !list }}
+            aria-pressed={!list}
             onPress={() => setList(false)}
             style={styles.secondary}
           >
@@ -105,6 +138,7 @@ export default function PublicGrowDemo() {
           <Pressable
             accessibilityRole="button"
             accessibilityState={{ selected: list }}
+            aria-pressed={list}
             onPress={() => setList(true)}
             style={styles.secondary}
           >
@@ -114,7 +148,11 @@ export default function PublicGrowDemo() {
       </View>
       {list ? (
         events.map((event) => (
-          <View key={event.id} style={styles.card}>
+          <View
+            key={event.id}
+            testID={`demo-entry-${event.id}`}
+            style={[styles.card, { flexBasis: "auto", flexGrow: 0 }]}
+          >
             <Text style={styles.cardBody}>{fmtDate(event.timestamp)}</Text>
             <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
               {event.title}
@@ -125,17 +163,23 @@ export default function PublicGrowDemo() {
       ) : (
         <GrowTimelineFlow events={events} />
       )}
-      <View style={styles.card}>
+      <View
+        testID="demo-next-step-card"
+        style={[styles.card, { flexBasis: "auto", flexGrow: 0 }]}
+      >
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Ready to start your own journal?
+          {story === "free"
+            ? "Ready to start your own journal?"
+            : "Choose your next step"}
         </Text>
         <Text style={styles.cardBody}>
-          Start with your own grow, then add your notes and photos. Free account. No
-          payment card required.
+          {story === "free"
+            ? "Start with your own grow, then add your notes and photos. Free account. No payment card required."
+            : "Review the plan and setup for the work you want to do. This demo does not create an account, change your plan or start a purchase."}
         </Text>
         <View style={styles.actions}>
-          <Link href="/register" style={styles.primary}>
-            Create free account
+          <Link href={walkthrough.ctaHref as never} style={styles.primary}>
+            {story === "free" ? "Create free account" : walkthrough.ctaLabel}
           </Link>
           <Pressable
             accessibilityRole="button"
@@ -148,8 +192,8 @@ export default function PublicGrowDemo() {
         <Text accessibilityLiveRegion="polite" style={styles.cardBody}>
           {shareStatus}
         </Text>
-        <Link href="/demo" style={styles.navigationLink}>
-          Demo address: growpathai.com/demo
+        <Link href={storyPath as never} style={styles.navigationLink}>
+          Demo address: growpathai.com{storyPath}
         </Link>
       </View>
       <PublicTestimonials />
