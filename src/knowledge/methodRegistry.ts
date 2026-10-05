@@ -1145,6 +1145,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ["commercial records", "verified claims"],
     [
       "linked workflow",
+      "Shared Grow Interest checkboxes expose current checked/expanded state on web and native; web Space toggles once without scrolling while Enter/pointer retain the normal press path. Preserve other tiers and available options; selection changes only the form until its existing save, never account preferences or access/content-visibility rules.",
       "Commercial Brand Profile summaries and public links use saved records, with canonical isPublished before legacy status. Unknown reads withhold editing/Save; single-flight Retry restores saved data, writes lock fields and preserve failed drafts, confirmed save and refresh failure remain distinct, and stale completions are ignored without changing publication, payout or privacy rules.",
       "Commercial Tasks keeps pending/failed initial counts unknown and withholds false empty sections. Single-flight read-only Retry preserves the unfinished form; failed later pages retain earlier tasks and retry the same offset. Post-write read errors remain separate from success feedback, label retained records, and supersede earlier reads. Ignore unmounted results without changing task payloads, scheduling, completion or source links.",
       "Commercial Product detail editing and contextual tools require a successfully loaded saved scalar identity matching the requested product. Pending, missing, malformed, mismatched or superseded reads withhold blank Save/Publish and invented draft/readiness state; initial failure provides safe returns and single-flight read-only Retry. Ignore late unmounted/navigation reads without changing payloads, prices, publication or permissions.",
@@ -1351,6 +1352,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ["facility scope", "roles", "rooms", "telemetry"],
     [
       "scoped actions",
+      "Shared Grow Interest checked/expanded state follows the current form value and keyboard/pointer input toggles once; unsaved course interests remain local until explicit draft save without account-preference, permission or publication changes.",
       "audit links",
       "forum tasks and alerts",
       "moderation audit",

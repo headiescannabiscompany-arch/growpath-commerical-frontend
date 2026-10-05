@@ -2,6 +2,13 @@
 
 ## Public shopping navigation
 
+Shared Grow Interest choices expose their current checked state on web and native,
+and the collapsible picker exposes its expanded state. Web Space toggles a focused
+choice once per press without scrolling; Enter and pointer input retain the normal
+press path. Preserve all other tier selections and existing available options.
+These controls change only the current form value until its existing save action;
+they do not save profile preferences or change access/content-visibility rules.
+
 Grow-specific Commercial task queues follow the shared grow-history read-recovery
 rule: failed reads are not empty lists, Retry is read-only, failed post-write
 refreshes label previous tasks separately from successful writes, and late

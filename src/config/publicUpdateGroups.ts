@@ -183,7 +183,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     status: "progress",
     scope:
       "One gap-based review across visitors, personal users, sellers, Facility roles and Admin.",
-    live: "Finished corrections are grouped in their own milestones. Existing passed tests are reused rather than treating every feature as unfinished again.",
+    live: "Finished corrections are grouped in their own milestones. Grow-interest choices now report their checked state and support Space-key selection. Existing passed tests are reused rather than treating every feature as unfinished again.",
     next: "Finish the genuinely uncovered journeys, responsive and accessibility checks, role boundaries and final owner walkthrough. This is not a claim that the whole app is complete.",
     entryIds: [
       "facility-dashboard-readiness",

@@ -24,6 +24,22 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("groups grow-interest accessibility with app review without claiming full completion", () => {
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "forum-share-readiness"
+    );
+    expect(note?.summary).toContain("checked and expanded states");
+    expect(note?.summary).toContain(
+      "Space toggles a focused choice once without scrolling"
+    );
+    expect(note?.summary).toContain(
+      "Other selected interests and existing Save actions are unchanged"
+    );
+    const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "app-review");
+    expect(group?.status).toBe("progress");
+    expect(group?.live).toContain("Space-key selection");
+  });
+
   it("groups the Forum participation fix without closing broader app acceptance", () => {
     const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
       (entry) => entry.id === "forum-share-readiness"

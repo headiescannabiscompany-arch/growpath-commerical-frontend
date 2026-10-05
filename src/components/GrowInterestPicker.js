@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { INTEREST_TIERS } from "../config/interests";
 import {
   buildEmptyTierSelection,
@@ -78,6 +78,7 @@ export default function GrowInterestPicker({
           collapsible ? `${expanded ? "Collapse" : "Expand"} ${title}` : undefined
         }
         accessibilityState={collapsible ? { expanded } : undefined}
+        aria-expanded={collapsible ? expanded : undefined}
       >
         <View style={{ flex: 1 }}>
           <Text
@@ -139,6 +140,18 @@ export default function GrowInterestPicker({
                         accessibilityRole="checkbox"
                         accessibilityLabel={`Toggle grow interest ${option}`}
                         accessibilityState={{ checked: Boolean(active) }}
+                        aria-checked={Boolean(active)}
+                        {...(Platform.OS === "web"
+                          ? {
+                              // RNW handles Enter/pointer presses but not Space for checkbox roles.
+                              onKeyDownCapture: (event) => {
+                                if (event.key !== " " && event.key !== "Spacebar") return;
+                                event.preventDefault();
+                                event.stopPropagation();
+                                if (!event.repeat) handleToggle(tier.id, option);
+                              }
+                            }
+                          : {})}
                       >
                         <Text style={[styles.chipText, active && styles.chipTextActive]}>
                           {option}

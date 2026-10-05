@@ -1,5 +1,11 @@
 # Facility Workflow
 
+The shared Grow Interest picker follows the Commercial workflow accessibility
+contract: checked/expanded state matches the current form value, and Space, Enter
+and pointer input toggle once. Unsaved course-interest choices remain local until
+the existing explicit draft save; no account preference, permission or publication
+changes are implied by selecting a checkbox.
+
 Shared Forum participation uses the individual's canonical effective plan, separately from the selected Facility subscription and membership role. An active Facility does not grant shared Forum posting to a Free/expired member, and an inactive Facility does not remove a paid individual's shared Forum access. This separation must not change Facility operational permissions, internal content visibility, limits or server authorization.
 
 Facility Saved AI Runs follows the shared history read-recovery boundary: scoped
