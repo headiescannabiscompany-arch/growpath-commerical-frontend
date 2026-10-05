@@ -107,8 +107,10 @@ function xShareSummary(title: string, previewUrl: string, details: PublicShareDe
     .map((value) => String(value || "").trim())
     .filter(Boolean);
   const summary = parts.join(" — ");
+  // The hosted X intent composer inserts a separator and a trailing space.
+  // Budget both; an exact 280-character text+URL otherwise arrives as 281.
   const fits = (text: string) =>
-    parseTweet(`${text} ${previewUrl}`).weightedLength <= 280;
+    parseTweet(`${text} ${previewUrl} `).weightedLength <= 280;
   if (fits(summary)) return summary;
 
   let prefix = "";

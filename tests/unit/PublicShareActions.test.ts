@@ -107,8 +107,8 @@ describe("X share prefill weighted limit", () => {
     expect(intent.searchParams.has("hashtags")).toBe(false);
     const text = intent.searchParams.get("text")!;
     // Validate the actual composed tweet, including the separately supplied URL
-    // and separator, with X's official weighting rather than JS string length.
-    const parsed = parseTweet(`${text} ${intent.searchParams.get("url")}`);
+    // and observed separator/trailing space, with X's official weighting.
+    const parsed = parseTweet(`${text} ${intent.searchParams.get("url")} `);
     expect(parsed.valid).toBe(true);
     expect(parsed.weightedLength).toBeLessThanOrEqual(280);
     return { text, parsed, targets };
@@ -124,15 +124,26 @@ describe("X share prefill weighted limit", () => {
   });
 
   it("retains a complete prefill at exactly 280 weighted characters", () => {
-    const description = "a".repeat(248);
+    const description = "a".repeat(247);
     const result = xShare("Title", { description });
     expect(result.text).toBe(`Title — ${description}`);
     expect(result.parsed.weightedLength).toBe(280);
   });
 
+  it("reserves X's observed trailing space for the hosted synthetic discussion", () => {
+    const result = xShare(title, {
+      description:
+        "Synthetic staging-only acceptance discussion for the Facility course-to-Q&A link. This fixture tests navigation from a free Facility-only course to this public vegetable discussion. It contains no customer information, real training, product promotion, or plant-care recommendation. No replies are needed."
+    });
+    expect(result.text.startsWith(title)).toBe(true);
+    expect(result.text.endsWith("…")).toBe(true);
+    expect(result.parsed.weightedLength).toBe(280);
+    expect(parseTweet(`${result.text} ${preview}`).weightedLength).toBe(279);
+  });
+
   it("truncates a prefill one weighted character over the boundary", () => {
-    const description = "a".repeat(249);
-    expect(parseTweet(`Title — ${description} ${preview}`).weightedLength).toBe(281);
+    const description = "a".repeat(248);
+    expect(parseTweet(`Title — ${description} ${preview} `).weightedLength).toBe(281);
     const result = xShare("Title", { description });
     expect(result.text.startsWith("Title")).toBe(true);
     expect(result.text).not.toBe(`Title — ${description}`);
@@ -172,7 +183,7 @@ describe("X share prefill weighted limit", () => {
     const result = xShare("Title", { description });
     expect(result.text).toBe(`Title — ${description}`);
     expect(result.text.length).toBeGreaterThan(280);
-    expect(result.parsed.weightedLength).toBe(272);
+    expect(result.parsed.weightedLength).toBe(273);
   });
 
   it("truncates an over-limit ZWJ sequence only between complete emoji", () => {
@@ -185,7 +196,7 @@ describe("X share prefill weighted limit", () => {
   });
 
   it("keeps fitting combining sequences intact at the weighted boundary", () => {
-    const description = "e\u0301".repeat(248);
+    const description = "e\u0301".repeat(247);
     const result = xShare("Title", { description });
     expect(result.text.normalize("NFC")).toBe(`Title — ${description}`.normalize("NFC"));
     expect(result.parsed.weightedLength).toBe(280);
@@ -227,7 +238,7 @@ describe("X share prefill weighted limit", () => {
   );
 
   it("counts hashtag text normally and retains it unchanged when exactly fitting", () => {
-    const description = `#${"a".repeat(247)}`;
+    const description = `#${"a".repeat(246)}`;
     const result = xShare("Title", { description });
     expect(result.text).toBe(`Title — ${description}`);
     expect(result.parsed.weightedLength).toBe(280);
@@ -242,8 +253,8 @@ describe("X share prefill weighted limit", () => {
   });
 
   it.each([
-    { heading: "A".repeat(256), priceLabel: undefined },
-    { heading: "A".repeat(247), priceLabel: "$49.00" }
+    { heading: "A".repeat(255), priceLabel: undefined },
+    { heading: "A".repeat(246), priceLabel: "$49.00" }
   ])(
     "preserves an exactly fitting title/price before description (price $priceLabel)",
     ({ heading, priceLabel }) => {
