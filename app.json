@@ -20,6 +20,7 @@
       "icon": "./assets/icon.png",
       "buildNumber": "1",
       "infoPlist": {
+        "com.posthog.posthog.CAPTURE_PUSH_NOTIFICATION_OPENED": false,
         "NSPhotoLibraryUsageDescription": "GrowPath needs access to your photo library to let you upload grow photos, diagnose plant issues, and share your growing journey.",
         "NSCameraUsageDescription": "GrowPath needs access to your camera to take photos of your plants for tracking growth and diagnosing issues.",
         "NSPhotoLibraryAddUsageDescription": "GrowPath needs permission to save photos to your library.",

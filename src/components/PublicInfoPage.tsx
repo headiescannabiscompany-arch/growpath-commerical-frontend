@@ -14,13 +14,15 @@ type PublicInfoPageProps = {
   updated?: string;
   intro: string;
   sections: Section[];
+  children?: React.ReactNode;
 };
 
 export default function PublicInfoPage({
   title,
   updated,
   intro,
-  sections
+  sections,
+  children
 }: PublicInfoPageProps) {
   const { palette } = useAppTheme();
   const styles = createPublicInfoPageStyles(palette);
@@ -48,6 +50,7 @@ export default function PublicInfoPage({
             <Text style={styles.body}>{section.body}</Text>
           </View>
         ))}
+        {children}
       </View>
     </ScrollView>
   );

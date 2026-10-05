@@ -17,6 +17,7 @@ import { RouteAccessGuard } from "../navigation/RouteAccessGuard";
 import { initMonitoring, wrapWithMonitoring } from "@/utils/monitoring";
 import { useNotificationDeepLinks } from "@/notifications/useNotificationDeepLinks";
 import { applyPublicRouteMetadata } from "@/seo/publicRouteMetadata";
+import { MobileAnalyticsBoundary } from "@/analytics/MobileAnalytics";
 
 enableScreens(true);
 initUnauthorizedHandler();
@@ -94,7 +95,9 @@ function RootLayout() {
           <SessionProvider>
             <EntitlementsProvider>
               <FacilityProvider>
-                <RootShell />
+                <MobileAnalyticsBoundary>
+                  <RootShell />
+                </MobileAnalyticsBoundary>
               </FacilityProvider>
             </EntitlementsProvider>
           </SessionProvider>
