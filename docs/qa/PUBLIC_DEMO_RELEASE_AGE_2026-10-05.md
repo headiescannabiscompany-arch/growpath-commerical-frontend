@@ -1,5 +1,10 @@
 # W08 — account-type demo, genuine feedback placement and release age
 
+**CLOSED / LIVE — October 5, 2026.** Final frontend revision
+`80f49b1a7dbafca8a6cdcabdcd9823353090eb0b`; production
+`dep-db1r0m8u01pc73fmrsq0` LIVE at 14:15:00Z. Earlier OPEN statements below
+record the caught defect, not current status.
+
 Owner-requested follow-up, not an invented HeyCatch audit finding. Scope: public
 demo only, plus relative dates on Updates; no signed-in workflow, plan, billing,
 credential, private analytics or account changes.
@@ -42,7 +47,7 @@ Staging revision `7c837f03777a9d2030ce5e701ee923ac9fd5390b`, deploy
 selections, correct image dimensions/loaded pixels, full-size/public-role link
 destinations and explicit limits verified. At 375×812 both demo and Updates have
 document width 375 (no horizontal overflow). Pro selection works by Enter; ordinary
-Chrome clicks switch the five-entry list correctly. Share opened the Chrome handoff;
+Chrome clicks switch the five-entry list correctly. Chrome invoked the share handoff;
 Escape canceled it with the truthful canceled/unavailable fallback and fixed address
 remaining. No external social post was sent. IAB share is unavailable, also correctly
 labeled rather than claiming a copied link. Browser error logs empty. Empty public
@@ -60,6 +65,23 @@ Narrow correction: standalone demo card uses `flexBasis: auto; flexGrow: 0`, wit
 a regression assertion. Re-run hosted desktop and 375px containment checks for
 every role (last child inside card, next journal below card), then promote and
 replace the screenshot. No global card or theme changes.
+
+Correction `80f49b1a7dbafca8a6cdcabdcd9823353090eb0b` passed all 134 Jest tests,
+20 static tests, TypeScript/lint/diff checks. Staging `dep-db1qujcs728c73dpe0e0`
+LIVE October 5 14:10:27Z. All 8 role/viewport containment checks passed:
+desktop role cards 1301.6/1600/1745/1600px tall; 375px cards
+1247.3/1350.0/1446.9/1350.0px tall. Last child inside card and next journal below
+card in every case, no horizontal document overflow.
+
+Final canonical production `/demo` verified on the corrected deployment: all four
+roles passed vertical containment, journal placement and no-horizontal-overflow
+checks at both 1280px and 375px (8/8). Screenshot replaced with corrected production
+evidence: `outputs/W08_Production_Demo_2026-10-05.jpg` in the private workspace.
+Browser error log empty. Canonical `/updates` shows October 4 = 1 day and October 5
+= 0 days; Course gifts remains Not released yet without an age. No backend,
+customer records, billing settings, real quotes or external advertisements changed.
+Master TODO, execution pointer and dated plan reconciled; next is A05-08 plus the
+approved linked course-Q&A acceptance, not another W07/W08 pass.
 
 ## Browser acceptance checklist
 
