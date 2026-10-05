@@ -241,6 +241,54 @@ describe("LoginScreen email verification", () => {
     }
   );
 
+  it("returns an existing viewer to the exact video only after successful login", async () => {
+    const next = "/videos/6abec74c4b377597a8599928";
+    mockParams = { next };
+    mockLogin.mockResolvedValueOnce({ ok: true });
+    const screen = render(<LoginScreen />);
+    expect(mockReplace).not.toHaveBeenCalled();
+    fireEvent.changeText(screen.getByPlaceholderText("Email"), "viewer@example.com");
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Password"),
+      "synthetic-test-password"
+    );
+    fireEvent.press(screen.getByLabelText("Sign in"));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(next));
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("does not navigate to the video after failed login", async () => {
+    mockParams = { next: "/videos/6abec74c4b377597a8599928" };
+    mockLogin.mockRejectedValueOnce(
+      new ApiError("BAD_LOGIN", 401, { message: "Invalid email or password." })
+    );
+    const screen = render(<LoginScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText("Email"), "viewer@example.com");
+    fireEvent.changeText(screen.getByPlaceholderText("Password"), "wrong-password");
+    fireEvent.press(screen.getByLabelText("Sign in"));
+    await waitFor(() =>
+      expect(screen.getByText("Invalid email or password.")).toBeTruthy()
+    );
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("preserves video login recovery without expanding signup continuation", () => {
+    const next = "/videos/6abec74c4b377597a8599928";
+    mockParams = { next };
+    const screen = render(<LoginScreen />);
+    fireEvent.press(screen.getByLabelText("Forgot password"));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/forgot-password",
+      params: { next }
+    });
+    mockPush.mockClear();
+    fireEvent.press(screen.getByLabelText("Create account"));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: "/register", params: undefined });
+    expect(mockLogin).not.toHaveBeenCalled();
+  });
+
   it("returns a purchaser login to one validated checkout identity", async () => {
     const next =
       "/account/gift-checkout/cancel?checkout_attempt_id=123e4567-e89b-42d3-a456-426614174000";

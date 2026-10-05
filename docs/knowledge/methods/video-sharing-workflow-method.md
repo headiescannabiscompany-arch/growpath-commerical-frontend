@@ -102,6 +102,13 @@ engagement event contract exists.
 
 ## Discussion and creator continuity
 
+Signed-out viewers of a successfully loaded video have a named sign-in link beside
+the discussion. Carry only `/videos/<24 lowercase hex ID>` through existing-account
+login; reject query, fragment, alias, external and malformed return paths. Returning
+loads the video again under current access rules. It never posts, reports, follows,
+unlocks protected media or enables cannabis visibility. This login-only path does
+not widen shopper signup persistence or promise cross-device continuity.
+
 An accessible published video may have a threaded GrowPath discussion. Each comment keeps
 its author, parent comment, edit state, moderation state, and timestamps. The comment
 author may edit or remove their own visible comment. The video owner and authorized

@@ -944,6 +944,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "audited Admin hide, restore, cannabis-classification, close, and preservation controls for reported videos and video comments",
       "threaded video discussion with author editing and owner moderation",
       "creator profile continuity and canonical Follow actions",
+      "explicit signed-out discussion sign-in returning to the exact video under current access rules",
       "safe public Commercial storefront video previews"
     ],
     [

@@ -22,6 +22,31 @@ const SHARED_COURSE_PATH = `/courses?courseId=${COURSE_ID}`;
 const STOREFRONT_COURSE_PATH = `/store/growpathai/courses/${COURSE_ID}`;
 const PRODUCT_PATH = "/store/growpathai/products/6a90f76bf113936857750634";
 
+describe("video login return", () => {
+  const next = "/videos/6abec74c4b377597a8599928";
+  it("allows an exact saved video only for login, not shopper signup storage", () => {
+    expect(parseSafeLoginReturnPath(next)).toBe(next);
+    expect(safeLoginPath("", next)).toBe(`/login?next=${encodeURIComponent(next)}`);
+    expect(parseShopperSignupReturnPath(next)).toBe("");
+  });
+  it.each([
+    `${next}?commentId=123`,
+    `${next}#discussion`,
+    `${next}/`,
+    `${next}\n`,
+    ` ${next}`,
+    `https://growpathai.com${next}`,
+    `/${next}`,
+    [next],
+    next.toUpperCase(),
+    "/videos/name",
+    "/videos/../admin"
+  ])("rejects noncanonical video return %p", (value) => {
+    expect(parseSafeLoginReturnPath(value)).toBe("");
+    expect(safeLoginPath("", value)).toBe("/login");
+  });
+});
+
 describe("feedback login return", () => {
   it("allows only the exact feedback destination, not arbitrary redirects or signup carryover", () => {
     expect(parseSafeLoginReturnPath("/feedback")).toBe("/feedback");

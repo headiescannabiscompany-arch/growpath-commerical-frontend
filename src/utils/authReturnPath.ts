@@ -202,11 +202,21 @@ export function parseSafeLoginReturnPath(value: unknown): string {
   return (
     parsePublicProductReturnPath(value) ||
     parsePublicCourseReturnPath(value) ||
+    parseVideoLoginReturnPath(value) ||
     parseAuthReturnPath(value) ||
     parseClaimReturnPath(value) ||
     (value === "/feedback" ? "/feedback" : "") ||
     (value === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "")
   );
+}
+
+// Exact video detail only; login does not grant access or submit a discussion action.
+export function parseVideoLoginReturnPath(value: unknown): string {
+  return typeof value === "string" &&
+    value === value.trim() &&
+    /^\/videos\/[a-f0-9]{24}$/.test(value)
+    ? value
+    : "";
 }
 
 // Only canonical public product routes; no arbitrary redirect, query or fragment.

@@ -455,10 +455,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "video-library-readiness",
         title: "Clearer video library and detail recovery",
-        date: "October 2, 2026",
+        date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "Video libraries, individual videos and discussions now offer Retry when reads fail, without claiming zero storage or empty results. Account/workspace or video changes clear earlier content and unfinished forms; late responses cannot replace current results. Same-context retries preserve unfinished drafts. Upload, publication, sharing and access rules remain unchanged."
+          "Video libraries, individual videos and discussions now offer Retry when reads fail, without claiming zero storage or empty results. Account/workspace or video changes clear earlier content and unfinished forms; late responses cannot replace current results. Same-context retries preserve unfinished drafts. Signed-out viewers can choose Sign in to join the discussion and return to that video after successful login. Signing in does not post a comment or change who can access the video. Upload, publication, sharing and access rules remain unchanged."
       },
       {
         id: "forum-share-readiness",

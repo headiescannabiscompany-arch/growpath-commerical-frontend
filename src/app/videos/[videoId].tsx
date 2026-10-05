@@ -34,6 +34,7 @@ import { formatDuration } from "@/features/videos/videoPresentation";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
+import { safeLoginPath } from "@/utils/authReturnPath";
 
 export default function VideoDetailRoute() {
   const params = useLocalSearchParams<{ videoId?: string }>();
@@ -552,7 +553,18 @@ function ReadyVideoDetailRoute({ videoId }: { videoId: string }) {
                 </Pressable>
               </View>
             ) : (
-              <Text style={styles.emptyComments}>Sign in to join the discussion.</Text>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel="Sign in to join the discussion"
+                onPress={() =>
+                  router.push(safeLoginPath("", `/videos/${videoId}`) as any)
+                }
+                style={styles.commentAction}
+              >
+                <Text style={styles.commentActionText}>
+                  Sign in to join the discussion
+                </Text>
+              </Pressable>
             )}
           </AppCard>
         </>

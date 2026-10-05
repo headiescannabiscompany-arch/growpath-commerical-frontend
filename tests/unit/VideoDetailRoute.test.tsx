@@ -297,6 +297,21 @@ describe("VideoDetailRoute reporting", () => {
     );
   });
 
+  it("offers signed-out viewers an exact-video sign-in without posting or reporting", async () => {
+    mockAuthed = false;
+    mockVideoId = "6abec74c4b377597a8599928";
+    mockGetVideo.mockResolvedValue({ ...video, id: mockVideoId });
+    render(<VideoDetailRoute />);
+    await screen.findByText(video.title);
+    fireEvent.press(screen.getByRole("link", { name: "Sign in to join the discussion" }));
+    expect(mockPush).toHaveBeenCalledWith(
+      "/login?next=%2Fvideos%2F6abec74c4b377597a8599928"
+    );
+    expect(screen.queryByLabelText("Write a video comment")).toBeNull();
+    expect(mockReportProps).toBeNull();
+    expect(mockUpdateVideo).not.toHaveBeenCalled();
+  });
+
   it("keeps signed-out video discovery read-only after a successful public response", async () => {
     mockAuthed = false;
     mockUserId = "";
@@ -305,7 +320,9 @@ describe("VideoDetailRoute reporting", () => {
     expect(screen.queryByLabelText("Write a video comment")).toBeNull();
     expect(screen.queryByText("Report Video")).toBeNull();
     expect(screen.queryByLabelText("Upload thumbnail for this video")).toBeNull();
-    expect(screen.getByText("Sign in to join the discussion.")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Sign in to join the discussion" })
+    ).toBeTruthy();
   });
 
   it("uses exactly one shared back action with a videos fallback", async () => {
