@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <PublicInfoPage
       title="Privacy Policy"
-      updated="September 21, 2026"
+      updated="October 4, 2026"
       intro="GrowPath collects only the information needed to provide account access, cultivation records, diagnostics, subscriptions, support, and compliance workflows."
       sections={[
         {
@@ -21,6 +21,10 @@ export default function PrivacyPage() {
         {
           title: "Sharing",
           body: "We do not sell personal information. We share data with service providers such as hosting, database, payment, monitoring, email, and analytics vendors only as needed to run GrowPath."
+        },
+        {
+          title: "Public Website Analytics",
+          body: "We use HeyCatch to understand visits and selected navigation clicks on our public marketing pages. This integration does not identify your GrowPath account or send your email, name, form contents, journals, feedback, payment activity, or Admin/Vault activity. It removes query strings and fragments from recorded page URLs, uses anonymous session identifiers, and honors your browser's Do Not Track setting. Analytics are not required to use GrowPath."
         },
         {
           title: "Your Choices",
