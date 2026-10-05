@@ -34,8 +34,32 @@ in the Commercial screenshot are QA fixture values, not customer endorsements.
 134 focused Jest tests and 20 static-marketing tests passed. TypeScript,
 touched-source lint, contamination and diff checks passed. Interface guard against
 current production d76ada95 passed; existing cumulative Admin/Profile budget debt
-is unchanged and not waived. Production-format export and hosted acceptance pending.
-Release stays open until exact-revision staging and production verification.
+is unchanged and not waived. Production-format export passed with asset
+`index-07bb614dd780f3ee4679f92ae8dfb092.js`.
+
+Staging revision `7c837f03777a9d2030ce5e701ee923ac9fd5390b`, deploy
+`dep-db1qpd2d0e5s7390076g`, LIVE October 5 at 13:58:52Z. All four role
+selections, correct image dimensions/loaded pixels, full-size/public-role link
+destinations and explicit limits verified. At 375×812 both demo and Updates have
+document width 375 (no horizontal overflow). Pro selection works by Enter; ordinary
+Chrome clicks switch the five-entry list correctly. Share opened the Chrome handoff;
+Escape canceled it with the truthful canceled/unavailable fallback and fixed address
+remaining. No external social post was sent. IAB share is unavailable, also correctly
+labeled rather than claiming a copied link. Browser error logs empty. Empty public
+feedback shows no quote or placeholder section. Updates shows October 4 = 1 day,
+October 5 = 0 days, and Course gifts = Not released yet with no release counter.
+
+Production deploy `dep-db1qs0ugekts73f2v280` started for the same revision.
+Initial production revision became LIVE at 14:04:54Z. Canonical demo/Updates HTTP
+200 and interactive role selection passed, but the saved desktop screenshot exposed
+vertical card overflow: inherited grid `flexBasis: 280` capped the standalone role
+card at 280px while its children extended beyond it. Earlier horizontal-only
+acceptance was insufficient. Release remains OPEN, not accepted.
+
+Narrow correction: standalone demo card uses `flexBasis: auto; flexGrow: 0`, with
+a regression assertion. Re-run hosted desktop and 375px containment checks for
+every role (last child inside card, next journal below card), then promote and
+replace the screenshot. No global card or theme changes.
 
 ## Browser acceptance checklist
 

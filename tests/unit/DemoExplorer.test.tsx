@@ -1,6 +1,6 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
-import { Image } from "react-native";
+import { Image, StyleSheet } from "react-native";
 import { Link } from "expo-router";
 import DemoExplorer from "@/components/marketing/DemoExplorer";
 import audiences from "@/components/marketing/demoAudiences.json";
@@ -12,6 +12,9 @@ describe("public role demo", () => {
     expect(screen.getByText(audiences[0].limits)).toBeTruthy();
     expect(audiences[0].limits).toContain("5 AI credits per week");
     expect(audiences[0].description).toContain("around the house");
+    expect(
+      StyleSheet.flatten(screen.getByTestId("demo-audience-card").props.style)
+    ).toMatchObject({ flexBasis: "auto", flexGrow: 0 });
   });
   it("switches every role's highlights, reviewed screenshot and public destinations", () => {
     const screen = render(<DemoExplorer />);

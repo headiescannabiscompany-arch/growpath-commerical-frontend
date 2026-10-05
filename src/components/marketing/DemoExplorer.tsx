@@ -37,7 +37,10 @@ export default function DemoExplorer() {
           </Pressable>
         ))}
       </View>
-      <View style={styles.card}>
+      <View
+        testID="demo-audience-card"
+        style={[styles.card, { flexBasis: "auto", flexGrow: 0 }]}
+      >
         <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
           {audience.title}
         </Text>
