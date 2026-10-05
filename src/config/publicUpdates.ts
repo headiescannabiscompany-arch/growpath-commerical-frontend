@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "public-product-screenshots",
+        title: "See the diagnosis form and Facility workspace",
+        date: "October 5, 2026",
+        dateLabel: "Released",
+        summary:
+          "The public Features, grower and Facility pages now show reviewed screenshots of the actual interface, with full-size links and readable descriptions. Both examples also appear beside the no-signup journal demo. The diagnosis notes are synthetic and unsent; Facility counts are test records, not customer results or compliance certification. No private account records or AI results were published."
+      },
+      {
         id: "public-journal-demo",
         title: "Try the journal without signing up",
         date: "October 5, 2026",

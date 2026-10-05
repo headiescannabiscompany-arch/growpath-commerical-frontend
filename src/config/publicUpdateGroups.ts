@@ -41,8 +41,8 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     scope:
       "Grower-focused explanations, exact plan allowances and search-readable public pages.",
     live: "Grow-journal explanations, exact plan limits, a real founder portrait and show link, workflow-based pricing context, larger public-page tap targets, three sourced comparisons and a grow-journal guide are live. Search metadata and the plan prices stay consistent.",
-    next: "Add further reviewed product demonstrations, permissioned grower stories, verified usage proof and genuine outside endorsements. The no-signup sample journal and its real-interface screenshot are live; all sample records are labeled synthetic, not customer proof.",
-    entryIds: ["public-journal-demo", "public-website-audit"]
+    next: "Collect permissioned grower stories, verified usage proof and genuine outside endorsements. The no-signup journal and reviewed diagnosis-intake and Facility screenshots are live. All samples are labeled synthetic; the diagnosis image is an unsent input example, not an AI result.",
+    entryIds: ["public-product-screenshots", "public-journal-demo", "public-website-audit"]
   },
   {
     id: "courses",

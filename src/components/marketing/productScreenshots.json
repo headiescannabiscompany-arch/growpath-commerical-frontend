@@ -1,0 +1,24 @@
+[
+  {
+    "id": "diagnosis",
+    "title": "Start with what you actually observed",
+    "description": "Plant Diagnose asks for crop identity, symptom location, progression and measurements before you run a review. Missing context stays unknown instead of becoming a guessed reading.",
+    "image": "/images/synthetic-diagnosis-intake-ui.jpg",
+    "width": 836,
+    "height": 1100,
+    "alt": "GrowPathAI Plant Issue Diagnosis form with synthetic basil notes, a crop-confirmation warning, and unknown stage, progression and root-zone selections.",
+    "caption": "Actual staging interface, captured October 5, 2026. The basil notes are a synthetic, unsent example. No AI analysis was run; this is the input screen, not a diagnosis result or treatment recommendation.",
+    "pages": ["features", "personal-grower", "demo"]
+  },
+  {
+    "id": "facility",
+    "title": "See the work across your Facility",
+    "description": "The Facility dashboard brings rooms, grows, plant records, open tasks and procedures into one overview, with links to the underlying work. Team members see the tools their role permits.",
+    "image": "/images/synthetic-facility-dashboard-ui.jpg",
+    "width": 836,
+    "height": 1100,
+    "alt": "GrowPathAI Facility Operations dashboard for a synthetic QA facility, showing 10 test tasks, room and grow counts, and links to team learning and community tools.",
+    "caption": "Actual staging interface, captured October 5, 2026, using synthetic QA records. Counts are test data, not customer usage or performance. Clear and No pending checks describe that test workspace's recorded checks, not legal compliance or certification.",
+    "pages": ["features", "facility-management", "commercial-cultivation", "demo"]
+  }
+]

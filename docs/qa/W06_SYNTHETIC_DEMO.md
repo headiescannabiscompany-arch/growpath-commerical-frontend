@@ -1,6 +1,6 @@
 # W06 — synthetic product preview
 
-Status: W06-A no-signup journal demo CLOSED / LIVE; W06-B further reviewed demos OPEN.
+Status: W06-A no-signup journal demo CLOSED / LIVE; W06-B screenshots implemented, release verification in progress.
 Branch: feature/public-synthetic-demo-w06, based on live frontend 13ab5e34.
 
 ## Scope
@@ -76,3 +76,44 @@ no people or identity material. NOT a screenshot or customer proof.
 Deployment needs `/demo` -> `/demo/index.html` before the existing wildcard rewrite.
 Preserve live HeyCatch privacy protections. This demo is not added to its allowlist.
 No backend change or Stripe webhook/marker change is required for this frontend-only phase.
+
+## W06-B — actual product screenshot gallery
+
+Bounded scope: the actual diagnosis intake and Facility dashboard, not a simulated
+provider result. Captured October 5, 2026 from the existing signed-in staging QA
+Facility session. Diagnosis crop/notes filled with a labeled synthetic basil example;
+no submission, media upload, AI call or saved-record write. Leaving the route discarded
+the unsent draft. Facility dashboard reads existing synthetic QA records only.
+
+Reviewed assets (JPEG, 836 x 1100 each):
+- `public/images/synthetic-diagnosis-intake-ui.jpg`: intake/context warning and unknown states.
+- `public/images/synthetic-facility-dashboard-ui.jpg`: QA identity, test counts and links;
+  no human names, emails, record IDs, credentials or private production data.
+
+Captured directly with browser Page.captureScreenshot after rendering. No generated
+UI, result editing or compositing. Oversized browser captures with duplicated/clipped
+paint were rejected; only visually reviewed, fitting captures are included. Temporary
+viewport override restored afterward. Both captions precede the image and explain
+synthetic provenance; Facility Clear is not advertised as legal certification.
+
+Placement: `/demo` and `/features` contain both; `/personal-grower` diagnosis;
+`/facility-management` and `/commercial-cultivation` Facility. Each has a full-size
+public image link, matching static HTML and descriptive alt text. No private route
+made public, no SDK or HeyCatch scope change, no auth/provider/financial change.
+
+Audit mappings: D1.5 (was 0/3), D2.3 (was 3/5), D5.5 (was 2.5/3).
+These are original audit scores, not claimed new scores. This closes the bounded
+product-imagery work only after production verification; real proof remains separate.
+
+Local verification PASS: 122 focused Jest tests (screenshots/demo/landing/Updates/
+metadata/HeyCatch policy), 18 static export tests, TypeScript noEmit, focused source
+lint, contamination scan, whitespace and interface delta guard against f2eaec73.
+The Updates receipt list expectation was updated to include the new bounded note;
+all 38 Updates tests pass on rerun. The historical default interface baseline is
+not being claimed. Production-format export `dist-w06b-screenshots` completed,
+bundle `index-cd65ac90ea4c74c5bf7fed344216a478.js`.
+Actual local browser: both 836x1100 JPEGs load, both full-size links use public
+assets in separate tabs, Facility page at 375px has document width375 (no overflow).
+Diagnosis and Facility captions remain ahead of their images. The existing demo
+share contract remains fixed `/demo`; no social post was sent. Temporary viewport
+overrides restored. Staging/production release remains pending; do not mark live yet.

@@ -7,6 +7,7 @@ import marketing from "./publicMarketing.json";
 import MarketingDetails, { FounderPortrait } from "./MarketingDetails";
 import PublicTestimonials from "./PublicTestimonials";
 import GrowDemoPreview from "./GrowDemoPreview";
+import ProductScreenshots from "./ProductScreenshots";
 
 export type PublicPageKey =
   | "home"
@@ -132,6 +133,7 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
       {(page === "home" || page === "features" || page === "personal-grower") && (
         <GrowDemoPreview />
       )}
+      <ProductScreenshots page={page} />
       <View style={styles.grid}>
         {copy.sections.map((section, index) => (
           <View

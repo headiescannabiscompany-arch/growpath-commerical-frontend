@@ -1,6 +1,7 @@
 "use strict";
 const marketing = require("../src/components/marketing/publicMarketing.json");
 const demo = require("../src/components/marketing/syntheticGrowDemo.json");
+const screenshots = require("../src/components/marketing/productScreenshots.json");
 const escape = (value) =>
   String(value)
     .replace(/&/g, "&amp;")
@@ -144,6 +145,7 @@ function publicMarketingMarkup(route) {
         escape(demo.screenshotCaption) +
         '</p><a href="/demo">Try the sample journal — no signup</a></section>'
       : "") +
+    productScreenshotMarkup(page) +
     '<div class="marketing-grid">' +
     sections +
     "</div>" +
@@ -185,6 +187,36 @@ function publicMarketingMarkup(route) {
     footer.map(anchor).join(" ") +
     "</footer></main>"
   );
+}
+function productScreenshotMarkup(page) {
+  return screenshots
+    .filter((shot) => shot.pages.includes(page))
+    .map(
+      (shot) =>
+        '<section class="marketing-card"><h2>' +
+        escape(shot.title) +
+        "</h2><p>" +
+        escape(shot.description) +
+        "</p><p>" +
+        escape(shot.caption) +
+        '</p><img src="' +
+        escape(shot.image) +
+        '" alt="' +
+        escape(shot.alt) +
+        '" width="' +
+        shot.width +
+        '" height="' +
+        shot.height +
+        '" loading="lazy" style="display:block;width:100%;max-width:' +
+        shot.width +
+        'px;height:auto;border-radius:12px;margin:auto" />' +
+        '<a href="' +
+        escape(shot.image) +
+        '">Open full-size ' +
+        (shot.id === "diagnosis" ? "diagnosis form" : "Facility dashboard") +
+        " screenshot</a></section>"
+    )
+    .join("");
 }
 function publicDemoMarkup() {
   return (
@@ -228,7 +260,9 @@ function publicDemoMarkup() {
           "</details>"
       )
       .join("") +
-    '<section class="marketing-card"><h2>Ready to start your own journal?</h2><p>Free account. No payment card required.</p><div class="marketing-actions"><a class="primary" href="/register">Create free account</a><a href="/demo">Demo address: growpathai.com/demo</a></div></section><footer>' +
+    '<section class="marketing-card"><h2>Ready to start your own journal?</h2><p>Free account. No payment card required.</p><div class="marketing-actions"><a class="primary" href="/register">Create free account</a><a href="/demo">Demo address: growpathai.com/demo</a></div></section>' +
+    productScreenshotMarkup("demo") +
+    "<footer>" +
     footer.map(anchor).join(" ") +
     "</footer></main>"
   );

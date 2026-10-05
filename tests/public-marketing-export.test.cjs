@@ -4,6 +4,7 @@ const { test } = require("node:test");
 const fs = require("node:fs");
 const path = require("node:path");
 const demo = require("../src/components/marketing/syntheticGrowDemo.json");
+const screenshots = require("../src/components/marketing/productScreenshots.json");
 const {
   publicMarketingMarkup,
   marketingSchema,
@@ -42,6 +43,25 @@ test("crawler markup and displayed content use one copy source and one h1", () =
     assert.equal((html.match(/<h1>/g) || []).length, 1);
     assert.ok(html.includes(page.title));
     assert.ok(html.includes('href="/pricing"'));
+  }
+});
+test("reviewed product images have matching public captions, alt text and real JPEG assets", () => {
+  for (const shot of screenshots) {
+    for (const route of shot.pages) {
+      const html = publicMarketingMarkup(route);
+      assert.ok(html.includes(shot.alt));
+      assert.ok(html.includes(shot.caption));
+      assert.ok(html.includes('href="' + shot.image + '"'));
+      assert.ok(html.indexOf(shot.caption) < html.indexOf('src="' + shot.image + '"'));
+    }
+    const bytes = fs.readFileSync(path.join(__dirname, "../public", shot.image));
+    assert.deepEqual([...bytes.subarray(0, 3)], [255, 216, 255]);
+    assert.ok(bytes.length > 10000);
+    assert.match(shot.caption, /synthetic/i);
+  }
+  for (const route of ["about", "pricing", "contact"]) {
+    assert.ok(!publicMarketingMarkup(route).includes(screenshots[0].image));
+    assert.ok(!publicMarketingMarkup(route).includes(screenshots[1].image));
   }
 });
 test("all four actual monthly offers are represented without fake reviews", () => {
