@@ -405,6 +405,100 @@ describe("FacilityTeamTab", () => {
     expect(screen.getByText("0 members")).toBeTruthy();
   });
 
+  it.each(["role", "session"])(
+    "invalidates a delayed removal confirmation after a %s change",
+    async (boundary) => {
+      const originalPlatform = Platform.OS;
+      Object.defineProperty(Platform, "OS", { configurable: true, value: "ios" });
+      const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+      mockListTeamMembers.mockResolvedValue([
+        { userId: "staff-1", name: "Alex", role: "STAFF" }
+      ]);
+      const screen = render(<FacilityTeamTab />);
+      try {
+        await screen.findByText("Alex");
+        fireEvent.press(screen.getByLabelText("Remove Alex - staff from facility"));
+        const confirm = alert.mock.calls[0][2]?.find(
+          (button) => button.text === "Remove"
+        )?.onPress;
+        expect(confirm).toBeDefined();
+        if (boundary === "role") {
+          mockFacilityRole = "VIEWER";
+          mockCan.mockReturnValue(false);
+        } else {
+          mockAuth = { user: { id: "owner-1" }, token: "session-2" };
+        }
+        screen.rerender(<FacilityTeamTab />);
+        await screen.findByText("Alex");
+        await act(async () => confirm?.());
+        expect(mockRemoveTeamMember).not.toHaveBeenCalled();
+        if (boundary === "role") {
+          expect(screen.queryByLabelText("Send team invite")).toBeNull();
+          expect(screen.queryByLabelText("Assign task to Alex")).toBeNull();
+          expect(screen.queryByLabelText("Remove Alex - staff from facility")).toBeNull();
+        }
+      } finally {
+        screen.unmount();
+        alert.mockRestore();
+        Object.defineProperty(Platform, "OS", {
+          configurable: true,
+          value: originalPlatform
+        });
+      }
+    }
+  );
+
+  it("discards an invitation draft and late success when Owner access becomes Viewer", async () => {
+    let finish!: (value: any) => void;
+    mockInvite.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const screen = render(<FacilityTeamTab />);
+    await screen.findByText("No members yet");
+    fireEvent.changeText(
+      screen.getByLabelText("Invite team member email"),
+      "synthetic@qa.invalid"
+    );
+    fireEvent.press(screen.getByLabelText("Send team invite"));
+    expect(mockInvite).toHaveBeenCalledTimes(1);
+    mockFacilityRole = "VIEWER";
+    mockCan.mockReturnValue(false);
+    screen.rerender(<FacilityTeamTab />);
+    await screen.findByText("No members yet");
+    const readsAfterRoleChange = mockListTeamMembers.mock.calls.length;
+    await act(async () => finish({ emailDelivery: { sent: true } }));
+    expect(screen.queryByText(/Invite emailed/)).toBeNull();
+    expect(screen.queryByDisplayValue("synthetic@qa.invalid")).toBeNull();
+    expect(screen.queryByLabelText("Send team invite")).toBeNull();
+    expect(mockListTeamMembers).toHaveBeenCalledTimes(readsAfterRoleChange);
+    expect(mockInvite).toHaveBeenCalledTimes(1);
+  });
+
+  it("discards a previous session's pending roster after token refresh", async () => {
+    let finish!: (value: any) => void;
+    mockListTeamMembers.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const screen = render(<FacilityTeamTab />);
+    mockAuth = { user: { id: "owner-1" }, token: "session-2" };
+    screen.rerender(<FacilityTeamTab />);
+    await screen.findByText("No members yet");
+    await act(async () =>
+      finish([{ userId: "old", name: "Earlier session member", role: "STAFF" }])
+    );
+    expect(screen.queryByText("Earlier session member")).toBeNull();
+    expect(screen.getByText("0 members")).toBeTruthy();
+    expect(mockInvite).not.toHaveBeenCalled();
+    expect(mockUpdateTeamMemberRole).not.toHaveBeenCalled();
+    expect(mockRemoveTeamMember).not.toHaveBeenCalled();
+  });
+
   it("invalidates a delayed native removal confirmation when the team refreshes", async () => {
     const originalPlatform = Platform.OS;
     Object.defineProperty(Platform, "OS", { configurable: true, value: "ios" });
