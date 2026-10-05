@@ -52,15 +52,70 @@ Owner, Manager, two Staff and Viewer. No sign-out, role edit, invitation or muta
 was performed. This inventory establishes fixture availability, not the sessions'
 current credential availability or actual-role acceptance.
 
+## October 5 actual staging Viewer acceptance — PASS
+
+The user completed the existing synthetic Viewer sign-in in separate Chrome;
+the in-app browser Owner session was preserved. No credential was retrieved,
+printed or changed. These are current staging observations, not new production
+certification. The previously recorded frontend staging baseline is `9d2f2459`;
+this acceptance did not deploy either service or independently re-resolve their
+deployment revisions.
+
+- Facility: `6a5ea11685cee9a1c3f9696d`.
+- Existing shared task: `6a5eb37ec9fd257ae2484ce0`,
+  `[QA role-manager 2026-07-20 19:46 ET] Verify shared task write`.
+- Actual Viewer detail and hard reload retained **Completed**, the July 20
+  7:59:14 PM local update timestamp, and “You do not have permission to update
+  tasks.” No update controls appeared. Back returned to the queue.
+- The same task's entity history contained creation
+  `6a5eb37ec9fd257ae2484ce4` and completion/update
+  `6a5eb652c9fd257ae2484e9d`. Completion detail matched that task ID,
+  `OPEN` → `DONE`, and `2026-07-20T23:59:14.166Z`.
+  Its origin is **`legacy_unverified`**: this proves historical record
+  correlation, not cryptographic verification of a modern audit chain.
+
+### Bounded authenticated server denial — PASS
+
+A temporary browser developer interception changed only a normal staging task
+refresh into `PATCH` with body `{}` against
+`/api/facility/6a5ea11685cee9a1c3f9696d/tasks/qa-viewer-denial-no-record`.
+The existing Viewer session supplied authentication without reading its token.
+The server returned HTTP **403** with:
+
+```json
+{"success":false,"error":{"code":"ROLE_REQUIRED","message":"Role required"}}
+```
+
+This was an intentionally invalid/nonexistent task identity, **not a write
+attempt against the saved shared task**. Source inspection of
+`routes/tasks.facility.js` confirmed OWNER/MANAGER/STAFF authorization precedes
+the handler, and the handler validates the 24-hex task ID before record lookup
+or mutation. The 403 therefore demonstrates the route's actual Viewer role
+denial; it does not certify every write endpoint or valid-record mutation path.
+CDP response metadata retained the original GET URL despite the explicit
+method/URL override; the override and response are recorded separately here.
+
+The UI displayed Permission denied / Role required and explicitly marked the
+retained task as stale. All interception patterns were then cleared. Normal
+Retry restored the saved task detail without an error, still Completed, with
+the original Updated timestamp and no mutation controls. No saved task, member,
+permission, account, payment or audit record was intentionally changed.
+
+Local screenshot evidence under the workspace's `outputs/` directory:
+
+- `Facility_Viewer_Shared_Task_2026-10-05.png`
+- `Facility_Viewer_Task_Audit_2026-10-05.png`
+- `Facility_Viewer_Server_Denial_2026-10-05.png`
+
+These two bounded gaps (same-record Viewer correlation and task-route role
+denial) are **closed**. Do not repeat them as a generic Facility acceptance loop.
+
 ## Still open — exact, bounded evidence
 
 - Hosted role/session expiry or refresh transition where its current behavior is not
   already evidenced. Automated transition checks above remain a separate layer.
-- An authorized synthetic Viewer forced-write denial against the existing server,
-  retaining the response and unchanged exact target. No production role grant or
-  mutation is authorized by this receipt.
-- Any same-record Viewer observation/audit correlation beyond the retained task-list
-  UI receipt. Do not repeat the accepted Manager/Staff/Owner chain to obtain it.
+- A hard reload is not an expired-session test. No actual expiry or token-refresh
+  lifecycle is claimed by the new Viewer acceptance above.
 - A09 final owner walkthrough and other A01–A07 named gaps stay separate.
 
 No new public Updates entry or deployment is needed for this test-only receipt.
