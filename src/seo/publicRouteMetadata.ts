@@ -5,6 +5,8 @@ export type PublicRouteMetadata = {
   title: string;
   description: string;
   index: boolean;
+  image?: string;
+  imageAlt?: string;
 };
 
 type RegistryRoute = Omit<PublicRouteMetadata, "index"> & { index?: boolean };
@@ -81,6 +83,24 @@ export function applyPublicRouteMetadata(pathname: string) {
   );
   upsertMeta('meta[property="og:url"]', { property: "og:url" }, canonical);
   upsertMeta('meta[property="og:site_name"]', { property: "og:site_name" }, "GrowPathAI");
+  const imageUrl = `${siteUrl}${metadata.image || "/favicon.ico"}`;
+  upsertMeta('meta[property="og:image"]', { property: "og:image" }, imageUrl);
+  upsertMeta(
+    'meta[property="og:image:alt"]',
+    { property: "og:image:alt" },
+    metadata.imageAlt || "GrowPathAI"
+  );
+  upsertMeta('meta[name="twitter:image"]', { name: "twitter:image" }, imageUrl);
+  upsertMeta(
+    'meta[name="twitter:image:alt"]',
+    { name: "twitter:image:alt" },
+    metadata.imageAlt || "GrowPathAI"
+  );
+  upsertMeta(
+    'meta[name="twitter:card"]',
+    { name: "twitter:card" },
+    metadata.image ? "summary_large_image" : "summary"
+  );
   upsertMeta('meta[name="twitter:title"]', { name: "twitter:title" }, metadata.title);
   upsertMeta(
     'meta[name="twitter:description"]',

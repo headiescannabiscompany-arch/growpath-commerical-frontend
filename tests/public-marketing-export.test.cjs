@@ -3,12 +3,39 @@ const assert = require("node:assert/strict");
 const { test } = require("node:test");
 const fs = require("node:fs");
 const path = require("node:path");
+const demo = require("../src/components/marketing/syntheticGrowDemo.json");
 const {
   publicMarketingMarkup,
   marketingSchema,
   marketingCss,
   marketing
 } = require("../scripts/public-marketing.cjs");
+test("no-signup demo includes all synthetic entries without JavaScript or private data", () => {
+  const html = publicMarketingMarkup("demo");
+  assert.equal((html.match(/<h1>/g) || []).length, 1);
+  assert.equal((html.match(/<details/g) || []).length, 5);
+  assert.ok(html.includes(demo.disclosure));
+  for (const event of demo.events) assert.ok(html.includes(event.summary));
+  assert.ok(html.includes(demo.photoAlt));
+  assert.doesNotMatch(html, /growId=|token=|api\/grows|customer testimonial/i);
+});
+test("public acquisition pages offer the preview before registration", () => {
+  for (const route of ["", "features", "personal-grower", "pricing", "grow-journal-app"])
+    assert.ok(
+      publicMarketingMarkup(route).includes('href="/demo">Try the sample journal')
+    );
+  assert.ok(publicMarketingMarkup("about").includes('href="/features">Explore features'));
+});
+test("actual screenshot has an explicit synthetic caption and is not an empty placeholder", () => {
+  for (const route of ["", "features", "personal-grower"]) {
+    const html = publicMarketingMarkup(route);
+    assert.ok(html.includes(demo.screenshotAlt));
+    assert.ok(html.includes(demo.screenshotCaption));
+  }
+  const image = fs.readFileSync(path.join(__dirname, "../public", demo.screenshot));
+  assert.ok(image.length > 10000);
+  assert.deepEqual([...image.subarray(0, 3)], [255, 216, 255]);
+});
 test("crawler markup and displayed content use one copy source and one h1", () => {
   for (const [key, page] of Object.entries(marketing.pages)) {
     const html = publicMarketingMarkup(key === "home" ? "" : key);

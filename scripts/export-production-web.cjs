@@ -807,8 +807,11 @@ function applySeo(html, route) {
     `<meta property="og:title" content="${title}" />`,
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:url" content="${escapeHtml(canonical)}" />`,
-    `<meta property="og:image" content="${siteUrl}/favicon.ico" />`,
-    `<meta name="twitter:card" content="summary" />`,
+    `<meta property="og:image" content="${siteUrl}${escapeHtml(seo.image || "/favicon.ico")}" />`,
+    `<meta property="og:image:alt" content="${escapeHtml(seo.imageAlt || "GrowPathAI")}" />`,
+    `<meta name="twitter:image" content="${siteUrl}${escapeHtml(seo.image || "/favicon.ico")}" />`,
+    `<meta name="twitter:image:alt" content="${escapeHtml(seo.imageAlt || "GrowPathAI")}" />`,
+    `<meta name="twitter:card" content="${seo.image ? "summary_large_image" : "summary"}" />`,
     `<meta name="twitter:title" content="${title}" />`,
     `<meta name="twitter:description" content="${description}" />`
   ].join("\n    ");
@@ -844,6 +847,7 @@ fs.writeFileSync(indexHtml, applySeo(revisionedIndexHtml, ""));
 
 for (const route of new Set([
   ...fallbackRoutes,
+  "demo",
   ...Object.keys(marketing.pages).filter((key) => key !== "home")
 ])) {
   const routeDir = path.join(absoluteOutputDir, route);
@@ -911,7 +915,8 @@ const sitemapXml = [
     { route: "vs/plntrk", priority: "0.6", changefreq: "monthly" },
     { route: "vs/grow-with-jane", priority: "0.6", changefreq: "monthly" },
     { route: "vs/growtrackr", priority: "0.6", changefreq: "monthly" },
-    { route: "grow-journal-app", priority: "0.7", changefreq: "monthly" }
+    { route: "grow-journal-app", priority: "0.7", changefreq: "monthly" },
+    { route: "demo", priority: "0.7", changefreq: "monthly" }
   ].map(({ route, priority, changefreq }) =>
     [
       "  <url>",

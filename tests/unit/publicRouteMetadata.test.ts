@@ -7,6 +7,29 @@ import {
 } from "@/seo/publicRouteMetadata";
 
 describe("public route metadata", () => {
+  it("shares the synthetic demo screenshot and clears it when leaving the demo", () => {
+    document.head.innerHTML = "";
+    applyPublicRouteMetadata("/demo?growId=private#token");
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(
+      "https://growpathai.com/demo"
+    );
+    expect(
+      document.querySelector('meta[property="og:image"]')?.getAttribute("content")
+    ).toBe("https://growpathai.com/images/synthetic-timeline-ui.jpg");
+    expect(
+      document.querySelector('meta[name="twitter:card"]')?.getAttribute("content")
+    ).toBe("summary_large_image");
+    expect(
+      document.querySelector('meta[property="og:image:alt"]')?.getAttribute("content")
+    ).toContain("synthetic");
+    applyPublicRouteMetadata("/about");
+    expect(
+      document.querySelector('meta[property="og:image"]')?.getAttribute("content")
+    ).toBe("https://growpathai.com/favicon.ico");
+    expect(
+      document.querySelector('meta[name="twitter:card"]')?.getAttribute("content")
+    ).toBe("summary");
+  });
   it.each(["vs/growtrackr", "grow-journal-app"])(
     "gives the new audit page %s its own share/search metadata",
     (route) => {

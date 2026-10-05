@@ -9,6 +9,7 @@ import PublicLandingPage, {
 } from "@/components/marketing/PublicLandingPage";
 import { getThemePalette } from "@/theme/appTheme";
 import marketing from "@/components/marketing/publicMarketing.json";
+import demo from "@/components/marketing/syntheticGrowDemo.json";
 import { getPublicTestimonials } from "@/api/testimonials";
 
 jest.mock("@/api/testimonials", () => ({
@@ -16,6 +17,23 @@ jest.mock("@/api/testimonials", () => ({
 }));
 
 describe("PublicLandingPage", () => {
+  it.each(["home", "features", "personal-grower"] as const)(
+    "shows a labeled actual-interface preview on %s",
+    (page) => {
+      const screen = render(<PublicLandingPage page={page} />);
+      expect(screen.getByLabelText(demo.screenshotAlt)).toBeTruthy();
+      expect(screen.getByText(demo.screenshotCaption)).toBeTruthy();
+      expect(
+        screen
+          .UNSAFE_getAllByType(Link)
+          .some(
+            (link) =>
+              link.props.href === "/demo" &&
+              link.props.children === "Try the sample journal — no signup"
+          )
+      ).toBe(true);
+    }
+  );
   beforeEach(() => {
     jest.mocked(getPublicTestimonials).mockImplementation(() => new Promise(() => {}));
     jest
@@ -258,7 +276,7 @@ describe("PublicLandingPage", () => {
           "Forum",
           "Sign in",
           "Create free account",
-          "Explore features",
+          "Try the sample journal",
           "Compare GrowTrackr",
           "Grow journal app"
         ]) {
@@ -270,7 +288,7 @@ describe("PublicLandingPage", () => {
             );
         }
         const actions = links.filter((link) =>
-          ["Create free account", "Explore features"].includes(link.props.children)
+          ["Create free account", "Try the sample journal"].includes(link.props.children)
         );
         if (width < 600)
           for (const action of actions)

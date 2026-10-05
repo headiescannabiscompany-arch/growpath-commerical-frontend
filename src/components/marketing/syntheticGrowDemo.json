@@ -1,0 +1,54 @@
+{
+  "title": "Try a grow journal before you sign up",
+  "description": "Open five example entries and see how notes, photos and follow-ups stay together in a GrowPathAI timeline. No account needed.",
+  "disclosure": "Synthetic demo — not a customer grow. Dates, notes and readings are invented examples. The basil image is AI-generated, not evidence of a real plant or result.",
+  "growTitle": "Greenhouse basil — sample journal",
+  "photo": "/images/synthetic-basil-demo.png",
+  "photoAlt": "AI-generated example of a young basil plant in a pot; not a customer photo",
+  "screenshot": "/images/synthetic-timeline-ui.jpg",
+  "screenshotAlt": "Actual GrowPathAI timeline interface with five synthetic basil journal entries and an AI-generated example image",
+  "screenshotCaption": "Actual GrowPathAI interface, shown with synthetic demo data. Not a customer grow or a claimed result.",
+  "events": [
+    {
+      "id": "demo-start",
+      "title": "Start with a photo and a note",
+      "timestamp": "2026-09-01",
+      "type": "journal",
+      "summary": "Example entry: one basil plant in a pot on the greenhouse bench. Added a starting photo so later notes have a reference. The image is AI-generated for this demo.",
+      "photos": ["/images/synthetic-basil-demo.png"],
+      "highlights": ["Synthetic example", "Starting record"]
+    },
+    {
+      "id": "demo-observation",
+      "title": "Keep the observation with its date",
+      "timestamp": "2026-09-03",
+      "type": "observation",
+      "summary": "Example entry: the pot felt lighter than at the last check. Wrote down that observation rather than assuming what caused it.",
+      "highlights": ["Observation, not a diagnosis"]
+    },
+    {
+      "id": "demo-watering",
+      "title": "Record what you actually changed",
+      "timestamp": "2026-09-04",
+      "type": "journal",
+      "summary": "Example entry: recorded a watering and a sample volume of 250 mL. This is made-up journal data, not a watering recommendation for your plant.",
+      "highlights": ["Example only: 250 mL", "Action recorded"]
+    },
+    {
+      "id": "demo-followup",
+      "title": "Leave yourself a follow-up",
+      "timestamp": "2026-09-06",
+      "type": "journal",
+      "summary": "Example entry: next time, check the pot again and take a new photo from the same angle. No growth improvement or cause has been established in this sample.",
+      "highlights": ["Next observation planned"]
+    },
+    {
+      "id": "demo-review",
+      "title": "Look back without hunting through posts",
+      "timestamp": "2026-09-08",
+      "type": "review",
+      "summary": "Example review: the starting photo, observation, watering note and follow-up are in one dated sequence. Select any earlier point to read it again. In your own account, you decide what to record and what to share.",
+      "highlights": ["Five connected entries", "No claimed outcome"]
+    }
+  ]
+}

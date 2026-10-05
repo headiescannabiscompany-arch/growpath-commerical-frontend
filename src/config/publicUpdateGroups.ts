@@ -27,7 +27,8 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     tab: "Feedback",
     title: "Private feedback and optional customer stories",
     status: "complete",
-    scope: "The feedback collection, exact-preview permission, Admin review and withdrawal workflow.",
+    scope:
+      "The feedback collection, exact-preview permission, Admin review and withdrawal workflow.",
     live: "Private feedback, optional protected photos, separate publication permission, Admin review and withdrawal are live. Test submissions are excluded from the public feed. Feedback is not sent for AI use.",
     next: "Collect genuine experiences and review permissioned stories. No customer quotes, results or endorsements have been invented; collecting them is separate from completing this workflow.",
     entryIds: ["private-feedback-collection"]
@@ -40,8 +41,8 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     scope:
       "Grower-focused explanations, exact plan allowances and search-readable public pages.",
     live: "Grow-journal explanations, exact plan limits, a real founder portrait and show link, workflow-based pricing context, larger public-page tap targets, three sourced comparisons and a grow-journal guide are live. Search metadata and the plan prices stay consistent.",
-    next: "Add reviewed product screenshots and a view-only sample grow, permissioned grower stories, verified usage proof and genuine outside endorsements. These proof items are not presented as completed or invented.",
-    entryIds: ["public-website-audit"]
+    next: "Add further reviewed product demonstrations, permissioned grower stories, verified usage proof and genuine outside endorsements. The no-signup sample journal and its real-interface screenshot are live; all sample records are labeled synthetic, not customer proof.",
+    entryIds: ["public-journal-demo", "public-website-audit"]
   },
   {
     id: "courses",

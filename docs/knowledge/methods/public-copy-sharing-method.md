@@ -84,6 +84,19 @@ the owner back to the private GrowPath record for the detailed evidence. Long pr
 bounded so one event cannot make the exported timeline unusable; the private source record
 remains authoritative and unchanged.
 
+## Bundled synthetic marketing demo
+
+The public `/demo` route is a read-only, bundled fixture, not a public-copy access
+exception. It accepts no record IDs, tokens or user-supplied data and makes no grow
+API calls. Keep its synthetic disclosure visible before the shared timeline viewer.
+Invented readings and dates demonstrate record organization only; they are not
+recommendations, real measurements, diagnoses, customer proof or outcome evidence.
+AI-generated illustrative media must be identified as such. Share only `/demo`,
+never the current location's query or a signed-in user's URL. Provide a vertical
+reading alternative and readable static HTML for users without JavaScript.
+Marketing screenshots must be captured from the rendered app, labeled with the
+synthetic-data context, and never represented as real customer records.
+
 Published Commercial product links provide a stable crawler-safe preview document with
 the exact product title, bounded description, price, canonical product URL and a public
 social-image derivative. The preview document must not automatically redirect with

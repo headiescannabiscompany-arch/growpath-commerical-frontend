@@ -124,6 +124,12 @@
       "title": "GrowPathAI and PLNTRK: compare the work you need to do | GrowPathAI",
       "description": "Both keep grow records and offer AI help. Choose by your plant count, day-to-day logging, export needs, and whether you also need courses, storefront work, or a facility workspace."
     },
+    "demo": {
+      "title": "Try a synthetic grow journal — no signup | GrowPathAI",
+      "description": "Explore five clearly labeled example entries in the GrowPathAI timeline. Read notes, view a synthetic plant image and see the workflow before creating an account.",
+      "image": "/images/synthetic-timeline-ui.jpg",
+      "imageAlt": "Actual GrowPathAI timeline with synthetic demo data, not a customer grow"
+    },
     "grow-journal-app": {
       "title": "Grow journal app: keep the details you will want next run | GrowPathAI",
       "description": "Choose a grow journal for feeds, photos, readings, and tasks. Compare free limits, cloud or local storage, and exports before committing a season of records."

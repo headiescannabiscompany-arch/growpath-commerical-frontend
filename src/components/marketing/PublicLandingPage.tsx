@@ -6,6 +6,7 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import marketing from "./publicMarketing.json";
 import MarketingDetails, { FounderPortrait } from "./MarketingDetails";
 import PublicTestimonials from "./PublicTestimonials";
+import GrowDemoPreview from "./GrowDemoPreview";
 
 export type PublicPageKey =
   | "home"
@@ -44,6 +45,13 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createPublicLandingStyles(palette), [palette]);
   const isCompact = usesCompactPublicLayout(width);
+  const showDemo = [
+    "home",
+    "features",
+    "personal-grower",
+    "pricing",
+    "grow-journal-app"
+  ].includes(page);
   return (
     <ScrollView
       style={styles.page}
@@ -107,12 +115,12 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
             Create free account
           </Link>
           <Link
-            href="/features"
+            href={showDemo ? "/demo" : "/features"}
             style={
               isCompact ? [styles.secondary, styles.actionCompact] : styles.secondary
             }
           >
-            Explore features
+            {showDemo ? "Try the sample journal" : "Explore features"}
           </Link>
         </View>
       </View>
@@ -120,6 +128,9 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
         <Text style={styles.cardBody}>
           Free account. No payment card required. Your content stays yours.
         </Text>
+      )}
+      {(page === "home" || page === "features" || page === "personal-grower") && (
+        <GrowDemoPreview />
       )}
       <View style={styles.grid}>
         {copy.sections.map((section, index) => (

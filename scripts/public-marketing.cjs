@@ -1,5 +1,6 @@
 "use strict";
 const marketing = require("../src/components/marketing/publicMarketing.json");
+const demo = require("../src/components/marketing/syntheticGrowDemo.json");
 const escape = (value) =>
   String(value)
     .replace(/&/g, "&amp;")
@@ -41,10 +42,18 @@ const anchor = ([label, href]) =>
   '<a href="' + escape(href) + '">' + escape(label) + "</a>";
 
 function publicMarketingMarkup(route) {
+  if (route === "demo") return publicDemoMarkup();
   const page = routeKey(route);
   const copy = marketing.pages[page];
   if (!copy) return null;
   const grower = page === "home" || page === "personal-grower";
+  const showDemo = [
+    "home",
+    "features",
+    "personal-grower",
+    "pricing",
+    "grow-journal-app"
+  ].includes(page);
   const sections = copy.sections
     .map(
       (section, i) =>
@@ -120,9 +129,20 @@ function publicMarketingMarkup(route) {
     escape(copy.title) +
     "</h1><p>" +
     escape(copy.intro) +
-    '</p><div class="marketing-actions"><a class="primary" href="/register">Create free account</a><a class="secondary" href="/features">Explore features</a></div></header>' +
+    '</p><div class="marketing-actions"><a class="primary" href="/register">Create free account</a><a class="secondary" href="' +
+    (showDemo ? '/demo">Try the sample journal' : '/features">Explore features') +
+    "</a></div></header>" +
     (grower || page === "pricing"
       ? "<p>Free account. No payment card required. Your content stays yours.</p>"
+      : "") +
+    (["home", "features", "personal-grower"].includes(page)
+      ? '<section class="marketing-card"><h2>See the notes behind each timeline point</h2><p>A starting photo, an observation, a change and a follow-up, together in one journal. Open the sample and select a point to read its entry.</p><a href="/demo" aria-label="Open the synthetic sample journal"><img src="' +
+        escape(demo.screenshot) +
+        '" alt="' +
+        escape(demo.screenshotAlt) +
+        '" width="1280" height="1000" loading="lazy" style="width:100%;height:auto;border-radius:12px" /></a><p>' +
+        escape(demo.screenshotCaption) +
+        '</p><a href="/demo">Try the sample journal — no signup</a></section>'
       : "") +
     '<div class="marketing-grid">' +
     sections +
@@ -166,6 +186,54 @@ function publicMarketingMarkup(route) {
     "</footer></main>"
   );
 }
+function publicDemoMarkup() {
+  return (
+    '<main id="seo-content" class="marketing"><nav aria-label="GrowPathAI public pages"><a class="brand" href="/">GrowPathAI</a>' +
+    links.map(anchor).join(" ") +
+    '</nav><header class="marketing-hero"><p>Read-only product demo</p><h1>' +
+    escape(demo.title) +
+    "</h1><p>" +
+    escape(demo.description) +
+    '</p></header><section class="marketing-card"><h2>' +
+    escape(demo.growTitle) +
+    "</h2><p>" +
+    escape(demo.disclosure) +
+    "</p><p>This sample cannot be edited and does not run AI tools or change your account. Open any entry below. The visual timeline is available with JavaScript.</p></section>" +
+    demo.events
+      .map(
+        (event, index) =>
+          '<details class="marketing-card"' +
+          (index === 0 ? " open" : "") +
+          '><summary style="min-height:44px;cursor:pointer"><strong>' +
+          escape(event.title) +
+          "</strong> — " +
+          escape(
+            new Date(event.timestamp + "T12:00:00Z").toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              timeZone: "UTC"
+            })
+          ) +
+          "</summary><p>" +
+          escape(event.summary) +
+          "</p>" +
+          (event.photos
+            ? '<img src="' +
+              escape(demo.photo) +
+              '" alt="' +
+              escape(demo.photoAlt) +
+              '" width="600" height="450" style="width:100%;max-width:600px;height:auto;border-radius:12px" />'
+            : "") +
+          "</details>"
+      )
+      .join("") +
+    '<section class="marketing-card"><h2>Ready to start your own journal?</h2><p>Free account. No payment card required.</p><div class="marketing-actions"><a class="primary" href="/register">Create free account</a><a href="/demo">Demo address: growpathai.com/demo</a></div></section><footer>' +
+    footer.map(anchor).join(" ") +
+    "</footer></main>"
+  );
+}
+
 function marketingSchema(route) {
   const graph = [];
   if (route === "" || route === "pricing")

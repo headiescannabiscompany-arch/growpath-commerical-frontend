@@ -104,6 +104,9 @@ services:
         source: /grow-journal-app
         destination: /grow-journal-app/index.html
       - type: rewrite
+        source: /demo
+        destination: /demo/index.html
+      - type: rewrite
         source: /feedback
         destination: /feedback/index.html
       - type: rewrite

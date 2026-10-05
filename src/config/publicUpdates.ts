@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "October 4, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "October 5, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "public-journal-demo",
+        title: "Try the journal without signing up",
+        date: "October 5, 2026",
+        dateLabel: "Released",
+        summary:
+          "A read-only sample journal now opens without an account. Explore five dated entries in the existing timeline viewer, switch to a vertical reading view and share the demo link. Public pages include a screenshot of the actual interface. The records are clearly labeled synthetic examples, and the plant image is AI-generated—not a customer grow, diagnosis or result. Additional reviewed product demonstrations and genuine customer stories remain separate work."
+      },
       {
         id: "private-feedback-collection",
         title: "Private feedback and optional customer stories",
