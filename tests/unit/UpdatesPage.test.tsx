@@ -387,6 +387,23 @@ describe("public Updates page", () => {
     }
   });
 
+  it("records the scoped staging discussion check without completing all courses", () => {
+    const courses = PUBLIC_UPDATE_GROUPS.find((group) => group.id === "courses")!;
+    const receipt = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "course-media-playback-recovery"
+    )!;
+    expect(courses.status).toBe("partial");
+    expect(courses.live).toContain("separate-learner staging check");
+    expect(courses.next).toContain("secure file scanning");
+    expect(courses.next).not.toContain("discussion handoffs");
+    expect(receipt.summary).toContain("synthetic staging records");
+    expect(receipt.summary).toContain("unpublished and archived");
+    expect(receipt.summary).toContain(
+      "A Facility-only course does not make its linked public discussion private."
+    );
+    expect(receipt.summary).not.toMatch(/qa\.invalid|6ac40[0-9a-f]+/);
+  });
+
   it("is public without requiring an entitlement and has public metadata", () => {
     expect(getRoutePolicy("/updates")).toBeNull();
     expect(metadataForPathname("/updates")).toMatchObject({

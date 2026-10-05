@@ -56,8 +56,8 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     title: "Course authoring and learning",
     status: "partial",
     scope: "Reliable course discovery, authoring, lesson media and learner journeys.",
-    live: "Course discovery and sign-in returns, saved lesson editing safeguards, video switching and Retry, course-list recovery, analytics and builder navigation are live.",
-    next: "Remaining author and learner journey checks, including resource and discussion handoffs where suitable test records are available. Course gifting is a separate planned milestone.",
+    live: "Course discovery and sign-in returns, saved lesson editing safeguards, video switching and Retry, course-list recovery, analytics and builder navigation are live. The course-to-discussion handoff passed a separate-learner staging check, including reload and test-course cleanup; discussion access rules are unchanged.",
+    next: "Remaining author and learner journey checks, including ordinary document uploads after secure file scanning is available. Course gifting is a separate planned milestone.",
     entryIds: [
       "course-media-playback-recovery",
       "course-lesson-authoring-guards",

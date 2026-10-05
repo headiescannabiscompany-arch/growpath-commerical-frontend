@@ -50,11 +50,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "course-media-playback-recovery",
-        title: "Safer course media switching and retry",
+        title: "Course media recovery and verified discussion links",
         date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "Switching lessons, video sources, accounts or workspaces clears the previous player and requires fresh third-party playback consent. Failed protected-video reads offer Retry while keeping the written summary available. Delayed document and audio requests now stop when you leave the course or switch accounts or workspaces. Retrying media does not complete a lesson, enroll you or change payments. The existing layout stays unchanged."
+          "Switching lessons, video sources, accounts or workspaces clears the previous player and requires fresh third-party playback consent. Failed protected-video reads offer Retry while keeping the written summary available. Delayed document and audio requests now stop when you leave the course or switch accounts or workspaces. Retrying media does not complete a lesson, enroll you or change payments. A separate learner account also verified Open Discussion from a free Facility-only course to its saved discussion, including a full-page reload, using synthetic staging records. The test course was unpublished and archived afterward. A Facility-only course does not make its linked public discussion private. Existing access rules and layout stay unchanged."
       },
       {
         id: "course-lesson-authoring-guards",
