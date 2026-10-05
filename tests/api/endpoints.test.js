@@ -286,12 +286,30 @@ describe("API Configuration & Endpoints", () => {
     });
 
     it("SOP templates use facility-scoped endpoints", async () => {
-      await getSOPTemplates("f1");
-      expect(fetchCalls[0].url.endsWith("/api/facilities/f1/sop-templates")).toBe(true);
+      const originalFetch = global.fetch;
+      const template = { id: "sop-1", title: "Opening", content: "Steps" };
+      global.fetch = async (url, options) => {
+        fetchCalls.push({ url, options });
+        const response =
+          options?.method === "POST" ? { created: template } : { templates: [template] };
+        return {
+          ok: true,
+          text: async () => JSON.stringify(response),
+          json: async () => response
+        };
+      };
+      try {
+        expect(await getSOPTemplates("f1")).toEqual([template]);
+        expect(fetchCalls[0].url.endsWith("/api/facilities/f1/sop-templates")).toBe(true);
 
-      await createSOPTemplate("f1", { title: "Opening", content: "Steps" });
-      expect(fetchCalls[1].options.method).toBe("POST");
-      expect(fetchCalls[1].url.endsWith("/api/facilities/f1/sop-templates")).toBe(true);
+        expect(
+          await createSOPTemplate("f1", { title: "Opening", content: "Steps" })
+        ).toEqual(template);
+        expect(fetchCalls[1].options.method).toBe("POST");
+        expect(fetchCalls[1].url.endsWith("/api/facilities/f1/sop-templates")).toBe(true);
+      } finally {
+        global.fetch = originalFetch;
+      }
     });
 
     it("verification queue uses facility-scoped approve and reject endpoints", async () => {

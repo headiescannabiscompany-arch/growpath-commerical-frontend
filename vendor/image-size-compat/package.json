@@ -1,0 +1,28 @@
+{
+  "name": "image-size",
+  "version": "1.2.1-compat.2.0.4",
+  "private": true,
+  "description": "GrowPath compatibility adapter exposing the image-size 1.x CommonJS API over patched image-size 2.0.4.",
+  "main": "index.cjs",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.cjs",
+      "default": "./index.cjs"
+    }
+  },
+  "files": [
+    "index.cjs",
+    "index.d.ts",
+    "LICENSE",
+    "README.md"
+  ],
+  "dependencies": {
+    "image-size-modern": "npm:image-size@2.0.4"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

@@ -629,7 +629,13 @@ describe("InventoryItemDetailScreen", () => {
       movements: [],
       movementPage: { hasMore: false }
     });
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Load older inventory movements").props.accessibilityState
+      ).toEqual({ busy: false, disabled: false })
+    );
     fireEvent.press(screen.getByLabelText("Load older inventory movements"));
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalledTimes(3));
     await waitFor(() =>
       expect(screen.queryByLabelText("Load older inventory movements")).toBeNull()
     );

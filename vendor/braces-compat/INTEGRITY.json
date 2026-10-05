@@ -1,0 +1,36 @@
+{
+  "upstream": {
+    "name": "braces",
+    "version": "3.0.3",
+    "tarball": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+    "integrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==",
+    "files": {
+      "index.js": "332ea07c7b006361aad12aa994ca75dc1db8e8382b884909e2f38f10b85c88a4",
+      "lib/compile.js": "dc98f22eee3d511785d92a00758d5f0d48efed5f5813bdecc2de430c529b5c9f",
+      "lib/expand.js": "41ccc196ebfa7b7781a634e721eb744e4e7bcb54cba427a7e3d6806a1b9e58f7",
+      "lib/parse.js": "e572166565f15fa6ad9865ae49d678218e32aabfd1b3720f6d0d43d39800d310",
+      "lib/stringify.js": "379f22d77bfa1478341ccd49c5e4267464aabcbba03558bab332aac23fc6f23a",
+      "lib/utils.js": "b5a7596aa67730412b3c029ef09e84e6b67b8e445cffd35d1d295549c89066c7",
+      "lib/constants.js": "c18ac5adb57308f1ce42a28552da3a31f5d83709743ebd9a636336813a744d4b",
+      "LICENSE": "35bdd8a44339719441900fb50fbefc5e2dca1ca662cbaed7a687de842c8b70f2"
+    }
+  },
+  "local": {
+    "name": "@growpathai/braces-compat",
+    "version": "3.0.3-growpath.1",
+    "files": {
+      "index.js": "332ea07c7b006361aad12aa994ca75dc1db8e8382b884909e2f38f10b85c88a4",
+      "lib/compile.js": "13febe2986034e5955dae520fff83b95d4f6c9719714ed117de547363a9494ed",
+      "lib/expand.js": "78b3b5808da0659ccfb77fbd7de3fb33bd9bf8b95b26f001d48637423176620c",
+      "lib/parse.js": "e7266d59be11befe13bf730db2fb77ca9c50a8e10f98282fda4cc4eee2e06558",
+      "lib/stringify.js": "7f7b19ee5f4432cbc68f61fbe043598f70928e2b2e50f502428ba43b890afec6",
+      "lib/utils.js": "cdb2f8731834b28e3d855d8ba232c03dfa51d7182d8450179de3b88e176fccb8",
+      "lib/constants.js": "c18ac5adb57308f1ce42a28552da3a31f5d83709743ebd9a636336813a744d4b",
+      "lib/depth.js": "3f764293bcfe89c39e232a2e28e101c649b7f4e38885ece68f0999e2e4f37118",
+      "LICENSE": "35bdd8a44339719441900fb50fbefc5e2dca1ca662cbaed7a687de842c8b70f2",
+      "package.json": "efbe8de9e06ef880a0685d89f83a87d2f70cd0a43d8b78225fc300e440382fee",
+      "PROVENANCE.md": "ca891ba2fe6036b31fc1aecc58571ccaa09d445c8070750d29bb2cfebb6a1d00",
+      "compatibility-fixtures.json": "8dea9022dbf8be6b91a51434a6d4a2ed32e25ead1e6c97421377720b52a83571"
+    }
+  }
+}

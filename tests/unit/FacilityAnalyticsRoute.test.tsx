@@ -179,10 +179,11 @@ describe("FacilityAnalyticsRoute", () => {
         "Previously loaded analytics shown. Retry to refresh the recorded metrics."
       )
     ).toBeTruthy();
+    const retry = pending();
+    jest.mocked(fetchFacilityAnalyticsOverview).mockReturnValueOnce(retry.promise);
     fireEvent.press(screen.getByLabelText("Refresh facility analytics"));
-    await waitFor(() =>
-      expect(screen.queryByText(/Previously loaded analytics shown/)).toBeNull()
-    );
+    await act(async () => retry.resolve(recorded));
+    expect(screen.queryByText(/Previously loaded analytics shown/)).toBeNull();
   });
 
   it.each([null, [], "invalid"])(

@@ -34,7 +34,9 @@ let mockFacilitySelection: {
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
-  usePathname: () => "/home/facility/profile"
+  usePathname: () => "/home/facility/profile",
+  // FeedbackEntryCard uses Link; retain its child in this profile-focused harness.
+  Link: ({ children }: { children: React.ReactNode }) => children
 }));
 
 jest.mock("@/components/ScreenBoundary", () => {

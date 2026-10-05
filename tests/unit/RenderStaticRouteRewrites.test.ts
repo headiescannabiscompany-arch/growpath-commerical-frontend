@@ -5,7 +5,10 @@ describe("Render static route rewrites", () => {
   it.each(["render.yaml", "render.staging.yaml"])(
     "serves new audit pages before the catch-all in %s",
     (file) => {
-      const config = fs.readFileSync(path.resolve(process.cwd(), file), "utf8");
+      // Git may check YAML out with CRLF on Windows; route semantics are unchanged.
+      const config = fs
+        .readFileSync(path.resolve(process.cwd(), file), "utf8")
+        .replace(/\r\n/g, "\n");
       for (const route of ["/vs/growtrackr", "/grow-journal-app"]) {
         expect(config).toContain(
           `source: ${route}\n        destination: ${route}/index.html`

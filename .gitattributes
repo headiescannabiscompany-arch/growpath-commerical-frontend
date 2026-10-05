@@ -1,0 +1,7 @@
+# Vendored security-repair sources are verified byte-for-byte on Windows and CI.
+vendor/braces-compat/** text eol=lf
+vendor/node-forge-patched/** text eol=lf
+vendor/image-size-compat/** text eol=lf
+vendor/brace-expansion-compat/** text eol=lf
+scripts/verify-*-backport.cjs text eol=lf
+scripts/verify-security-dependency-repairs.cjs text eol=lf

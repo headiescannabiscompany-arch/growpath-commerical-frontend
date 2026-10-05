@@ -1,6 +1,11 @@
 import React from "react";
 import { ActivityIndicator, Linking, StyleSheet, TextInput } from "react-native";
-import { fireEvent, fireEventAsync, render, waitFor } from "@testing-library/react-native";
+import {
+  fireEvent,
+  fireEventAsync,
+  render,
+  waitFor
+} from "@testing-library/react-native";
 
 import PlatformAdminRoute, {
   createPlatformAdminStyles,
@@ -20,12 +25,22 @@ let mockRouteParams: Record<string, string> = {};
 let mockRole = "admin";
 let mockThemeMode: "day" | "night" = "night";
 
+const mockAuthSnapshot = () => ({
+  user: { id: "admin-1", role: mockRole },
+  logout: mockLogout,
+  token: "synthetic-admin-test-token",
+  isAuthed: true,
+  isHydrating: false,
+  meStatus: "ready"
+});
+
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockRouteParams,
   useRouter: () => ({ replace: mockReplace, push: mockPush })
 }));
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "admin-1", role: mockRole }, logout: mockLogout })
+  useAuth: () => mockAuthSnapshot(),
+  useOptionalAuth: () => mockAuthSnapshot()
 }));
 jest.mock("@/api/apiRequest", () => {
   const actual = jest.requireActual("@/api/apiRequest");
@@ -296,6 +311,8 @@ const harvestCalibrationCandidate = {
 };
 
 function defaultAdminApi(path: string) {
+  if (path.startsWith("/api/admin/testimonials"))
+    return Promise.resolve({ submissions: [], nextCursor: null });
   if (path === "/api/admin/overview") return Promise.resolve({ overview });
   if (path === "/api/admin/usage") return Promise.resolve({ usage });
   if (path === "/api/admin/security-center") return Promise.resolve(securityCenter);

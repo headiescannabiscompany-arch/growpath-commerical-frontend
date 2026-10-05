@@ -79,6 +79,8 @@ jest.mock("@/theme/appTheme", () => {
 });
 
 jest.mock("expo-router", () => ({
+  // FeedbackEntryCard uses Link; retain its child in this profile-focused harness.
+  Link: ({ children }: { children: React.ReactNode }) => children,
   useRouter: () => ({
     replace: mockReplace,
     push: mockPush

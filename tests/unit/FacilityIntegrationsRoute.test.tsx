@@ -124,12 +124,24 @@ describe("FacilityIntegrationsRoute", () => {
     expect(mockBuildPanel).toHaveBeenLastCalledWith(
       expect.objectContaining({ canConfigure: false, targetRef: "grow-1" })
     );
+    let resolveRetry!: (value: any) => void;
+    mockApiRequest.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRetry = resolve;
+      })
+    );
     fireEvent.press(
       screen.getByLabelText("Refresh Facility grow choices for integrations")
     );
-    await waitFor(() =>
-      expect(screen.queryByText(/Previously loaded grow choices shown/)).toBeNull()
+    await act(async () =>
+      resolveRetry({
+        grows: [
+          { id: "grow-1", name: "Flower Cycle 12", roomName: "Flower A" },
+          { id: "grow-2", name: "Mother Room" }
+        ]
+      })
     );
+    expect(screen.queryByText(/Previously loaded grow choices shown/)).toBeNull();
     expect(mockBuildPanel).toHaveBeenLastCalledWith(
       expect.objectContaining({ canConfigure: true, targetRef: "grow-1" })
     );

@@ -1,6 +1,6 @@
 import React from "react";
 import * as DocumentPicker from "expo-document-picker";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilitySopRunDetailRoute, {
   createFacilitySopRunDetailStyles
@@ -118,18 +118,32 @@ jest.mock("@/hooks/useSopTemplates", () => ({
 
 describe("facility SOP run nested back behavior", () => {
   it("returns the Facility-wide library to its source grow", async () => {
-    mockParams = { growId: "grow-1" };
-    const screen = render(<FacilitySopRunsIndexRoute />);
-    expect(mockBoundaryProps).toMatchObject({
-      preferBackFallback: true,
-      backFallbackHref: "/home/facility/grows/grow-1"
-    });
-    await screen.findByText("Daily room check");
-    expect(mockBoundaryProps).toMatchObject({
-      preferBackFallback: true,
-      backFallbackHref: "/home/facility/grows/grow-1"
-    });
-    expect(mockApiRequest.mock.calls[0][0]).not.toContain("growId");
+    jest.useFakeTimers();
+    try {
+      mockParams = { growId: "grow-1" };
+      const screen = render(<FacilitySopRunsIndexRoute />);
+      expect(mockBoundaryProps).toMatchObject({
+        preferBackFallback: true,
+        backFallbackHref: "/home/facility/grows/grow-1"
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+      act(() => {
+        jest.runOnlyPendingTimers();
+      });
+      expect(screen.getByText("Daily room check")).toBeTruthy();
+      expect(mockBoundaryProps).toMatchObject({
+        preferBackFallback: true,
+        backFallbackHref: "/home/facility/grows/grow-1"
+      });
+      expect(mockApiRequest.mock.calls[0][0]).not.toContain("growId");
+    } finally {
+      act(() => {
+        jest.runOnlyPendingTimers();
+      });
+      jest.useRealTimers();
+    }
   });
   beforeEach(() => {
     mockParams = {};

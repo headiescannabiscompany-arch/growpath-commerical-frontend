@@ -540,7 +540,7 @@ function facilityIntegrationsUsesRoomImport(routes) {
     /mode="facility"/.test(source) &&
     /targetRef=\{selectedGrowId\}/.test(source) &&
     /facilityId=\{facilityId\}/.test(source) &&
-    /canConfigure=\{canConfigure\}/.test(source) &&
+    /canConfigure=\{canConfigure && !!choicesReady\}/.test(source) &&
     /read-only/i.test(source) &&
     /role === "OWNER" \|\| role === "MANAGER"/.test(source);
   return (

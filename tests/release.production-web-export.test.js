@@ -34,6 +34,8 @@ function createExportRoot() {
     "scripts/public-marketing.cjs",
     "src/components/marketing/publicMarketing.json",
     "src/components/marketing/syntheticGrowDemo.json",
+    "src/components/marketing/demoAudiences.json",
+    "src/components/marketing/demoStories.json",
     "src/components/marketing/productScreenshots.json"
   ]) {
     writeFile(tempRoot, relative, fs.readFileSync(path.join(root, relative), "utf8"));
