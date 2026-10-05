@@ -1,6 +1,7 @@
 "use strict";
 const marketing = require("../src/components/marketing/publicMarketing.json");
 const demo = require("../src/components/marketing/syntheticGrowDemo.json");
+const demoAudiences = require("../src/components/marketing/demoAudiences.json");
 const screenshots = require("../src/components/marketing/productScreenshots.json");
 const escape = (value) =>
   String(value)
@@ -232,6 +233,57 @@ function productScreenshotMarkup(page) {
     )
     .join("");
 }
+function demoExplorerMarkup() {
+  return (
+    "<section><h2>Explore by account type</h2><p>Choose the work you want to do. These are guided highlights with screenshots, not signed-in workspaces. The interactive sample journal follows below.</p>" +
+    '<nav aria-label="Demo account types">' +
+    demoAudiences
+      .map(
+        (item) => '<a href="#demo-' + escape(item.id) + '">' + escape(item.label) + "</a>"
+      )
+      .join(" ") +
+    "</nav>" +
+    demoAudiences
+      .map(
+        (item) =>
+          '<section class="marketing-card" id="demo-' +
+          escape(item.id) +
+          '"><h3>' +
+          escape(item.title) +
+          "</h3><p>" +
+          escape(item.description) +
+          "</p><ul>" +
+          item.highlights.map((line) => "<li>" + escape(line) + "</li>").join("") +
+          "</ul><p>" +
+          escape(item.limits) +
+          "</p><p>" +
+          escape(item.caption) +
+          '</p><img src="' +
+          escape(item.image) +
+          '" alt="' +
+          escape(item.alt) +
+          '" width="' +
+          item.width +
+          '" height="' +
+          item.height +
+          '" loading="lazy" style="display:block;width:100%;max-width:' +
+          item.width +
+          'px;height:auto;margin:auto" />' +
+          '<p><a href="' +
+          escape(item.image) +
+          '">Open full-size ' +
+          escape(item.label) +
+          " screenshot</a></p>" +
+          '<a href="' +
+          escape(item.href) +
+          '">' +
+          escape(item.linkLabel) +
+          "</a></section>"
+      )
+      .join("") +
+    "</section>"
+  );
+}
 function publicDemoMarkup() {
   return (
     '<main id="seo-content" class="marketing"><nav aria-label="GrowPathAI public pages"><a class="brand" href="/">GrowPathAI</a>' +
@@ -240,7 +292,9 @@ function publicDemoMarkup() {
     escape(demo.title) +
     "</h1><p>" +
     escape(demo.description) +
-    '</p></header><section class="marketing-card"><h2>' +
+    "</p></header>" +
+    demoExplorerMarkup() +
+    '<section class="marketing-card"><h2>' +
     escape(demo.growTitle) +
     "</h2><p>" +
     escape(demo.disclosure) +
@@ -275,7 +329,6 @@ function publicDemoMarkup() {
       )
       .join("") +
     '<section class="marketing-card"><h2>Ready to start your own journal?</h2><p>Free account. No payment card required.</p><div class="marketing-actions"><a class="primary" href="/register">Create free account</a><a href="/demo">Demo address: growpathai.com/demo</a></div></section>' +
-    productScreenshotMarkup("demo") +
     "<footer>" +
     footer.map(anchor).join(" ") +
     "</footer></main>"

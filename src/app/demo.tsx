@@ -14,7 +14,8 @@ import demo from "@/components/marketing/syntheticGrowDemo.json";
 import { useAppTheme } from "@/theme/appTheme";
 import { fmtDate } from "@/features/grows/routeUtils";
 import { sharePublicLink } from "@/utils/publicLinks";
-import ProductScreenshots from "@/components/marketing/ProductScreenshots";
+import DemoExplorer from "@/components/marketing/DemoExplorer";
+import PublicTestimonials from "@/components/marketing/PublicTestimonials";
 
 // This route never accepts a grow ID, token or supplied record. All examples are
 // bundled synthetic fixtures; private grow access continues through its own routes.
@@ -82,6 +83,7 @@ export default function PublicGrowDemo() {
         </Text>
         <Text style={styles.intro}>{demo.description}</Text>
       </View>
+      <DemoExplorer />
       <View style={styles.card}>
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           {demo.growTitle}
@@ -150,7 +152,7 @@ export default function PublicGrowDemo() {
           Demo address: growpathai.com/demo
         </Link>
       </View>
-      <ProductScreenshots page="demo" />
+      <PublicTestimonials />
       <View style={styles.footer}>
         <Link href="/privacy" style={styles.navigationLink}>
           Privacy

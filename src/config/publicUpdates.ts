@@ -18,11 +18,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "public-journal-demo",
-        title: "Try the journal without signing up",
+        title: "Explore each account type without signing up",
         date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "A read-only sample journal now opens without an account. Explore five dated entries in the existing timeline viewer, switch to a vertical reading view and share the demo link. Public pages include a screenshot of the actual interface. The records are clearly labeled synthetic examples, and the plant image is AI-generated—not a customer grow, diagnosis or result. Additional reviewed product demonstrations and genuine customer stories remain separate work."
+          "The no-signup demo now has Free, Pro, Commercial and Facility exploration options, each with practical highlights, plan limits and a labeled screenshot. Free focuses on one tracked plant plus available care tools around the house, not unlimited tracking or AI. The five-entry journal, vertical reading view and fixed demo share link remain available. Screenshots use synthetic records; the plant illustration is AI-generated, not a customer result. Approved, permissioned grower feedback can appear separately and stays hidden when empty. Updates now shows days since each milestone's latest recorded release; planning dates do not count. Genuine customer stories and additional real-output evidence remain separate work."
       },
       {
         id: "private-feedback-collection",

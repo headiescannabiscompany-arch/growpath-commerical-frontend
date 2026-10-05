@@ -1,0 +1,86 @@
+[
+  {
+    "id": "free",
+    "label": "Free · around the house",
+    "title": "One plant to track. Help around the house.",
+    "description": "You do not need a grow room to use GrowPathAI. Keep a journal for one plant you want to follow closely, and use the available plant-care tools for questions about plants around the house.",
+    "highlights": [
+      "Keep that plant's photos, observations and care notes together instead of searching your camera roll.",
+      "Record watering and other care tasks, then look back at what you actually did.",
+      "Use crop-neutral identification and plant-care tools without turning on cannabis content. AI actions use the displayed number of credits.",
+      "Browse the community and courses, and explore stores without buying a paid subscription.",
+      "Try the five-point journal below and see how a reviewed, read-only timeline can be shared."
+    ],
+    "limits": "Free includes 1 tracked grow, 1 tracked plant and 5 AI credits per week. Other plants do not become additional tracked records, and AI use is not unlimited. No payment card is required.",
+    "image": "/images/synthetic-timeline-ui.jpg",
+    "width": 1280,
+    "height": 1000,
+    "alt": "Actual GrowPathAI timeline showing five synthetic basil journal points",
+    "caption": "Actual GrowPathAI interface with synthetic journal data. The basil image is AI-generated, not a customer grow or a claimed result.",
+    "href": "/personal-grower",
+    "linkLabel": "Explore personal growing"
+  },
+  {
+    "id": "pro",
+    "label": "Pro · more growing room",
+    "title": "Keep more plants and runs organized",
+    "description": "For a growing collection or several runs, Pro keeps the same personal workflow with more room and a larger AI allowance.",
+    "highlights": [
+      "Track photos, feeding notes, readings and tasks across multiple grows.",
+      "Review earlier entries so the lessons from one run are available for the next.",
+      "Bring observations and measurements to AI-assisted plant review instead of guessing missing context.",
+      "Use supported timeline exports and reviewed sharing while keeping private records private.",
+      "Keep access to community, course and shopping paths without a Facility workspace."
+    ],
+    "limits": "Pro includes 10 grows, 50 plants and 100 AI credits per week. A standard diagnosis uses 3 credits; check each action's displayed cost. This screenshot shows the intake form, not an AI result.",
+    "image": "/images/synthetic-diagnosis-intake-ui.jpg",
+    "width": 836,
+    "height": 1100,
+    "alt": "Actual plant diagnosis intake form with synthetic unsent basil observations",
+    "caption": "Actual staging interface captured October 5, 2026. Synthetic, unsent example: no AI analysis, diagnosis or treatment recommendation was produced. This form is not exclusive to Pro.",
+    "href": "/pricing",
+    "linkLabel": "Compare Pro and Free allowances"
+  },
+  {
+    "id": "commercial",
+    "label": "Commercial · businesses & creators",
+    "title": "Connect your growing work with your audience",
+    "description": "For small businesses, brands, educators and influencers who need storefront and creator workflows alongside grow records.",
+    "highlights": [
+      "Organize product information and eligible storefront offers; review drafts before publishing.",
+      "Build and share courses, with eligible free or paid access and saved lessons.",
+      "Host Live sessions using existing broadcast tools such as OBS; GrowPathAI provides the hosted audience experience.",
+      "Keep product trials, tasks and supporting records together in the Commercial workspace.",
+      "Review the existing sales and activity summaries without treating download counts as payments."
+    ],
+    "limits": "Commercial includes 50 grows, 500 plants and 500 AI credits per week. Publication does not verify payment readiness. Seller, product and purchase eligibility still apply. In-app guest backstage and course gifting are not part of this demo.",
+    "image": "/images/synthetic-commercial-offers-ui.png",
+    "width": 944,
+    "height": 1245,
+    "alt": "Actual Commercial Storefront Offers page with one synthetic published offer and one synthetic draft",
+    "caption": "Owner-supplied staging screenshot captured October 1, 2026. Titles, prices, downloads and ratings are synthetic QA fixtures—not real sales, customer reviews or business results. Screenshot buttons are not interactive.",
+    "href": "/commercial-cultivation",
+    "linkLabel": "Explore Commercial workflows"
+  },
+  {
+    "id": "facility",
+    "label": "Facility · teams & rooms",
+    "title": "See the work across rooms and your team",
+    "description": "For teams that need shared operational records, assigned work and role-based access—not just a larger personal journal.",
+    "highlights": [
+      "Move from the dashboard into rooms, grows and plant records.",
+      "Assign and review tasks with the team; access follows each person's role.",
+      "Use SOP libraries and execution records to keep procedures and recorded work connected.",
+      "Review inventory, recorded checks and supported reports and exports.",
+      "Use team learning and available sensor-import workflows within their supported setup and permissions."
+    ],
+    "limits": "Facility includes 200 grows, 2,000 plants and a shared workspace pool of 2,000 AI credits per week. Recorded checks are not legal compliance certification. This preview does not expose a customer's workspace or grant operational access.",
+    "image": "/images/synthetic-facility-dashboard-ui.jpg",
+    "width": 836,
+    "height": 1100,
+    "alt": "Actual Facility dashboard populated with synthetic QA rooms, grows and tasks",
+    "caption": "Actual staging interface captured October 5, 2026. Counts and recorded check statuses are synthetic test data, not customer usage, outcomes or compliance certification.",
+    "href": "/facility-management",
+    "linkLabel": "Explore Facility workflows"
+  }
+]

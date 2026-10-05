@@ -47,6 +47,22 @@ D4.3 is explicitly in the action plan.
 
 ## Verification / release
 
+### Hosted closeout — October 5, 2026
+
+Frontend d76ada952ec0eedc36fc570a21ca6e8aae5ecaee is LIVE in staging
+(`dep-db1q85jncjis73btlct0`, 13:22:52Z) and production
+(`dep-db1qao0u01pc73fkblkg`, 13:28:00Z). Duplicate queued staging request
+`dep-db1q88idails73ad2jtg` was canceled; no duplicate deploy remains.
+Staging 375px pricing and five-entry demo were verified without page errors.
+Production alias home showed the founder/outcome changes. Canonical
+https://growpathai.com/pricing showed the conditional Pro comparison and unchanged
+allowances; https://growpathai.com/updates showed the grouped Website & plans
+founder/outcome release summary. W07 engineering release is closed. Genuine proof
+and actual-phone keyboard follow-ups remain as identified above, not repeated
+implementation tasks. W08 role-demo/release-age additions are a separate owner request.
+
+The following local checkpoint is retained as historical verification detail.
+
 Local checks: 124 focused Jest tests plus 19 static-marketing tests pass; TypeScript,
 touched-file lint, contamination guard and production-format export pass. Default
 cumulative interface guard still fails on pre-existing Admin (234 versus 231) and

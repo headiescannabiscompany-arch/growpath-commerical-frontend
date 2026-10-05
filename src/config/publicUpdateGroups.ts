@@ -1,4 +1,5 @@
 import { PUBLIC_UPDATE_SECTIONS } from "./publicUpdates";
+import { releaseDay } from "@/utils/releaseAge";
 
 // Curated public milestones, not a projection of the private operational TODO.
 // Keep stable group IDs. Add small release receipts to the relevant group's
@@ -40,8 +41,8 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     status: "partial",
     scope:
       "Grower-focused explanations, exact plan allowances and search-readable public pages.",
-    live: "Grow-journal explanations connect each run's records to the next. The homepage includes Jay's supplied portrait, founder story and show link. Exact plan limits, a conditional comparison with separate journal costs, larger public-page tap targets, three sourced comparisons and a grow-journal guide are live. Plan prices and search metadata stay unchanged.",
-    next: "Collect permissioned grower stories, verified usage proof and genuine outside endorsements. The no-signup journal and reviewed diagnosis-intake and Facility screenshots are live. All samples are labeled synthetic; the diagnosis image is an unsent input example, not an AI result.",
+    live: "Grow-journal explanations connect each run's records to the next. The homepage includes Jay's supplied portrait, founder story and show link. Exact plan limits, a conditional comparison with separate journal costs, larger public-page tap targets, three sourced comparisons and a grow-journal guide are live. Explore Free, Pro, Commercial and Facility highlights and labeled screenshots without signing up, then try the sample journal. Approved feedback can appear separately. Updates counts days since each milestone's latest release, not its planning date. Plan prices stay unchanged.",
+    next: "Collect permissioned grower stories, verified usage proof and genuine outside endorsements. All demo records are labeled synthetic; the diagnosis image is an unsent input example, not an AI result. Accurate real-output evidence remains separate work.",
     entryIds: [
       "public-product-screenshots",
       "public-journal-demo",
@@ -222,4 +223,22 @@ export function updateGroupSections(group: UpdateGroup) {
     ...section,
     entries: section.entries.filter((entry) => group.entryIds.includes(entry.id))
   })).filter((section) => section.entries.length > 0);
+}
+
+export function latestGroupRelease(group: UpdateGroup, now = new Date()) {
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000;
+  return (
+    PUBLIC_UPDATE_SECTIONS.filter((section) => section.id === "live")
+      .flatMap((section) => section.entries)
+      .filter((entry) => {
+        const day = releaseDay(entry.date);
+        return (
+          group.entryIds.includes(entry.id) &&
+          entry.dateLabel === "Released" &&
+          day !== null &&
+          day <= today
+        );
+      })
+      .sort((a, b) => releaseDay(b.date)! - releaseDay(a.date)!)[0]?.date ?? null
+  );
 }

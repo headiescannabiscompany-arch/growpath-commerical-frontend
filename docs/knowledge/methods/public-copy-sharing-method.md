@@ -96,6 +96,14 @@ never the current location's query or a signed-in user's URL. Provide a vertical
 reading alternative and readable static HTML for users without JavaScript.
 Marketing screenshots must be captured from the rendered app, labeled with the
 synthetic-data context, and never represented as real customer records.
+Account-type exploration uses bundled Free, Pro, Commercial and Facility highlights
+and reviewed synthetic screenshots, not impersonated accounts or private record reads.
+Show current plan limits and distinguish intake forms from produced results. Explain
+Free's one tracked plant separately from available care tools for other household plants;
+never imply unlimited tracking or AI. Keep screenshot controls visibly non-interactive,
+offer full-size images and a static reading alternative, and share only the fixed demo URL.
+Real testimonials remain a separate dynamic, approved/consented public feed, never
+synthetic proof or statically baked quotes.
 
 Published Commercial product links provide a stable crawler-safe preview document with
 the exact product title, bounded description, price, canonical product URL and a public

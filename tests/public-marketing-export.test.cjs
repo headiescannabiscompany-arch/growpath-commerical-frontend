@@ -4,6 +4,7 @@ const { test } = require("node:test");
 const fs = require("node:fs");
 const path = require("node:path");
 const demo = require("../src/components/marketing/syntheticGrowDemo.json");
+const audiences = require("../src/components/marketing/demoAudiences.json");
 const screenshots = require("../src/components/marketing/productScreenshots.json");
 const {
   publicMarketingMarkup,
@@ -19,6 +20,21 @@ test("no-signup demo includes all synthetic entries without JavaScript or privat
   for (const event of demo.events) assert.ok(html.includes(event.summary));
   assert.ok(html.includes(demo.photoAlt));
   assert.doesNotMatch(html, /growId=|token=|api\/grows|customer testimonial/i);
+});
+test("all demo roles have readable static highlights, labeled images and no baked testimonials", () => {
+  const html = publicMarketingMarkup("demo");
+  const escaped = (value) => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
+  for (const audience of audiences) {
+    assert.ok(html.includes('id="demo-' + audience.id + '"'));
+    assert.ok(html.includes(escaped(audience.limits)));
+    assert.ok(html.includes(escaped(audience.caption)));
+    assert.ok(html.includes('href="' + audience.image + '"'));
+    assert.equal(html.split('src="' + audience.image + '"').length - 1, 1);
+    assert.ok(
+      fs.statSync(path.join(__dirname, "../public", audience.image)).size > 10000
+    );
+  }
+  assert.doesNotMatch(html, /Feedback from growers|test-public-feedback|aggregateRating/);
 });
 test("public acquisition pages offer the preview before registration", () => {
   for (const route of ["", "features", "personal-grower", "pricing", "grow-journal-app"])

@@ -125,8 +125,8 @@
       "description": "Both keep grow records and offer AI help. Choose by your plant count, day-to-day logging, export needs, and whether you also need courses, storefront work, or a facility workspace."
     },
     "demo": {
-      "title": "Try a synthetic grow journal — no signup | GrowPathAI",
-      "description": "Explore five clearly labeled example entries in the GrowPathAI timeline. Read notes, view a synthetic plant image and see the workflow before creating an account.",
+      "title": "Explore Free, Pro, Commercial and Facility — no signup | GrowPathAI",
+      "description": "Choose your account type to explore GrowPathAI highlights and labeled screenshots. Try the five-entry sample journal before creating an account. All demo records are synthetic.",
       "image": "/images/synthetic-timeline-ui.jpg",
       "imageAlt": "Actual GrowPathAI timeline with synthetic demo data, not a customer grow"
     },

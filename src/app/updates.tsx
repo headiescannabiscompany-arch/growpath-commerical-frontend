@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "expo-router";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import BackButton from "@/components/nav/BackButton";
@@ -6,16 +6,29 @@ import { PUBLIC_UPDATES_REVIEWED } from "@/config/publicUpdates";
 import {
   PUBLIC_UPDATE_GROUPS,
   UPDATE_STATUS_LABELS,
+  latestGroupRelease,
   updateGroupSections
 } from "@/config/publicUpdateGroups";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { releaseAgeLabel } from "@/utils/releaseAge";
 
 export default function UpdatesPage() {
   const { palette } = useAppTheme();
   const styles = createUpdatesStyles(palette);
   const [selected, setSelected] = useState("overview");
   const [expanded, setExpanded] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+  const releaseSummary = (item: (typeof PUBLIC_UPDATE_GROUPS)[number]) => {
+    const date = latestGroupRelease(item, now);
+    return date
+      ? `Latest release: ${date} · ${releaseAgeLabel(date, now)}`
+      : "Not released yet";
+  };
   const tabs = [{ id: "overview", tab: "Overview" }, ...PUBLIC_UPDATE_GROUPS];
   const tabRefs = useRef<any[]>([]);
   const group = PUBLIC_UPDATE_GROUPS.find((item) => item.id === selected);
@@ -107,6 +120,7 @@ export default function UpdatesPage() {
             {PUBLIC_UPDATE_GROUPS.map((item) => (
               <View key={item.id} style={styles.card}>
                 <Text style={styles.status}>{UPDATE_STATUS_LABELS[item.status]}</Text>
+                <Text style={styles.date}>{releaseSummary(item)}</Text>
                 <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
                   {item.title}
                 </Text>
@@ -131,6 +145,7 @@ export default function UpdatesPage() {
               {group.title}
             </Text>
             <Text style={styles.status}>{UPDATE_STATUS_LABELS[group.status]}</Text>
+            <Text style={styles.date}>{releaseSummary(group)}</Text>
             <Text style={styles.body}>{group.scope}</Text>
             <View style={styles.card}>
               <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
@@ -178,6 +193,11 @@ export default function UpdatesPage() {
                         </Text>
                         <Text style={styles.date}>
                           {entry.dateLabel} {entry.date}
+                          {section.id === "live" &&
+                          entry.dateLabel === "Released" &&
+                          releaseAgeLabel(entry.date, now)
+                            ? ` · ${releaseAgeLabel(entry.date, now)}`
+                            : ""}
                         </Text>
                         <Text style={styles.body}>{entry.summary}</Text>
                       </View>

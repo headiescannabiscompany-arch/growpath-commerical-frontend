@@ -71,6 +71,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Admins cannot edit consented words, name or photo and must explicitly review generic-public-audience suitability before publication.",
       "Synthetic records never enter ordinary public proof; no AI training, incentives or separate advertising permission are included.",
       "Public photo reads recheck access and source version without exposing storage URLs; never bake testimonials into static public HTML.",
+      "Marketing and demo placements reuse the dynamic approved-only feed, hide empty results, and keep genuine feedback separate from synthetic examples; website consent does not grant outside advertising permission.",
       "Withdrawal and account quarantine revoke visibility without a republish shortcut; account restoration does not restore publicity permission."
     ],
     ["feedback", "admin-testimonial-review"]
@@ -96,6 +97,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Never publish private data merely because Share was pressed.",
+      "Public role demos use bundled synthetic screenshots and accurate limits, never private account reads; distinguish intake forms from results and one tracked Free plant from available household care tools. Keep genuine testimonials in the separate dynamic consented feed.",
       "Forum directories and shared discussions must wait for account and entitlement readiness before capability denial or record reads; failed initial access checks offer Retry without granting permissions or publishing content.",
       "Forum details read the exact post before comments/actions, recover post and comments independently without false empty results, preserve same-discussion drafts, clear state on discussion or linked-grow changes, and discard late or mismatched reads; Retry never resubmits a confirmed comment.",
       "Private Visual Flow and Detailed List attach photo events to the matching selected journal by source identity; preserve standalone photos and distinct same-date/title journals without changing stored activity or frozen snapshots.",

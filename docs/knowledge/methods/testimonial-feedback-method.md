@@ -40,6 +40,10 @@ ordinary public testimonial feed, including when an Admin approves them in a tes
    active account. Photo reads recheck the same authorization/version boundary and strip
    metadata; never return protected source URLs. Empty or failed reads cannot leave stale
    public proof. Do not bake real testimonials into static HTML or service-worker caches.
+   Marketing and demo placements reuse the same dynamic approved-only feed; an empty
+   successful response shows no testimonial section or placeholder endorsement. Keep
+   real feedback separate from the demo's labeled synthetic records. Website permission
+   does not authorize reusing a person's quote in outside ads or social campaigns.
 7. Owners may withdraw regardless of publicity status, including during pending account
    deletion. Withdrawal is terminal, wins races with publication, and prevents quote/photo
    access. Changing content requires a new submission and new permission. Hiding is not

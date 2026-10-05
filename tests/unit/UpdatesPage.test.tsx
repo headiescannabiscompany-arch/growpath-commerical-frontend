@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import UpdatesPage, { createUpdatesStyles } from "@/app/updates";
 import { PUBLIC_UPDATE_SECTIONS, PUBLIC_UPDATES_REVIEWED } from "@/config/publicUpdates";
 import {
@@ -24,6 +24,19 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("shows release age, updates after midnight and leaves unreleased plans undated", () => {
+    jest.useFakeTimers().setSystemTime(new Date(2026, 9, 5, 23, 59, 30));
+    const screen = render(<UpdatesPage />);
+    expect(screen.getAllByText(/Released today · 0 days ago/).length).toBeGreaterThan(0);
+    act(() => jest.advanceTimersByTime(60_000));
+    expect(screen.getAllByText(/Released 1 day ago/).length).toBeGreaterThan(0);
+    fireEvent.press(screen.getByRole("tab", { name: "Course gifts" }));
+    expect(screen.queryByText(/Latest release:/)).toBeNull();
+    expect(screen.getAllByText("Not released yet").length).toBeGreaterThan(0);
+    screen.unmount();
+    expect(jest.getTimerCount()).toBe(0);
+    jest.useRealTimers();
+  });
   it("groups the audit delta without claiming missing customer proof is complete", () => {
     const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "public-website");
     expect(group?.status).toBe("partial");
@@ -245,7 +258,7 @@ describe("public Updates page", () => {
             screen.getAllByRole("header", { name: entry.title }).length
           ).toBeGreaterThan(0);
           expect(
-            screen.getAllByText(`${entry.dateLabel} ${entry.date}`).length
+            screen.getAllByText(`${entry.dateLabel} ${entry.date}`, { exact: false }).length
           ).toBeGreaterThan(0);
         }
       }
