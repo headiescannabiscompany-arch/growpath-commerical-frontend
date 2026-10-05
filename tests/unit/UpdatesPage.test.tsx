@@ -24,6 +24,32 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("groups the Forum participation fix without closing broader app acceptance", () => {
+    const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
+      (entry) => entry.id === "forum-share-readiness"
+    );
+    expect(notes).toHaveLength(1);
+    expect(notes[0].date).toBe("October 5, 2026");
+    expect(notes[0].summary).toContain("follow your individual access");
+    expect(notes[0].summary).toContain(
+      "independently of the selected Facility subscription"
+    );
+    expect(notes[0].summary).toContain(
+      "Facility operational permissions and server posting rules are unchanged"
+    );
+    expect(notes[0].summary).toContain(
+      "Copy Link, Copy Post and recipient paths remain checked"
+    );
+    const review = PUBLIC_UPDATE_GROUPS.find((group) => group.id === "app-review");
+    expect(review?.status).toBe("progress");
+    expect(review?.entryIds.filter((id) => id === "forum-share-readiness")).toHaveLength(
+      1
+    );
+    expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === "courses")?.status).toBe(
+      "partial"
+    );
+  });
+
   it("shows release age, updates after midnight and leaves unreleased plans undated", () => {
     jest.useFakeTimers().setSystemTime(new Date(2026, 9, 5, 23, 59, 30));
     const screen = render(<UpdatesPage />);
@@ -80,7 +106,9 @@ describe("public Updates page", () => {
     );
     expect(note.summary).toContain("retain the selected Personal workspace");
     expect(note.summary).toContain("reference dates keep their saved calendar day");
-    expect(note.summary).toContain("response-assembly error affecting text-only AI answers");
+    expect(note.summary).toContain(
+      "response-assembly error affecting text-only AI answers"
+    );
     expect(note.summary).toContain("Genuine, permissioned testimonials remain separate");
     expect(note.summary).toContain("Plan limits and privacy rules are unchanged");
     const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "public-website");
@@ -292,7 +320,8 @@ describe("public Updates page", () => {
             screen.getAllByRole("header", { name: entry.title }).length
           ).toBeGreaterThan(0);
           expect(
-            screen.getAllByText(`${entry.dateLabel} ${entry.date}`, { exact: false }).length
+            screen.getAllByText(`${entry.dateLabel} ${entry.date}`, { exact: false })
+              .length
           ).toBeGreaterThan(0);
         }
       }

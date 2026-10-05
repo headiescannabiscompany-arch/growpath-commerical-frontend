@@ -471,10 +471,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "forum-share-readiness",
         title: "Clearer shared-discussion access and recovery",
-        date: "October 2, 2026",
+        date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "Forum pages wait for account access to finish loading instead of briefly showing access denied. Discussion and comment reads now recover separately with Retry; a failed comments request no longer hides a readable post or claims there are no comments. Same-discussion recovery preserves unfinished replies, while changing discussions clears prior content. Copy Link, Copy Post and recipient paths remain checked; privacy rules and layout stay unchanged."
+          "Forum pages wait for account access to finish loading instead of briefly showing access denied. Discussion and comment reads now recover separately with Retry; a failed comments request no longer hides a readable post or claims there are no comments. Same-discussion recovery preserves unfinished replies, while changing discussions clears prior content. Copy Link, Copy Post and recipient paths remain checked; privacy rules and layout stay unchanged. Shared Forum posting controls now follow your individual access, independently of the selected Facility subscription. Switching accounts or workspaces rechecks that access. Facility operational permissions and server posting rules are unchanged."
       },
       {
         id: "live-directory-readiness",
