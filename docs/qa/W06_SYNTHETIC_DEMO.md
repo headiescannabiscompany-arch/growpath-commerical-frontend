@@ -1,6 +1,6 @@
 # W06 — synthetic product preview
 
-Status: W06-A no-signup journal demo CLOSED / LIVE; W06-B screenshots implemented, release verification in progress.
+Status: W06-A journal demo and W06-B reviewed screenshots CLOSED / LIVE. No W06 release remains pending.
 Branch: feature/public-synthetic-demo-w06, based on live frontend 13ab5e34.
 
 ## Scope
@@ -70,8 +70,8 @@ no people or identity material. NOT a screenshot or customer proof.
   Grouped /updates Website & plans note verified; milestone remains partially live.
   Proof: workspace outputs/W06_Demo_Production_2026-10-05.jpg and
   outputs/W06_Updates_Production_2026-10-05.jpg.
-- Pending W06 remainder: reviewed actual diagnosis and Facility UI demo captures;
-  do not fabricate tool results or expose private production examples.
+- At the W06-A release, reviewed diagnosis/Facility captures remained pending.
+  W06-B below closes those captures; do not reopen them from this historical note.
 
 Deployment needs `/demo` -> `/demo/index.html` before the existing wildcard rewrite.
 Preserve live HeyCatch privacy protections. This demo is not added to its allowlist.
@@ -116,4 +116,27 @@ Actual local browser: both 836x1100 JPEGs load, both full-size links use public
 assets in separate tabs, Facility page at 375px has document width375 (no overflow).
 Diagnosis and Facility captions remain ahead of their images. The existing demo
 share contract remains fixed `/demo`; no social post was sent. Temporary viewport
-overrides restored. Staging/production release remains pending; do not mark live yet.
+overrides restored.
+
+Staging PASS: exact9d2f24595fcb6a60a11925199c175b0d158c84b0,
+dep-db1j22psrm7s73bu37f0 LIVE2026-10-05T05:11:24.212877Z. Hosted `/demo`
+static HTML200 includes both captures/captions and staging canonical. Hydrated
+timeline remains available, both images report836x1100 and complete, and the
+diagnosis full-size link opens its exact public JPEG separately. No sign-out or
+QA account/record changes.
+
+Production PASS: exact9d2f24595fcb6a60a11925199c175b0d158c84b0,
+dep-db1j3u0u01pc73emopvg LIVE2026-10-05T05:15:34.041648Z. All five public routes
+HTTP200 with matching expected images and production canonicals. Both JPEGs
+HTTP200 image/jpeg. Actual browser `/demo` loads both836x1100 screenshots and
+both disclosures. Facility image loads836x1100; disclosure and
+layout reviewed. Grouped Website & plans summary and the new dated history note
+verified on production `/updates`. The milestone stays partial for genuine proof,
+not for these now-completed demos. Screenshot proof:
+workspace `outputs/W06B_Production_2026-10-05.jpg` (crop retains public heading,
+description, synthetic disclosure and the actual UI image). Temporary capture
+viewport cleared; local preview process stopped. No social publication performed.
+
+W06-A/B are closed in the authoritative TODO. W02 now needs genuine permissioned
+stories/counts/outside proof only; do not request the founder photo/story again or
+rebuild these demos. Apple/native and independent-Admin waits are separate.
