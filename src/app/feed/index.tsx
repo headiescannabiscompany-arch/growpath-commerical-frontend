@@ -39,6 +39,7 @@ import {
   hasFacilitySalesLanguage
 } from "@/utils/commercialFeedPolicy";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { useCampaignImagePreview } from "@/hooks/useCampaignImagePreview";
 import { sharePublicLink } from "@/utils/publicLinks";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -707,6 +708,8 @@ function CommercialFeedForm({
     )
   );
   const [externalLinkUrl, setExternalLinkUrl] = useState("");
+  const previewUri = resolveImageUri(imageUrl.trim());
+  const imagePreview = useCampaignImagePreview(previewUri);
   const [externalLinkLabel, setExternalLinkLabel] = useState("");
   const [campaignStart, setCampaignStart] = useState("");
   const [campaignEnd, setCampaignEnd] = useState("");
@@ -768,6 +771,13 @@ function CommercialFeedForm({
   });
   const canCreate =
     canManageCampaigns && title.trim().length > 0 && body.trim().length > 0 && !creating;
+  if (previewUri && imagePreview.status !== "loaded") {
+    readinessWarnings.push(
+      imagePreview.status === "failed"
+        ? "The campaign image could not load. Retry the preview or choose another image before publishing."
+        : "Wait for the campaign image preview to load before publishing."
+    );
+  }
   const canPublishCampaign = canCreate && readinessWarnings.length === 0;
 
   const helper = useMemo(
@@ -1505,13 +1515,27 @@ function CommercialFeedForm({
                   </Pressable>
                 ) : null}
               </View>
-              {imageUrl ? (
+              {previewUri ? (
                 <Image
-                  source={{ uri: resolveImageUri(imageUrl) }}
+                  key={imagePreview.key}
+                  source={{ uri: previewUri }}
+                  onLoad={imagePreview.onLoad}
+                  onError={imagePreview.onError}
                   style={styles.postImagePreview}
                   resizeMode="cover"
                   accessibilityLabel="Feed campaign image preview"
                 />
+              ) : null}
+              {previewUri && imagePreview.status === "failed" ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry campaign image preview"
+                  disabled={creating}
+                  onPress={imagePreview.retry}
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>Retry image preview</Text>
+                </Pressable>
               ) : null}
               {readinessWarnings.length ? (
                 <View style={styles.warningBox}>

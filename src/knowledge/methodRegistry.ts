@@ -1175,6 +1175,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "single-heading campaign authoring with named stateful controls",
       "published Product-to-campaign handoff resolves saved identity through the current seller catalog and published storefront, seeds the saved store slug and text/media/interests/content flags into an unsaved review form, rejects unavailable or unpublished sources and stale account/product reads, returns Back to Products, and never copies prices, purchase URLs or automatically publishes",
       "campaign draft review that distinguishes planned publish status from current state and uses user-facing filters",
+      "campaign publishing waits for the current image preview to load; failure offers read-only Retry or image replacement, preserves drafts, ignores stale URI/retry callbacks, and never treats preview success as storage durability or publication",
       "inactive Commercial tab screens detached from web layout and focus order",
       "compact Commercial navigation with the active secondary workspace and a complete More destination",
       "compact shared-page content and campaign rails retained in non-overlapping document flow",

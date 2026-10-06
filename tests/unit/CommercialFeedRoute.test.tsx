@@ -191,6 +191,63 @@ describe("CommercialFeedRoute", () => {
     expect(mockBack).not.toHaveBeenCalled();
   });
 
+  it("blocks missing artwork, retries without writes and ignores obsolete image callbacks", async () => {
+    mockRouteParams = { productId: "product-1" };
+    mockApiRequest.mockResolvedValue({ items: [] });
+    mockProducts.mockResolvedValue([
+      {
+        id: "product-1",
+        status: "published",
+        name: "Synthetic kit",
+        shortDescription: "Keep this draft",
+        imageUrl: "/uploads/missing.jpg"
+      }
+    ]);
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByText(/Started from Synthetic kit/);
+    const publish = () => screen.getByLabelText("Publish feed campaign");
+    expect(publish().props.accessibilityState.disabled).toBe(true);
+    const oldLoad = screen.getByLabelText("Feed campaign image preview").props.onLoad;
+    fireEvent(screen.getByLabelText("Feed campaign image preview"), "error");
+    expect(
+      screen.getAllByText(/The campaign image could not load/).length
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText("Ready to publish.")).toBeNull();
+    fireEvent.press(publish());
+    fireEvent.press(screen.getByLabelText("Retry campaign image preview"));
+    expect(publish().props.accessibilityState.disabled).toBe(true);
+    act(() => oldLoad());
+    expect(publish().props.accessibilityState.disabled).toBe(true);
+    fireEvent(screen.getByLabelText("Feed campaign image preview"), "load");
+    expect(publish().props.accessibilityState.disabled).toBe(false);
+    const retryError = screen.getByLabelText("Feed campaign image preview").props.onError;
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign image URL"),
+      "/uploads/other.jpg"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign image URL"),
+      "/uploads/missing.jpg"
+    );
+    expect(publish().props.accessibilityState.disabled).toBe(true);
+    act(() => {
+      oldLoad();
+      retryError();
+    });
+    expect(screen.queryByLabelText("Retry campaign image preview")).toBeNull();
+    expect(publish().props.accessibilityState.disabled).toBe(true);
+    fireEvent(screen.getByLabelText("Feed campaign image preview"), "load");
+    expect(publish().props.accessibilityState.disabled).toBe(false);
+    fireEvent.press(screen.getByLabelText("Clear feed campaign image"));
+    expect(publish().props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByLabelText("Feed campaign body").props.value).toBe(
+      "Keep this draft"
+    );
+    expect(
+      mockApiRequest.mock.calls.some(([, options]) => options?.method === "POST")
+    ).toBe(false);
+  });
+
   it("retries unavailable selected-product reads without opening an unverified publish form", async () => {
     mockRouteParams = { productId: "product-1" };
     mockProducts
@@ -703,6 +760,7 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Feed campaign image URL"),
       "https://example.com/demo.jpg"
     );
+    fireEvent(screen.getByLabelText("Feed campaign image preview"), "load");
     await waitFor(() =>
       expect(screen.getByText("Campaign has destination and creative.")).toBeTruthy()
     );
@@ -770,6 +828,7 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Feed campaign image URL"),
       "https://example.com/workshop.jpg"
     );
+    fireEvent(screen.getByLabelText("Feed campaign image preview"), "load");
     fireEvent.changeText(screen.getByLabelText("External link URL"), "not-a-url");
     chooseDateTime(screen, "Feed campaign schedule start", "2099-07-25T12:00");
     chooseDateTime(screen, "Feed campaign schedule end", "2099-07-24T12:00");
@@ -933,6 +992,7 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Feed campaign image URL"),
       "https://example.com/ipm-training.jpg"
     );
+    fireEvent(screen.getByLabelText("Feed campaign image preview"), "load");
     expect(screen.getByLabelText("Campaign review")).toBeTruthy();
     expect(screen.getByText("Ready to publish.")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Publish facility outreach"));
@@ -1038,6 +1098,7 @@ describe("CommercialFeedRoute", () => {
       screen.getByLabelText("Feed campaign image URL"),
       "https://example.com/ipm-training.jpg"
     );
+    fireEvent(screen.getByLabelText("Feed campaign image preview"), "load");
     expect(screen.getByText("Ready to publish.")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Publish facility outreach"));

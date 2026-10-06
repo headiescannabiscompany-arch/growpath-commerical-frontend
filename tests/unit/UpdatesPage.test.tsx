@@ -28,6 +28,9 @@ describe("public Updates page", () => {
     const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
       (entry) => entry.id === "campaign-feed-readiness"
     );
+    expect(notes[0].summary).toContain(
+      "Publishing waits for the current image preview to load"
+    );
     expect(notes).toHaveLength(1);
     expect(notes[0].date).toBe("October 5, 2026");
     expect(notes[0].summary).toContain("Nothing is automatically published");
@@ -354,7 +357,7 @@ describe("public Updates page", () => {
     );
     expect(note?.summary).toContain("Retry campaigns");
     expect(note?.summary).toContain("does not publish anything");
-    expect(note?.summary).toContain("publishing rules stay unchanged");
+    expect(note?.summary).toContain("server publication rules stay unchanged");
   });
   it("shows milestone summaries first and retains dated history within each tab", () => {
     const screen = render(<UpdatesPage />);

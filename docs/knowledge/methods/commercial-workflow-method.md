@@ -2,6 +2,14 @@
 
 ## Public shopping navigation
 
+Campaign authoring must wait for the current image preview to load before saying
+Ready to publish or enabling Publish. Failed image reads provide a read-only Retry
+and explain that the seller can choose another image. URI changes and retries
+invalidate old image callbacks, including A-to-B-to-A changes. Preserve all other
+unsaved fields. Preview success verifies this device can display the image now;
+it does not establish permanent storage, rights, destination eligibility, or actual
+publication, and Retry never uploads, changes the product, or publishes a campaign.
+
 Shared Grow Interest choices expose their current checked state on web and native,
 and the collapsible picker exposes its expanded state. Web Space toggles a focused
 choice once per press without scrolling; Enter and pointer input retain the normal

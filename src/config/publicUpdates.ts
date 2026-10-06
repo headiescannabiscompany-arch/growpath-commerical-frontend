@@ -182,7 +182,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "Create Campaign on a published product now carries that product's saved text, image and destination into an unsaved form for review, instead of opening a blank form. Only products still published in the signed-in seller's catalog are loaded. Feed/Campaigns separates unavailable results from an empty feed and provides Retry campaigns. Retrying preserves unfinished edits and does not publish anything. Nothing is automatically published; prices, placements and publishing rules stay unchanged."
+          "Create Campaign on a published product now carries that product's saved text, image and destination into an unsaved form for review, instead of opening a blank form. Only products still published in the signed-in seller's catalog are loaded. Publishing waits for the current image preview to load; a failed image offers Retry or replacement without losing the draft. Feed/Campaigns separates unavailable results from an empty feed and provides Retry campaigns. Retrying preserves unfinished edits and does not publish anything. Nothing is automatically published; prices, placements and server publication rules stay unchanged."
       },
       {
         id: "seller-summary-readiness",
