@@ -93,18 +93,43 @@ export default function PublicStorefrontRoute() {
   const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
   const selectedLineId = useMemo(() => String(params.line || "").trim(), [params.line]);
   const returnFeedHref = "/feed";
-  const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState("");
-  const [storefront, setStorefront] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
-  const [productLines, setProductLines] = useState<any[]>([]);
-  const [courses, setCourses] = useState<any[]>([]);
-  const [videos, setVideos] = useState<any[]>([]);
-  const [lives, setLives] = useState<any[]>([]);
-  const [feedPosts, setFeedPosts] = useState<any[]>([]);
-  const [trials, setTrials] = useState<any[]>([]);
-  const [forumThreads, setForumThreads] = useState<any[]>([]);
-  const [error, setError] = useState("");
+  const readScope = useMemo(
+    () => ({ slug, token: auth.token, userId: auth.user?.id, isAuthed: auth.isAuthed }),
+    [slug, auth.token, auth.user?.id, auth.isAuthed]
+  );
+  const currentReadScope = useRef(readScope);
+  currentReadScope.current = readScope;
+  const readAttempt = useRef(0);
+  const pendingRead = useRef<typeof readScope | null>(null);
+  const [readState, setReadState] = useState({
+    scope: readScope,
+    loading: true,
+    error: ""
+  });
+  const [snapshot, setSnapshot] = useState<{
+    scope: typeof readScope;
+    payload: ReturnType<typeof extractPublicCommercialPayload>;
+  } | null>(null);
+  const {
+    storefront,
+    products,
+    productLines,
+    courses,
+    videos,
+    lives,
+    feedPosts,
+    trials,
+    forumThreads
+  } = useMemo(
+    () =>
+      snapshot?.scope === readScope
+        ? snapshot.payload
+        : extractPublicCommercialPayload(null),
+    [snapshot, readScope]
+  );
+  const loading = readState.scope !== readScope || readState.loading;
+  const error = readState.scope === readScope ? readState.error : "";
   const [feedback, setFeedback] = useState("");
   const [storeCopy, setStoreCopy] = useState({ slug: "", message: "", fallback: "" });
   const copyAttempt = useRef(0);
@@ -132,30 +157,47 @@ export default function PublicStorefrontRoute() {
   ]);
 
   const load = useCallback(async () => {
-    if (!slug) return;
-    setLoading(true);
-    setError("");
+    if (currentReadScope.current !== readScope || pendingRead.current === readScope)
+      return;
+    const attempt = ++readAttempt.current;
+    pendingRead.current = readScope;
+    const isCurrent = () =>
+      currentReadScope.current === readScope && readAttempt.current === attempt;
+    setReadState({ scope: readScope, loading: true, error: "" });
     try {
+      if (!slug) throw new Error("This store link is missing its address.");
       const res: any = await fetchPublicStorefront(slug);
+      if (!isCurrent()) return;
       const payload = extractPublicCommercialPayload(res);
-      setStorefront(payload.storefront);
-      setProducts(payload.products);
-      setProductLines(payload.productLines);
-      setCourses(payload.courses);
-      setVideos(payload.videos);
-      setLives((payload as any).lives || []);
-      setFeedPosts(payload.feedPosts);
-      setTrials(payload.trials);
-      setForumThreads(payload.forumThreads);
+      if (
+        !payload.storefront ||
+        typeof payload.storefront !== "object" ||
+        Array.isArray(payload.storefront)
+      ) {
+        throw new Error(
+          "This storefront is unavailable. Try again or browse other stores."
+        );
+      }
+      setSnapshot({ scope: readScope, payload });
+      setReadState({ scope: readScope, loading: false, error: "" });
     } catch (err: any) {
-      setError(err?.message || "Unable to load storefront.");
+      if (isCurrent())
+        setReadState({
+          scope: readScope,
+          loading: false,
+          error: err?.message || "Unable to load storefront."
+        });
     } finally {
-      setLoading(false);
+      if (isCurrent()) pendingRead.current = null;
     }
-  }, [slug]);
+  }, [slug, readScope]);
 
   useEffect(() => {
-    load();
+    void load();
+    return () => {
+      readAttempt.current += 1;
+      pendingRead.current = null;
+    };
   }, [load]);
 
   useEffect(() => {
@@ -391,7 +433,28 @@ export default function PublicStorefrontRoute() {
           <Text style={styles.meta}>Loading storefront...</Text>
         </View>
       ) : error ? (
-        <Text style={styles.error}>{error}</Text>
+        <View style={styles.profilePanel}>
+          <Text accessibilityRole="alert" style={styles.error}>
+            {error}
+          </Text>
+          <Text style={styles.meta}>
+            Store details could not be loaded. This does not mean the store has no
+            products.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry storefront"
+            style={styles.secondaryButton}
+            onPress={() => void load()}
+          >
+            <Text style={styles.secondaryButtonText}>Retry storefront</Text>
+          </Pressable>
+          <Link href="/store" asChild>
+            <Pressable accessibilityRole="link" style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>Browse all stores</Text>
+            </Pressable>
+          </Link>
+        </View>
       ) : (
         <>
           <View style={styles.profilePanel}>

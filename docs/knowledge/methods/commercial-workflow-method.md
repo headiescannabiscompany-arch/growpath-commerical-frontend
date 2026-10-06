@@ -1,5 +1,12 @@
 # Commercial Workflow
 
+Individual public storefront reads offer a visible, single-flight read-only Retry
+and a store-directory return after failure. Failed or unavailable reads must not
+claim an empty catalog or expose product/share actions. Bind the loaded catalog
+to the current store and viewer session, hide earlier results immediately when
+that context changes, and ignore late completions after navigation or unmount.
+This recovery does not publish, purchase, refund, submit interest or change access.
+
 ## Public shopping navigation
 
 Public storefronts offer separately named Share Store and Copy Store Link controls.

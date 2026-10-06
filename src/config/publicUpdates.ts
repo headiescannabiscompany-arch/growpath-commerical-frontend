@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "October 5, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "October 6, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -355,10 +355,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "shopping-browse-paths",
         title: "Clearer product browsing and store links",
-        date: "October 5, 2026",
+        date: "October 6, 2026",
         dateLabel: "Released",
         summary:
-          "Discover rows now have visible previous/next controls. View all Products, Offers & Trials opens a searchable catalog, and product details link directly to the full owning store. Storefronts also offer Copy Store Link beside Share Store, with a selectable link if automatic copying is unavailable. Existing customers signing in to record product interest return to that product. Interest-only items remain separate from purchases; checkout and privacy rules are unchanged."
+          "Discover rows now have visible previous/next controls. View all Products, Offers & Trials opens a searchable catalog, and product details link directly to the full owning store. Storefronts also offer Copy Store Link beside Share Store, with a selectable link if automatic copying is unavailable. If a store cannot load, Retry storefront and Browse all stores provide a way forward without treating the failure as an empty shop. Switching stores or accounts discards earlier results. Existing customers signing in to record product interest return to that product. Interest-only items remain separate from purchases; checkout and privacy rules are unchanged."
       },
       {
         id: "journal-large-photo-upload",

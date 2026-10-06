@@ -1222,6 +1222,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "direct shared-Discover indexing of published non-hidden Products and explicitly public approved purchase-intent trials with exact images and destinations, independent of optional Feed promotion",
       "public Commercial projections exclude testing, test-only, QA-only, synthetic, and QA-seed records while preserving owner-scoped review",
       "slug-gated public storefront preview actions with truthful setup guidance",
+      "individual public storefront read failure offers single-flight read-only Retry and a directory return, never an empty catalog; loaded records are store/session scoped and late responses after context changes or unmount are ignored without purchases, interest submissions or publication",
       "single-flight Commercial storefront loading and mutually exclusive storefront, product, media, and setup-task actions with retained drafts",
       "ordinary nonregulated storefront quick creation, catalog and product-detail publication share saved-amount Stripe Checkout configuration without copied provider IDs; public price-only checkout requires publication and no explicit denial and preserves seller, payment, inventory, dispensary and purchase-interest gates",
       "active-only owner Storefront products and a read-only unavailable Product detail state",
