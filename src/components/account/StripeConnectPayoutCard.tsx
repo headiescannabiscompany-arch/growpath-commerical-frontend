@@ -22,7 +22,8 @@ type StripeConnectPayoutCardProps = {
 };
 
 function statusLabel(status: StripeConnectPayoutStatus | null) {
-  if (!status?.connected) return "Not connected";
+  if (!status) return "Unable to verify";
+  if (!status.connected) return "Not connected";
   if (isPayoutReady(status)) return "Ready";
   if (status.onboardingStatus === "restricted") return "Stripe action required";
   if (status.onboardingStatus === "pending") return "Setup in progress";
@@ -30,7 +31,10 @@ function statusLabel(status: StripeConnectPayoutStatus | null) {
 }
 
 function statusDetail(status: StripeConnectPayoutStatus | null) {
-  if (!status?.connected) {
+  if (!status) {
+    return "Stripe payout status is unavailable. Refresh to check again; no payout setting was changed.";
+  }
+  if (!status.connected) {
     return "Connect a Stripe payout account before receiving seller proceeds from eligible GrowPathAI sales.";
   }
   if (isPayoutReady(status)) {
@@ -138,10 +142,9 @@ export default function StripeConnectPayoutCard({
 
   const ready = isPayoutReady(status);
   const remaining = remainingRequirementCount(status);
-  const needsCountry = !status?.connected;
+  const needsCountry = status !== null && !status.connected;
   const countrySelected = SELLER_COUNTRIES.some((item) => item.code === country);
-  const actionDisabled =
-    busy || loading || Boolean(error && !status) || (needsCountry && !countrySelected);
+  const actionDisabled = busy || loading || !status || (needsCountry && !countrySelected);
 
   async function handleProviderAction() {
     if (actionDisabled) return;
@@ -176,7 +179,7 @@ export default function StripeConnectPayoutCard({
 
   return (
     <AppCard title={title} titleLevel={titleLevel} accessibilityLabel={title}>
-      {loading && !status ? (
+      {loading ? (
         <View accessibilityLiveRegion="polite" style={styles.loadingRow}>
           <ActivityIndicator color={palette.accent} />
           <Text style={styles.body}>Checking Stripe payout status...</Text>
@@ -254,19 +257,21 @@ export default function StripeConnectPayoutCard({
             </Text>
           ) : null}
           <View style={styles.actions}>
-            <Pressable
-              accessibilityLabel={actionLabel(status)}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: actionDisabled }}
-              disabled={actionDisabled}
-              onPress={() => void handleProviderAction()}
-              style={[styles.primaryButton, actionDisabled && styles.disabled]}
-              testID="stripe-connect-provider-action"
-            >
-              <Text style={styles.primaryButtonText}>
-                {busy ? "Opening Stripe..." : actionLabel(status)}
-              </Text>
-            </Pressable>
+            {status ? (
+              <Pressable
+                accessibilityLabel={actionLabel(status)}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: actionDisabled }}
+                disabled={actionDisabled}
+                onPress={() => void handleProviderAction()}
+                style={[styles.primaryButton, actionDisabled && styles.disabled]}
+                testID="stripe-connect-provider-action"
+              >
+                <Text style={styles.primaryButtonText}>
+                  {busy ? "Opening Stripe..." : actionLabel(status)}
+                </Text>
+              </Pressable>
+            ) : null}
             <Pressable
               accessibilityLabel="Refresh Stripe payout status"
               accessibilityRole="button"

@@ -347,10 +347,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "store-directory-recovery",
         title: "Store discovery and safer seller setup",
-        date: "September 27, 2026",
+        date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "The store directory now shows public stores without requiring a search first, remembers your search when you return, and offers clear and retry controls. Seller setup prevents saving after a failed load, and public previews use the saved store address. Existing page layout, permissions, location choices and checkout rules are unchanged."
+          "The store directory shows public stores without requiring a search first, remembers your search when you return, and offers clear and retry controls. Seller setup prevents saving after a failed load, and public previews use the saved store address. Seller payout checks now distinguish unavailable verification from a disconnected account: refresh does not prompt you to create another payout account when the status cannot be read. Existing page layout, permissions, location choices and checkout rules are unchanged."
       },
       {
         id: "shopping-browse-paths",

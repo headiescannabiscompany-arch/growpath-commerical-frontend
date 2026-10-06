@@ -24,6 +24,20 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("groups payout-status recovery without claiming another financial acceptance", () => {
+    const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
+      (entry) => entry.id === "store-directory-recovery"
+    );
+    expect(notes).toHaveLength(1);
+    expect(notes[0].date).toBe("October 5, 2026");
+    expect(notes[0].summary).toContain(
+      "unavailable verification from a disconnected account"
+    );
+    expect(notes[0].summary).toContain("checkout rules are unchanged");
+    expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === "shopping")?.status).toBe(
+      "partial"
+    );
+  });
   it("groups bounded seller acceptance without closing shopping or claiming sales", () => {
     const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
       (entry) => entry.id === "product-line-safety"

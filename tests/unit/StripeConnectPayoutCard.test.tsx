@@ -1,6 +1,6 @@
 import React from "react";
 import { Picker } from "@react-native-picker/picker";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import StripeConnectPayoutCard from "@/components/account/StripeConnectPayoutCard";
 import { SELLER_COUNTRIES } from "@/constants/sellerCountries";
@@ -55,6 +55,67 @@ describe("StripeConnectPayoutCard", () => {
       payoutManagement: "stripe_connect_dashboard"
     });
     mockOpenExternalUrl.mockResolvedValue(undefined);
+  });
+
+  it("keeps a failed initial read unknown and retries without starting setup", async () => {
+    mockGetStatus.mockRejectedValueOnce(new Error("Status unavailable"));
+    const screen = render(<StripeConnectPayoutCard />);
+    await screen.findByText("Status unavailable");
+    expect(screen.getByText("Unable to verify")).toBeTruthy();
+    expect(screen.queryByText("Not connected")).toBeNull();
+    expect(screen.queryByLabelText("Seller country")).toBeNull();
+    expect(screen.queryByTestId("stripe-connect-provider-action")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Refresh Stripe payout status"));
+    await screen.findByText("Not connected");
+    expect(screen.getByLabelText("Seller country")).toBeTruthy();
+    expect(mockStartOnboarding).not.toHaveBeenCalled();
+    expect(mockDashboardLink).not.toHaveBeenCalled();
+  });
+
+  it("does not call a failed refresh disconnected or require new seller setup", async () => {
+    mockGetStatus.mockResolvedValueOnce(
+      connectStatus({ connected: true, onboardingStatus: "pending" })
+    );
+    const screen = render(<StripeConnectPayoutCard />);
+    await screen.findByText("Resume Stripe setup");
+    mockGetStatus.mockRejectedValueOnce(new Error("Refresh unavailable"));
+    fireEvent.press(screen.getByLabelText("Refresh Stripe payout status"));
+    await screen.findByText("Refresh unavailable");
+    expect(screen.getByText("Unable to verify")).toBeTruthy();
+    expect(screen.queryByText("Not connected")).toBeNull();
+    expect(screen.queryByLabelText("Seller country")).toBeNull();
+    expect(screen.queryByTestId("stripe-connect-provider-action")).toBeNull();
+    mockGetStatus.mockResolvedValueOnce(
+      connectStatus({ connected: true, onboardingStatus: "pending" })
+    );
+    fireEvent.press(screen.getByLabelText("Refresh Stripe payout status"));
+    await screen.findByText("Resume Stripe setup");
+    expect(mockStartOnboarding).not.toHaveBeenCalled();
+  });
+
+  it("withholds readiness while a fresh verification is pending", async () => {
+    const ready = connectStatus({
+      connected: true,
+      onboardingStatus: "complete",
+      transfersEnabled: true,
+      payoutsEnabled: true,
+      detailsSubmitted: true
+    });
+    mockGetStatus.mockResolvedValueOnce(ready);
+    const screen = render(<StripeConnectPayoutCard />);
+    await screen.findByText("Ready");
+    let resolveStatus!: (value: any) => void;
+    mockGetStatus.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveStatus = resolve;
+      })
+    );
+    fireEvent.press(screen.getByLabelText("Refresh Stripe payout status"));
+    expect(screen.getByText("Checking Stripe payout status...")).toBeTruthy();
+    expect(screen.queryByText("Ready")).toBeNull();
+    expect(screen.queryByTestId("stripe-connect-provider-action")).toBeNull();
+    await act(async () => resolveStatus(ready));
+    expect(screen.getByText("Ready")).toBeTruthy();
   });
 
   it("starts server-controlled onboarding for a disconnected seller", async () => {
