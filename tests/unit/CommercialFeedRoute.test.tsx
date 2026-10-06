@@ -9,6 +9,10 @@ const mockSharePublicLink = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 const mockProducts = jest.fn();
+const mockStorefront = jest.fn();
+jest.mock("@/api/storefront", () => ({
+  fetchStorefront: (...args: any[]) => mockStorefront(...args)
+}));
 let mockUserId = "seller-1";
 jest.mock("@/api/products", () => ({
   fetchProducts: (...args: any[]) => mockProducts(...args)
@@ -78,6 +82,9 @@ describe("CommercialFeedRoute", () => {
     mockMode = "commercial";
     mockUserId = "seller-1";
     mockProducts.mockReset();
+    mockStorefront
+      .mockReset()
+      .mockResolvedValue({ slug: "saved-store", isPublished: true });
     mockFacilityRole = "OWNER";
     mockRouteParams = { campaignId: "campaign-1" };
     mockApiRequest.mockReset();
@@ -149,6 +156,9 @@ describe("CommercialFeedRoute", () => {
       "Saved description"
     );
     expect(screen.getByLabelText("Linked product").props.value).toBe("product-1");
+    expect(screen.getByLabelText("Linked storefront slug").props.value).toBe(
+      "saved-store"
+    );
     expect(screen.getByLabelText("Feed campaign image URL").props.value).toBe(
       "/uploads/basil.jpg"
     );
@@ -258,6 +268,28 @@ describe("CommercialFeedRoute", () => {
     const screen = render(<CommercialFeedRoute />);
     await screen.findByText("Facility Outreach");
     expect(mockProducts).not.toHaveBeenCalled();
+  });
+
+  it("does not seed an unreachable unpublished storefront destination", async () => {
+    mockRouteParams = { productId: "product-1" };
+    mockProducts.mockResolvedValue([
+      { id: "product-1", status: "published", name: "Kit" }
+    ]);
+    mockStorefront.mockResolvedValue({ slug: "private-store", isPublished: false });
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByText(/A published storefront is needed/);
+    expect(screen.queryByLabelText("Publish feed campaign")).toBeNull();
+  });
+
+  it("keeps the handoff closed when the storefront cannot be verified", async () => {
+    mockRouteParams = { productId: "product-1" };
+    mockProducts.mockResolvedValue([
+      { id: "product-1", status: "published", name: "Kit" }
+    ]);
+    mockStorefront.mockRejectedValue(new Error("offline"));
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByText(/Unable to load the selected product/);
+    expect(screen.queryByLabelText("Publish feed campaign")).toBeNull();
   });
 
   it("does not call a pending initial feed empty", async () => {

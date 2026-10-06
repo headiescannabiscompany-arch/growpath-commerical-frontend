@@ -15,6 +15,7 @@ import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { fetchProducts, type Product } from "@/api/products";
+import { fetchStorefront } from "@/api/storefront";
 import { useAuth } from "@/auth/AuthContext";
 import { submitReport } from "@/api/reports";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
@@ -558,7 +559,9 @@ function ProductCampaignScope({ productId }: { productId: string }) {
 function ProductCampaignHandoff({ productId }: { productId: string }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFeedCampaignStyles(palette), [palette]);
-  const [product, setProduct] = useState<Product | null>(null);
+  const [seed, setSeed] = useState<{ product: Product; storefrontSlug: string } | null>(
+    null
+  );
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -571,8 +574,8 @@ function ProductCampaignHandoff({ productId }: { productId: string }) {
       return;
     }
     // Resolve only through the signed-in seller's catalog, never through public or URL copy.
-    void fetchProducts()
-      .then((products) => {
+    void Promise.all([fetchProducts(), fetchStorefront()])
+      .then(([products, storefront]) => {
         if (!active) return;
         const selected = products.find(
           (item) =>
@@ -585,7 +588,13 @@ function ProductCampaignHandoff({ productId }: { productId: string }) {
           );
           return;
         }
-        setProduct(selected);
+        if (!storefront?.isPublished || !storefront.slug?.trim()) {
+          setError(
+            "A published storefront is needed for this product destination. Return to Products and review Storefront setup."
+          );
+          return;
+        }
+        setSeed({ product: selected, storefrontSlug: storefront.slug.trim() });
       })
       .catch(() => {
         if (active)
@@ -597,7 +606,13 @@ function ProductCampaignHandoff({ productId }: { productId: string }) {
       active = false;
     };
   }, [productId, attempt]);
-  if (product) return <CommercialFeedForm initialProduct={product} />;
+  if (seed)
+    return (
+      <CommercialFeedForm
+        initialProduct={seed.product}
+        initialStorefrontSlug={seed.storefrontSlug}
+      />
+    );
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <BackButton fallbackHref="/home/commercial/products" />
@@ -625,7 +640,13 @@ function ProductCampaignHandoff({ productId }: { productId: string }) {
   );
 }
 
-function CommercialFeedForm({ initialProduct }: { initialProduct?: Product }) {
+function CommercialFeedForm({
+  initialProduct,
+  initialStorefrontSlug = ""
+}: {
+  initialProduct?: Product;
+  initialStorefrontSlug?: string;
+}) {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFeedCampaignStyles(palette), [palette]);
@@ -674,7 +695,7 @@ function CommercialFeedForm({ initialProduct }: { initialProduct?: Product }) {
   const [linkedLiveId, setLinkedLiveId] = useState("");
   const [linkedGrowId, setLinkedGrowId] = useState("");
   const [linkedForumThreadId, setLinkedForumThreadId] = useState("");
-  const [storefrontSlug, setStorefrontSlug] = useState("");
+  const [storefrontSlug, setStorefrontSlug] = useState(initialStorefrontSlug);
   const [imageUrl, setImageUrl] = useState(
     resolveImageUri(
       initialProduct?.imageUrl ||
