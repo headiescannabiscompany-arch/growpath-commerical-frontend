@@ -19,6 +19,7 @@ import PublicStorefrontCourseRoute, {
 } from "@/app/store/[slug]/courses/[courseId]";
 import PublicStorefrontCourseAliasRoute from "@/app/storefront/[slug]/courses/[courseId]";
 import { getThemePalette } from "@/theme/appTheme";
+import { currentPublicUrl } from "@/utils/publicLinks";
 
 const mockFetchPublicStorefront = jest.fn();
 const mockCheckPublicProductAccess = jest.fn();
@@ -328,6 +329,78 @@ describe("public commercial routes", () => {
       allowed: false,
       decision: "review_required",
       message: "No approved handoff is available for this route."
+    });
+  });
+
+  describe("public store copy fallback", () => {
+    const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+    const writeText = jest.fn();
+    const share = jest.fn();
+    beforeEach(() => {
+      writeText.mockReset().mockResolvedValue(undefined);
+      share.mockReset();
+      Object.defineProperty(globalThis, "navigator", {
+        configurable: true,
+        value: { clipboard: { writeText }, share }
+      });
+    });
+    afterEach(() => {
+      if (originalNavigator)
+        Object.defineProperty(globalThis, "navigator", originalNavigator);
+      else delete (globalThis as any).navigator;
+    });
+
+    it("exposes named buttons and copies only the public store route after a click", async () => {
+      mockRouteParams.line = "private-filter";
+      mockRouteParams.product = "product-1";
+      const screen = render(<PublicStorefrontRoute />);
+      await screen.findByRole("button", { name: "Share Store" });
+      expect(writeText).not.toHaveBeenCalled();
+      fireEvent.press(screen.getByRole("button", { name: "Copy Store Link" }));
+      await screen.findByText("Store link copied.");
+      expect(writeText).toHaveBeenCalledWith(currentPublicUrl("/store/living-soil-labs"));
+      expect(share).not.toHaveBeenCalled();
+      expect(jest.requireMock("@/api/products").checkoutProduct).not.toHaveBeenCalled();
+    });
+
+    it.each(["missing", "denied"])(
+      "offers a selectable URL when clipboard is %s",
+      async (mode) => {
+        if (mode === "missing") delete (globalThis as any).navigator.clipboard;
+        else writeText.mockRejectedValue(new Error("denied"));
+        const screen = render(<PublicStorefrontRoute />);
+        fireEvent.press(await screen.findByRole("button", { name: "Copy Store Link" }));
+        await screen.findByText(
+          "Automatic copy is unavailable. Select and copy this store link:"
+        );
+        expect(screen.getByLabelText("Public store link").props.selectable).toBe(true);
+        expect(
+          screen.getByText(currentPublicUrl("/store/living-soil-labs"))
+        ).toBeTruthy();
+        expect(screen.queryByText("Store link copied.")).toBeNull();
+        expect(share).not.toHaveBeenCalled();
+      }
+    );
+
+    it("ignores an old copy completion after changing stores", async () => {
+      let finish!: () => void;
+      writeText.mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            finish = resolve;
+          })
+      );
+      const screen = render(<PublicStorefrontRoute />);
+      fireEvent.press(await screen.findByRole("button", { name: "Copy Store Link" }));
+      expect(screen.getByText("Copying store link…")).toBeTruthy();
+      mockRouteParams.slug = "another-store";
+      screen.rerender(<PublicStorefrontRoute />);
+      await screen.findByRole("button", { name: "Copy Store Link" });
+      await act(async () => {
+        finish();
+      });
+      expect(screen.queryByText("Store link copied.")).toBeNull();
+      expect(screen.queryByLabelText("Public store link")).toBeNull();
     });
   });
 

@@ -2,6 +2,12 @@
 
 ## Public shopping navigation
 
+Public storefronts offer separately named Share Store and Copy Store Link controls.
+Copy rebuilds only the public storefront route, without checkout or filter state;
+clipboard failure exposes a selectable URL rather than claiming success or opening
+another destination. Apply the public-copy-sharing method's scope and late-response
+rules without changing publication, purchase, or entitlement state.
+
 Campaign authoring must wait for the current image preview to load before saying
 Ready to publish or enabling Publish. Failed image reads provide a read-only Retry
 and explain that the seller can choose another image. URI changes and retries

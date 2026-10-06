@@ -127,6 +127,13 @@ test ratings/counters that could be mistaken for real customer proof.
 Real testimonials remain a separate dynamic, approved/consented public feed, never
 synthetic proof or statically baked quotes.
 
+Public storefronts retain device sharing and provide a separately named Copy Store Link
+control. Copy only the rebuilt public store route, excluding checkout, product-return and
+filter parameters. Confirm success only after the clipboard write succeeds; otherwise
+show the selectable public link without automatically invoking another share destination.
+Keep copy feedback scoped to the current store and ignore late completions after navigation.
+Neither action publishes a record, creates a purchase nor grants access.
+
 Published Commercial product links provide a stable crawler-safe preview document with
 the exact product title, bounded description, price, canonical product URL and a public
 social-image derivative. The preview document must not automatically redirect with

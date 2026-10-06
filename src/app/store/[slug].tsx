@@ -31,7 +31,7 @@ import {
   publicItemTitle,
   publicLinks
 } from "@/utils/publicCommerce";
-import { sharePublicLink } from "@/utils/publicLinks";
+import { currentPublicUrl, sharePublicLink } from "@/utils/publicLinks";
 import { parsePublicProductReturnPath, safeLoginPath } from "@/utils/authReturnPath";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -106,6 +106,14 @@ export default function PublicStorefrontRoute() {
   const [forumThreads, setForumThreads] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [storeCopy, setStoreCopy] = useState({ slug: "", message: "", fallback: "" });
+  const copyAttempt = useRef(0);
+  useEffect(() => {
+    setStoreCopy({ slug: "", message: "", fallback: "" });
+    return () => {
+      copyAttempt.current += 1;
+    };
+  }, [slug]);
   const handledCheckoutReturn = useRef("");
   const checkoutResult = String(params.checkout || "")
     .trim()
@@ -303,6 +311,29 @@ export default function PublicStorefrontRoute() {
     }
   }
 
+  async function copyStoreLink() {
+    const attempt = ++copyAttempt.current;
+    // Rebuild the public store route, never the current checkout/filter query.
+    const url = currentPublicUrl(`/store/${encodeURIComponent(slug)}`);
+    setStoreCopy({ slug, message: "Copying store link…", fallback: url });
+    try {
+      const clipboard = (globalThis as any)?.navigator?.clipboard;
+      if (typeof clipboard?.writeText !== "function") throw new Error("unavailable");
+      await clipboard.writeText(url);
+      if (attempt === copyAttempt.current) {
+        setStoreCopy({ slug, message: "Store link copied.", fallback: "" });
+      }
+    } catch {
+      if (attempt === copyAttempt.current) {
+        setStoreCopy({
+          slug,
+          message: "Automatic copy is unavailable. Select and copy this store link:",
+          fallback: url
+        });
+      }
+    }
+  }
+
   const links = publicLinks(storefront);
   const dispensaryStorefront = isDispensaryStorefront(storefront);
   const storefrontLocation = [
@@ -388,8 +419,21 @@ export default function PublicStorefrontRoute() {
               </Pressable>
             </Link>
             <View style={styles.actionRow}>
-              <Pressable style={styles.secondaryButton} onPress={shareStorefront}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Share Store"
+                style={styles.secondaryButton}
+                onPress={shareStorefront}
+              >
                 <Text style={styles.secondaryButtonText}>Share Store</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Copy Store Link"
+                style={styles.secondaryButton}
+                onPress={copyStoreLink}
+              >
+                <Text style={styles.secondaryButtonText}>Copy Store Link</Text>
               </Pressable>
               <Link href={`/store?similarTo=${encodeURIComponent(slug)}` as any} asChild>
                 <Pressable style={styles.secondaryButton}>
@@ -402,6 +446,22 @@ export default function PublicStorefrontRoute() {
                 </Pressable>
               </Link>
             </View>
+            {storeCopy.slug === slug && storeCopy.message ? (
+              <View>
+                <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+                  {storeCopy.message}
+                </Text>
+                {storeCopy.fallback ? (
+                  <Text
+                    selectable
+                    accessibilityLabel="Public store link"
+                    style={styles.meta}
+                  >
+                    {storeCopy.fallback}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
           </View>
           {links.length ? (
             <View style={styles.profilePanel}>

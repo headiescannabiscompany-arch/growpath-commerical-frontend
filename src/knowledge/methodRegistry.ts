@@ -97,6 +97,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Never publish private data merely because Share was pressed.",
+      "Public storefronts expose named Share and Copy Store Link controls. Copy only the rebuilt public store route without checkout/filter parameters; confirm successful clipboard writes or show a selectable URL, ignore late completion after navigation, and never publish or purchase as a side effect.",
       "X handoffs bound only the prefilled summary using official weighted counting of the full preview URL plus the hosted composer's separator and trailing space; preserve a fitting title/price and whole grapheme/URL boundaries. Hashtags still count. Source records, Copy Post and other destinations remain unchanged; a composer is not a published post.",
       "Public role demos use bundled synthetic screenshots and accurate limits, never private account reads; distinguish intake forms from results and one tracked Free plant from available household care tools. Keep genuine testimonials in the separate dynamic consented feed.",
       "Rebuild demo links only from free/pro/seller/creator/facility: /demo for Free, otherwise /demo?story=<enum>; reject array or invalid values and never copy arbitrary URL data. Preserve the chosen story through route history while canonical indexing stays /demo.",

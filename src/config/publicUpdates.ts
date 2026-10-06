@@ -355,10 +355,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "shopping-browse-paths",
         title: "Clearer product browsing and store links",
-        date: "September 27, 2026",
+        date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "Discover rows now have visible previous/next controls. View all Products, Offers & Trials opens a searchable catalog, and product details link directly to the full owning store. Existing customers signing in to record product interest return to that product. Interest-only items remain separate from purchases; checkout and privacy rules are unchanged."
+          "Discover rows now have visible previous/next controls. View all Products, Offers & Trials opens a searchable catalog, and product details link directly to the full owning store. Storefronts also offer Copy Store Link beside Share Store, with a selectable link if automatic copying is unavailable. Existing customers signing in to record product interest return to that product. Interest-only items remain separate from purchases; checkout and privacy rules are unchanged."
       },
       {
         id: "journal-large-photo-upload",
