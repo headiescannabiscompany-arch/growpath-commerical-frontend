@@ -39,7 +39,10 @@ import AppPage from "@/components/layout/AppPage";
 import BuyerPaymentReviewCard from "@/components/commerce/BuyerPaymentReviewCard";
 import ProductPurchaseIntentControl from "@/components/commercial/ProductPurchaseIntentControl";
 import PublicShareActions from "@/components/sharing/PublicShareActions";
-import { publicGrowInterests } from "@/utils/publicCommerce";
+import {
+  extractPublicCommercialPayload,
+  publicGrowInterests
+} from "@/utils/publicCommerce";
 import { parsePublicProductReturnPath, safeLoginPath } from "@/utils/authReturnPath";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -211,16 +214,40 @@ export default function PublicProductRoute() {
   );
   const returnFeedHref = "/feed";
 
-  const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [storefront, setStorefront] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
-  const [productLines, setProductLines] = useState<any[]>([]);
-  const [courses, setCourses] = useState<any[]>([]);
-  const [lives, setLives] = useState<any[]>([]);
-  const [feedPosts, setFeedPosts] = useState<any[]>([]);
-  const [forumThreads, setForumThreads] = useState<any[]>([]);
-  const [error, setError] = useState("");
+  const readScope = useMemo(
+    () => ({
+      slug,
+      requestedProductId,
+      token: auth.token,
+      userId: auth.user?.id,
+      isAuthed: auth.isAuthed
+    }),
+    [slug, requestedProductId, auth.token, auth.user?.id, auth.isAuthed]
+  );
+  const currentReadScope = useRef(readScope);
+  currentReadScope.current = readScope;
+  const readAttempt = useRef(0);
+  const pendingRead = useRef<typeof readScope | null>(null);
+  const [readState, setReadState] = useState({
+    scope: readScope,
+    loading: true,
+    error: ""
+  });
+  const [snapshot, setSnapshot] = useState<{
+    scope: typeof readScope;
+    payload: ReturnType<typeof extractPublicCommercialPayload>;
+  } | null>(null);
+  const { storefront, products, productLines, courses, lives, feedPosts, forumThreads } =
+    useMemo(
+      () =>
+        snapshot?.scope === readScope
+          ? snapshot.payload
+          : extractPublicCommercialPayload(null),
+      [snapshot, readScope]
+    );
+  const loading = readState.scope !== readScope || readState.loading;
+  const error = readState.scope === readScope ? readState.error : "";
   const [feedback, setFeedback] = useState("");
   const handledCheckoutReturn = useRef("");
   const checkoutResult = String(params.checkout || "")
@@ -239,59 +266,48 @@ export default function PublicProductRoute() {
   );
 
   const load = useCallback(async () => {
-    if (!slug) return;
-    setLoading(true);
-    setError("");
+    if (currentReadScope.current !== readScope || pendingRead.current === readScope)
+      return;
+    const attempt = ++readAttempt.current;
+    pendingRead.current = readScope;
+    const isCurrent = () =>
+      currentReadScope.current === readScope && readAttempt.current === attempt;
+    setReadState({ scope: readScope, loading: true, error: "" });
     try {
+      if (!slug || !requestedProductId)
+        throw new Error("This product link is incomplete. Browse the store to find it.");
       const res: any = await fetchPublicStorefront(slug);
-      const data = res?.data || {};
-      setStorefront(res?.storefront || data?.storefront || null);
-      setProducts(asArray(res?.products || data?.products));
-      setProductLines(asArray(res?.productLines || data?.productLines));
-      setCourses(
-        asArray(
-          res?.courses || data?.courses || res?.featuredCourses || data?.featuredCourses
-        )
-      );
-      setLives(
-        asArray(
-          res?.lives ||
-            data?.lives ||
-            res?.liveEvents ||
-            data?.liveEvents ||
-            res?.featuredLives ||
-            data?.featuredLives
-        )
-      );
-      setFeedPosts(
-        asArray(
-          res?.feedPosts ||
-            data?.feedPosts ||
-            res?.posts ||
-            data?.posts ||
-            res?.updates ||
-            data?.updates
-        )
-      );
-      setForumThreads(
-        asArray(
-          res?.forumThreads ||
-            data?.forumThreads ||
-            res?.threads ||
-            data?.threads ||
-            res?.supportThreads ||
-            data?.supportThreads
-        )
-      );
+      if (!isCurrent()) return;
+      const payload = extractPublicCommercialPayload(res);
+      if (
+        !payload.storefront ||
+        typeof payload.storefront !== "object" ||
+        Array.isArray(payload.storefront) ||
+        !Array.isArray(res?.products || res?.data?.products)
+      )
+        throw new Error("The product catalog is unavailable. Please try again.");
+      // Preserve this detail screen's existing product-line response contract.
+      payload.productLines = asArray(res?.productLines || res?.data?.productLines);
+      setSnapshot({ scope: readScope, payload });
+      setReadState({ scope: readScope, loading: false, error: "" });
     } catch (err: any) {
-      setError(err?.message || "Unable to load product.");
+      if (isCurrent())
+        setReadState({
+          scope: readScope,
+          loading: false,
+          error: err?.message || "Unable to load product."
+        });
     } finally {
-      setLoading(false);
+      if (isCurrent()) pendingRead.current = null;
     }
-  }, [slug]);
+  }, [slug, requestedProductId, readScope]);
 
   useEffect(() => {
     void load();
+    return () => {
+      readAttempt.current += 1;
+      pendingRead.current = null;
+    };
   }, [load]);
 
   useEffect(() => {
@@ -544,16 +560,21 @@ export default function PublicProductRoute() {
   return (
     <AppPage
       routeKey="public-product"
-      backFallbackHref={`/store/${encodeURIComponent(slug)}`}
+      backFallbackHref={slug ? `/store/${encodeURIComponent(slug)}` : "/store"}
       header={
         <View>
           <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             {product?.name || "Product"}
           </Text>
           <Text style={styles.subtitle}>{brandName}</Text>
-          <Link href={`/store/${encodeURIComponent(slug)}` as any} asChild>
+          <Link
+            href={(slug ? `/store/${encodeURIComponent(slug)}` : "/store") as any}
+            asChild
+          >
             <Pressable accessibilityRole="link" style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>All products from this store</Text>
+              <Text style={styles.secondaryButtonText}>
+                {slug ? "All products from this store" : "Browse all stores"}
+              </Text>
             </Pressable>
           </Link>
         </View>
@@ -565,9 +586,22 @@ export default function PublicProductRoute() {
           <Text style={styles.meta}>Loading product...</Text>
         </View>
       ) : error ? (
-        <Text accessibilityRole="alert" style={styles.error}>
-          {error}
-        </Text>
+        <AppCard>
+          <Text accessibilityRole="alert" style={styles.error}>
+            {error}
+          </Text>
+          <Text style={styles.meta}>
+            We could not load this product. This does not mean it was removed.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry product"
+            onPress={() => void load()}
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.secondaryButtonText}>Retry</Text>
+          </Pressable>
+        </AppCard>
       ) : !product ? (
         <AppCard>
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>

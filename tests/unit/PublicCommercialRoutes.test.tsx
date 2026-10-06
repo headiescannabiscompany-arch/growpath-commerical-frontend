@@ -461,6 +461,118 @@ describe("public commercial routes", () => {
     });
   });
 
+  describe("public product read recovery", () => {
+    it("retries one read and retains the store return without checkout or interest writes", async () => {
+      mockFetchPublicStorefront.mockRejectedValueOnce(new Error("Product read failed"));
+      const screen = render(<PublicProductRoute />);
+      await screen.findByText("Product read failed");
+      expect(screen.queryByText("Product not found")).toBeNull();
+      expect(screen.getByText("All products from this store")).toBeTruthy();
+      expect(mockLinkHrefs).toContain("/store/living-soil-labs");
+      expect(screen.queryByRole("button", { name: "Buy Veg Mix" })).toBeNull();
+      let finish!: (value: any) => void;
+      mockFetchPublicStorefront.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          })
+      );
+      const retry = screen.getByRole("button", { name: "Retry product" });
+      act(() => {
+        fireEvent.press(retry);
+        fireEvent.press(retry);
+      });
+      expect(mockFetchPublicStorefront).toHaveBeenCalledTimes(2);
+      expect(screen.getByText("Loading product...")).toBeTruthy();
+      await act(async () => finish(publicPayload));
+      expect(screen.getByRole("button", { name: "Buy Veg Mix" })).toBeTruthy();
+      expect(jest.requireMock("@/api/products").checkoutProduct).not.toHaveBeenCalled();
+      expect(mockSubmitProductPurchaseIntent).not.toHaveBeenCalled();
+      expect(mockRequestProductRefund).not.toHaveBeenCalled();
+    });
+
+    it.each([null, {}, { storefront: [] }, { storefront: {}, products: {} }])(
+      "does not call an unreadable catalog missing product: %p",
+      async (payload) => {
+        mockFetchPublicStorefront.mockResolvedValue(payload);
+        const screen = render(<PublicProductRoute />);
+        await screen.findByRole("button", { name: "Retry product" });
+        expect(screen.queryByText("Product not found")).toBeNull();
+        expect(mockRecordCommercialAnalyticsEvent).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each<Record<string, string>>([{ productId: "product-1" }, { slug: "living-soil-labs" }])(
+      "settles incomplete route %p without a request or endless loading",
+      async (params) => {
+        mockRouteParams = params;
+        const screen = render(<PublicProductRoute />);
+        await screen.findByRole("button", { name: "Retry product" });
+        expect(screen.queryByText("Loading product...")).toBeNull();
+        expect(mockFetchPublicStorefront).not.toHaveBeenCalled();
+        expect(mockLinkHrefs).toContain(
+          params.slug ? "/store/living-soil-labs" : "/store"
+        );
+      }
+    );
+
+    it("reserves not-found for a successfully loaded catalog", async () => {
+      mockFetchPublicStorefront.mockResolvedValue({ storefront: {}, products: [] });
+      const screen = render(<PublicProductRoute />);
+      await screen.findByText("Product not found");
+      expect(screen.queryByRole("button", { name: "Retry product" })).toBeNull();
+    });
+
+    it("discards late product reads after route changes", async () => {
+      let finish!: (value: any) => void;
+      mockFetchPublicStorefront.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          })
+      );
+      const screen = render(<PublicProductRoute />);
+      mockRouteParams = { slug: "new-store", productId: "new-product" };
+      mockFetchPublicStorefront.mockRejectedValue(new Error("New read failed"));
+      screen.rerender(<PublicProductRoute />);
+      await screen.findByText("New read failed");
+      await act(async () => finish(publicPayload));
+      expect(screen.queryByText("Veg Mix")).toBeNull();
+      expect(screen.getByText("New read failed")).toBeTruthy();
+      expect(mockRecordCommercialAnalyticsEvent).not.toHaveBeenCalled();
+    });
+
+    it("hides the prior catalog immediately after a viewer session changes", async () => {
+      const screen = render(<PublicProductRoute />);
+      await screen.findByRole("button", { name: "Buy Veg Mix" });
+      mockUseAuth.mockReturnValue({
+        isAuthed: false,
+        isHydrating: false,
+        user: null,
+        token: null
+      });
+      mockFetchPublicStorefront.mockImplementation(() => new Promise(() => {}));
+      screen.rerender(<PublicProductRoute />);
+      expect(screen.queryByRole("button", { name: "Buy Veg Mix" })).toBeNull();
+      expect(screen.queryByText("Living Soil Labs")).toBeNull();
+      expect(screen.getByText("Loading product...")).toBeTruthy();
+    });
+
+    it("ignores a read completed after leaving the product screen", async () => {
+      let finish!: (value: any) => void;
+      mockFetchPublicStorefront.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          })
+      );
+      const screen = render(<PublicProductRoute />);
+      screen.unmount();
+      await act(async () => finish(publicPayload));
+      expect(mockRecordCommercialAnalyticsEvent).not.toHaveBeenCalled();
+    });
+  });
+
   describe("public store copy fallback", () => {
     const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, "navigator");
     const writeText = jest.fn();
@@ -1271,7 +1383,7 @@ describe("public commercial routes", () => {
       expectNoCheckout();
       expect(mockRouterPush).toHaveBeenCalledTimes(1);
 
-      fireEvent.press(screen.getByRole("button", { name: "Buy Veg Mix" }));
+      fireEvent.press(await screen.findByRole("button", { name: "Buy Veg Mix" }));
       await waitFor(() =>
         expect(openUrlSpy).toHaveBeenCalledWith("https://checkout.example.com/session")
       );

@@ -1,5 +1,12 @@
 # Commercial Workflow
 
+Public product detail uses a single-flight read-only Retry after a failed catalog
+read, while retaining the owning-store return (or directory for an incomplete
+store address). Failed/malformed catalogs are unavailable, not product-not-found.
+Only a readable catalog can establish that its product is absent. Bind product
+reads to route and viewer session; discard prior snapshots and late completions
+after a context change or unmount. Recovery never buys or submits interest.
+
 Individual public storefront reads offer a visible, single-flight read-only Retry
 and a store-directory return after failure. Failed or unavailable reads must not
 claim an empty catalog or expose product/share actions. Bind the loaded catalog

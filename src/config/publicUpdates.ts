@@ -358,7 +358,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "October 6, 2026",
         dateLabel: "Released",
         summary:
-          "Discover rows now have visible previous/next controls. View all Products, Offers & Trials opens a searchable catalog, and product details link directly to the full owning store. Storefronts also offer Copy Store Link beside Share Store, with a selectable link if automatic copying is unavailable. If a store cannot load, Retry storefront and Browse all stores provide a way forward without treating the failure as an empty shop. Switching stores or accounts discards earlier results. Existing customers signing in to record product interest return to that product. Interest-only items remain separate from purchases; checkout and privacy rules are unchanged."
+          "Discover rows now have visible previous/next controls. View all Products, Offers & Trials opens a searchable catalog, and product details link directly to the full owning store. Storefronts also offer Copy Store Link beside Share Store, with a selectable link if automatic copying is unavailable. Failed store and product reads offer Retry and a return to browsing, without calling an unavailable shop empty or a product removed. Switching stores, products or accounts discards earlier results. Existing customers signing in to record product interest return to that product. Interest-only items remain separate from purchases; checkout and privacy rules are unchanged."
       },
       {
         id: "journal-large-photo-upload",
