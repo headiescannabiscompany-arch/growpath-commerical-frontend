@@ -22,6 +22,7 @@ type AppPageProps = {
   longContent?: boolean;
   showBack?: boolean;
   backFallbackHref?: string;
+  preferBackFallback?: boolean;
 };
 
 export default function AppPage({
@@ -31,7 +32,8 @@ export default function AppPage({
   railOverride,
   longContent = false,
   showBack,
-  backFallbackHref
+  backFallbackHref,
+  preferBackFallback = false
 }: AppPageProps) {
   const { width } = useWindowDimensions();
   const isWide = Platform.OS === "web" && width >= 900;
@@ -69,7 +71,10 @@ export default function AppPage({
     >
       {(showBack ?? true) ? (
         <View style={styles.backRow}>
-          <BackButton fallbackHref={resolvedBackHref} />
+          <BackButton
+            fallbackHref={resolvedBackHref}
+            preferFallback={preferBackFallback}
+          />
         </View>
       ) : null}
       {header ? (

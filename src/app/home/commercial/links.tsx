@@ -7,6 +7,7 @@ export default function CommercialLinksRoute() {
       routeKey="commercial-links"
       longContent
       backFallbackHref="/home/commercial/more"
+      preferBackFallback
     >
       <LinksScreen />
     </AppPage>

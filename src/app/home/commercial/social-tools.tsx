@@ -7,6 +7,7 @@ export default function CommercialSocialToolsRoute() {
       routeKey="commercial-social-tools"
       longContent
       backFallbackHref="/home/commercial/more"
+      preferBackFallback
     >
       <SocialToolsScreen />
     </AppPage>

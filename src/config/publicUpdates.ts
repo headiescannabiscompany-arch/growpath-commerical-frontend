@@ -122,11 +122,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "commercial-diagnosis-return",
-        title: "Diagnosis returns to Commercial Tools",
-        date: "October 1, 2026",
+        title: "Commercial pages return to their starting menu",
+        date: "October 6, 2026",
         dateLabel: "Released",
         summary:
-          "Back from a standalone Commercial Plant Diagnosis now returns to Commercial Tools instead of jumping to the dashboard. Grow-, plant- and saved-run-linked navigation stays unchanged, as do Personal and Facility navigation. No AI execution, credit, permission or layout changes."
+          "Back from a standalone Commercial Plant Diagnosis now returns to Commercial Tools instead of jumping to the dashboard. External Channels and Public Links return to Commercial More, including after a reload, instead of following unrelated tab history. Returning does not connect an external account or edit a link. Grow-, plant- and saved-run-linked navigation stays unchanged, as do Personal and Facility navigation. No AI execution, credit, permission or layout changes."
       },
       {
         id: "commercial-tasks-readiness",

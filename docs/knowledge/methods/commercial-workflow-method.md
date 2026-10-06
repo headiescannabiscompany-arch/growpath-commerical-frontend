@@ -1,5 +1,10 @@
 # Commercial Workflow
 
+Commercial External Channels and Public Links are More-menu offshoots. Their page
+Back control returns explicitly to `/home/commercial/more`, including after reload
+or when tab history points at Dashboard. Ordinary shared-page history behavior
+remains unchanged. Returning never connects a provider, publishes or edits a link.
+
 Public checkout configuration never overrides an explicit checkout denial or a
 transactionAccess value of purchase_intent_only or requires_exact_route_review.
 Apply that precedence even when legacy checkout URLs, price IDs or enabled hints

@@ -277,11 +277,18 @@ describe("public Updates page", () => {
       "publication rules, AI credits and the existing layout stay unchanged"
     );
   });
-  it("limits the diagnosis return note to standalone Commercial navigation", () => {
+  it("groups bounded Commercial menu returns without implying provider integration", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "commercial-diagnosis-return"
     );
     expect(note?.summary).toContain("standalone Commercial Plant Diagnosis");
+    expect(note?.date).toBe("October 6, 2026");
+    expect(note?.summary).toContain(
+      "External Channels and Public Links return to Commercial More"
+    );
+    expect(note?.summary).toContain(
+      "does not connect an external account or edit a link"
+    );
     expect(note?.summary).toContain("saved-run-linked navigation stays unchanged");
     expect(note?.summary).toContain(
       "No AI execution, credit, permission or layout changes"

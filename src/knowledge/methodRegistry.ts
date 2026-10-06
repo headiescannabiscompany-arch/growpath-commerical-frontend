@@ -1179,6 +1179,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "campaign publishing waits for the current image preview to load; failure offers read-only Retry or image replacement, preserves drafts, ignores stale URI/retry callbacks, and never treats preview success as storage durability or publication",
       "inactive Commercial tab screens detached from web layout and focus order",
       "compact Commercial navigation with the active secondary workspace and a complete More destination",
+      "Commercial External Channels and Public Links page Back explicitly returns to More, including after reload or unrelated tab history; ordinary shared-page history stays unchanged and navigation never connects providers, publishes or edits links",
       "compact shared-page content and campaign rails retained in non-overlapping document flow",
       "one level-one Product Lines heading with level-two workflow sections and level-three saved-line headings",
       "single-flight Product Line creation and detail editing with retained failed drafts and in-page status",
