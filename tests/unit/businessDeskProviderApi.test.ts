@@ -183,6 +183,7 @@ describe("Business Desk provider API", () => {
     await expect(
       getBusinessDeskProviderCapabilities(COMMERCIAL_BUSINESS_DESK_WORKSPACE)
     ).resolves.toEqual({
+      receiptUploadTypes: [],
       expenseReceiptExtraction: {
         enabled: true,
         requiresReview: true,
@@ -246,6 +247,28 @@ describe("Business Desk provider API", () => {
       })
     );
   });
+
+  it.each([
+    [undefined, []],
+    [{ supported: false, types: ["application/pdf"] }, []],
+    [{ supported: "true", types: ["application/pdf"] }, []],
+    [{ supported: true, types: null }, []],
+    [
+      { supported: true, types: ["video/mp4", "image/jpeg", "image/jpeg"] },
+      ["image/jpeg"]
+    ],
+    [{ supported: true, types: ["application/pdf"] }, ["application/pdf"]]
+  ])(
+    "maps supported upload types independently from unavailable AI: %j",
+    async (attachments, expected) => {
+      mockApiRequest.mockResolvedValue({ data: { attachments } });
+      const result = await getBusinessDeskProviderCapabilities(
+        COMMERCIAL_BUSINESS_DESK_WORKSPACE
+      );
+      expect(result.receiptUploadTypes).toEqual(expected);
+      expect(result.expenseReceiptExtraction.enabled).toBe(false);
+    }
+  );
 
   it("submits an exact bounded Ask request including the explicit inventory selector", async () => {
     mockApiRequest.mockResolvedValue({

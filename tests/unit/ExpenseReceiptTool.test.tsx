@@ -16,6 +16,10 @@ const mockList = jest.fn();
 const mockPreviewBatch = jest.fn();
 const mockPrepareBatch = jest.fn();
 const mockUpdate = jest.fn();
+let mockUploadTypes: string[] = [];
+let mockCapabilityLoading = false;
+let mockCapabilityError: Error | null = null;
+const mockReloadCapabilities = jest.fn();
 
 jest.mock("@/api/businessDesk", () => ({
   archiveBusinessDeskRecord: (...args: any[]) => mockArchive(...args),
@@ -42,6 +46,7 @@ jest.mock("@/utils/exportToCsv", () => ({
 jest.mock("@/features/businessDesk/useBusinessDeskProviderOperation", () => ({
   useBusinessDeskProviderCapabilities: () => ({
     capabilities: {
+      receiptUploadTypes: mockUploadTypes,
       expenseReceiptExtraction: {
         enabled: false,
         requiresReview: true,
@@ -67,9 +72,9 @@ jest.mock("@/features/businessDesk/useBusinessDeskProviderOperation", () => ({
       ],
       inventorySelection: "explicit_boolean"
     },
-    loading: false,
-    error: null,
-    reload: jest.fn()
+    loading: mockCapabilityLoading,
+    error: mockCapabilityError,
+    reload: mockReloadCapabilities
   }),
   useBusinessDeskProviderOperation: () => ({
     operation: null,
@@ -92,6 +97,7 @@ jest.mock("@/features/businessDesk/ProtectedAttachmentField", () => {
     onReadyAttachmentIdsChange,
     onUserEdit,
     purpose,
+    allowedMimeTypes,
     title
   }: any) => {
     const id = "507f191e810c19729de86101";
@@ -108,6 +114,8 @@ jest.mock("@/features/businessDesk/ProtectedAttachmentField", () => {
         Pressable,
         {
           accessibilityLabel: `Test add ${purpose} attachment`,
+          disabled: !allowedMimeTypes?.length,
+          accessibilityState: { disabled: !allowedMimeTypes?.length },
           onPress: () => {
             onChange([...attachmentIds, id]);
             onReadyAttachmentIdsChange?.([...attachmentIds, id]);
@@ -206,6 +214,10 @@ function expensePreparedArtifact(replay = false) {
 
 describe("ExpenseReceiptTool", () => {
   beforeEach(() => {
+    mockUploadTypes = ["image/jpeg", "application/pdf"];
+    mockCapabilityLoading = false;
+    mockCapabilityError = null;
+    mockReloadCapabilities.mockReset();
     mockArchive.mockReset();
     mockCreate.mockReset();
     mockExport.mockReset().mockResolvedValue({
@@ -218,6 +230,57 @@ describe("ExpenseReceiptTool", () => {
     mockPreviewBatch.mockReset();
     mockPrepareBatch.mockReset();
     mockUpdate.mockReset();
+  });
+
+  it.each(["loading", "failed", "unsupported"])(
+    "withholds new uploads for %s readiness and preserves manual entry",
+    async (state) => {
+      mockCapabilityLoading = state === "loading";
+      mockCapabilityError = state === "failed" ? new Error("Unavailable") : null;
+      if (state === "unsupported") mockUploadTypes = [];
+      const screen = render(
+        <ExpenseReceiptTool
+          workspace={{ workspaceType: "commercial" }}
+          workspaceLabel="Commercial"
+          basePath="/home/commercial/business-desk"
+        />
+      );
+      await waitFor(() => expect(mockList).toHaveBeenCalled());
+      expect(screen.getByLabelText("Test add expense_receipt attachment")).toBeDisabled();
+      expect(screen.queryByText(/uploads are available for/i)).toBeNull();
+      fireEvent.changeText(
+        screen.getByLabelText("Record title"),
+        "Manual receipt retained"
+      );
+      if (state !== "loading") {
+        fireEvent.press(screen.getByLabelText("Retry receipt availability check"));
+        expect(mockReloadCapabilities).toHaveBeenCalledTimes(1);
+        expect(screen.getByLabelText("Record title").props.value).toBe(
+          "Manual receipt retained"
+        );
+      }
+      expect(mockCreate).not.toHaveBeenCalled();
+    }
+  );
+
+  it("allows supported uploads while AI extraction remains unavailable", async () => {
+    const screen = render(
+      <ExpenseReceiptTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+    await waitFor(() => expect(mockList).toHaveBeenCalled());
+    expect(
+      screen.getByLabelText("Test add expense_receipt attachment")
+    ).not.toBeDisabled();
+    expect(
+      screen.getByText(/uploads are available for the supported file types/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Extract a review draft from the saved READY receipt")
+    ).toBeDisabled();
   });
 
   it("creates only a draft with exact manual minor units and no extraction claim", async () => {
@@ -430,7 +493,7 @@ describe("ExpenseReceiptTool", () => {
         .disabled
     ).toBe(true);
     expect(mockCreate).not.toHaveBeenCalled();
-    expect(screen.getByText(/Secure photo and PDF upload is available/i)).toBeTruthy();
+    expect(screen.getByText(/Protected receipt uploads are available/i)).toBeTruthy();
   });
 
   it("binds only the protected receipt ID supplied by the attachment field", async () => {

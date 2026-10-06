@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "business-receipt-upload-readiness",
+        title: "Receipt upload availability matches the service",
+        date: "October 6, 2026",
+        dateLabel: "Released",
+        summary:
+          "Business Desk receipt intake no longer promises uploads while protected-file checks are unavailable or still loading. Add receipt waits for supported file types, and Retry checks availability without sending a file or clearing manual entries. Existing saved-receipt access and AI extraction checks remain separate. This corrects the interface; it does not activate new scanning infrastructure or Facility course-document uploads."
+      },
+      {
         id: "public-guided-story-walkthroughs",
         title: "Follow five sample workflows before signing up",
         date: "October 5, 2026",

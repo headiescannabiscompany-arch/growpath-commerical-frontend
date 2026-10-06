@@ -157,6 +157,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "break-even as a Price and Margin mode, Purchase Request as a Vendor Compare output, KPI snapshot as a Business Ask AI view, and provider draft as a Quote handoff",
       "immutable reviewed artifact revisions with version conflicts and operation-scoped idempotency",
       "private attachment quarantine with 24-hour cancelled-or-abandoned expiry, cross-workspace digest isolation, byte-verified media, bounded extraction, and saved-record retention after confirmation",
+      "receipt upload controls and availability copy gated by current supported attachment types, independently of AI extraction readiness, with read-only retry and preserved manual entry and saved receipt access",
       "copy and export for every reviewed quote plus optional merchant-owned Stripe Connect DRAFT handoff",
       "explicit DISCONNECTED, TEST, LIVE, and REVOKED merchant connection states with strict test/live isolation",
       "signature-verified, deduplicated, order-tolerant webhook truth for provider-side status"

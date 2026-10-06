@@ -210,6 +210,11 @@ export default function ExpenseReceiptTool({
   const readyReceiptId = readyAttachmentIds[0] || "";
   const extractionCapability =
     providerCapabilities.capabilities?.expenseReceiptExtraction || null;
+  const receiptUploadTypes =
+    !providerCapabilities.loading && !providerCapabilities.error
+      ? providerCapabilities.capabilities?.receiptUploadTypes || []
+      : [];
+  const receiptUploadsAvailable = receiptUploadTypes.length > 0;
   const extractionResult =
     extractionOperation.operation?.state === "succeeded" &&
     extractionOperation.operation.result?.type === "expense_receipt_extraction"
@@ -768,10 +773,12 @@ export default function ExpenseReceiptTool({
         titleLevel={2}
         subtitle={
           providerCapabilities.loading
-            ? "Secure upload is available while GrowPathAI checks whether review-gated extraction is configured."
-            : extractionCapability?.enabled
-              ? "Secure upload and review-gated receipt extraction are available. AI output remains staged until you explicitly apply it to an exact saved revision."
-              : "Secure photo and PDF upload is available. Provider extraction is unavailable, so review and enter the receipt facts yourself."
+            ? "Checking protected receipt upload and extraction availability. You can enter receipt facts manually meanwhile."
+            : providerCapabilities.error
+              ? "Receipt upload availability could not be verified. New uploads are paused; manual entry remains available."
+              : !receiptUploadsAvailable
+                ? "New protected receipt uploads are unavailable. You can enter receipt facts manually; saved receipts retain their existing security checks."
+                : "Protected receipt uploads are available for the supported file types. Each file must pass its security checks before use."
         }
       >
         <Text style={styles.notice}>
@@ -787,6 +794,7 @@ export default function ExpenseReceiptTool({
           attachmentIds={activeAttachmentDraft.ids}
           title="Protected receipt source"
           hint="Attach one receipt photo, invoice image, or PDF. It remains private to this workspace."
+          allowedMimeTypes={receiptUploadTypes}
           onReadyAttachmentIdsChange={(ids) =>
             setReadyAttachmentState({ workspaceKey, ids })
           }
@@ -827,21 +835,29 @@ export default function ExpenseReceiptTool({
             )
           }
         />
-        {providerCapabilities.error ? (
+        {providerCapabilities.error ||
+        (!providerCapabilities.loading && !receiptUploadsAvailable) ? (
           <View style={styles.providerNotice}>
             <Text style={styles.errorText}>
-              Provider availability could not be verified. No receipt will be sent.
+              {providerCapabilities.error
+                ? "Upload and extraction availability could not be verified. No new file will be uploaded or sent to AI."
+                : "Upload security readiness is unavailable. Check again after the service is ready, or continue with manual entry."}
             </Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Retry receipt extraction availability check"
+              accessibilityLabel="Retry receipt availability check"
+              accessibilityState={{ disabled: providerCapabilities.loading }}
+              disabled={providerCapabilities.loading}
               onPress={() => void providerCapabilities.reload()}
               style={styles.secondaryButton}
             >
               <Text style={styles.secondaryButtonText}>Retry availability check</Text>
             </Pressable>
           </View>
-        ) : !providerCapabilities.loading && !extractionCapability?.enabled ? (
+        ) : null}
+        {!providerCapabilities.loading &&
+        !providerCapabilities.error &&
+        !extractionCapability?.enabled ? (
           <Text accessibilityLiveRegion="polite" style={styles.notice}>
             {businessDeskCapabilityCopy(extractionCapability?.code)}
           </Text>

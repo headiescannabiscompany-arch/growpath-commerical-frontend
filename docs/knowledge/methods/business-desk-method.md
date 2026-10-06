@@ -281,6 +281,14 @@ as a real zero or usable answer.
 
 ## Attachments, privacy, and hostile-document handling
 
+- Receipt intake enables new uploads only after the current workspace capability read
+  explicitly supports recognized attachment types. Pending, failed, missing, or unsupported
+  readiness never claims uploads are available. Retry checks availability without sending a
+  file or changing the manual draft. Upload readiness and AI extraction readiness remain
+  separate; each uploaded file still requires its own security checks. Preserve existing
+  saved-reference status, authorized downloads, removal, and manual-entry workflows during
+  upload unavailability. A picker result must recheck current supported types before upload.
+
 - Collect the minimum customer, vendor, employee, and financial data needed for the selected
   artifact. Private contact details, receipts, costs, documents, notes, and provider IDs
   remain workspace-scoped and are excluded from Storefront, discovery, public copies, and

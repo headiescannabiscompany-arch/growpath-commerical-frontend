@@ -235,6 +235,7 @@ export type BusinessDeskProviderCapability = {
 };
 
 export type BusinessDeskProviderCapabilities = {
+  receiptUploadTypes?: string[];
   expenseReceiptExtraction: BusinessDeskProviderCapability & {
     requiresReview: true;
   };
@@ -990,6 +991,19 @@ export async function getBusinessDeskProviderCapabilities(
     throw new Error("The Business Desk capabilities response was invalid.");
   }
   const provider = value.providerOperations;
+  // Upload readiness is independent of provider-backed extraction readiness.
+  const supportedReceiptTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/pdf"
+  ];
+  const receiptUploadTypes =
+    isPlainObject(value.attachments) &&
+    value.attachments.supported === true &&
+    Array.isArray(value.attachments.types)
+      ? supportedReceiptTypes.filter((type) => value.attachments.types.includes(type))
+      : [];
   if (
     !isPlainObject(provider) ||
     !hasExactKeys(provider, [
@@ -1012,7 +1026,7 @@ export async function getBusinessDeskProviderCapabilities(
     ) ||
     !isPlainObject(provider.operations)
   ) {
-    return unavailableProviderCapabilities();
+    return { ...unavailableProviderCapabilities(), receiptUploadTypes };
   }
   const extraction = provider.operations.expenseReceiptExtraction;
   const businessAsk = provider.operations.businessAsk;
@@ -1048,6 +1062,7 @@ export async function getBusinessDeskProviderCapabilities(
     businessAsk.performsActions === false;
   const creditCost = Number(provider.creditCost);
   return {
+    receiptUploadTypes,
     expenseReceiptExtraction: {
       enabled: extractionValid && extraction.enabled === true,
       requiresReview: true,

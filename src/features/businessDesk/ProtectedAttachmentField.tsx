@@ -63,6 +63,7 @@ type ProtectedAttachmentFieldProps = {
   attachmentIds: string[];
   title: string;
   hint: string;
+  allowedMimeTypes?: string[];
   onChange: (attachmentIds: string[]) => void;
   onReadyAttachmentIdsChange?: (attachmentIds: string[]) => void;
   onUserEdit?: () => void;
@@ -202,6 +203,7 @@ export default function ProtectedAttachmentField({
   attachmentIds,
   title,
   hint,
+  allowedMimeTypes,
   onChange,
   onReadyAttachmentIdsChange,
   onUserEdit,
@@ -242,6 +244,11 @@ export default function ProtectedAttachmentField({
   const operationGeneration = useRef(new Map<string, number>());
   const controllers = useRef(new Map<string, AbortController>());
   const mounted = useRef(true);
+  const uploadTypes = ACCEPTED_MIME_TYPES.filter(
+    (type) => !allowedMimeTypes || allowedMimeTypes.includes(type)
+  );
+  const uploadTypesRef = useRef(uploadTypes);
+  uploadTypesRef.current = uploadTypes;
 
   const setEntries = useCallback(
     (update: (current: AttachmentEntry[]) => AttachmentEntry[]) => {
@@ -404,6 +411,12 @@ export default function ProtectedAttachmentField({
   const runUpload = async (localKey: string) => {
     const startingEntry = entriesRef.current.find((entry) => entry.localKey === localKey);
     if (!startingEntry?.file || !startingEntry.reserveKey) return;
+    if (
+      !uploadTypesRef.current.includes(
+        startingEntry.file.mimeType as (typeof ACCEPTED_MIME_TYPES)[number]
+      )
+    )
+      return;
     const { generation, controller } = beginOperation(localKey);
     let failureStage: AttachmentEntry["retry"] = "upload";
     patchEntry(
@@ -508,20 +521,30 @@ export default function ProtectedAttachmentField({
   };
 
   const pickFile = async () => {
-    if (pickerBusy || activeCount >= maxCount) return;
+    if (pickerBusy || activeCount >= maxCount || !uploadTypesRef.current.length) return;
     setPickerBusy(true);
     setPickerError("");
     setFeedback("");
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: [...ACCEPTED_MIME_TYPES],
+        type: [...uploadTypesRef.current],
         multiple: false,
         copyToCacheDirectory: true
       });
       if (result.canceled) return;
+      if (!mounted.current) return;
       const asset = result.assets?.[0];
       if (!asset) throw new Error("The selected file could not be opened.");
       const file = selectedFileFrom(asset);
+      if (
+        !uploadTypesRef.current.includes(
+          file.mimeType as (typeof ACCEPTED_MIME_TYPES)[number]
+        )
+      ) {
+        throw new Error(
+          "Upload availability changed. Check availability before choosing this file again."
+        );
+      }
       const localKey = `new:${newBusinessDeskOperationKey(purpose)}`;
       const entry: AttachmentEntry = {
         localKey,
@@ -820,6 +843,11 @@ export default function ProtectedAttachmentField({
                   <ActionButton
                     label={`Retry upload ${name}`}
                     text="Retry upload"
+                    disabled={
+                      !uploadTypes.includes(
+                        entry.file?.mimeType as (typeof ACCEPTED_MIME_TYPES)[number]
+                      )
+                    }
                     onPress={() => void runUpload(entry.localKey)}
                     styles={styles}
                   />
@@ -883,14 +911,15 @@ export default function ProtectedAttachmentField({
         accessibilityRole="button"
         accessibilityLabel={`Add ${purpose === "expense_receipt" ? "expense receipt" : "job"} attachment`}
         accessibilityState={{
-          disabled: pickerBusy || activeCount >= maxCount,
+          disabled: pickerBusy || activeCount >= maxCount || !uploadTypes.length,
           busy: pickerBusy
         }}
-        disabled={pickerBusy || activeCount >= maxCount}
+        disabled={pickerBusy || activeCount >= maxCount || !uploadTypes.length}
         onPress={() => void pickFile()}
         style={[
           styles.addButton,
-          (pickerBusy || activeCount >= maxCount) && styles.disabled
+          (pickerBusy || activeCount >= maxCount || !uploadTypes.length) &&
+            styles.disabled
         ]}
       >
         <Text style={styles.addButtonText}>

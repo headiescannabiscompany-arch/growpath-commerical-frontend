@@ -139,6 +139,57 @@ describe("ProtectedAttachmentField", () => {
     openUrl.mockRestore();
   });
 
+  it("blocks a new picker when upload types are unavailable", () => {
+    const { screen, onChange } = renderExpenseField({ allowedMimeTypes: [] });
+    expect(screen.getByLabelText("Add expense receipt attachment")).toBeDisabled();
+    fireEvent.press(screen.getByLabelText("Add expense receipt attachment"));
+    expect(mockPick).not.toHaveBeenCalled();
+    expect(mockReserve).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("keeps saved READY receipts downloadable while new uploads are unavailable", async () => {
+    const { screen } = renderExpenseField({
+      allowedMimeTypes: [],
+      attachmentIds: [expenseId]
+    });
+    fireEvent.press(await screen.findByLabelText("Download receipt.jpg"));
+    await waitFor(() => expect(mockDownload).toHaveBeenCalled());
+    expect(mockPick).not.toHaveBeenCalled();
+    expect(mockReserve).not.toHaveBeenCalled();
+  });
+
+  it("limits selection to supported types and refuses a late picker result after readiness changes", async () => {
+    let releasePicker!: (value: ReturnType<typeof selectedReceipt>) => void;
+    mockPick.mockReturnValue(
+      new Promise((resolve) => {
+        releasePicker = resolve;
+      })
+    );
+    const { screen, onChange } = renderExpenseField({ allowedMimeTypes: ["image/jpeg"] });
+    fireEvent.press(screen.getByLabelText("Add expense receipt attachment"));
+    expect(mockPick).toHaveBeenCalledWith(
+      expect.objectContaining({ type: ["image/jpeg"] })
+    );
+    screen.rerender(
+      <ProtectedAttachmentField
+        workspace={workspace}
+        purpose="expense_receipt"
+        maxCount={1}
+        attachmentIds={[]}
+        title="Protected receipt source"
+        hint="Private receipt"
+        onChange={onChange}
+        allowedMimeTypes={[]}
+      />
+    );
+    await act(async () => releasePicker(selectedReceipt()));
+    expect(screen.getByText(/Upload availability changed/)).toBeTruthy();
+    expect(mockReserve).not.toHaveBeenCalled();
+    expect(mockUpload).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it("shows upload progress and binds the file only after READY", async () => {
     let releaseUpload!: () => void;
     const pendingUpload = new Promise<void>((resolve) => {
