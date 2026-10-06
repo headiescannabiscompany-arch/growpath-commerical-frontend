@@ -1173,6 +1173,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "limitations",
       "tasks",
       "single-heading campaign authoring with named stateful controls",
+      "published Product-to-campaign handoff resolves saved identity through the current seller catalog, seeds only saved text/media/interests/content flags into an unsaved review form, rejects unavailable or unpublished sources and stale account/product reads, and never copies prices, purchase URLs or automatically publishes",
       "campaign draft review that distinguishes planned publish status from current state and uses user-facing filters",
       "inactive Commercial tab screens detached from web layout and focus order",
       "compact Commercial navigation with the active secondary workspace and a complete More destination",

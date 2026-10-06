@@ -14,6 +14,8 @@ import {
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
+import { fetchProducts, type Product } from "@/api/products";
+import { useAuth } from "@/auth/AuthContext";
 import { submitReport } from "@/api/reports";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import { InlineError } from "@/components/InlineError";
@@ -535,6 +537,95 @@ function campaignDestination(post: CommercialFeedCampaign) {
 }
 
 export default function CommercialFeedRoute() {
+  const params = useLocalSearchParams<{ productId?: string | string[] }>();
+  const ent = useEntitlements();
+  if (!ent.ready) return null;
+  if (params.productId !== undefined && ent.mode === "commercial") {
+    const productId = typeof params.productId === "string" ? params.productId : "";
+    return <ProductCampaignScope productId={productId} />;
+  }
+  return <CommercialFeedForm />;
+}
+
+function ProductCampaignScope({ productId }: { productId: string }) {
+  const auth = useAuth();
+  if (auth.isHydrating || !auth.isAuthed || !auth.user?.id) return null;
+  return (
+    <ProductCampaignHandoff key={`${auth.user.id}:${productId}`} productId={productId} />
+  );
+}
+
+function ProductCampaignHandoff({ productId }: { productId: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFeedCampaignStyles(palette), [palette]);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let active = true;
+    setError("");
+    if (!/^[a-zA-Z0-9_-]{1,128}$/.test(productId)) {
+      setError(
+        "The selected product link is invalid. Return to Products and choose it again."
+      );
+      return;
+    }
+    // Resolve only through the signed-in seller's catalog, never through public or URL copy.
+    void fetchProducts()
+      .then((products) => {
+        if (!active) return;
+        const selected = products.find(
+          (item) =>
+            String(item.id || (item as any)._id) === productId &&
+            item.status === "published"
+        );
+        if (!selected) {
+          setError(
+            "This product is no longer published in your catalog. Return to Products to review it."
+          );
+          return;
+        }
+        setProduct(selected);
+      })
+      .catch(() => {
+        if (active)
+          setError(
+            "Unable to load the selected product. Retry or return to Products; nothing has been published."
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [productId, attempt]);
+  if (product) return <CommercialFeedForm initialProduct={product} />;
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <BackButton fallbackHref="/home/commercial/products" />
+      <Text accessibilityRole="header" style={styles.title}>
+        Feed / Campaigns
+      </Text>
+      <View style={styles.card}>
+        <Text style={styles.subtitle}>{error || "Loading selected product…"}</Text>
+        {error ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry selected product"
+            onPress={() => {
+              setError("");
+              setAttempt((value) => value + 1);
+            }}
+          >
+            <Text style={styles.linkBoxText}>Retry selected product</Text>
+          </Pressable>
+        ) : (
+          <ActivityIndicator color={palette.accent} />
+        )}
+      </View>
+    </ScrollView>
+  );
+}
+
+function CommercialFeedForm({ initialProduct }: { initialProduct?: Product }) {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFeedCampaignStyles(palette), [palette]);
@@ -563,20 +654,37 @@ export default function CommercialFeedRoute() {
   const [campaignKind, setCampaignKind] = useState<CampaignKind>(allowedCampaignKinds[0]);
   const [filterType, setFilterType] = useState<string>("all");
   const [q, setQ] = useState("");
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
+  const [title, setTitle] = useState(initialProduct?.name || "");
+  const [body, setBody] = useState(
+    initialProduct?.shortDescription || initialProduct?.description || ""
+  );
   const [tags, setTags] = useState("");
-  const [growInterests, setGrowInterests] = useState("");
-  const [cannabisSpecific, setCannabisSpecific] = useState(false);
+  const [growInterests, setGrowInterests] = useState(
+    initialProduct?.growInterests?.join(", ") || ""
+  );
+  const [cannabisSpecific, setCannabisSpecific] = useState(
+    Boolean(initialProduct?.isCannabis || initialProduct?.regulatedCannabis)
+  );
   const [location, setLocation] = useState("");
-  const [linkedProductId, setLinkedProductId] = useState("");
+  const [linkedProductId, setLinkedProductId] = useState(
+    initialProduct ? String(initialProduct.id || (initialProduct as any)._id) : ""
+  );
   const [linkedProductLineId, setLinkedProductLineId] = useState("");
   const [linkedCourseId, setLinkedCourseId] = useState("");
   const [linkedLiveId, setLinkedLiveId] = useState("");
   const [linkedGrowId, setLinkedGrowId] = useState("");
   const [linkedForumThreadId, setLinkedForumThreadId] = useState("");
   const [storefrontSlug, setStorefrontSlug] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageUrl, setImageUrl] = useState(
+    resolveImageUri(
+      initialProduct?.imageUrl ||
+        (initialProduct as any)?.thumbnailUrl ||
+        (initialProduct as any)?.photoUrl ||
+        (initialProduct as any)?.gallery?.[0] ||
+        (initialProduct as any)?.images?.[0] ||
+        ""
+    )
+  );
   const [externalLinkUrl, setExternalLinkUrl] = useState("");
   const [externalLinkLabel, setExternalLinkLabel] = useState("");
   const [campaignStart, setCampaignStart] = useState("");
@@ -1083,6 +1191,12 @@ export default function CommercialFeedRoute() {
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             Create Campaign
           </Text>
+          {initialProduct ? (
+            <Text style={styles.subtitle}>
+              Started from {initialProduct.name}. Review this unsaved campaign before
+              publishing. The product and its price are unchanged.
+            </Text>
+          ) : null}
           <Text style={styles.linkBoxText}>
             Feed is advertising and outreach. Link the campaign to a product, course,
             live, storefront, or support Q&A thread. Keep threaded conversation in

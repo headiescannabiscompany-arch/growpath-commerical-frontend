@@ -8,6 +8,14 @@ const mockPersistImageUri = jest.fn();
 const mockSharePublicLink = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+const mockProducts = jest.fn();
+let mockUserId = "seller-1";
+jest.mock("@/api/products", () => ({
+  fetchProducts: (...args: any[]) => mockProducts(...args)
+}));
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: mockUserId }, isAuthed: true, isHydrating: false })
+}));
 let mockMode = "commercial";
 let mockFacilityRole = "OWNER";
 let mockRouteParams: Record<string, string> = { campaignId: "campaign-1" };
@@ -68,6 +76,8 @@ jest.mock("expo-image-picker", () => ({
 describe("CommercialFeedRoute", () => {
   beforeEach(() => {
     mockMode = "commercial";
+    mockUserId = "seller-1";
+    mockProducts.mockReset();
     mockFacilityRole = "OWNER";
     mockRouteParams = { campaignId: "campaign-1" };
     mockApiRequest.mockReset();
@@ -114,6 +124,140 @@ describe("CommercialFeedRoute", () => {
       }
       return Promise.resolve({});
     });
+  });
+
+  it("starts an unsaved product campaign from current owned published data without writing", async () => {
+    mockRouteParams = { productId: "product-1" };
+    mockProducts.mockResolvedValue([
+      {
+        id: "product-1",
+        status: "published",
+        name: "Saved basil kit",
+        shortDescription: "Saved description",
+        imageUrl: "/uploads/basil.jpg",
+        growInterests: ["vegetables"],
+        price: 10
+      }
+    ]);
+    const screen = render(<CommercialFeedRoute />);
+    expect(screen.queryByLabelText("Publish feed campaign")).toBeNull();
+    await screen.findByText(/Started from Saved basil kit/);
+    expect(screen.getByLabelText("Feed campaign title").props.value).toBe(
+      "Saved basil kit"
+    );
+    expect(screen.getByLabelText("Feed campaign body").props.value).toBe(
+      "Saved description"
+    );
+    expect(screen.getByLabelText("Linked product").props.value).toBe("product-1");
+    expect(screen.getByLabelText("Feed campaign image URL").props.value).toBe(
+      "/uploads/basil.jpg"
+    );
+    expect(screen.getByLabelText("Feed campaign grow interests").props.value).toBe(
+      "vegetables"
+    );
+    expect(screen.getByLabelText("External link URL").props.value).toBe("");
+    expect(
+      mockApiRequest.mock.calls.some(([, options]) => options?.method === "POST")
+    ).toBe(false);
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign title"),
+      "My edited campaign"
+    );
+    fireEvent.press(screen.getByLabelText("Refresh campaigns"));
+    await act(async () => {});
+    expect(screen.getByLabelText("Feed campaign title").props.value).toBe(
+      "My edited campaign"
+    );
+    expect(mockProducts).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries unavailable selected-product reads without opening an unverified publish form", async () => {
+    mockRouteParams = { productId: "product-1" };
+    mockProducts
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce([
+        { id: "product-1", status: "published", name: "Recovered kit" }
+      ]);
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByText(/Unable to load the selected product/);
+    expect(screen.queryByLabelText("Publish feed campaign")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Retry selected product"));
+    await screen.findByText(/Started from Recovered kit/);
+    expect(mockProducts).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([
+    { products: [] },
+    { products: [{ id: "product-1", status: "draft", name: "Private kit" }] }
+  ])("rejects absent or unpublished selected products", async ({ products }) => {
+    mockRouteParams = { productId: "product-1" };
+    mockProducts.mockResolvedValue(products);
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByText(/no longer published in your catalog/);
+    expect(screen.queryByLabelText("Publish feed campaign")).toBeNull();
+  });
+
+  it("rejects invalid product references without a catalog read", async () => {
+    mockRouteParams = { productId: "../other" };
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByText(/selected product link is invalid/);
+    expect(mockProducts).not.toHaveBeenCalled();
+  });
+
+  it("discards a late product response after the signed-in seller changes", async () => {
+    mockRouteParams = { productId: "product-1" };
+    let finish!: (items: any[]) => void;
+    mockProducts
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          })
+      )
+      .mockResolvedValueOnce([]);
+    const screen = render(<CommercialFeedRoute />);
+    mockUserId = "seller-2";
+    screen.rerender(<CommercialFeedRoute />);
+    await screen.findByText(/no longer published in your catalog/);
+    await act(async () => {
+      finish([{ id: "product-1", status: "published", name: "Other seller kit" }]);
+    });
+    expect(screen.queryByLabelText("Feed campaign title")).toBeNull();
+  });
+
+  it("carries explicit content flags and legacy saved imagery without adding price claims", async () => {
+    mockRouteParams = { productId: "product-1" };
+    mockProducts.mockResolvedValue([
+      {
+        _id: "product-1",
+        status: "published",
+        name: "Saved product",
+        description: "Original description",
+        thumbnailUrl: "https://example.com/saved.jpg",
+        regulatedCannabis: true,
+        price: 25
+      }
+    ]);
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByText(/Started from Saved product/);
+    expect(screen.getByLabelText("Feed campaign body").props.value).toBe(
+      "Original description"
+    );
+    expect(screen.getByLabelText("Feed campaign image URL").props.value).toBe(
+      "https://example.com/saved.jpg"
+    );
+    expect(
+      screen.getByLabelText("Mark campaign as cannabis content").props.accessibilityState
+        .checked
+    ).toBe(true);
+  });
+
+  it("does not apply Commercial product handoff to Facility outreach", async () => {
+    mockRouteParams = { productId: "product-1" };
+    mockMode = "facility";
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByText("Facility Outreach");
+    expect(mockProducts).not.toHaveBeenCalled();
   });
 
   it("does not call a pending initial feed empty", async () => {

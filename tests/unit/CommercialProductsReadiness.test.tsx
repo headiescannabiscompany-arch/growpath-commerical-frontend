@@ -18,7 +18,15 @@ jest.mock("@/auth/AuthContext", () => ({
 }));
 jest.mock("@/entitlements", () => ({ useEntitlements: () => ({ plan: "commercial" }) }));
 jest.mock("expo-router", () => ({
-  Link: ({ children }: any) => children
+  Link: ({ children, href }: any) => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(
+      Text,
+      { accessibilityRole: "link", accessibilityHint: href },
+      children
+    );
+  }
 }));
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
@@ -36,6 +44,31 @@ jest.mock("@/components/layout/AppCard", () => {
 });
 
 describe("Commercial Products read readiness", () => {
+  it("carries only the saved published product ID into campaign authoring", async () => {
+    mockFetch.mockResolvedValue([
+      { id: "saved-product", name: "Published kit", status: "published" },
+      { id: "draft-product", name: "Private kit", status: "draft" }
+    ]);
+    const screen = render(<CommercialProductsRoute />);
+    await screen.findByText("Published kit");
+    expect(screen.getAllByText("Create Campaign")).toHaveLength(1);
+    expect(
+      screen
+        .getAllByRole("link")
+        .some(
+          (link) =>
+            link.props.accessibilityHint ===
+            "/home/commercial/feed?productId=saved-product"
+        )
+    ).toBe(true);
+    expect(
+      screen
+        .getAllByRole("link")
+        .some((link) =>
+          String(link.props.accessibilityHint).includes("productId=draft-product")
+        )
+    ).toBe(false);
+  });
   it("keeps refresh read-only and single-flight without clearing draft fields", async () => {
     let resolve!: (value: any) => void;
     const product = { id: "qa-product", name: "QA private draft", status: "draft" };

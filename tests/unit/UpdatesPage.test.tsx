@@ -24,6 +24,18 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("groups product-campaign handoff without claiming publication acceptance", () => {
+    const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
+      (entry) => entry.id === "campaign-feed-readiness"
+    );
+    expect(notes).toHaveLength(1);
+    expect(notes[0].date).toBe("October 5, 2026");
+    expect(notes[0].summary).toContain("Nothing is automatically published");
+    expect(notes[0].summary).toContain("unsaved form for review");
+    expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === "shopping")?.status).toBe(
+      "partial"
+    );
+  });
   it("groups payout-status recovery without claiming another financial acceptance", () => {
     const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
       (entry) => entry.id === "store-directory-recovery"

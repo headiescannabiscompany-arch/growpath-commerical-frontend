@@ -1090,7 +1090,10 @@ export default function CommercialProductsRoute({
                       />
                     )}
                     {product.status === "published" ? (
-                      <ActionLink href="/home/commercial/feed" label="Create Campaign" />
+                      <ActionLink
+                        href={`/home/commercial/feed?productId=${encodeURIComponent(String(id))}`}
+                        label="Create Campaign"
+                      />
                     ) : null}
                   </View>
                 </View>
