@@ -502,7 +502,10 @@ describe("public commercial routes", () => {
       }
     );
 
-    it.each<Record<string, string>>([{ productId: "product-1" }, { slug: "living-soil-labs" }])(
+    it.each<Record<string, string>>([
+      { productId: "product-1" },
+      { slug: "living-soil-labs" }
+    ])(
       "settles incomplete route %p without a request or endless loading",
       async (params) => {
         mockRouteParams = params;
@@ -1160,6 +1163,43 @@ describe("public commercial routes", () => {
       expect(mockRouterPush).not.toHaveBeenCalled();
       expectNoCommerceOrClick();
     });
+  });
+
+  describe.each([
+    ["storefront card", PublicStorefrontRoute],
+    ["product detail", PublicProductRoute]
+  ])("explicit transaction restrictions on %s", (_label, Route) => {
+    it.each([
+      { checkoutEnabled: false },
+      { transactionAccess: "purchase_intent_only" },
+      { transactionAccess: "requires_exact_route_review" }
+    ])(
+      "does not offer Buy despite conflicting legacy checkout hints: %j",
+      async (restriction) => {
+        mockRouteParams = { slug: "living-soil-labs", productId: "product-1" };
+        mockFetchPublicStorefront.mockResolvedValue({
+          ...publicPayload,
+          products: [
+            {
+              ...publicPayload.products[0],
+              checkoutEnabled: true,
+              checkoutUrl: "https://checkout.example.test/existing",
+              stripePriceId: "price_existing",
+              externalPurchaseUrl: "https://example.com/buy",
+              ...restriction
+            }
+          ]
+        });
+        const screen = render(<Route />);
+        await screen.findAllByText("Veg Mix");
+        expect(screen.queryByLabelText("Buy Veg Mix")).toBeNull();
+        if ("transactionAccess" in restriction) {
+          expect(screen.queryByLabelText("Open external product Veg Mix")).toBeNull();
+        }
+        expect(jest.requireMock("@/api/products").checkoutProduct).not.toHaveBeenCalled();
+        expect(mockSubmitProductPurchaseIntent).not.toHaveBeenCalled();
+      }
+    );
   });
 
   it("shows dispensary inventory with website and pickup handoff but no checkout", async () => {

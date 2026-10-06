@@ -42,7 +42,15 @@ export function hasSavedStorefrontCheckoutAmount(product: any, storefront?: any)
 }
 
 export function publicProductCanCheckout(product: any, storefront?: any) {
-  if (product?.purchaseIntentEnabled === true) return false;
+  // Explicit restrictions take precedence over every legacy checkout hint.
+  // This remains display eligibility, not server-verified payment readiness.
+  if (
+    product?.checkoutEnabled === false ||
+    product?.purchaseIntentEnabled === true ||
+    product?.transactionAccess === "purchase_intent_only" ||
+    product?.transactionAccess === "requires_exact_route_review"
+  )
+    return false;
   if (
     isRegulatedCannabisProduct(product) ||
     isDispensaryStorefront(storefront) ||
@@ -61,7 +69,11 @@ export function publicProductCanCheckout(product: any, storefront?: any) {
 }
 
 export function publicProductExternalUrl(product: any, storefront?: any) {
-  if (product?.purchaseIntentEnabled === true) return "";
+  if (
+    product?.purchaseIntentEnabled === true ||
+    product?.transactionAccess === "purchase_intent_only"
+  )
+    return "";
   const regulatedCannabis = isRegulatedCannabisProduct(product);
   const dispensary =
     isDispensaryStorefront(storefront) || isDispensaryStorefront(product);

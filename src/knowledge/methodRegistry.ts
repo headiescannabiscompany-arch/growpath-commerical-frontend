@@ -1226,6 +1226,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "public product detail offers single-flight read-only Retry and the owning-store return; failed or malformed catalogs remain unavailable rather than not-found, incomplete routes settle without endless loading, and route/session changes or unmount invalidate previous and late reads without purchases or interest submissions",
       "single-flight Commercial storefront loading and mutually exclusive storefront, product, media, and setup-task actions with retained drafts",
       "ordinary nonregulated storefront quick creation, catalog and product-detail publication share saved-amount Stripe Checkout configuration without copied provider IDs; public price-only checkout requires publication and no explicit denial and preserves seller, payment, inventory, dispensary and purchase-interest gates",
+      "public checkout denial and purchase-intent-only or exact-route-review transaction restrictions override legacy price IDs, URLs and enabled hints; interest-only transaction state also withholds external purchase links; inventory and payment readiness remain server-authoritative",
       "active-only owner Storefront products and a read-only unavailable Product detail state",
       "image-first owner Product catalog review with API-host normalization for legacy uploads and publication-gated public/share actions",
       "named single-flight Product save, publish, confirmed unpublish, and fully-configured batch-publish actions with exact-image canonical social sharing",

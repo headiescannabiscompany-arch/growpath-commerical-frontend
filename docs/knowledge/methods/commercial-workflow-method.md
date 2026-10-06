@@ -1,5 +1,13 @@
 # Commercial Workflow
 
+Public checkout configuration never overrides an explicit checkout denial or a
+transactionAccess value of purchase_intent_only or requires_exact_route_review.
+Apply that precedence even when legacy checkout URLs, price IDs or enabled hints
+coexist. Interest-only transaction state also suppresses external purchase links,
+even without the older purchaseIntentEnabled flag. Keep normal external links
+independent of GrowPath-only checkout denial; stock and payment readiness remain
+server-authoritative. This does not activate inventory checkout or alter records.
+
 Public product detail uses a single-flight read-only Retry after a failed catalog
 read, while retaining the owning-store return (or directory for an incomplete
 store address). Failed/malformed catalogs are unavailable, not product-not-found.

@@ -10,6 +10,53 @@ import {
 
 describe("regulated storefront commerce", () => {
   test.each([
+    { stripePriceId: "price_existing" },
+    { checkoutEnabled: true },
+    { checkoutUrl: "https://checkout.example.test/existing" },
+    { status: "published", priceCents: 1000 }
+  ])(
+    "explicit transaction restrictions override checkout configuration: %j",
+    (configured) => {
+      for (const transactionAccess of [
+        "purchase_intent_only",
+        "requires_exact_route_review"
+      ]) {
+        expect(publicProductCanCheckout({ ...configured, transactionAccess })).toBe(
+          false
+        );
+      }
+    }
+  );
+
+  test.each([
+    { stripePriceId: "price_existing" },
+    { checkoutUrl: "https://checkout.example.test/existing" },
+    { status: "published", priceCents: 1000 }
+  ])("explicit checkout denial overrides legacy configuration: %j", (configured) => {
+    expect(publicProductCanCheckout({ ...configured, checkoutEnabled: false })).toBe(
+      false
+    );
+  });
+
+  test("interest-only transaction state suppresses external purchase even without the legacy flag", () => {
+    expect(
+      publicProductExternalUrl({
+        transactionAccess: "purchase_intent_only",
+        externalPurchaseUrl: "https://example.com/buy"
+      })
+    ).toBe("");
+  });
+
+  test("GrowPath checkout denial does not disable an ordinary external seller link", () => {
+    expect(
+      publicProductExternalUrl({
+        checkoutEnabled: false,
+        externalPurchaseUrl: "https://example.com/buy"
+      })
+    ).toBe("https://example.com/buy");
+  });
+
+  test.each([
     [{ priceCents: 1000 }, true],
     [{ price: "10.00" }, true],
     [{ price: "19.99" }, true],
