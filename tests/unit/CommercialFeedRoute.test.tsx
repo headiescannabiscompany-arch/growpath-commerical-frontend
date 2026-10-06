@@ -8,6 +8,7 @@ const mockPersistImageUri = jest.fn();
 const mockSharePublicLink = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+const mockReplace = jest.fn();
 const mockProducts = jest.fn();
 const mockStorefront = jest.fn();
 jest.mock("@/api/storefront", () => ({
@@ -40,7 +41,12 @@ function chooseDateTime(screen: ReturnType<typeof render>, label: string, value:
 jest.mock("expo-router", () => ({
   Redirect: () => null,
   useLocalSearchParams: () => mockRouteParams,
-  useRouter: () => ({ push: mockPush, back: mockBack, canGoBack: () => true })
+  useRouter: () => ({
+    push: mockPush,
+    back: mockBack,
+    replace: mockReplace,
+    canGoBack: () => true
+  })
 }));
 
 jest.mock("@/api/apiRequest", () => ({
@@ -92,6 +98,7 @@ describe("CommercialFeedRoute", () => {
     mockSharePublicLink.mockReset();
     mockPush.mockReset();
     mockBack.mockReset();
+    mockReplace.mockReset();
     mockPersistImageUri.mockImplementation(async (uri) => uri);
     mockSharePublicLink.mockResolvedValue({ method: "web-share" });
     mockApiRequest.mockImplementation((path: string, options?: any) => {
@@ -179,6 +186,9 @@ describe("CommercialFeedRoute", () => {
       "My edited campaign"
     );
     expect(mockProducts).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByLabelText("Back"));
+    expect(mockReplace).toHaveBeenCalledWith("/home/commercial/products");
+    expect(mockBack).not.toHaveBeenCalled();
   });
 
   it("retries unavailable selected-product reads without opening an unverified publish form", async () => {
@@ -212,6 +222,8 @@ describe("CommercialFeedRoute", () => {
     const screen = render(<CommercialFeedRoute />);
     await screen.findByText(/selected product link is invalid/);
     expect(mockProducts).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Back"));
+    expect(mockReplace).toHaveBeenCalledWith("/home/commercial/products");
   });
 
   it("discards a late product response after the signed-in seller changes", async () => {

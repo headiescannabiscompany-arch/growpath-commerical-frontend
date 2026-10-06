@@ -615,7 +615,7 @@ function ProductCampaignHandoff({ productId }: { productId: string }) {
     );
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <BackButton fallbackHref="/home/commercial/products" />
+      <BackButton fallbackHref="/home/commercial/products" preferFallback />
       <Text accessibilityRole="header" style={styles.title}>
         Feed / Campaigns
       </Text>
@@ -1181,7 +1181,14 @@ function CommercialFeedForm({
       }
     >
       <BackButton
-        fallbackHref={isFacility ? "/home/facility/dashboard" : "/home/commercial"}
+        fallbackHref={
+          initialProduct
+            ? "/home/commercial/products"
+            : isFacility
+              ? "/home/facility/dashboard"
+              : "/home/commercial"
+        }
+        preferFallback={Boolean(initialProduct)}
       />
       <View style={styles.header}>
         <Text accessibilityRole="header" style={styles.title}>
