@@ -339,10 +339,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "product-line-safety",
         title: "Reliable product collections and safer editing",
-        date: "September 27, 2026",
+        date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "Public store collections now consistently include products assigned to the selected collection. Seller editing waits for the correct saved product line, with clear recovery when a record is unavailable. Existing storefront design, publication permissions and checkout rules stay unchanged."
+          "Public store collections consistently include products assigned to the selected collection. Seller editing waits for the correct saved product line, with clear recovery when a record is unavailable. Collection details now show their own heading without a duplicate technical route title. Synthetic staging checks verified product and storefront description save/reload/restoration, collection create/edit/archive, and product-link copying and reopening. These checks do not establish payment or sales results. Existing storefront design, publication permissions, prices and checkout rules stay unchanged."
       },
       {
         id: "store-directory-recovery",

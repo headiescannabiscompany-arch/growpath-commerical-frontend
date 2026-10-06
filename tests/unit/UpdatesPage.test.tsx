@@ -24,6 +24,24 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("groups bounded seller acceptance without closing shopping or claiming sales", () => {
+    const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
+      (entry) => entry.id === "product-line-safety"
+    );
+    expect(notes).toHaveLength(1);
+    expect(notes[0].date).toBe("October 5, 2026");
+    expect(notes[0].summary).toContain("without a duplicate technical route title");
+    expect(notes[0].summary).toContain("Synthetic staging checks");
+    expect(notes[0].summary).toContain("save/reload/restoration");
+    expect(notes[0].summary).toContain("collection create/edit/archive");
+    expect(notes[0].summary).toContain("product-link copying and reopening");
+    expect(notes[0].summary).toContain("do not establish payment or sales results");
+    expect(notes[0].summary).not.toMatch(/qa\.invalid|acceptance-c|6ac4531e/i);
+    const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "shopping");
+    expect(group?.status).toBe("partial");
+    expect(group?.entryIds.filter((id) => id === "product-line-safety")).toHaveLength(1);
+  });
+
   it("groups the bounded X repair and distinguishes other provider acceptance gaps", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "forum-share-readiness"

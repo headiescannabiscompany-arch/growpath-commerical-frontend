@@ -76,7 +76,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     status: "partial",
     scope:
       "Finding products, returning to stores and using the existing Commercial tools.",
-    live: "Product browsing controls, searchable catalogs, full-store links, safer editing and checkout requests are live. Seller offers, orders-related summaries, dashboards, analytics, tasks and saved-record pages have clearer loading and recovery.",
+    live: "Product browsing controls, searchable catalogs, full-store links, safer editing and checkout requests are live. Seller offers, orders-related summaries, dashboards, analytics, tasks and saved-record pages have clearer loading and recovery. Collection details have one clear page heading; saved-edit, archive and product-link checks are grouped in the collection update.",
     next: "Finish the remaining shopper and seller journey review and campaign-copy consistency. Further design changes will be reviewed separately; existing artwork, prices and purchase rules stay unchanged.",
     entryIds: [
       "commercial-brand-profile-readiness",

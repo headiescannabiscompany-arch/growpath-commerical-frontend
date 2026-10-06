@@ -174,6 +174,34 @@ describe("workspace bottom tabs at narrow widths", () => {
     );
   });
 
+  it.each([375, 1280])(
+    "hides the duplicate collection detail header at %ipx",
+    (width) => {
+      mockMode = "commercial";
+      mockUseWindowDimensions.mockReturnValue({
+        width,
+        height: 812,
+        scale: 1,
+        fontScale: 1
+      });
+
+      render(<CommercialTabsLayout />);
+
+      const allScreens = React.Children.toArray(
+        mockTabs.mock.calls[0][0].children
+      ) as React.ReactElement<any>[];
+      const detailScreens = allScreens.filter(
+        (child) => child.props.name === "product-lines/[lineId]"
+      );
+      expect(detailScreens).toHaveLength(1);
+      expect(detailScreens[0].props.options).toEqual({
+        title: "Product Line",
+        href: null,
+        headerShown: false
+      });
+    }
+  );
+
   it("renders exactly the six intended Facility tabs at 390px", () => {
     mockMode = "facility";
     mockUseWindowDimensions.mockReturnValue({
