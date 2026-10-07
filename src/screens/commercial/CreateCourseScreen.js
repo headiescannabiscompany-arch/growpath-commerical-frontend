@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
@@ -28,6 +28,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import GrowInterestPicker from "@/components/GrowInterestPicker";
 import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
 import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
+import FacilityLessonDocument from "@/components/learning/FacilityLessonDocument";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
 import {
@@ -236,6 +237,12 @@ export default function CreateCourseScreen({
   const [quizPlan, setQuizPlan] = useState("");
   const [documentPlan, setDocumentPlan] = useState("");
   const [documentFiles, setDocumentFiles] = useState([]);
+  const [verifiedDocuments, setVerifiedDocuments] = useState([]);
+  const [documentWorking, setDocumentWorking] = useState(false);
+  const [documentAttempt, setDocumentAttempt] = useState(0);
+  const [documentVerified, setDocumentVerified] = useState(false);
+  const documentBusy = useRef(false),
+    saveLock = useRef(false);
   const [mediaPlan, setMediaPlan] = useState("");
   const [mediaFiles, setMediaFiles] = useState([]);
   const [mediaImages, setMediaImages] = useState([]);
@@ -263,7 +270,11 @@ export default function CreateCourseScreen({
     () => splitPlanLines(curriculumPlan),
     [curriculumPlan]
   );
-  const canSubmit = access.canCreateCourses && title.trim().length >= 3 && !submitting;
+  const canSubmit =
+    access.canCreateCourses &&
+    title.trim().length >= 3 &&
+    !submitting &&
+    !documentWorking;
 
   useEffect(() => {
     let active = true;
@@ -540,6 +551,7 @@ export default function CreateCourseScreen({
   }
 
   async function submitCourse() {
+    if (saveLock.current || documentBusy.current) return;
     if (!canSubmit) return;
     if (!access.canCreateCourses) {
       Alert.alert("Unavailable", "Course creation is unavailable for this account.");
@@ -606,6 +618,7 @@ export default function CreateCourseScreen({
       return;
     }
 
+    saveLock.current = true;
     setSubmitting(true);
     const uploadedFacilityAssetIds = [];
     let courseSaved = false;
@@ -681,6 +694,7 @@ export default function CreateCourseScreen({
       );
       const documents = [
         ...(facilityMode ? [] : buildDocuments(documentPlan)),
+        ...(facilityMode ? verifiedDocuments : []),
         ...uploadedDocuments
       ];
       const mediaAssets = [...uploadedMediaFiles, ...uploadedCourseImages].filter(
@@ -807,6 +821,7 @@ export default function CreateCourseScreen({
       }
       Alert.alert("Create failed", String(e?.message || e || "Unknown error"));
     } finally {
+      saveLock.current = false;
       setSubmitting(false);
     }
   }
@@ -1101,11 +1116,51 @@ export default function CreateCourseScreen({
             3. Documents / media
           </Text>
           {facilityMode ? (
-            <Text style={themeStyles.helpText} accessibilityRole="text">
-              Facility document uploads are temporarily unavailable until secure file
-              scanning is enabled. Protected images and audio can be uploaded below;
-              protected video comes from Video Library.
-            </Text>
+            <View>
+              <FacilityLessonDocument
+                key={documentAttempt}
+                facilityId={facilityWorkspace.facilityId}
+                contextId="new-course"
+                attachmentKind="course"
+                disabled={!access.canCreateCourses || submitting}
+                permissionGranted={access.canCreateCourses}
+                onBusy={(busy) => {
+                  documentBusy.current = busy;
+                  setDocumentWorking(busy);
+                }}
+                onReady={(url, file) => {
+                  if (!file) return;
+                  setDocumentVerified(true);
+                  setVerifiedDocuments((current) =>
+                    current.some((entry) => entry.storageUrl === url)
+                      ? current
+                      : [...current, uploadedDocumentRecord(file, { url })]
+                  );
+                }}
+              />
+              {verifiedDocuments.map((entry) => (
+                <Text key={entry.storageUrl} style={themeStyles.helpText}>
+                  Verified document selected: {entry.fileName}
+                </Text>
+              ))}
+              {documentVerified ? (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={documentWorking || submitting}
+                  onPress={() => {
+                    setDocumentVerified(false);
+                    setDocumentAttempt((value) => value + 1);
+                  }}
+                >
+                  <Text style={{ color: palette.accent }}>Choose another document</Text>
+                </Pressable>
+              ) : null}
+              <Text style={themeStyles.helpText}>
+                Only verified documents join this draft. Supported formats are shown above
+                after the availability check. Leaving this form does not delete uploaded
+                files.
+              </Text>
+            </View>
           ) : (
             <>
               <TextInput

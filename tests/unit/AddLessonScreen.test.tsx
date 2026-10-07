@@ -8,6 +8,14 @@ const mockDeleteCourseMediaAsset = jest.fn();
 const mockAttachPhotos = jest.fn();
 const mockLaunchLibrary = jest.fn();
 const mockGetDocumentAsync = jest.fn();
+let mockDocumentProps: any;
+jest.mock("@/components/learning/FacilityLessonDocument", () => {
+  const { Text } = require("react-native");
+  return (props: any) => {
+    mockDocumentProps = props;
+    return <Text>Facility document uploads are temporarily unavailable</Text>;
+  };
+});
 
 jest.mock("@/api/courses", () => ({
   addLesson: (...args: any[]) => mockAddLesson(...args)
@@ -89,6 +97,7 @@ jest.mock("expo-document-picker", () => ({
 describe("AddLessonScreen image uploads", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockDocumentProps = null;
     mockLaunchLibrary.mockResolvedValue({
       canceled: false,
       assets: [
@@ -136,6 +145,70 @@ describe("AddLessonScreen image uploads", () => {
     mockDeleteCourseMediaAsset.mockResolvedValue({ cleanupStatus: "released" });
   });
 
+  it("attaches only the verified PDF without a second upload and blocks save while checking", async () => {
+    const AddLessonScreen = require("@/screens/AddLessonScreen").default;
+    const screen = render(
+      <AddLessonScreen
+        route={{ params: { courseId: "course-1" } }}
+        navigation={{ goBack: jest.fn() }}
+        facilityWorkspace={{
+          facilityId: "facility-1",
+          permissions: { canEditLessons: true },
+          api: { addLesson: mockAddLesson }
+        }}
+      />
+    );
+    fireEvent.changeText(screen.getByPlaceholderText("Title"), "Verified PDF lesson");
+    act(() => mockDocumentProps.onBusy(true));
+    fireEvent.press(screen.getByLabelText("Save lesson"));
+    expect(mockAddLesson).not.toHaveBeenCalled();
+    act(() => {
+      mockDocumentProps.onReady("/api/course-media/64f000000000000000000712/file");
+      mockDocumentProps.onBusy(false);
+    });
+    fireEvent.press(screen.getByLabelText("Save lesson"));
+    await waitFor(() =>
+      expect(mockAddLesson).toHaveBeenCalledWith(
+        "course-1",
+        expect.objectContaining({
+          pdfUrl: "/api/course-media/64f000000000000000000712/file"
+        })
+      )
+    );
+    expect(mockUploadCourseMedia).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  ])("saves verified Office media as a document, not PDF: %s", async (mimeType) => {
+    const AddLessonScreen = require("@/screens/AddLessonScreen").default;
+    const screen = render(
+      <AddLessonScreen
+        route={{ params: { courseId: "course-1" } }}
+        navigation={{ goBack: jest.fn() }}
+        facilityWorkspace={{
+          facilityId: "facility-1",
+          permissions: { canEditLessons: true },
+          api: { addLesson: mockAddLesson }
+        }}
+      />
+    );
+    fireEvent.changeText(screen.getByPlaceholderText("Title"), "Synthetic Office lesson");
+    const url = "/api/course-media/64f000000000000000000712/file";
+    act(() => {
+      mockDocumentProps.onReady(url, { mimeType });
+      mockDocumentProps.onReady(url, { mimeType });
+    });
+    fireEvent.press(screen.getByLabelText("Save lesson"));
+    await waitFor(() =>
+      expect(mockAddLesson).toHaveBeenCalledWith(
+        "course-1",
+        expect.objectContaining({ pdfUrl: "", documentUrls: [url] })
+      )
+    );
+    expect(mockUploadCourseMedia).not.toHaveBeenCalled();
+  });
   it("uses the active palette, hierarchy, and named lesson fields", () => {
     const { getThemePalette } = require("@/theme/appTheme");
     const {

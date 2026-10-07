@@ -1,5 +1,13 @@
 import React from "react";
-import { fireEvent, render } from "@testing-library/react-native";
+let mockDocumentProps: any;
+jest.mock("@/components/learning/FacilityLessonDocument", () => {
+  const { Text } = require("react-native");
+  return (props: any) => {
+    mockDocumentProps = props;
+    return <Text>Facility document uploads are temporarily unavailable</Text>;
+  };
+});
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 
 import EditLessonScreen, { createStyles } from "@/screens/EditLessonScreen";
@@ -60,6 +68,83 @@ jest.mock("expo-image-picker", () => ({
 }));
 
 describe("EditLessonScreen theme", () => {
+  it("adds an Office document without replacing the saved PDF or previous documents", async () => {
+    const FacilityEditor = require("@/screens/EditLessonScreen").default;
+    const save = jest.fn().mockResolvedValue({});
+    const pdf = "/api/course-media/64f000000000000000000710/file";
+    const old = "/api/course-media/64f000000000000000000711/file";
+    const url = "/api/course-media/64f000000000000000000712/file";
+    const screen = render(
+      <FacilityEditor
+        route={{
+          params: {
+            courseId: "course-1",
+            lessonId: "lesson-1",
+            lesson: { title: "Office lesson", pdfUrl: pdf, documentUrls: [old] }
+          }
+        }}
+        navigation={{ goBack: jest.fn() }}
+        facilityWorkspace={{
+          facilityId: "facility-1",
+          permissions: { canEditLessons: true },
+          api: { updateLesson: save }
+        }}
+      />
+    );
+    await screen.findByDisplayValue("Office lesson");
+    act(() => {
+      mockDocumentProps.onReady(url, {
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
+      mockDocumentProps.onReady(url, {
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
+    });
+    fireEvent.press(screen.getByLabelText("Save lesson changes"));
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith(
+        "course-1",
+        "lesson-1",
+        expect.objectContaining({ pdfUrl: pdf, documentUrls: [old, url] })
+      )
+    );
+  });
+  it.each([false, true])(
+    "preserves old PDF unless a verified replacement is selected: %s",
+    async (replace) => {
+      const FacilityEditor = require("@/screens/EditLessonScreen").default;
+      const save = jest.fn().mockResolvedValue({});
+      const original = "/api/course-media/64f000000000000000000710/file";
+      const replacement = "/api/course-media/64f000000000000000000712/file";
+      const screen = render(
+        <FacilityEditor
+          route={{
+            params: {
+              courseId: "course-1",
+              lessonId: "lesson-1",
+              lesson: { id: "lesson-1", title: "PDF lesson", pdfUrl: original }
+            }
+          }}
+          navigation={{ goBack: jest.fn() }}
+          facilityWorkspace={{
+            facilityId: "facility-1",
+            permissions: { canEditLessons: true },
+            api: { updateLesson: save }
+          }}
+        />
+      );
+      await screen.findByDisplayValue("PDF lesson");
+      if (replace) act(() => mockDocumentProps.onReady(replacement));
+      fireEvent.press(screen.getByLabelText("Save lesson changes"));
+      await waitFor(() =>
+        expect(save).toHaveBeenCalledWith(
+          "course-1",
+          "lesson-1",
+          expect.objectContaining({ pdfUrl: replace ? replacement : original })
+        )
+      );
+    }
+  );
   it("renders loaded lesson fields with the Night palette and derives Day styles", async () => {
     const nightPalette = getThemePalette("night", "dark");
     const dayPalette = getThemePalette("day", "light");

@@ -194,6 +194,21 @@ The Facility AI Validation Lab is a platform-operations surface for a capable Fa
 
 Facility training lesson video follows the shared `course-media-workflow` method while course visibility remains Facility scoped. External provider rights, availability, privacy, and accessibility review do not make a lesson public or authorize cross-Facility disclosure.
 
+Facility lesson document uploads also follow `course-media-workflow`: current author
+capability, bounded private upload, explicit scan-status check, then deliberate
+lesson save using only a verified active protected asset. Pending or failed scan
+results never replace the existing lesson document or establish publication.
+Only server-advertised reviewed formats are selectable. Restricted DOCX/XLSX support
+does not mean legacy DOC/XLS or every valid Office construct is supported. Recover
+the original uploader's metadata only, preserve existing PDFs when adding other
+document types, and keep normal course visibility/enrollment checks for copied links.
+
+Platform-owner document recovery uses the shared course-media recovery policy,
+not Facility membership as a substitute for owner/passkey authorization. Interrupted
+revoked-cleanup reassignment and permanent removal are separate confirmations;
+reassignment cannot grant a role or remove files. Unproved writers and held records
+remain held, and local UI checks do not establish hosted storage/scanner readiness.
+
 The shared Schedule and Notification Center reuse the published Facility course catalog and current requester's learner-state boundary for course-live events. Each canonical course/session pair remains a separate Facility calendar item with a Facility course link. Joining marks attendance as confirmed and supplies an in-app upcoming-session reminder card; canceling removes that reminder but leaves the published calendar event available for another RSVP. Draft, hidden, archived, quarantined, invalid, and canceled sessions are excluded. Recheck course access before projecting attendance, discard stale results after an account or Facility switch, and show a retryable verification error rather than treating failed access checks as confirmed attendance. Do not project private learner notes, creator identity, external stream credentials, or another learner's attendance. These existing on-page reminder cards and their page-local read state are not proof of background, timed, email, or device-push delivery.
 
 Facility course scope may reconcile the selected database ID with the session's public

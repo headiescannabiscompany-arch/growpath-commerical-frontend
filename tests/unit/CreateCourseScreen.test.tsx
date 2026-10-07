@@ -3,6 +3,14 @@ import { Alert } from "react-native";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CreateCourseScreen from "@/screens/commercial/CreateCourseScreen";
+let mockDocumentProps: any;
+jest.mock("@/components/learning/FacilityLessonDocument", () => {
+  const { Text } = require("react-native");
+  return (props: any) => {
+    mockDocumentProps = props;
+    return <Text>Facility document uploads are temporarily unavailable</Text>;
+  };
+});
 
 function chooseDateTime(screen: ReturnType<typeof render>, label: string, value: string) {
   const [date, time] = value.split("T");
@@ -151,6 +159,61 @@ jest.mock("@/auth/AuthContext", () => ({
 }));
 
 describe("CreateCourseScreen", () => {
+  it.each([
+    ["pdf", "application/pdf"],
+    ["docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+    ["xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
+  ])(
+    "adds verified Facility %s without reuploading or publishing; pending checks block Save",
+    async (extension, mimeType) => {
+      const facilityCreate = jest.fn().mockResolvedValue({ id: "synthetic-course" });
+      const s = render(
+        <CreateCourseScreen
+          facilityWorkspace={{
+            facilityId: "facility-1",
+            permissions: { canCreateDraft: true, canSetPrice: true },
+            api: { create: facilityCreate }
+          }}
+        />
+      );
+      fireEvent.changeText(s.getByLabelText("Course title"), "Synthetic PDF course");
+      act(() => mockDocumentProps.onBusy(true));
+      fireEvent.press(s.getByText("Create Draft"));
+      expect(facilityCreate).not.toHaveBeenCalled();
+      act(() => {
+        mockDocumentProps.onReady("/api/course-media/64f000000000000000000712/file", {
+          name: `Synthetic handout.${extension}`,
+          size: 100,
+          mimeType
+        });
+        mockDocumentProps.onBusy(false);
+      });
+      expect(
+        s.getByText(`Verified document selected: Synthetic handout.${extension}`)
+      ).toBeTruthy();
+      fireEvent.press(s.getByText("Choose another document"));
+      // Cannot abandon a second pending upload through another choose action.
+      expect(s.queryByText("Choose another document")).toBeNull();
+      fireEvent.press(s.getByText("Create Draft"));
+      await waitFor(() =>
+        expect(facilityCreate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: "draft",
+            isPublished: false,
+            documents: [
+              expect.objectContaining({
+                storageUrl: "/api/course-media/64f000000000000000000712/file",
+                fileName: `Synthetic handout.${extension}`,
+                fileType: mimeType,
+                status: "uploaded"
+              })
+            ]
+          })
+        )
+      );
+      expect(mockUploadCourseMedia).not.toHaveBeenCalled();
+    }
+  );
   beforeEach(() => {
     jest.resetAllMocks();
     mockWorkspaceMode.value = "personal";

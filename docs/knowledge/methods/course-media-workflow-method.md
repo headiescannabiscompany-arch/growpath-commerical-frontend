@@ -110,6 +110,60 @@ retry rechecks access without enrollment, completion, note writes or payment.
 
 ## Evidence policy
 
+Facility course and lesson documents use the existing course editor with a separate private upload
+and scan check, available only when the server's current Facility-author capability
+check succeeds. A receipt or pending scan is not an attachment: only the server's
+persisted active proof can select the protected file for the explicit lesson save.
+Keep the same upload-attempt key after a lost response and check its existing
+reservation without automatically resending bytes. Session, Facility, lesson or
+permission changes discard late client results. Existing documents and other media
+stay intact; choosing a replacement does not delete an older file or publish a
+course. Local UI acceptance does not claim hosted scanner readiness.
+The picker intersects current server capabilities with reviewed PDF/TXT/CSV/DOCX/XLSX
+types and the 10 MB limit. Explain restricted Office support before selection:
+macros, external links, embedded objects and unsupported formulas are rejected,
+including otherwise valid files outside this subset. Never rewrite a file or imply
+legacy DOC/XLS support. Only an explicit pre-reservation server rejection allows a
+fresh choice; uncertain upload replies retain the existing recovery key.
+The course builder adds verified files to its existing document collection without
+resending bytes on Save. A second file choice is available only after the previous
+file is verified; pending or ambiguous attempts keep their tracking key. Course
+and lesson authoring remount on account, Facility, role or lesson scope changes.
+Lesson PDF replacements use the existing PDF field; other verified documents append
+once to the existing document URL collection, preserving the saved PDF and previous
+resources. Course documents retain their canonical file type. No selection publishes
+a course or grants access through a copied link; the existing protected reader checks
+current course visibility, workspace access and paid enrollment independently.
+After leaving or reloading an editor, an explicit recovery action reads at most ten
+recent unreleased supported document records for the original uploader in the current Facility.
+Do not persist credentials or file data in browser storage for recovery. Listing
+metadata does not attach, promote or download anything; selecting a record rechecks
+its current authority/status and retains its verified filename/MIME metadata. Older
+PDF-only recovery responses may omit MIME; never infer Office support from a filename
+alone. Pending records still need the explicit scan check,
+and only durable active proof can select an attachment for Save. Other authors'
+uploads, other workspaces and released files are not a recovery catalog. Older
+records beyond this bounded list remain an Admin metadata-review case.
+
+Private document recovery is an owner-only metadata workflow using existing fresh
+Admin passkey proof and audited server checks. A retention decision is not removal
+permission: revoked-copy removal requires its own exact confirmation and server
+hold/reference checks. Preserve exact request/execution IDs after an ambiguous
+response; refresh must not silently create a new deletion. Never open private
+content or infer old-writer termination from a currently idle runtime.
+
+An already-proved interrupted revoked-cleanup claim may be reassigned only through
+the separately confirmed, server-authorized handoff to another configured owner.
+Use opaque claim references from the protected recovery report, not manually guessed
+IDs or previous actor identities. Reassignment does not remove bytes, return quota,
+grant a role or authorize removal. Keep the new review/execution IDs for the separate
+removal confirmation. Uncertain responses retain the same request in page memory,
+including across same-account passkey renewal; expired proof hides metadata and
+disables actions, while identity changes clear it and discard late responses. Never
+persist credentials or private content for retry. A page reload loses this local
+continuation and must return to server metadata review, not invent a replacement
+request. Browser/hosted acceptance remains distinct from local component tests.
+
 - `youtube-player-documentation` is Tier B provider documentation for YouTube player behavior and data-sharing constraints. It is not proof that an individual video is available, embeddable, licensed, captioned, or suitable.
 - `vimeo-video-privacy-documentation` is Tier B provider documentation for Vimeo privacy, domain, and unlisted-hash behavior. It is not proof of an individual video's current settings or rights.
 - Author rights confirmation and the timestamped availability check are owner evidence. They do not override provider terms or legal requirements.

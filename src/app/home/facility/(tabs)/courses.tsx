@@ -24,6 +24,7 @@ import {
 } from "@/api/facilityCourses";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useEntitlements } from "@/entitlements";
+import { useAuth } from "@/auth/AuthContext";
 import CoursesScreen from "@/screens/CoursesScreen";
 import AddLessonScreen from "@/screens/AddLessonScreen";
 import EditLessonScreen from "@/screens/EditLessonScreen";
@@ -85,6 +86,7 @@ export default function FacilityCoursesRoute() {
   }>();
   const router = useRouter();
   const entitlements = useEntitlements();
+  const auth = useAuth();
   const facility = useFacility();
   const action = valueOf(params.action).toLowerCase();
   const courseId = valueOf(params.courseId) || valueOf(params.course);
@@ -143,7 +145,12 @@ export default function FacilityCoursesRoute() {
       params: id ? { courseId: id } : undefined
     } as any);
 
-  if (!entitlements.ready) {
+  if (
+    !entitlements.ready ||
+    auth.isHydrating ||
+    auth.meStatus !== "ready" ||
+    !auth.token
+  ) {
     return (
       <StateCard
         title="Loading Facility courses"
@@ -165,6 +172,7 @@ export default function FacilityCoursesRoute() {
   if (action === "create") {
     return (
       <FacilityCreateCourse
+        key={JSON.stringify([auth.token, scopedFacilityId, scopedRole])}
         workspace={workspace}
         onReturn={returnToCourses}
         onOpenCourse={returnToCourse}
@@ -175,6 +183,14 @@ export default function FacilityCoursesRoute() {
   if (action === "add-lesson" || action === "edit-lesson") {
     return (
       <FacilityLessonEditor
+        key={JSON.stringify([
+          auth.token,
+          scopedFacilityId,
+          scopedRole,
+          action,
+          courseId,
+          lessonId
+        ])}
         action={action}
         courseId={courseId}
         lessonId={lessonId}

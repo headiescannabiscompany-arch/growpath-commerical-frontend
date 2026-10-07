@@ -1062,6 +1062,9 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "normalized provider metadata",
+      "Facility document controls intersect server capabilities with reviewed PDF/TXT/CSV/restricted DOCX/XLSX and require persisted active scan proof before Save; disclose unsupported Office constructs, preserve PDFs when appending other lesson documents, retain ambiguous attempt keys and discard superseded results without claiming hosted readiness or publishing",
+      "After editor reload, original-author recovery lists at most ten recent unreleased supported documents in the current Facility, validates filename/MIME and rechecks status before attachment; no stored credentials, other-author uploads or automatic byte resend, and copied links retain course visibility and enrollment gates",
+      "Platform-owner interrupted revoked-cleanup handoff uses protected claim references and separate reassignment/removal confirmations; keep exact successor IDs through uncertain responses and same-account passkey renewal in page memory, hide metadata without proof, and clear on identity change without granting roles, removing bytes or claiming hosted verification",
       "canonical URL and provider ID",
       "Vimeo unlisted privacy hash when present",
       "approved embed capability or link-only fallback",

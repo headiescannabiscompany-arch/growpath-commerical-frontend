@@ -4,6 +4,10 @@ import { render, waitFor } from "@testing-library/react-native";
 import FacilityCoursesRoute from "@/app/home/facility/(tabs)/courses";
 
 const mockParams: Record<string, string> = {};
+let mockAuthToken = "synthetic-session";
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ token: mockAuthToken, meStatus: "ready", isHydrating: false })
+}));
 const mockReplace = jest.fn();
 const mockEntitlements = {
   ready: true,
@@ -94,6 +98,7 @@ jest.mock("@/theme/appTheme", () => ({
 describe("FacilityCoursesRoute", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAuthToken = "synthetic-session";
     Object.keys(mockParams).forEach((key) => delete mockParams[key]);
     Object.assign(mockEntitlements, {
       ready: true,
@@ -227,5 +232,15 @@ describe("FacilityCoursesRoute", () => {
       expect(screen.getByText("Course Builder unavailable")).toBeTruthy()
     );
     expect(screen.queryByText("Scoped course builder")).toBeNull();
+  });
+
+  it("session replacement remounts the builder and rechecks permission", async () => {
+    mockParams.action = "create";
+    const s = render(<FacilityCoursesRoute />);
+    await s.findByText("Scoped course builder");
+    mockAuthToken = "new-session";
+    s.rerender(<FacilityCoursesRoute />);
+    await waitFor(() => expect(mockList).toHaveBeenCalledTimes(2));
+    await s.findByText("Scoped course builder");
   });
 });

@@ -7,6 +7,7 @@ import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEdit
 import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
 import { updateLesson } from "../api/courses";
 import { uploadCourseMedia } from "@/api/uploads";
+import FacilityLessonDocument from "@/components/learning/FacilityLessonDocument";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
@@ -53,6 +54,11 @@ export default function EditLessonScreen({
   const [videoFile, setVideoFile] = useState(null);
   const [videoAssetId, setVideoAssetId] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
+  const [documentUrls, setDocumentUrls] = useState([]);
+  const documentBusy = useRef(false),
+    savingRef = useRef(false);
+  const [saving, setSaving] = useState(false),
+    [documentWorking, setDocumentWorking] = useState(false);
   const [growInterestSelections, setGrowInterestSelections] = useState(() =>
     buildEmptyTierSelection()
   );
@@ -71,6 +77,7 @@ export default function EditLessonScreen({
       setMediaDraft(lessonMediaDraftFromLesson(l));
       setVideoAssetId(l.videoAssetId || "");
       setPdfUrl(l.pdfUrl || "");
+      setDocumentUrls(Array.isArray(l.documentUrls) ? l.documentUrls : []);
       setGrowInterestSelections(groupTagsByTier(l.growTags || []));
     } else {
       Alert.alert("Missing lesson data");
@@ -103,6 +110,22 @@ export default function EditLessonScreen({
   }
 
   async function submit() {
+    if (documentBusy.current || savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      await performSubmit();
+    } catch {
+      Alert.alert(
+        "Unable to save",
+        "Your lesson changes were not confirmed. Recheck the course before retrying."
+      );
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
+  }
+  async function performSubmit() {
     if (!access.canCreateCourses) {
       return Alert.alert("Unavailable", "Editing lessons requires COURSES_CREATE.");
     }
@@ -142,7 +165,8 @@ export default function EditLessonScreen({
       externalVideoUrl: preparedMedia?.externalVideoUrl || "",
       mediaSource: preparedMedia?.mediaSource || null,
       videoAssetId,
-      pdfUrl: facilityMode ? String(lesson?.pdfUrl || "") : pdfUrl,
+      pdfUrl,
+      ...(facilityMode ? { documentUrls } : {}),
       growTags: flattenTierSelections(growInterestSelections)
     };
     if (facilityMode) {
@@ -243,11 +267,23 @@ export default function EditLessonScreen({
       />
 
       {facilityMode ? (
-        <Text style={styles.helpText} accessibilityRole="text">
-          Facility document uploads are temporarily unavailable until secure file scanning
-          is enabled. Existing documents are preserved; use protected course images,
-          audio, or a Video Library video for new media.
-        </Text>
+        <FacilityLessonDocument
+          facilityId={facilityWorkspace.facilityId}
+          contextId={`${courseId}:${lessonId}`}
+          disabled={!access.canCreateCourses || saving}
+          permissionGranted={access.canCreateCourses}
+          onReady={(url, file) => {
+            if (!file?.mimeType || file.mimeType === "application/pdf") setPdfUrl(url);
+            else
+              setDocumentUrls((current) =>
+                current.includes(url) ? current : [...current, url]
+              );
+          }}
+          onBusy={(value) => {
+            documentBusy.current = value;
+            setDocumentWorking(value);
+          }}
+        />
       ) : (
         <>
           <Text style={styles.label}>PDF URL</Text>
@@ -279,9 +315,11 @@ export default function EditLessonScreen({
       <TouchableOpacity
         style={[styles.btn, !access.canCreateCourses && styles.disabled]}
         onPress={submit}
-        disabled={!access.canCreateCourses}
+        accessibilityRole="button"
+        accessibilityLabel="Save lesson changes"
+        disabled={!access.canCreateCourses || saving || documentWorking}
       >
-        <Text style={styles.btnText}>Save Changes</Text>
+        <Text style={styles.btnText}>{saving ? "Saving…" : "Save Changes"}</Text>
       </TouchableOpacity>
       {!facilityMode ? (
         <PersonalFeedPlacement

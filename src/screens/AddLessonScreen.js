@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import FacilityLessonDocument from "@/components/learning/FacilityLessonDocument";
 import {
   View,
   Text,
@@ -68,7 +69,12 @@ export default function AddLessonScreen({ route, navigation, facilityWorkspace =
   const [videoFile, setVideoFile] = useState(null);
   const [videoAssetId, setVideoAssetId] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
+  const [documentUrls, setDocumentUrls] = useState([]);
   const [pdfFile, setPdfFile] = useState(null);
+  const documentBusy = useRef(false);
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [documentWorking, setDocumentWorking] = useState(false);
   const [audioFile, setAudioFile] = useState(null);
   const [images, setImages] = useState([]);
   const [growInterestSelections, setGrowInterestSelections] = useState(() =>
@@ -156,6 +162,17 @@ export default function AddLessonScreen({ route, navigation, facilityWorkspace =
   }
 
   async function submit() {
+    if (documentBusy.current || savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      await performSubmit();
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
+  }
+  async function performSubmit() {
     if (!access.canCreateCourses) {
       return Alert.alert("Unavailable", "Adding lessons requires COURSES_CREATE.");
     }
@@ -238,7 +255,8 @@ export default function AddLessonScreen({ route, navigation, facilityWorkspace =
         externalVideoUrl: preparedMedia?.externalVideoUrl || "",
         mediaSource: preparedMedia?.mediaSource || undefined,
         videoAssetId,
-        pdfUrl: facilityMode ? "" : uploadedPdf?.url || pdfUrl,
+        pdfUrl: facilityMode ? pdfUrl : uploadedPdf?.url || pdfUrl,
+        ...(facilityMode ? { documentUrls } : {}),
         audioUrl: uploadedAudio?.url || "",
         imageUrls,
         growTags: flattenTierSelections(growInterestSelections)
@@ -342,10 +360,23 @@ export default function AddLessonScreen({ route, navigation, facilityWorkspace =
       />
 
       {facilityMode ? (
-        <Text style={styles.helpText} accessibilityRole="text">
-          Facility document uploads are temporarily unavailable until secure file scanning
-          is enabled. You can add protected images, audio, or a Video Library video now.
-        </Text>
+        <FacilityLessonDocument
+          facilityId={facilityWorkspace.facilityId}
+          contextId={courseId}
+          disabled={!access.canCreateCourses || saving}
+          permissionGranted={access.canCreateCourses}
+          onReady={(url, file) => {
+            if (!file?.mimeType || file.mimeType === "application/pdf") setPdfUrl(url);
+            else
+              setDocumentUrls((current) =>
+                current.includes(url) ? current : [...current, url]
+              );
+          }}
+          onBusy={(value) => {
+            documentBusy.current = value;
+            setDocumentWorking(value);
+          }}
+        />
       ) : (
         <>
           <Text style={styles.label}>PDF Document</Text>
@@ -424,14 +455,17 @@ export default function AddLessonScreen({ route, navigation, facilityWorkspace =
         accessibilityLabel="Save lesson"
         style={[styles.btn, !access.canCreateCourses && styles.disabled]}
         onPress={submit}
-        disabled={!access.canCreateCourses}
+        disabled={!access.canCreateCourses || saving || documentWorking}
       >
-        <Text style={styles.btnText}>Save Lesson</Text>
+        <Text style={styles.btnText}>{saving ? "Saving…" : "Save Lesson"}</Text>
       </TouchableOpacity>
 
       <Text style={styles.helpText}>
-        Selected files upload when you save. Video page links are normalized to their
-        provider and retain an external fallback; pasted embed code is rejected.
+        {facilityMode
+          ? "Images and audio upload when you save. PDFs use the separate scan check above. "
+          : "Selected files upload when you save. "}
+        Video page links are normalized to their provider and retain an external fallback;
+        pasted embed code is rejected.
       </Text>
       {!facilityMode ? (
         <PersonalFeedPlacement
