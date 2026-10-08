@@ -13,6 +13,21 @@ const {
   marketingCss,
   marketing
 } = require("../scripts/public-marketing.cjs");
+test("audit delta exposes existing paid-tool output twice without changing pricing terms", () => {
+  const html = publicMarketingMarkup("pricing");
+  assert.equal(
+    (html.match(/Preview a history answer and grow comparison/g) || []).length,
+    2
+  );
+  assert.equal((html.match(/href="\/demo\?story=pro"/g) || []).length, 2);
+  assert.ok(
+    html.includes("Actual app output using synthetic records, not a customer result")
+  );
+  assert.ok(html.includes("we do not promise an unconditional money-back guarantee"));
+  assert.ok(
+    publicMarketingMarkup("").includes("does not replace your required compliance system")
+  );
+});
 test("no-signup demo includes all synthetic entries without JavaScript or private data", () => {
   const html = publicMarketingMarkup("demo");
   assert.equal((html.match(/<h1>/g) || []).length, 1);

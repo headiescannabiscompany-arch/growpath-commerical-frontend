@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import LoginScreen from "@/app/login";
@@ -46,6 +47,19 @@ describe("complimentary claim authentication handoff", () => {
     mockParams = { next: "/claim-complimentary-access" };
     mockLogin.mockResolvedValue({ ok: true });
     mockSignup.mockResolvedValue({ token: "new-account-token" });
+  });
+
+  it("keeps registration text readable at phone widths without changing input semantics", () => {
+    const screen = render(<RegisterScreen />);
+    for (const label of ["Register name", "Register email", "Register password"]) {
+      expect(StyleSheet.flatten(screen.getByLabelText(label).props.style).fontSize).toBe(
+        16
+      );
+    }
+    expect(screen.getByLabelText("Register email").props.keyboardType).toBe(
+      "email-address"
+    );
+    expect(screen.getByLabelText("Register password").props.secureTextEntry).toBe(true);
   });
 
   it("returns a successful login to the tokenless complimentary claim route", async () => {

@@ -482,6 +482,7 @@ export const createRegisterStyles = (palette: ThemePalette) =>
       borderRadius: radius.card,
       borderWidth: 1,
       color: palette.text,
+      fontSize: 16,
       marginBottom: 12,
       paddingHorizontal: 12,
       paddingVertical: 12

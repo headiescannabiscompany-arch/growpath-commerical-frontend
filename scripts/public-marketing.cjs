@@ -44,6 +44,8 @@ const footer = [
 ];
 const anchor = ([label, href]) =>
   '<a href="' + escape(href) + '">' + escape(label) + "</a>";
+const paidOutputPreview =
+  '<p><a href="/demo?story=pro">Preview a history answer and grow comparison — no signup</a></p><p>Actual app output using synthetic records, not a customer result. See what the tools produce before paying; these tools are not exclusive to Pro.</p>';
 
 function publicMarketingMarkup(route) {
   if (route === "demo") return publicDemoMarkup();
@@ -82,6 +84,7 @@ function publicMarketingMarkup(route) {
         (page === "pricing" && i === 1
           ? "<p>" + escape(marketing.pricingAlternativeAnchor) + "</p>"
           : "") +
+        (page === "pricing" && i === 1 ? paidOutputPreview : "") +
         (page === "about" &&
         section.title === "Meet Jay" &&
         marketing.founder.photo &&
@@ -128,7 +131,15 @@ function publicMarketingMarkup(route) {
   const faq =
     '<section class="marketing-card"><h2>Before you choose a plan</h2>' +
     marketing.pricingFaq
-      .map((f) => "<h3>" + escape(f.title) + "</h3><p>" + escape(f.body) + "</p>")
+      .map(
+        (f) =>
+          "<h3>" +
+          escape(f.title) +
+          "</h3><p>" +
+          escape(f.body) +
+          "</p>" +
+          (f.title === "How do payments and cancellation work?" ? paidOutputPreview : "")
+      )
       .join("") +
     "<p>" +
     anchor(["Read Terms of Service", "/terms"]) +

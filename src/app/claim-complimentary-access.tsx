@@ -42,6 +42,7 @@ const BLOCKED_CODES = new Set([
   "TEST_ACCOUNT_PLAN_LOCKED",
   "PROTECTED_PLATFORM_IDENTITY",
   "COMPLIMENTARY_RECIPIENT_EMAIL_MISMATCH",
+  "COMPLIMENTARY_FACILITY_OWNER_MISMATCH",
   "COMPLIMENTARY_RECIPIENT_EMAIL_UNVERIFIED"
 ]);
 
@@ -154,9 +155,11 @@ export default function ClaimComplimentaryAccessScreen() {
         setState("ready");
       }
       setMessage(
-        error instanceof Error
-          ? error.message
-          : "Complimentary access could not be claimed."
+        code === "COMPLIMENTARY_FACILITY_OWNER_MISMATCH"
+          ? "Sign in with the account that received this invitation and owns the selected Facility workspace. If you are already using that account, contact support to check the invitation's workspace."
+          : error instanceof Error
+            ? error.message
+            : "Complimentary access could not be claimed."
       );
     }
   }

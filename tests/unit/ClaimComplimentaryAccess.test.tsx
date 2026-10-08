@@ -227,6 +227,42 @@ describe("ClaimComplimentaryAccessScreen", () => {
     await expect(readComplimentaryClaimToken()).resolves.toBe("complimentary-token-1");
   });
 
+  it("offers account recovery instead of repeating a Facility ownership failure", async () => {
+    mockToken = "wrong-owner-session";
+    mockPreview.mockResolvedValue({
+      ...summary,
+      plan: "facility",
+      facilityId: "synthetic-workspace"
+    });
+    const mismatch = new ApiError("COMPLIMENTARY_FACILITY_OWNER_MISMATCH", 409);
+    mismatch.message =
+      "The recipient must already be the current owner of the selected Facility workspace.";
+    mockClaim.mockRejectedValue(mismatch);
+    const screen = render(<ClaimComplimentaryAccessScreen />);
+    await waitFor(() => expect(screen.getByText("One year of facility")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Activate complimentary access"));
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Use a different account for complimentary access")
+      ).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Activate complimentary access")).toBeNull();
+    expect(
+      screen.getByText(/If you are already using that account, contact support/)
+    ).toBeTruthy();
+    fireEvent.press(
+      screen.getByLabelText("Use a different account for complimentary access")
+    );
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith({
+        pathname: "/login",
+        params: { next: "/claim-complimentary-access" }
+      })
+    );
+    await expect(readComplimentaryClaimToken()).resolves.toBe("complimentary-token-1");
+    expect(mockClaim).toHaveBeenCalledTimes(1);
+  });
+
   it("clears a terminal token but retains a retryable claim token", async () => {
     mockParams = {};
     await writeComplimentaryClaimToken("expired-token");

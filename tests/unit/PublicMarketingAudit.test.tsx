@@ -7,12 +7,39 @@ import { PLAN_LIMITS } from "@/config/planLimits";
 import { FREE_POLICY } from "@/config/freePolicy";
 import { getPublicTestimonials } from "@/api/testimonials";
 import PublicTestimonials from "@/components/marketing/PublicTestimonials";
+import { Link } from "expo-router";
 
 jest.mock("@/api/testimonials", () => ({
   getPublicTestimonials: jest.fn(() => new Promise(() => {}))
 }));
 
 describe("HeyCatch audit corrections", () => {
+  it("links reviewed output from Pro pricing and the payments FAQ without a refund promise", () => {
+    const screen = render(<PublicLandingPage page="pricing" />);
+    const previewLinks = screen
+      .UNSAFE_getAllByType(Link)
+      .filter((link) => link.props.href === "/demo?story=pro");
+    expect(previewLinks).toHaveLength(2);
+    expect(previewLinks[0].props.children).toBe(
+      "Preview a history answer and grow comparison — no signup"
+    );
+    expect(screen.getAllByText(/Actual app output using synthetic records/)).toHaveLength(
+      2
+    );
+    expect(JSON.stringify(screen.toJSON())).toContain(
+      "we do not promise an unconditional money-back guarantee"
+    );
+  });
+  it("names Facility fragmentation without promising a compliance replacement", () => {
+    for (const page of ["home", "facility-management"] as const) {
+      const screen = render(<PublicLandingPage page={page} />);
+      expect(screen.getByText(/Compliance records.*METRC/)).toBeTruthy();
+      expect(JSON.stringify(screen.toJSON())).toContain(
+        "does not replace your required compliance system"
+      );
+      screen.unmount();
+    }
+  });
   it.each(["home", "personal-grower", "pricing", "about"] as const)(
     "reuses one dynamic, empty-by-default feedback surface on %s",
     (page) => {

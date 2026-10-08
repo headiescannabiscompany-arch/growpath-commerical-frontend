@@ -28,6 +28,21 @@ export function FounderPortrait() {
   );
 }
 
+export function PaidOutputPreview() {
+  const { palette } = useAppTheme();
+  return (
+    <View style={{ gap: 6 }}>
+      <Link href="/demo?story=pro" style={{ color: palette.link, paddingVertical: 12 }}>
+        Preview a history answer and grow comparison — no signup
+      </Link>
+      <Text style={{ color: palette.textMuted, fontSize: 14, lineHeight: 21 }}>
+        Actual app output using synthetic records, not a customer result. See what the
+        tools produce before paying; these tools are not exclusive to Pro.
+      </Text>
+    </View>
+  );
+}
+
 export default function MarketingDetails({ page }: { page: string }) {
   const { palette } = useAppTheme();
   const text = { color: palette.textMuted, fontSize: 16, lineHeight: 25 };
@@ -131,6 +146,9 @@ export default function MarketingDetails({ page }: { page: string }) {
                   {faq.title}
                 </Text>
                 <Text style={text}>{faq.body}</Text>
+                {faq.title === "How do payments and cancellation work?" && (
+                  <PaidOutputPreview />
+                )}
               </View>
             ))}
             <Link href="/terms" style={{ color: palette.link }}>

@@ -19,7 +19,7 @@
         },
         {
           "title": "Facilities",
-          "body": "Know which room needs attention, who is doing the work, and what was recorded. Keep room readings, tasks, SOP checklists, and reports connected.",
+          "body": "Compliance records may live in METRC while daily room notes and handoffs are scattered across messages and spreadsheets. Keep room readings, tasks, SOP checklists, and reports connected in GrowPathAI. This does not replace your required compliance system.",
           "href": "/facility-management",
           "linkLabel": "Explore Facility"
         }
@@ -130,7 +130,7 @@
     "facility-management": {
       "eyebrow": "For cultivation facilities",
       "title": "Facility → Room → Grow → Plant",
-      "intro": "See what needs doing in each room, assign it to the right person, and review the recorded result without chasing messages.",
+      "intro": "Compliance records in METRC, daily operations in scattered messages? See what needs doing in each room, assign it to the right person, and review the recorded result in GrowPathAI. It does not replace your required compliance system or certify compliance.",
       "primaryAction": {
         "href": "/pricing",
         "label": "See Facility pricing"

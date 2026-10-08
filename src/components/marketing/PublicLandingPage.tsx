@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-n
 
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import marketing from "./publicMarketing.json";
-import MarketingDetails, { FounderPortrait } from "./MarketingDetails";
+import MarketingDetails, { FounderPortrait, PaidOutputPreview } from "./MarketingDetails";
 import PublicTestimonials from "./PublicTestimonials";
 import GrowDemoPreview from "./GrowDemoPreview";
 import ProductScreenshots from "./ProductScreenshots";
@@ -165,6 +165,7 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
             {page === "pricing" && index === 1 && (
               <Text style={styles.cardBody}>{marketing.pricingAlternativeAnchor}</Text>
             )}
+            {page === "pricing" && index === 1 && <PaidOutputPreview />}
             {page === "about" && section.title === "Meet Jay" && <FounderPortrait />}
             <Text style={styles.cardBody}>{section.body}</Text>
             {page === "about" &&
