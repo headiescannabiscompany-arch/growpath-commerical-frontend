@@ -115,18 +115,18 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "commercial-trials-readiness",
         title: "Clearer Product Trial loading and retry",
-        date: "October 2, 2026",
+        date: "October 8, 2026",
         dateLabel: "Released",
         summary:
-          "Product Trials no longer claims there are no trials or saved links when records cannot load. Retry keeps your unfinished form and restores saved choices before ordinary or concept-trial creation resumes. Prices, artwork, publication rules and the existing layout stay unchanged."
+          "Product Trials no longer claims there are no trials or saved links when records cannot load. Retry keeps your unfinished form and restores saved choices before ordinary or concept-trial creation resumes. Readable record choices now announce their selected state on web, and trial details have one page heading instead of a duplicate technical route title. Synthetic staging checks verified an ordinary private trial's create, edit, full reload, linked Evidence Run and reversible archive. These checks are not public product-performance or sales evidence. Prices, artwork and publication rules stay unchanged."
       },
       {
         id: "commercial-evidence-readiness",
         title: "Clearer evidence-run loading and retry",
-        date: "October 2, 2026",
+        date: "October 8, 2026",
         dateLabel: "Released",
         summary:
-          "Commercial Evidence Runs no longer shows zero runs or missing linked products when its records cannot load. Retry preserves the unfinished form and restores saved choices before creation becomes available. Evidence, publication rules, AI credits and the existing layout stay unchanged."
+          "Commercial Evidence Runs no longer shows zero runs or missing linked products when its records cannot load. Retry preserves the unfinished form and restores saved choices before creation becomes available. Status and privacy choices now announce their selected state on web, and details have one page heading. A private synthetic staging run retained its edited summary after full reload and was reversibly archived; nothing was published. Publication rules, saved evidence and AI credits are unchanged."
       },
       {
         id: "commercial-diagnosis-return",

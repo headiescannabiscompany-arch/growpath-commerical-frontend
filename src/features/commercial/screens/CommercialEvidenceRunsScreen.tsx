@@ -632,6 +632,7 @@ export default function CommercialGrowsRoute({
                 key={choice.id}
                 accessibilityRole="radio"
                 accessibilityLabel={`Public share status: ${choice.label}`}
+                aria-checked={form.publicShareStatus === choice.id}
                 accessibilityState={{
                   checked: form.publicShareStatus === choice.id,
                   disabled: saving

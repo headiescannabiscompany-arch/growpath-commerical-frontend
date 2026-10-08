@@ -484,6 +484,7 @@ export default function CommercialGrowDetailRoute({
                 key={choice.id}
                 accessibilityLabel={`Evidence run status: ${choice.label}`}
                 accessibilityRole="radio"
+                aria-checked={status === choice.id}
                 accessibilityState={{
                   checked: status === choice.id,
                   disabled: !grow || saving
@@ -513,6 +514,7 @@ export default function CommercialGrowDetailRoute({
                 key={choice.id}
                 accessibilityLabel={`Evidence run public share status: ${choice.label}`}
                 accessibilityRole="radio"
+                aria-checked={publicShareStatus === choice.id}
                 accessibilityState={{
                   checked: publicShareStatus === choice.id,
                   disabled: !grow || saving

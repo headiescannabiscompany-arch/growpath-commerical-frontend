@@ -111,6 +111,7 @@ function RecordPicker({
           <Pressable
             accessibilityRole="radio"
             accessibilityLabel={`${label}: Not linked yet`}
+            aria-checked={!selectedId}
             accessibilityState={{ checked: !selectedId, disabled }}
             disabled={disabled}
             onPress={() => onChange("")}
@@ -127,6 +128,7 @@ function RecordPicker({
               key={`${label}-${item.id}`}
               accessibilityRole="radio"
               accessibilityLabel={`${label}: ${item.label}`}
+              aria-checked={selectedId === item.id}
               accessibilityState={{ checked: selectedId === item.id, disabled }}
               disabled={disabled}
               onPress={() => onChange(item.id)}

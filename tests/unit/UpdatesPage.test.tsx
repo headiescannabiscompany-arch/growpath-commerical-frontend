@@ -24,6 +24,25 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("groups private Commercial lifecycle and accessibility without claiming public proof", () => {
+    for (const id of ["commercial-trials-readiness", "commercial-evidence-readiness"]) {
+      const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter((entry) => entry.id === id);
+      expect(notes).toHaveLength(1);
+      expect(notes[0].date).toBe("October 8, 2026");
+      expect(notes[0].summary).toContain("selected state on web");
+      expect(notes[0].summary).toContain("staging");
+      expect(notes[0].summary).toContain("full reload");
+      expect(notes[0].summary).not.toMatch(/qa\.invalid|acceptance-c|6ac82a|6ac82b/);
+    }
+    const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "shopping");
+    expect(group?.status).toBe("partial");
+    expect(
+      PUBLIC_UPDATE_SECTIONS[0].entries.find(
+        (entry) => entry.id === "commercial-evidence-readiness"
+      )?.summary
+    ).toContain("nothing was published");
+  });
+
   it("groups product-campaign handoff without claiming publication acceptance", () => {
     const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
       (entry) => entry.id === "campaign-feed-readiness"
@@ -276,19 +295,19 @@ describe("public Updates page", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "commercial-trials-readiness"
     );
-    expect(note?.date).toBe("October 2, 2026");
+    expect(note?.date).toBe("October 8, 2026");
     expect(note?.summary).toContain("Retry keeps your unfinished form");
     expect(note?.summary).toContain(
-      "Prices, artwork, publication rules and the existing layout stay unchanged"
+      "Prices, artwork and publication rules stay unchanged"
     );
   });
-  it("limits evidence-run readiness to reading and retrying saved records", () => {
+  it("preserves evidence-run read recovery and distinguishes the private staging check", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "commercial-evidence-readiness"
     );
     expect(note?.summary).toContain("Retry preserves the unfinished form");
     expect(note?.summary).toContain(
-      "publication rules, AI credits and the existing layout stay unchanged"
+      "Publication rules, saved evidence and AI credits are unchanged"
     );
   });
   it("groups bounded Commercial menu returns without implying provider integration", () => {

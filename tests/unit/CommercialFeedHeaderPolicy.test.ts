@@ -6,6 +6,20 @@ function read(relativePath: string) {
 }
 
 describe("Commercial page header policy", () => {
+  it.each(["evidence-runs/[id]", "trials/[trialId]"])(
+    "keeps the %s detail page heading without a duplicate navigator header",
+    (route) => {
+      const layout = read("src/app/home/commercial/_layout.tsx");
+      const screen = layout
+        .split("<Tabs.Screen")
+        .find((entry) => entry.includes(`name="${route}"`));
+
+      expect(screen).toBeDefined();
+      expect(screen).toMatch(/options=\{\{[^}]*headerShown: false/);
+      expect(screen).toMatch(/options=\{\{[^}]*href: null/);
+    }
+  );
+
   it("uses page headings without duplicate tab headers", () => {
     const layout = read("src/app/home/commercial/_layout.tsx");
     const dashboard = read("src/app/home/commercial/index.tsx");

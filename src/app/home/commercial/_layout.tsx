@@ -345,7 +345,8 @@ export default function CommercialTabsLayout() {
         name="evidence-runs/[id]"
         options={{
           href: null,
-          title: "Product Trial Evidence Run Detail"
+          title: "Product Trial Evidence Run Detail",
+          headerShown: false
         }}
       />
       <Tabs.Screen
@@ -368,7 +369,7 @@ export default function CommercialTabsLayout() {
         name="product-lines/[lineId]"
         options={{ title: "Product Line", href: null, headerShown: false }}
       />
-      <Tabs.Screen name="trials/[trialId]" options={{ href: null }} />
+      <Tabs.Screen name="trials/[trialId]" options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="tools/ask-ai" options={{ title: "Ask AI", href: null }} />
       <Tabs.Screen
         name="tools/diagnose"
