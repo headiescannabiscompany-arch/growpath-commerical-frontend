@@ -28,7 +28,7 @@
     "features": {
       "eyebrow": "Connected workflows",
       "title": "Tools appear where the work happens",
-      "intro": "The Tools page is a library. GrowPathAI also launches the same tools from grows, plants, logs, tasks, photos, harvests, courses, and facility workspaces.",
+      "intro": "GrowPathAI is a grow journal with connected planning, plant-care and workspace tools. Open the Tools library, or launch tools from the grow, plant, log or task you are working on.",
       "sections": [
         {
           "title": "Plan and schedule",
@@ -202,7 +202,7 @@
     "grow-stores": {
       "eyebrow": "For grow stores",
       "title": "Products, education, and community in one public presence",
-      "intro": "Show customers the offer you have reviewed, with its description, price, and supported next step. Keep owner drafts, published products, and the customer's buying or download experience distinct.",
+      "intro": "A GrowPathAI storefront is a public page for your reviewed products and business information. Show each offer's description, price and supported next step. Keep private drafts separate from published products and the customer's buying or download experience.",
       "primaryAction": {
         "href": "/pricing",
         "label": "See Commercial pricing"
@@ -235,7 +235,7 @@
     "creators-educators": {
       "eyebrow": "For creators and educators",
       "title": "Publish courses on every plan",
-      "intro": "Give learners a course they can follow and viewers a place to find your sessions. All users can create and publish free or paid courses within plan limits; Commercial adds business and storefront workflows.",
+      "intro": "GrowPathAI courses are lessons you draft, review and publish for learners. All users can create free or paid courses within plan limits. Give viewers a place to find your live sessions too. Commercial adds business and storefront workflows.",
       "primaryAction": {
         "href": "/pricing",
         "label": "Compare creator plan limits"

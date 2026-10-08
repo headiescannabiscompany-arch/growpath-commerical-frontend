@@ -13,6 +13,32 @@ const {
   marketingCss,
   marketing
 } = require("../scripts/public-marketing.cjs");
+test("SEO definitions stay factual and preserve plan, privacy and broadcasting limits", () => {
+  assert.ok(
+    publicMarketingMarkup("features").includes(
+      "GrowPathAI is a grow journal with connected planning"
+    )
+  );
+  assert.ok(
+    publicMarketingMarkup("grow-stores").includes(
+      "A GrowPathAI storefront is a public page"
+    )
+  );
+  assert.ok(
+    publicMarketingMarkup("creators-educators").includes("GrowPathAI courses are lessons")
+  );
+  assert.ok(publicMarketingMarkup("creators-educators").includes("within plan limits"));
+  assert.ok(
+    publicMarketingMarkup("creators-educators").includes(
+      "OBS or another compatible encoder"
+    )
+  );
+  assert.ok(
+    publicMarketingMarkup("grow-stores").includes(
+      "Publishing alone does not verify payment readiness"
+    )
+  );
+});
 test("audit delta exposes existing paid-tool output twice without changing pricing terms", () => {
   const html = publicMarketingMarkup("pricing");
   assert.equal(

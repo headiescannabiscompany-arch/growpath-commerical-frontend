@@ -4,6 +4,8 @@ const crypto = require("crypto");
 const { spawnSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
+const publicPageModified = require("../src/seo/publicPageModified.json");
+const { webRoutes } = require("./web-route-inventory.cjs");
 const outputArgIndex = process.argv.findIndex((arg) => arg === "--out");
 const outputDir =
   outputArgIndex >= 0 && process.argv[outputArgIndex + 1]
@@ -736,13 +738,26 @@ function structuredDataForRoute(route, seo, canonical) {
       ]
     }
   ];
-  if (route === "") {
+  if (seo.index) {
+    graph.push({
+      "@type": "WebSite",
+      "@id": `${siteUrl}#website`,
+      name: "GrowPathAI",
+      url: siteUrl,
+      publisher: { "@id": `${siteUrl}#organization` }
+    });
     graph.push({
       "@type": "Organization",
       "@id": `${siteUrl}#organization`,
       name: "GrowPathAI",
       url: siteUrl,
-      email: "support@growpathai.com"
+      email: "support@growpathai.com",
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/images/growpathai-logo.png`,
+        width: 1024,
+        height: 1024
+      }
     });
   }
   graph.push(...marketingSchema(route));
@@ -766,7 +781,9 @@ function staticPublicMarkup(route, seo) {
     ["Creators", "/creators-educators"],
     ["Courses", "/courses"],
     ["Forum", "/forum"],
-    ["Support", "/support"]
+    ["Support", "/support"],
+    ["About", "/about"],
+    ["Contact", "/contact"]
   ];
   return [
     '<main id="seo-content">',
@@ -844,9 +861,18 @@ function applySeo(html, route) {
 }
 
 fs.writeFileSync(indexHtml, applySeo(revisionedIndexHtml, ""));
+// Reuse the existing brand asset; this is not customer or outcome evidence.
+fs.mkdirSync(path.join(absoluteOutputDir, "images"), { recursive: true });
+fs.copyFileSync(
+  path.join(ROOT, "assets", "icon.png"),
+  path.join(absoluteOutputDir, "images", "growpathai-logo.png")
+);
 
 for (const route of new Set([
   ...fallbackRoutes,
+  ...webRoutes(path.join(ROOT, "src", "app")).filter(
+    (route) => route && !route.includes("[")
+  ),
   "demo",
   ...Object.keys(marketing.pages).filter((key) => key !== "home")
 ])) {
@@ -921,6 +947,9 @@ const sitemapXml = [
     [
       "  <url>",
       `    <loc>${escapeXml(canonicalUrl(route))}</loc>`,
+      ...(publicPageModified[route]
+        ? [`    <lastmod>${escapeXml(publicPageModified[route])}</lastmod>`]
+        : []),
       `    <changefreq>${changefreq}</changefreq>`,
       `    <priority>${priority}</priority>`,
       "  </url>"

@@ -110,9 +110,27 @@ services:
         source: /feedback
         destination: /feedback/index.html
       - type: rewrite
-        source: /*
+        source: /creators/*
+        destination: /index.html
+      - type: rewrite
+        source: /grow-timeline/*
         destination: /index.html
     headers:
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: Content-Security-Policy
+        value: "base-uri 'self'; object-src 'none'; frame-ancestors 'self'"
       - path: /_expo/static/js/*
         name: Cache-Control
         value: public, max-age=0, s-maxage=0, must-revalidate

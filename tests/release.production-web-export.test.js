@@ -31,6 +31,8 @@ function createExportRoot() {
     fs.readFileSync(path.join(root, "src", "seo", "publicRouteMetadata.json"), "utf8")
   );
   for (const relative of [
+    "scripts/web-route-inventory.cjs",
+    "src/seo/publicPageModified.json",
     "scripts/public-marketing.cjs",
     "src/components/marketing/publicMarketing.json",
     "src/components/marketing/syntheticGrowDemo.json",
@@ -40,6 +42,17 @@ function createExportRoot() {
   ]) {
     writeFile(tempRoot, relative, fs.readFileSync(path.join(root, relative), "utf8"));
   }
+  fs.mkdirSync(path.join(tempRoot, "assets"), { recursive: true });
+  fs.copyFileSync(
+    path.join(root, "assets", "icon.png"),
+    path.join(tempRoot, "assets", "icon.png")
+  );
+  writeFile(
+    tempRoot,
+    "src/app/(auth)/claim-complimentary-access.tsx",
+    "export default function Claim() {}"
+  );
+  writeFile(tempRoot, "src/app/live-studio.tsx", "export default function Studio() {}");
 
   writeFile(
     tempRoot,
@@ -99,6 +112,66 @@ function runExport(tempRoot, env = {}, args = []) {
 }
 
 describe("production web export", () => {
+  it("exports connected factual schema, the real logo and reviewed stable sitemap dates", () => {
+    const tempRoot = createExportRoot();
+    expect(runExport(tempRoot).status).toBe(0);
+    const out = path.join(tempRoot, "dist");
+    for (const route of ["", "about", "pricing", "support", "demo"]) {
+      const html = fs.readFileSync(path.join(out, route, "index.html"), "utf8");
+      const graph = JSON.parse(
+        html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]
+      )["@graph"];
+      const website = graph.find((entry) => entry["@type"] === "WebSite");
+      const organization = graph.find((entry) => entry["@type"] === "Organization");
+      expect(graph.find((entry) => entry["@type"] === "WebPage").isPartOf["@id"]).toBe(
+        website["@id"]
+      );
+      expect(website.publisher["@id"]).toBe(organization["@id"]);
+      expect(organization.logo.url).toBe(
+        "https://growpathai.com/images/growpathai-logo.png"
+      );
+      expect(organization.sameAs).toBeUndefined();
+      expect(
+        graph.some((entry) => entry.aggregateRating || entry["@type"] === "Article")
+      ).toBe(false);
+    }
+    expect(fs.readFileSync(path.join(out, "images/growpathai-logo.png"))).toEqual(
+      fs.readFileSync(path.join(root, "assets/icon.png"))
+    );
+    const sitemap = fs.readFileSync(path.join(out, "sitemap.xml"), "utf8");
+    const dates = require("../src/seo/publicPageModified.json");
+    for (const [route, date] of Object.entries(dates)) {
+      expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(new Date(date).toISOString().slice(0, 10)).toBe(date);
+      expect(sitemap).toContain(
+        `<loc>https://growpathai.com${route ? "/" + route : ""}</loc>\n    <lastmod>${date}</lastmod>`
+      );
+    }
+    for (const route of [
+      "store",
+      "courses",
+      "forum",
+      "feed",
+      "communities",
+      "field-observations",
+      "register"
+    ]) {
+      const entry = sitemap.match(
+        new RegExp(`<url>\\s*<loc>https://growpathai.com/${route}</loc>[\\s\\S]*?</url>`)
+      )[0];
+      expect(entry).not.toContain("<lastmod>");
+    }
+    expect(runExport(tempRoot).status).toBe(0);
+    expect(fs.readFileSync(path.join(out, "sitemap.xml"), "utf8")).toBe(sitemap);
+    const support = fs.readFileSync(path.join(out, "support/index.html"), "utf8");
+    expect(support).toContain('href="/about"');
+    expect(support).toContain('href="/contact"');
+    for (const route of ["claim-complimentary-access", "live-studio"]) {
+      const shell = fs.readFileSync(path.join(out, route, "index.html"), "utf8");
+      expect(shell).toContain('content="noindex,follow"');
+      expect(shell).not.toContain('<main id="seo-content">');
+    }
+  });
   it("keeps the production fallback, canonical, and indexing behavior unchanged", () => {
     const tempRoot = createExportRoot();
 
@@ -265,7 +338,7 @@ describe("production web export", () => {
     expect(indexHtml).not.toContain("wrong-staging-origin.example.com");
   });
 
-  it("serves feedback's noindex shell before the homepage catch-all", () => {
+  it("serves feedback's noindex shell without a homepage catch-all", () => {
     const yaml = require("js-yaml");
     for (const filename of ["render.yaml", "render.staging.yaml"]) {
       const blueprint = yaml.load(fs.readFileSync(path.join(root, filename), "utf8"));
@@ -273,7 +346,7 @@ describe("production web export", () => {
       const feedback = routes.findIndex((route) => route.source === "/feedback");
       const fallback = routes.findIndex((route) => route.source === "/*");
       expect(feedback).toBeGreaterThanOrEqual(0);
-      expect(feedback).toBeLessThan(fallback);
+      expect(fallback).toBe(-1);
       expect(routes[feedback]).toEqual({
         type: "rewrite",
         source: "/feedback",
