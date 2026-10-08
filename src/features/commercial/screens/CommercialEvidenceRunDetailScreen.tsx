@@ -133,10 +133,29 @@ export default function CommercialGrowDetailRoute({
   const [loadError, setLoadError] = useState<any>(null);
   const [saveError, setSaveError] = useState<any>(null);
   const [message, setMessage] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [exportFeedback, setExportFeedback] = useState<{
+    scope: object;
+    message: string;
+    failed: boolean;
+  } | null>(null);
+  const exportScope = useMemo(() => ({ growId }), [growId]);
+  const exportScopeRef = useRef(exportScope);
+  exportScopeRef.current = exportScope;
+  const exportMountedRef = useRef(false);
+  const exportInFlightRef = useRef(false);
   const loadInFlightRef = useRef(false);
   const saveInFlightRef = useRef(false);
   const canSave = !!growId && !!grow && !loading && !saving;
   const timeline = useMemo(() => (grow ? buildCommercialGrowTimeline(grow) : []), [grow]);
+  const canExport =
+    !!timeline.length &&
+    !!growId &&
+    cleanId(grow?.id || grow?._id) === growId &&
+    !loading &&
+    !exporting;
+  const currentExportFeedback =
+    exportFeedback?.scope === exportScope ? exportFeedback : null;
   const shareReady = grow?.publicShareStatus === "public_ready";
   const shareHref = useMemo(() => {
     const query = new URLSearchParams({
@@ -186,6 +205,48 @@ export default function CommercialGrowDetailRoute({
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    exportMountedRef.current = true;
+    return () => {
+      exportMountedRef.current = false;
+    };
+  }, []);
+
+  async function exportTimeline() {
+    if (!canExport || exportInFlightRef.current) return;
+    exportInFlightRef.current = true;
+    setExporting(true);
+    setExportFeedback(null);
+    const isCurrent = () =>
+      exportMountedRef.current && exportScopeRef.current === exportScope;
+    try {
+      const method = await exportVisualTimeline(
+        `${titleFor(grow)} — Visual Grow Timeline`,
+        timeline as any
+      );
+      if (isCurrent())
+        setExportFeedback({
+          scope: exportScope,
+          failed: false,
+          message:
+            method === "web-download"
+              ? "Visual timeline download prepared."
+              : "Visual timeline share sheet opened."
+        });
+    } catch {
+      if (isCurrent())
+        setExportFeedback({
+          scope: exportScope,
+          failed: true,
+          message:
+            "The visual timeline could not be prepared. Check its photos, then try again."
+        });
+    } finally {
+      exportInFlightRef.current = false;
+      if (exportMountedRef.current) setExporting(false);
+    }
+  }
 
   async function saveChanges() {
     if (!canSave || saveInFlightRef.current) return;
@@ -561,21 +622,14 @@ export default function CommercialGrowDetailRoute({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Export commercial visual grow timeline"
-              disabled={!timeline.length}
-              onPress={async () => {
-                const method = await exportVisualTimeline(
-                  `${titleFor(grow)} — Visual Grow Timeline`,
-                  timeline as any
-                );
-                setMessage(
-                  method === "web-download"
-                    ? "Visual timeline download prepared."
-                    : "Visual timeline share sheet opened."
-                );
-              }}
-              style={[styles.action, !timeline.length && styles.disabled]}
+              accessibilityState={{ disabled: !canExport, busy: exporting }}
+              disabled={!canExport}
+              onPress={exportTimeline}
+              style={[styles.action, !canExport && styles.disabled]}
             >
-              <Text style={styles.actionText}>Export Visual Timeline</Text>
+              <Text style={styles.actionText}>
+                {exporting ? "Preparing..." : "Export Visual Timeline"}
+              </Text>
             </Pressable>
             {shareReady ? (
               <ActionLink href={shareHref} label="Review & Share Timeline" />
@@ -588,6 +642,28 @@ export default function CommercialGrowDetailRoute({
               </View>
             )}
           </View>
+          {currentExportFeedback ? (
+            currentExportFeedback.failed ? (
+              <View
+                accessible
+                accessibilityLiveRegion="assertive"
+                accessibilityRole="alert"
+              >
+                <InlineError
+                  title="Timeline export unavailable"
+                  message={currentExportFeedback.message}
+                />
+              </View>
+            ) : (
+              <Text
+                accessibilityLiveRegion="polite"
+                accessibilityRole="alert"
+                style={styles.success}
+              >
+                {currentExportFeedback.message}
+              </Text>
+            )
+          ) : null}
         </AppCard>
       ) : null}
 

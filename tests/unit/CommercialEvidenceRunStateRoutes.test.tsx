@@ -11,6 +11,12 @@ const mockUpdateCommercialGrow = jest.fn();
 const mockFetchProducts = jest.fn();
 const mockFetchProductLines = jest.fn();
 const mockFetchSoilNutrientBatches = jest.fn();
+const mockExportVisualTimeline = jest.fn();
+let mockGrowId = "grow-1";
+
+jest.mock("@/utils/exportVisualTimeline", () => ({
+  exportVisualTimeline: (...args: any[]) => mockExportVisualTimeline(...args)
+}));
 
 jest.mock("@/api/commercialWorkflows", () => ({
   createCommercialGrow: (...args: any[]) => mockCreateCommercialGrow(...args),
@@ -27,7 +33,7 @@ jest.mock("expo-router", () => {
   return {
     Link: ({ children, href }: any) =>
       React.cloneElement(React.Children.only(children), { href }),
-    useLocalSearchParams: () => ({ id: "grow-1", growId: "grow-1" })
+    useLocalSearchParams: () => ({ id: mockGrowId, growId: mockGrowId })
   };
 });
 
@@ -92,6 +98,8 @@ const evidenceRun = {
 describe("Commercial Evidence Run workflow state", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockGrowId = "grow-1";
+    mockExportVisualTimeline.mockResolvedValue("web-download");
     mockFetchCommercialGrows.mockResolvedValue([evidenceRun]);
     mockFetchCommercialGrow.mockResolvedValue(evidenceRun);
     mockFetchProducts.mockResolvedValue([{ id: "product-1", name: "Product One" }]);
@@ -388,4 +396,151 @@ describe("Commercial Evidence Run workflow state", () => {
       expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
     });
   });
+
+  it("prepares one timeline export at a time and announces its completed handoff", async () => {
+    let resolveExport: (value: string) => void = () => {};
+    mockExportVisualTimeline.mockReturnValue(
+      new Promise((resolve) => {
+        resolveExport = resolve;
+      })
+    );
+    const screen = render(<CommercialEvidenceRunDetailRoute />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Export commercial visual grow timeline")).toBeTruthy()
+    );
+    const button = screen.getByLabelText("Export commercial visual grow timeline");
+    act(() => {
+      fireEvent.press(button);
+      fireEvent.press(button);
+    });
+    expect(mockExportVisualTimeline).toHaveBeenCalledTimes(1);
+    expect(mockExportVisualTimeline).toHaveBeenCalledWith(
+      "Bloom Formula Trial — Visual Grow Timeline",
+      expect.arrayContaining([expect.objectContaining({ sourceId: "grow-1" })])
+    );
+    expect(screen.getByText("Preparing...")).toBeTruthy();
+    expect(button.props.accessibilityState).toMatchObject({ disabled: true, busy: true });
+    await act(async () => resolveExport("web-download"));
+    expect(screen.getByText("Visual timeline download prepared.")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Export commercial visual grow timeline").props
+        .accessibilityState
+    ).toMatchObject({ disabled: false, busy: false });
+    expect(mockUpdateCommercialGrow).not.toHaveBeenCalled();
+    expect(mockCreateCommercialGrow).not.toHaveBeenCalled();
+  });
+
+  it("clears old export success, reports a safe failure, and permits deliberate retry", async () => {
+    const screen = render(<CommercialEvidenceRunDetailRoute />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Export commercial visual grow timeline")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Export commercial visual grow timeline"));
+    await waitFor(() =>
+      expect(screen.getByText("Visual timeline download prepared.")).toBeTruthy()
+    );
+    mockExportVisualTimeline.mockRejectedValueOnce(
+      new Error("https://private.example/photo?token=secret private-storage-id")
+    );
+    fireEvent.press(screen.getByLabelText("Export commercial visual grow timeline"));
+    expect(screen.queryByText("Visual timeline download prepared.")).toBeNull();
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "The visual timeline could not be prepared. Check its photos, then try again."
+        )
+      ).toBeTruthy()
+    );
+    expect(
+      screen.queryByText(/private\.example|token=secret|private-storage-id/)
+    ).toBeNull();
+    expect(screen.queryByText("Visual timeline download prepared.")).toBeNull();
+    expect(screen.getByRole("alert")).toBeTruthy();
+    mockExportVisualTimeline.mockResolvedValueOnce("native-share");
+    fireEvent.press(screen.getByLabelText("Export commercial visual grow timeline"));
+    expect(screen.queryByText("Timeline export unavailable")).toBeNull();
+    await waitFor(() =>
+      expect(screen.getByText("Visual timeline share sheet opened.")).toBeTruthy()
+    );
+    expect(mockExportVisualTimeline).toHaveBeenCalledTimes(3);
+    expect(mockUpdateCommercialGrow).not.toHaveBeenCalled();
+  });
+
+  it.each(["success", "failure"])(
+    "ignores a late export %s after grow A changes to B and back to A",
+    async (outcome) => {
+      let resolveExport: (value: string) => void = () => {};
+      let rejectExport: (error: Error) => void = () => {};
+      mockExportVisualTimeline.mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolveExport = resolve;
+          rejectExport = reject;
+        })
+      );
+      mockFetchCommercialGrow.mockImplementation(async (id) => ({ ...evidenceRun, id }));
+      const screen = render(<CommercialEvidenceRunDetailRoute />);
+      await waitFor(() =>
+        expect(
+          screen.getByLabelText("Export commercial visual grow timeline")
+        ).toBeTruthy()
+      );
+      fireEvent.press(screen.getByLabelText("Export commercial visual grow timeline"));
+      mockGrowId = "grow-2";
+      screen.rerender(<CommercialEvidenceRunDetailRoute />);
+      await waitFor(() => expect(mockFetchCommercialGrow).toHaveBeenCalledWith("grow-2"));
+      mockGrowId = "grow-1";
+      screen.rerender(<CommercialEvidenceRunDetailRoute />);
+      await waitFor(() => expect(mockFetchCommercialGrow).toHaveBeenCalledTimes(3));
+      await act(async () => {
+        if (outcome === "success") resolveExport("web-download");
+        else rejectExport(new Error("Late private export error"));
+      });
+      expect(screen.queryByText("Visual timeline download prepared.")).toBeNull();
+      expect(screen.queryByText("Timeline export unavailable")).toBeNull();
+      expect(screen.queryByText("Late private export error")).toBeNull();
+      expect(screen.queryByText("Preparing...")).toBeNull();
+      fireEvent.press(screen.getByLabelText("Export commercial visual grow timeline"));
+      await waitFor(() =>
+        expect(screen.getByText("Visual timeline download prepared.")).toBeTruthy()
+      );
+      expect(mockExportVisualTimeline).toHaveBeenCalledTimes(2);
+      expect(mockUpdateCommercialGrow).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(["success", "failure"])(
+    "settles an export %s after unmount without feedback in the next mounted screen",
+    async (outcome) => {
+      let resolveExport: (value: string) => void = () => {};
+      let rejectExport: (error: Error) => void = () => {};
+      mockExportVisualTimeline.mockReturnValueOnce(
+        new Promise((resolve, reject) => {
+          resolveExport = resolve;
+          rejectExport = reject;
+        })
+      );
+      const previous = render(<CommercialEvidenceRunDetailRoute />);
+      await waitFor(() =>
+        expect(
+          previous.getByLabelText("Export commercial visual grow timeline")
+        ).toBeTruthy()
+      );
+      fireEvent.press(previous.getByLabelText("Export commercial visual grow timeline"));
+      previous.unmount();
+      const screen = render(<CommercialEvidenceRunDetailRoute />);
+      await waitFor(() =>
+        expect(
+          screen.getByLabelText("Export commercial visual grow timeline")
+        ).toBeTruthy()
+      );
+      await act(async () => {
+        if (outcome === "success") resolveExport("web-download");
+        else rejectExport(new Error("Late private export error"));
+      });
+      expect(screen.queryByText("Visual timeline download prepared.")).toBeNull();
+      expect(screen.queryByText("Timeline export unavailable")).toBeNull();
+      expect(screen.queryByText("Late private export error")).toBeNull();
+      expect(mockUpdateCommercialGrow).not.toHaveBeenCalled();
+    }
+  );
 });

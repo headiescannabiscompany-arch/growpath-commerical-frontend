@@ -250,11 +250,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "timeline-export-return",
-        title: "Return to your timeline from export",
-        date: "September 28, 2026",
+        title: "Timeline downloads with saved photos and a clear return",
+        date: "October 8, 2026",
         dateLabel: "Released",
         summary:
-          "After opening Export Visual Timeline from a Personal grow, Back now returns to that same grow's timeline instead of unrelated navigation history. This also works when export is locked by your plan. Export permissions, downloads, published shares, and the existing layout stay unchanged."
+          "Web visual-timeline downloads now include prepared photos inside the HTML file instead of broken relative image paths or private storage links. Photo-path summaries become readable labels; an unreadable photo stops the download with an error rather than saving an incomplete story. Original photos are unchanged. After opening export from a Personal grow, Back still returns to that same grow's timeline, including when export is locked by your plan. Export permissions, published shares, and the existing layout stay unchanged; native sharing remains text-only."
       },
       {
         id: "general-crop-calendar-access",

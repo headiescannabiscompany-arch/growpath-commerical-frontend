@@ -94,6 +94,17 @@ the owner back to the private GrowPath record for the detailed evidence. Long pr
 bounded so one event cannot make the exported timeline unusable; the private source record
 remains authoritative and unchanged.
 
+Web timeline downloads embed locally prepared JPEG pixels instead of relative,
+protected or signed source URLs. Reuse the existing media resolver and pixel-only
+image preparation; do not upload, publish or change the originals. Read each
+distinct photo once, authenticate only the configured API's upload-media paths,
+and reject redirects. Other supported HTTPS/local image reads omit credentials
+and referrers. Reject unreadable/non-raster media, bound each input to 20 MiB and
+the serialized photo total to 64 MiB, and time out each photo after 20 seconds.
+If any selected photo cannot be prepared, report failure and save no partial file.
+Path-only photo summaries become readable photo labels; ordinary notes and the
+existing JSON/private-detail handoff remain. Native text sharing stays text-only.
+
 ## Bundled synthetic marketing demo
 
 The public `/demo` route is a read-only, bundled fixture, not a public-copy access

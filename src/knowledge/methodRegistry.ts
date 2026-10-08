@@ -107,6 +107,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Private Visual Flow and Detailed List attach photo events to the matching selected journal by source identity; preserve standalone photos and distinct same-date/title journals without changing stored activity or frozen snapshots.",
       "Never expose protected upload URLs, exact locations, operational payloads, AI receipts, credentials, or evidence permissions.",
       "Viewer-friendly downloads must replace raw JSON, provider payloads, evidence fingerprints, private IDs and oversized machine notes with a bounded readable summary and private-record handoff.",
+      "Web timeline files embed metadata-stripped JPEG pixels, not relative/protected/signed media URLs. Read distinct images once; authenticate only configured API media paths, reject redirects and use credentialless/referrerless reads elsewhere. Bound inputs to 20 MiB, serialized photos to 64 MiB and preparation to 20 seconds per photo. Failed media saves no partial file; path-only summaries become readable labels. Originals, publication and native text sharing are unchanged.",
       "Later private edits must not silently change an already-published snapshot.",
       "Withdrawal or moderation must delete unreferenced public derivatives; restore must safely rebuild them from the protected owned source before visibility returns.",
       "Cannabis-specific public copies require the cannabis visibility and reporting gates before public release.",

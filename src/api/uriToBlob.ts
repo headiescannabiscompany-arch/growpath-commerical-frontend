@@ -8,6 +8,19 @@ type UriToBlobOptions = {
   timeoutMs?: number;
 };
 
+/** Credentialless browser media read for a caller-validated export image URI. */
+export async function readAnonymousImageBlob(uri: string, signal: AbortSignal) {
+  const response = await fetch(uri, {
+    credentials: "omit",
+    referrerPolicy: "no-referrer",
+    redirect: "error",
+    cache: "no-store",
+    signal
+  });
+  if (!response.ok) throw new Error("The export photo could not be read.");
+  return response.blob();
+}
+
 function blobReadError(code: string, message: string) {
   const error = new Error(message) as Error & { code?: string };
   error.code = code;

@@ -638,7 +638,7 @@ describe("public Updates page", () => {
     expect(photoEntry?.summary).toContain("separate grow-list display correction");
   });
 
-  it("describes the Personal timeline export return without claiming new export capability", () => {
+  it("groups the web photo-export repair with the retained Personal return behavior", () => {
     const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (item) => item.id === "timeline-export-return"
     );
@@ -648,6 +648,10 @@ describe("public Updates page", () => {
       "published shares, and the existing layout stay unchanged"
     );
     expect(entry?.summary).not.toMatch(/unlocks|all exports.*verified/i);
+    expect(entry?.date).toBe("October 8, 2026");
+    expect(entry?.summary).toContain("photos inside the HTML file");
+    expect(entry?.summary).toContain("an unreadable photo stops the download");
+    expect(entry?.summary).toContain("native sharing remains text-only");
   });
 
   it("describes only the crop-calendar access correction", () => {
