@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "October 6, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "October 8, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -51,10 +51,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "public-website-audit",
         title: "Clearer grow journals, plans and public-page information",
-        date: "October 5, 2026",
+        date: "October 8, 2026",
         dateLabel: "Released",
         summary:
-          "The homepage and personal-grower page explain how to keep this run's lessons for the next one. The homepage now includes Jay's supplied portrait, founder story, show link and company context. Pro pricing adds a comparison with the separate journal tools you actually use, without promising savings. The existing permission-controlled customer-story feed is also available on personal-grower and pricing pages; it stays hidden when there are no approved stories. Synthetic previews remain labeled. Plan prices, billing behavior, private analytics boundaries and the signed-in app stay unchanged. Genuine grower stories, verified usage proof, outside endorsements and an accurate paid-output preview still need real material."
+          "The homepage and personal-grower page explain how to keep this run's lessons for the next one, alongside Jay's supplied portrait, founder story, show link and company context. Pro pricing compares separate journal tools without promising savings. The October 8 release clarifies how Facility room work differs from required compliance records, without claiming to replace a compliance system. Pricing now links directly to a labeled synthetic history answer and grow comparison before signup. Registration fields are easier to read on narrow screens. The permission-controlled customer-story feed stays hidden when empty. Prices, plan limits and private analytics boundaries are unchanged. Genuine grower stories, verified usage proof and outside endorsements still need real material."
       },
       {
         id: "course-media-playback-recovery",
@@ -379,10 +379,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "account-admin-controls",
         title: "Account management and complimentary access",
-        date: "September 22, 2026",
-        dateLabel: "Status confirmed",
+        date: "October 8, 2026",
+        dateLabel: "Released",
         summary:
-          "Admin account quarantine and restoration checks are complete using synthetic accounts. Complimentary invitation resend, claim, and revoke checks are complete, and the invitation correction is live. These controls do not automatically remove accounts or cancel paid subscriptions."
+          "Admin account quarantine and restoration, plus complimentary invitation resend, claim and revoke, retain their completed synthetic checks. The October 8 release checks the verified invitation recipient before Facility workspace ownership and provides clearer account-switching recovery when access cannot be claimed. Workspace ownership requirements remain unchanged; this release does not claim every individual invitation has been activated. These controls do not automatically remove accounts or cancel paid subscriptions."
       },
       {
         id: "admin-case-management",

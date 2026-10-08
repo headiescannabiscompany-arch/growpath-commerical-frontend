@@ -41,7 +41,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     status: "partial",
     scope:
       "Grower-focused explanations, exact plan allowances and search-readable public pages.",
-    live: "Grow-journal explanations connect each run's records to the next. The homepage includes Jay's supplied portrait, founder story and show link. Exact plan limits, a conditional comparison with separate journal costs, larger public-page tap targets, three sourced comparisons and a grow-journal guide are live. Explore Free, Pro, Commercial and Facility highlights and labeled screenshots without signing up, then try the sample journal. Five guided stories now show a plant journal, saved observations, seller presentation, a course preview and a Facility task, with direct audience links and clear evidence limits. Approved feedback can appear separately. Updates counts days since each milestone's latest release, not its planning date. Plan prices stay unchanged.",
+    live: "Grow-journal explanations connect each run's records to the next. The homepage includes Jay's supplied portrait, founder story and show link. Exact plan limits, a conditional comparison with separate journal costs, larger public-page tap targets, three sourced comparisons and a grow-journal guide are live. Explore Free, Pro, Commercial and Facility highlights and labeled screenshots without signing up, then try the sample journal. Five guided stories show a plant journal, saved observations, seller presentation, a course preview and a Facility task, with clear evidence limits. Pricing links directly to the synthetic history answer and comparison. Facility pages distinguish daily room work from required compliance records; registration fields are larger on narrow screens. Approved feedback can appear separately. Updates counts days since each milestone's latest release, not its planning date. Plan prices stay unchanged.",
     next: "Collect permissioned grower stories, verified usage proof and genuine outside endorsements. Demo records remain labeled synthetic, not customer outcome evidence; the diagnosis input example remains separate from the shown history answer. Advertising concepts remain unpublished drafts; no paid campaign or expanded tracking has launched.",
     entryIds: [
       "public-guided-story-walkthroughs",
@@ -152,7 +152,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     status: "partial",
     scope:
       "Account-management, complimentary access, private case controls and stronger recovery protection.",
-    live: "Account-management and complimentary-access controls, private case-management tools and passkey setup are available. Completed synthetic checks remain recorded as completed.",
+    live: "Account-management and complimentary-access controls, private case-management tools and passkey setup are available. Complimentary Facility invitations now check the verified recipient before workspace ownership and offer clearer account-switching recovery. Ownership requirements are unchanged. Completed synthetic checks remain recorded as completed; individual invitation activation still needs its own confirmation.",
     next: "Independent administrator acceptance, two-person sensitive-access checks and production recovery integration and verification remain unfinished. Tested recovery code is not a production activation.",
     entryIds: [
       "account-admin-controls",

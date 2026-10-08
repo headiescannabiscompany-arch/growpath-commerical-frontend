@@ -152,9 +152,23 @@ describe("public Updates page", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "public-website-audit"
     );
-    expect(note?.date).toBe("October 5, 2026");
+    expect(note?.date).toBe("October 8, 2026");
     expect(note?.summary).toContain("without promising savings");
     expect(note?.summary).toContain("still need real material");
+    expect(note?.summary).toContain("labeled synthetic history answer");
+    expect(note?.summary).toContain("without claiming to replace a compliance system");
+  });
+  it("records claim recovery without certifying every recipient or completing Admin", () => {
+    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+      (entry) => entry.id === "account-admin-controls"
+    );
+    expect(note?.date).toBe("October 8, 2026");
+    expect(note?.dateLabel).toBe("Released");
+    expect(note?.summary).toContain("Workspace ownership requirements remain unchanged");
+    expect(note?.summary).toContain("does not claim every individual invitation");
+    expect(PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "admin")?.status).toBe(
+      "partial"
+    );
   });
   it("closes feedback tooling without claiming genuine stories were collected", () => {
     const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "feedback");
