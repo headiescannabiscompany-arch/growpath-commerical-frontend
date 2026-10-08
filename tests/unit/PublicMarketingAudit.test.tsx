@@ -14,6 +14,19 @@ jest.mock("@/api/testimonials", () => ({
 }));
 
 describe("HeyCatch audit corrections", () => {
+  it("links public plant findings and Forum groups from the relevant Features cards", () => {
+    const screen = render(<PublicLandingPage page="features" />);
+    const links = screen.UNSAFE_getAllByType(Link);
+    for (const [href, label] of [
+      ["/field-observations", "Explore publicly shared plant findings"],
+      ["/communities", "Browse Forum groups by crop and workflow"]
+    ]) {
+      const matching = links.filter((link) => link.props.href === href);
+      expect(matching).toHaveLength(1);
+      expect(matching[0].props.children).toBe(label);
+    }
+    expect(links.some((link) => link.props.href === "/feed")).toBe(false);
+  });
   it.each(["home", "about"] as const)(
     "shows the supplied founder profile without tracking parameters on %s",
     (page) => {

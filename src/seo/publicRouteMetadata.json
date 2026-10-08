@@ -88,8 +88,9 @@
       "description": "Watch and search public grow videos, follow GrowPathAI members, and manage reusable Personal, Commercial, or Facility video libraries."
     },
     "feed": {
-      "title": "GrowPathAI Feed",
-      "description": "Explore commercial and facility outreach campaigns for products, courses, lives, storefronts, and professional cultivation services."
+      "title": "Campaign Workspace | GrowPathAI",
+      "description": "Sign in to manage eligible Commercial campaigns or Facility education outreach for products, courses, live sessions, and storefronts.",
+      "index": false
     },
     "forum": {
       "title": "GrowPathAI Forum",

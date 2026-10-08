@@ -667,7 +667,6 @@ const sitemapRoutes = [
   { route: "store", priority: "0.8", changefreq: "daily" },
   { route: "courses", priority: "0.8", changefreq: "weekly" },
   { route: "field-observations", priority: "0.7", changefreq: "daily" },
-  { route: "feed", priority: "0.7", changefreq: "daily" },
   { route: "forum", priority: "0.7", changefreq: "daily" },
   { route: "communities", priority: "0.5", changefreq: "weekly" },
   { route: "privacy", priority: "0.3", changefreq: "monthly" },

@@ -151,7 +151,6 @@ describe("production web export", () => {
       "store",
       "courses",
       "forum",
-      "feed",
       "communities",
       "field-observations",
       "register"
@@ -166,11 +165,36 @@ describe("production web export", () => {
     const support = fs.readFileSync(path.join(out, "support/index.html"), "utf8");
     expect(support).toContain('href="/about"');
     expect(support).toContain('href="/contact"');
-    for (const route of ["claim-complimentary-access", "live-studio"]) {
+    for (const route of ["claim-complimentary-access", "live-studio", "feed"]) {
       const shell = fs.readFileSync(path.join(out, route, "index.html"), "utf8");
       expect(shell).toContain('content="noindex,follow"');
       expect(shell).not.toContain('<main id="seo-content">');
     }
+  });
+  it("links public discovery pages but keeps the campaign workspace out of search", () => {
+    const tempRoot = createExportRoot();
+    expect(runExport(tempRoot).status).toBe(0);
+    const out = path.join(tempRoot, "dist");
+    const sitemap = fs.readFileSync(path.join(out, "sitemap.xml"), "utf8");
+    const features = fs.readFileSync(path.join(out, "features/index.html"), "utf8");
+    for (const route of ["communities", "field-observations"]) {
+      expect(sitemap).toContain(`<loc>https://growpathai.com/${route}</loc>`);
+      expect(features).toContain(`href="/${route}"`);
+      expect(fs.readFileSync(path.join(out, route, "index.html"), "utf8")).toContain(
+        'content="index,follow"'
+      );
+    }
+    expect(sitemap).not.toContain("<loc>https://growpathai.com/feed</loc>");
+    expect(features).not.toContain('href="/feed"');
+    const feed = fs.readFileSync(path.join(out, "feed/index.html"), "utf8");
+    expect(feed).toContain("<title>Campaign Workspace | GrowPathAI</title>");
+    expect(feed).toContain('content="noindex,follow"');
+    expect(feed).toContain('href="https://growpathai.com/feed"');
+    expect(feed).not.toContain('<main id="seo-content">');
+    // Let crawlers read noindex; noindex does not replace the app's access controls.
+    expect(fs.readFileSync(path.join(out, "robots.txt"), "utf8")).not.toContain(
+      "Disallow: /feed"
+    );
   });
   it("keeps the production fallback, canonical, and indexing behavior unchanged", () => {
     const tempRoot = createExportRoot();

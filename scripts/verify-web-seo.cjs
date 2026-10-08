@@ -51,7 +51,8 @@ function main() {
     "https://growpathai.com/register",
     "https://growpathai.com/store",
     "https://growpathai.com/courses",
-    "https://growpathai.com/feed",
+    "https://growpathai.com/communities",
+    "https://growpathai.com/field-observations",
     "https://growpathai.com/forum",
     "https://growpathai.com/privacy",
     "https://growpathai.com/terms",
@@ -60,6 +61,15 @@ function main() {
     "https://growpathai.com/grow-journal-app"
   ]) {
     requireIncludes(sitemap, `<loc>${url}</loc>`, "sitemap.xml");
+  }
+  if (sitemap.includes("<loc>https://growpathai.com/feed</loc>")) {
+    throw new Error("Campaign workspace must not be included in the public sitemap");
+  }
+  const campaignWorkspace = read(path.join("feed", "index.html"));
+  requireIncludes(campaignWorkspace, 'content="noindex,follow"', "campaign workspace");
+  const features = read(path.join("features", "index.html"));
+  for (const href of ["/communities", "/field-observations"]) {
+    requireIncludes(features, `href="${href}"`, "Features public discovery links");
   }
 
   const home = read("index.html");

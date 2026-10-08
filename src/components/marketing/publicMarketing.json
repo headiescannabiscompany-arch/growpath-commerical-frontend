@@ -36,11 +36,15 @@
         },
         {
           "title": "Observe and diagnose",
-          "body": "Journal entries, photos, environmental history, plant diagnosis, IPM review, and harvest-readiness results stay connected to the grow timeline."
+          "body": "Journal entries, photos, environmental history, plant diagnosis, IPM review, and harvest-readiness results stay connected to the grow timeline.",
+          "href": "/field-observations",
+          "linkLabel": "Explore publicly shared plant findings"
         },
         {
           "title": "Learn and share",
-          "body": "Courses, live sessions, forums, feeds, and public creator pages connect education with documented grow workflows."
+          "body": "Courses, live sessions, forums, feeds, and public creator pages connect education with documented grow workflows.",
+          "href": "/communities",
+          "linkLabel": "Browse Forum groups by crop and workflow"
         }
       ]
     },
