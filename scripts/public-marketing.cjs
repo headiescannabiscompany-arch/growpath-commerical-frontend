@@ -102,6 +102,9 @@ function publicMarketingMarkup(route) {
           ? "<p>" + escape(marketing.founder.story) + "</p>"
           : "") +
         (section.href ? anchor([section.linkLabel, section.href]) : "") +
+        (page === "about" && section.title === "Meet Jay" && marketing.founder.socialUrl
+          ? "<p>" + anchor(["Jay on LinkedIn", marketing.founder.socialUrl]) + "</p>"
+          : "") +
         (page === "pricing" && i > 0
           ? "<p>Annual billing saves 2 months compared with paying monthly for a year.</p>"
           : "") +
@@ -204,6 +207,9 @@ function publicMarketingMarkup(route) {
         "<p>" +
         anchor(["Read Jay's founder story", "/about"]) +
         "</p>" +
+        (marketing.founder.socialUrl
+          ? "<p>" + anchor(["Jay on LinkedIn", marketing.founder.socialUrl]) + "</p>"
+          : "") +
         "</section>"
       : "") +
     (page === "about"

@@ -480,7 +480,10 @@ test("quick wins preserve plan amounts and leave unsupported proof unpublished",
   );
   assert.ok(marketing.founder.story.includes("I wanted a place for growers"));
   assert.ok(publicMarketingMarkup("about").includes(marketing.founder.story));
-  assert.equal(marketing.founder.socialUrl, null);
+  assert.equal(
+    marketing.founder.socialUrl,
+    "https://www.linkedin.com/in/johnabrahamcollins1979"
+  );
   assert.deepEqual(marketing.proof, {
     verifiedGrowerCount: null,
     stories: [],
@@ -488,6 +491,17 @@ test("quick wins preserve plan amounts and leave unsupported proof unpublished",
     screenshots: []
   });
   assert.deepEqual(marketingSchema("about"), []);
+});
+
+test("static founder links match the owner-provided professional profile", () => {
+  for (const route of ["", "about"]) {
+    const html = publicMarketingMarkup(route);
+    assert.match(
+      html,
+      /href="https:\/\/www\.linkedin\.com\/in\/johnabrahamcollins1979">Jay on LinkedIn<\/a>/
+    );
+    assert.ok(!html.includes("utm_source="));
+  }
 });
 
 test("founder history preserves owner-supplied dates without asserting a launch or shipped future products", () => {

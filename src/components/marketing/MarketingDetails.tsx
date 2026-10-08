@@ -28,6 +28,19 @@ export function FounderPortrait() {
   );
 }
 
+export function FounderProfessionalLink() {
+  const { palette } = useAppTheme();
+  if (!marketing.founder.socialUrl) return null;
+  return (
+    <Link
+      href={marketing.founder.socialUrl as never}
+      style={{ color: palette.link, paddingVertical: 12 }}
+    >
+      Jay on LinkedIn
+    </Link>
+  );
+}
+
 export function PaidOutputPreview() {
   const { palette } = useAppTheme();
   return (
@@ -186,6 +199,7 @@ export default function MarketingDetails({ page }: { page: string }) {
           <Link href="/about" style={{ color: palette.link }}>
             Read Jay&apos;s founder story
           </Link>
+          <FounderProfessionalLink />
         </View>
       )}
       {page === "about" && (

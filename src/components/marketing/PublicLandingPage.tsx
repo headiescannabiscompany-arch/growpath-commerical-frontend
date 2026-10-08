@@ -4,7 +4,11 @@ import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-n
 
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import marketing from "./publicMarketing.json";
-import MarketingDetails, { FounderPortrait, PaidOutputPreview } from "./MarketingDetails";
+import MarketingDetails, {
+  FounderPortrait,
+  FounderProfessionalLink,
+  PaidOutputPreview
+} from "./MarketingDetails";
 import PublicTestimonials from "./PublicTestimonials";
 import GrowDemoPreview from "./GrowDemoPreview";
 import ProductScreenshots from "./ProductScreenshots";
@@ -177,6 +181,9 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
               <Link href={section.href as never} style={styles.link}>
                 {section.linkLabel}
               </Link>
+            )}
+            {page === "about" && section.title === "Meet Jay" && (
+              <FounderProfessionalLink />
             )}
             {page === "pricing" && index > 0 && (
               <Text style={styles.cardBody}>

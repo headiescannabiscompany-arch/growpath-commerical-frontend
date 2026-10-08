@@ -3,7 +3,7 @@
     "home": {
       "eyebrow": "A grow journal for personal growers",
       "title": "The grow journal that remembers every run.",
-      "intro": "Stop piecing together phone photos, feeding notes, and calendar reminders. Keep a grow history you can use to repeat what worked — with AI help when you need it. Free to start.",
+      "intro": "Stop piecing together phone photos, feeding notes, and calendar reminders. Keep a grow history you can use to repeat what worked — the way serious growers do. Get AI help when you need it. Free to start.",
       "sections": [
         {
           "title": "Personal growers",
@@ -19,7 +19,7 @@
         },
         {
           "title": "Facilities",
-          "body": "Compliance records may live in METRC while daily room notes and handoffs are scattered across messages and spreadsheets. Keep room readings, tasks, SOP checklists, and reports connected in GrowPathAI. This does not replace your required compliance system.",
+          "body": "Compliance records in METRC, but daily room notes scattered across messages and spreadsheets? Keep readings, tasks, SOP checklists, and handoffs together for each room in GrowPathAI. This does not replace your required compliance system.",
           "href": "/facility-management",
           "linkLabel": "Explore Facility"
         }
@@ -523,7 +523,7 @@
       }
     ],
     "showUrl": "https://youtube.com/@etgujay",
-    "socialUrl": null
+    "socialUrl": "https://www.linkedin.com/in/johnabrahamcollins1979"
   },
   "proof": {
     "verifiedGrowerCount": null,

@@ -14,6 +14,24 @@ jest.mock("@/api/testimonials", () => ({
 }));
 
 describe("HeyCatch audit corrections", () => {
+  it.each(["home", "about"] as const)(
+    "shows the supplied founder profile without tracking parameters on %s",
+    (page) => {
+      const screen = render(<PublicLandingPage page={page} />);
+      const links = screen
+        .UNSAFE_getAllByType(Link)
+        .filter((link) => link.props.href === marketing.founder.socialUrl);
+      expect(links).toHaveLength(1);
+      expect(links[0].props.children).toBe("Jay on LinkedIn");
+      expect(links[0].props.href).not.toContain("?");
+    }
+  );
+  it("keeps the existing headline and states the repeatable-result benefit", () => {
+    expect(marketing.pages.home.title).toBe("The grow journal that remembers every run.");
+    expect(marketing.pages.home.intro).toContain(
+      "repeat what worked — the way serious growers do"
+    );
+  });
   it("links reviewed output from Pro pricing and the payments FAQ without a refund promise", () => {
     const screen = render(<PublicLandingPage page="pricing" />);
     const previewLinks = screen
@@ -113,7 +131,10 @@ describe("HeyCatch audit corrections", () => {
     expect(marketing.founder.photo).toBe("/images/founder-jay.jpg");
     expect(marketing.founder.photoAlt).toBe("Jay, founder of GrowPathAI");
     expect(screen.getByText(marketing.founder.story)).toBeTruthy();
-    expect(marketing.founder.socialUrl).toBeNull();
+    expect(marketing.founder.socialUrl).toBe(
+      "https://www.linkedin.com/in/johnabrahamcollins1979"
+    );
+    expect(JSON.stringify(screen.toJSON())).toContain("Jay on LinkedIn");
     expect(marketing.proof.stories).toEqual([]);
     expect(marketing.proof.verifiedGrowerCount).toBeNull();
   });
