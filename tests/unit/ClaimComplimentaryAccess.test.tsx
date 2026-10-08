@@ -263,6 +263,45 @@ describe("ClaimComplimentaryAccessScreen", () => {
     expect(mockClaim).toHaveBeenCalledTimes(1);
   });
 
+  it.each(["UNAUTHENTICATED", "SESSION_EXPIRED"])(
+    "offers explicit sign-in recovery for a rejected session (%s)",
+    async (code) => {
+      mockToken = "stale-session";
+      const error = new ApiError(code, 401);
+      error.message = "Not authenticated";
+      mockClaim.mockRejectedValue(error);
+      const screen = render(<ClaimComplimentaryAccessScreen />);
+      await waitFor(() =>
+        expect(screen.getByText("One year of commercial")).toBeTruthy()
+      );
+      fireEvent.press(screen.getByLabelText("Activate complimentary access"));
+      await waitFor(() =>
+        expect(
+          screen.getByLabelText("Sign in again to claim complimentary access")
+        ).toBeTruthy()
+      );
+      expect(screen.queryByLabelText("Activate complimentary access")).toBeNull();
+      expect(mockLogout).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+      await expect(readComplimentaryClaimToken()).resolves.toBe("complimentary-token-1");
+      fireEvent.press(
+        screen.getByLabelText("Sign in again to claim complimentary access")
+      );
+      await waitFor(() =>
+        expect(mockReplace).toHaveBeenCalledWith({
+          pathname: "/login",
+          params: { next: "/claim-complimentary-access" }
+        })
+      );
+      expect(mockLogout).toHaveBeenCalledTimes(1);
+      expect(mockClaim).toHaveBeenCalledTimes(1);
+      expect(JSON.stringify(mockReplace.mock.calls)).not.toContain(
+        "complimentary-token-1"
+      );
+      await expect(readComplimentaryClaimToken()).resolves.toBe("complimentary-token-1");
+    }
+  );
+
   it("clears a terminal token but retains a retryable claim token", async () => {
     mockParams = {};
     await writeComplimentaryClaimToken("expired-token");

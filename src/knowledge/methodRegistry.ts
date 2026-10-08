@@ -1379,6 +1379,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Facility Rooms unknown collections, retained snapshot labels, draft-preserving single-flight Retry and context-isolated reads before record-derived writes",
       "Facility grow/task lists and details distinguish failed reads from empty or missing records, preserve same-context drafts on Retry, isolate identity/route changes, retain tasks when team choices fail and serialize read/write actions without changing roles or private-record visibility",
       "read-after-write Facility invitation session handoff",
+      "Complimentary claim HTTP 401 retains the secure invitation and offers explicit sign-in with tokenless return, without automatic logout, activation, reissue or recipient/owner-check bypass",
       "Facility-subscription-backed member role capabilities",
       "exact selected-row server alias reconciliation for Facility course scope",
       "published Facility course/session calendar items with requester-verified RSVP reminders and Facility-safe source links",

@@ -1,5 +1,11 @@
 # Facility Workflow
 
+Complimentary-access activation rejected with HTTP 401 preserves the secure invitation
+and offers explicit sign-in recovery with a tokenless return to the claim page. Hide
+repeat activation until sign-in; never automatically log out from a feature error,
+claim access after login, issue another invitation, or bypass recipient/owner checks.
+The shared claim screen applies this recovery to every complimentary plan.
+
 The shared Grow Interest picker follows the Commercial workflow accessibility
 contract: checked/expanded state matches the current form value, and Space, Enter
 and pointer input toggle once. Unsaved course-interest choices remain local until

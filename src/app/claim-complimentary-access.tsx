@@ -52,6 +52,7 @@ type State =
   | "claiming"
   | "claimed"
   | "blocked"
+  | "signin-required"
   | "error"
   | "terminal";
 
@@ -146,6 +147,15 @@ export default function ClaimComplimentaryAccessScreen() {
       }
     } catch (error) {
       const code = error instanceof ApiError ? error.code : "";
+      if (error instanceof ApiError && error.status === 401) {
+        // A rejected feature request does not automatically invalidate the whole
+        // session. Keep the invitation and let the recipient deliberately sign in.
+        setState("signin-required");
+        setMessage(
+          "Your sign-in could not be verified. Sign in again with the email address that received this invitation, then activate your access. Your invitation has been kept."
+        );
+        return;
+      }
       if (TERMINAL_CODES.has(code)) {
         await clearComplimentaryClaimToken();
         setState("terminal");
@@ -271,6 +281,17 @@ export default function ClaimComplimentaryAccessScreen() {
             onPress={() => void claim()}
           >
             <Text style={styles.primaryText}>Activate complimentary access</Text>
+          </Pressable>
+        ) : null}
+
+        {state === "signin-required" ? (
+          <Pressable
+            accessibilityLabel="Sign in again to claim complimentary access"
+            accessibilityRole="button"
+            style={styles.primary}
+            onPress={() => void switchAccount()}
+          >
+            <Text style={styles.primaryText}>Sign in again to claim</Text>
           </Pressable>
         ) : null}
 
