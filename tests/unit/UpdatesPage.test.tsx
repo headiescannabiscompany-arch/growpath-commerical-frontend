@@ -525,18 +525,31 @@ describe("public Updates page", () => {
     expect(receipt.summary).not.toMatch(/qa\.invalid|6ac40[0-9a-f]+/);
   });
 
-  it("groups creator discovery with course navigation without claiming a new role or completion", () => {
+  it("groups creator profiles and discovery without claiming a new role or full acceptance", () => {
     const courses = PUBLIC_UPDATE_GROUPS.find((group) => group.id === "courses")!;
-    const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
+    const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
       (entry) => entry.id === "course-builder-source-return"
-    )!;
+    );
+    expect(notes).toHaveLength(1);
+    const note = notes[0];
     expect(courses.status).toBe("partial");
     expect(courses.live).toContain("Creator tools");
-    expect(note.date).toBe("October 8, 2026");
+    expect(courses.live).toContain("private drafts separate from reviewed publication");
+    expect(courses.next).toContain("Ordinary Free/Pro hosted creator-profile checks");
+    expect(courses.next).toContain("external social composers remain unverified");
+    expect(note.date).toBe("October 9, 2026");
     expect(note.summary).toContain("No separate creator signup is required");
     expect(note.summary).toContain("optional setup for eligible paid sales");
     expect(note.summary).toContain("does not publish content or start a broadcast");
     expect(note.summary).toContain("The earlier Course Builder return fix remains");
+    expect(note.summary).toContain("private drafts until reviewed publication");
+    expect(note.summary).toContain("Later draft edits stay private");
+    expect(note.summary).toContain("withdrawal removes published profile details");
+    expect(note.summary).toContain("keeping the draft and existing videos");
+    expect(note.summary).toContain("Copy Link omits editor parameters");
+    expect(note.summary).toContain("Synthetic staging checks");
+    expect(note.summary).toContain("Ordinary Free/Pro hosted checks");
+    expect(note.summary).toContain("external social composers remain unverified");
   });
 
   it("is public without requiring an entitlement and has public metadata", () => {

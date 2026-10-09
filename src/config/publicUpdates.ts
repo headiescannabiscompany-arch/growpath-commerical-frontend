@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "October 8, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "October 9, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -90,11 +90,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "course-builder-source-return",
-        title: "Find creator tools and return from the Course Builder",
-        date: "October 8, 2026",
+        title: "Creator profiles, links and tool navigation",
+        date: "October 9, 2026",
         dateLabel: "Released",
         summary:
-          "Personal More groups the existing course catalog, video library and Live Studio under Creator tools. No separate creator signup is required; existing permissions and storage limits still apply. Billing and seller payouts are labeled as optional setup for eligible paid sales, not creator activation. Opening a tool does not publish content or start a broadcast. The earlier Course Builder return fix remains: Back returns to the Commercial Courses, Storefront or Personal Courses page that opened it, including after a reload. Unsupported return links use normal history and a safe default. Course content, publishing, payments and permissions stay unchanged."
+          "Personal More groups the existing course catalog, video library and Live Studio under Creator tools. No separate creator signup is required; existing permissions and storage limits still apply. Billing and seller payouts are labeled as optional setup for eligible paid sales, not creator activation. Opening a tool does not publish content or start a broadcast. The earlier Course Builder return fix remains: Back returns to the Commercial Courses, Storefront or Personal Courses page that opened it, including after a reload. Unsupported return links use normal history and a safe default. Course content, publishing, payments and permissions stay unchanged. Personal Profile now saves creator names, bios and HTTPS links as private drafts until reviewed publication. Later draft edits stay private; withdrawal removes published profile details while keeping the draft and existing videos. Copy Link omits editor parameters; long names wrap on narrow screens, and preview Back returns to the editor after reload. Synthetic staging checks verified save/reload, publication, draft isolation and withdrawal. Ordinary Free/Pro hosted checks and external social composers remain unverified."
       },
       {
         id: "commercial-brand-profile-readiness",
