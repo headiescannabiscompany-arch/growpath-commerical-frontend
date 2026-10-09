@@ -24,6 +24,22 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("groups inventory repairs without claiming full inventory acceptance", () => {
+    const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "inventory");
+    const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
+      (entry) => entry.id === "inventory-archive-export-safety"
+    );
+    expect(group?.status).toBe("partial");
+    expect(group?.entryIds).toEqual(["inventory-archive-export-safety"]);
+    expect(group?.next).toContain("not full inventory acceptance");
+    expect(notes).toHaveLength(1);
+    expect(notes[0].date).toBe("October 9, 2026");
+    expect(notes[0].summary).toContain("Synthetic staging checks");
+    expect(notes[0].summary).toContain("still open");
+    expect(notes[0].summary).toContain("cannot be recalled");
+    expect(notes[0].summary).not.toMatch(/qa\.invalid|admin@|6ac950|6ac938|Erick|Rob/);
+  });
+
   it("groups private Commercial lifecycle and accessibility without claiming public proof", () => {
     for (const id of ["commercial-trials-readiness", "commercial-evidence-readiness"]) {
       const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter((entry) => entry.id === id);
@@ -590,6 +606,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "inventory-archive-export-safety",
       "business-receipt-upload-readiness",
       "public-guided-story-walkthroughs",
       "public-product-screenshots",

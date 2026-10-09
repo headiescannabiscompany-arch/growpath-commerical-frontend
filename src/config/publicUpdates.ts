@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "inventory-archive-export-safety",
+        title: "Inventory archive confirmation and safer audit downloads",
+        date: "October 9, 2026",
+        dateLabel: "Released",
+        summary:
+          "Commercial Inventory now offers Archive Item with a confirmation naming the saved record. Cancel preserves unfinished edits; archiving keeps the record and audit history, and the existing server rules reject items or active lots with stock remaining. Commercial and Facility audit exports ignore pending responses after you leave the screen, including tab changes; returning allows a fresh request after the earlier request settles. A file already downloaded cannot be recalled. Synthetic staging checks verified Commercial archive, reload, separate-account private-record isolation and delayed-download recovery. Actual same-browser account switching, additional Facility isolation checks and the remaining inventory acceptance checks are still open. Stock, payment and access rules are unchanged."
+      },
+      {
         id: "business-receipt-upload-readiness",
         title: "Receipt upload availability matches the service",
         date: "October 6, 2026",

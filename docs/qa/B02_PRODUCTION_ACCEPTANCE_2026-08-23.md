@@ -355,3 +355,27 @@ Added focused blur/refocus regressions: both Commercial and Facility failed,
 then passed after extending their existing audit guards to focus lifetime. 84 tests
 across the same five suites now pass. Normal exports and fresh retry remain intact.
 This is a bounded repair of the reproduced gate, not a restart of accepted B02 work.
+
+## October 9 corrected staging proof and scoped release review
+
+2fe859fe staging deploy dep-db4n6hflk1mc73d8am9g LIVE23:07:05UTC. Commercial
+Export then More: departure observed with only preflight204/no download; audit200
+and body completion later produced zero downloads. Returning and deliberately
+exporting again produced one CSV download and ready feedback. Network throttling
+restored0 and observation disabled. Staging error window23:05:41–23:11:50UTC empty.
+This closes the Commercial late-navigation slice, not actual account switching or
+Facility hosted focus/isolation acceptance. Earlier archive and artifact checks stay closed.
+
+Production candidate review: cd621055..2fe859fe changes only Commercial archive
+controls, Commercial/Facility audit focus guards, their tests and method/evidence
+records. Existing API/ledger, dependency manifests, build scripts, authorization and
+payment rules are unchanged. The archive endpoint remains stock-checked soft archive;
+there is no restore UI or production data mutation in this release review.
+Grouped Inventory release notes add one partial milestone, with remaining gates
+explicit. Combined local acceptance:209 unique tests in nine suites pass (157
+runtime/knowledge checks plus52 Updates checks). Updated the exact note-ID assertion
+for the intentional new entry; no product test was relaxed. Types, focused notes lint,
+contamination and diff checks pass. Offline production-target export passes:
+dist-b02-release-20261009 / index-c3d5bb34db46b930659e6574138285b8.js.
+Release notes are a candidate until exact deployment and served-page verification;
+production release details belong in the root finite receipt after completion.

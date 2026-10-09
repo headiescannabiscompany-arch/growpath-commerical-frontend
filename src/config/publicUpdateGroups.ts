@@ -24,6 +24,17 @@ export const UPDATE_STATUS_LABELS = {
 
 export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
   {
+    id: "inventory",
+    tab: "Inventory",
+    title: "Inventory records and audit exports",
+    status: "partial",
+    scope:
+      "The existing Commercial and Facility inventory ledger and its remaining acceptance checks.",
+    live: "Commercial Archive Item now confirms the saved record, preserves unfinished edits on Cancel and retains audit history. Stocked items cannot be archived. Commercial and Facility audit exports discard pending results after leaving the screen; a fresh deliberate export remains available after the earlier request settles.",
+    next: "Finish actual same-browser account switching, remaining Facility isolation and role checks, older-history and interrupted-import acceptance, and the separate payment-linked stock check. Completed staging archive and Commercial navigation checks remain completed; this is not full inventory acceptance.",
+    entryIds: ["inventory-archive-export-safety"]
+  },
+  {
     id: "feedback",
     tab: "Feedback",
     title: "Private feedback and optional customer stories",
