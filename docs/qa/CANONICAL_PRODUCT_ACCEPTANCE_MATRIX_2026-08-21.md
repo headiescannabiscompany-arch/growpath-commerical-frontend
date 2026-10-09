@@ -215,6 +215,12 @@ B-02 local construction and verification evidence is retained in
 `B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`. It does not close the guarded
 production migration, deployment or live multi-role workflow gate.
 
+October9 same-type isolation addendum: test-only local backend `dd63b7c` on
+production-aligned `a655e09` adds eight Commercial/Facility read-scope contracts;
+90/90 route tests PASS. No runtime change/deploy or hosted isolation acceptance.
+The August23 production receipt retains its exact open gates. Root evidence:
+`outputs/B02_Same_Type_Isolation_Preflight_2026-10-09.md`.
+
 B-06 through B-09 local construction and verification evidence is retained in
 `B06_B09_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`. These rows must not be rebuilt to satisfy
 their remaining provider, production, regulated-policy or multi-account live gates.

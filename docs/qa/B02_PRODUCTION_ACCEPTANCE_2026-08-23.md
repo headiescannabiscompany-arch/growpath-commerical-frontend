@@ -270,3 +270,13 @@ that each live check exercises is already named below so later work resumes at a
    exactly-once decrement without initiating an unapproved real charge.
 6. After those checks, zero/archive only the named synthetic balances and records through
    confirmed, audited cleanup; retain immutable ledger/audit evidence.
+# October 9, 2026 local evidence addendum
+
+Same-type Commercial/Facility read-isolation preflight added eight deterministic
+route tests:90/90 PASS with the existing database-free inventory runner. Test-only
+backend `dd63b7ce3b5e9f2aef9404d8755ce9877bebe993` on production parent `a655e09`;
+local only, no runtime change or release. Lists/private fields, copied foreign IDs,
+import history and modern/legacy audit query scope covered for two identities.
+This does NOT close hosted same-type switch/reload, membership middleware or
+populated audit evidence. Prior production acceptance below remains intact.
+See `outputs/B02_Same_Type_Isolation_Preflight_2026-10-09.md` in the root workspace.
