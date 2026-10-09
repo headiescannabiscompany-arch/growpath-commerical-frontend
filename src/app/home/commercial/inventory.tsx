@@ -122,6 +122,15 @@ export default function CommercialInventoryRoute() {
   const [exportingAudit, setExportingAudit] = useState(false);
   const [auditFeedback, setAuditFeedback] = useState("");
   const loadInFlightRef = useRef(false);
+  const auditInFlightRef = useRef(false);
+  const auditLifetimeRef = useRef(0);
+
+  useEffect(() => {
+    // Invalidate pending downloads on navigation/logout, including effect replay.
+    return () => {
+      auditLifetimeRef.current += 1;
+    };
+  }, []);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -203,19 +212,26 @@ export default function CommercialInventoryRoute() {
   }, [items]);
 
   const exportFullAudit = useCallback(async () => {
-    if (exportingAudit) return;
+    if (auditInFlightRef.current) return;
+    const lifetime = auditLifetimeRef.current;
+    const isCurrent = () => auditLifetimeRef.current === lifetime;
+    auditInFlightRef.current = true;
     setExportingAudit(true);
     setAuditFeedback("");
     try {
       const csv = await getBusinessInventoryAuditCsv({});
+      if (!isCurrent()) return;
       await exportCsvContent("growpath-inventory-audit", csv);
+      if (!isCurrent()) return;
       setAuditFeedback("Full inventory audit CSV is ready.");
     } catch (caught) {
+      if (!isCurrent()) return;
       setError(mapApiError(caught) ?? caught);
     } finally {
-      setExportingAudit(false);
+      auditInFlightRef.current = false;
+      if (isCurrent()) setExportingAudit(false);
     }
-  }, [exportingAudit, mapApiError]);
+  }, [mapApiError]);
 
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") return null;

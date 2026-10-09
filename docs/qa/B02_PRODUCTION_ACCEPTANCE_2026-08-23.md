@@ -325,3 +325,21 @@ repair above stays closed. Inspect actual staging index state before proposing a
 database change; no runtime rebuild, index write or extra fixture authorized here.
 Full B02 remains open. Root receipt contains exact IDs/files/digests/screenshots:
 outputs/B02_Same_Type_Isolation_Preflight_2026-10-09.md.
+
+## October 9 current reconciliation — narrow audit lifetime repair, local only
+
+The newer QA C audit file was subsequently recovered and verified (COMPLETE,
+own archived item/six scoped events, no Admin fields). Both approved fixtures are
+archived. The exact staging legacy SKU index was repaired with zero record changes
+and normal a7c4e5df service restored at21:34:13UTC. Those earlier open statements
+above are historical; do not repeat the exports, fixtures or index migration.
+
+The remaining late-download check reproduced Commercial CSV dispatch after route
+unmount (one failing regression); the equivalent Facility case already passed.
+Commercial now invalidates pending audit responses/errors before file dispatch,
+serializes requests and retains deliberate failure retry. Existing ledger, auth,
+API, export contents and Facility guard are unchanged. Already dispatched files
+cannot be recalled. 82 checks/five suites, TypeScript, lint and contamination/diff
+checks passed. This is local evidence, not a hosted account-switch or production
+release. The hosted Facility-pair gap still lacks an approved second workspace;
+no new workspace, account, fixture or membership change was performed.

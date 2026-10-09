@@ -143,6 +143,13 @@ display; numeric quantities remain numeric.
 
 ## Full audit export
 
+Commercial full-audit requests are single-flight. Leaving/unmounting the inventory
+route invalidates pending audit responses and errors before file dispatch; a late
+response must not start a private download after navigation or logout. Failed
+current requests retain readable errors and permit a deliberate retry. This does
+not cancel a server request or recall a file whose download was already dispatched.
+The existing Facility route retains its own selected-context lifetime guard.
+
 The workspace-scoped full audit export includes items, archived history, lots, append-only
 movements, import lifecycle/provenance, and scoped import-row before/after events. It streams
 bounded pages against a fixed membership high-water mark so record count does not become

@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CommercialInventoryItemDetailRoute from "@/app/home/commercial/inventory/[id]";
 import CommercialInventoryRoute from "@/app/home/commercial/inventory";
@@ -223,6 +223,89 @@ describe("B-02 inventory screen integration", () => {
       csv
     );
     expect(facility.getByText("Full inventory audit CSV is ready.")).toBeTruthy();
+  });
+
+  it.each([
+    ["commercial", CommercialInventoryRoute],
+    ["facility", FacilityInventoryTab]
+  ] as const)(
+    "discards a late %s audit response after leaving the route",
+    async (scope, Route) => {
+      let finish!: (csv: string) => void;
+      const pending = new Promise<string>((resolve) => {
+        finish = resolve;
+      });
+      mockApiRequest.mockImplementation((path: string) =>
+        path.endsWith("/exports/audit.csv") ? pending : Promise.resolve({ items: [item] })
+      );
+      const screen = render(<Route />);
+      await screen.findByText("Kelp Meal");
+      fireEvent.press(screen.getByLabelText(`Export ${scope} inventory full audit CSV`));
+      await waitFor(() =>
+        expect(mockApiRequest).toHaveBeenCalledWith(
+          expect.stringContaining("/exports/audit.csv"),
+          { method: "GET", responseType: "text" }
+        )
+      );
+      screen.unmount();
+      await act(async () => {
+        finish("private prior-session audit");
+      });
+      expect(mockExportCsvContent).not.toHaveBeenCalled();
+    }
+  );
+
+  it("keeps Commercial audit single-flight and permits a deliberate retry after failure", async () => {
+    let fail!: (error: Error) => void;
+    const pending = new Promise<string>((_resolve, reject) => {
+      fail = reject;
+    });
+    let exports = 0;
+    mockApiRequest.mockImplementation((path: string) => {
+      if (!path.endsWith("/exports/audit.csv")) return Promise.resolve({ items: [item] });
+      exports += 1;
+      return exports === 1 ? pending : Promise.resolve("current audit");
+    });
+    const screen = render(<CommercialInventoryRoute />);
+    await screen.findByText("Kelp Meal");
+    const button = screen.getByLabelText("Export commercial inventory full audit CSV");
+    act(() => {
+      fireEvent.press(button);
+      fireEvent.press(button);
+    });
+    expect(exports).toBe(1);
+    await act(async () => {
+      fail(new Error("Audit unavailable"));
+    });
+    await screen.findByText("Audit unavailable");
+    expect(mockExportCsvContent).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Export commercial inventory full audit CSV"));
+    await waitFor(() =>
+      expect(mockExportCsvContent).toHaveBeenCalledWith(
+        "growpath-inventory-audit",
+        "current audit"
+      )
+    );
+    expect(exports).toBe(2);
+  });
+
+  it("ignores a rejected Commercial audit request after leaving the route", async () => {
+    let fail!: (error: Error) => void;
+    const pending = new Promise<string>((_resolve, reject) => {
+      fail = reject;
+    });
+    mockApiRequest.mockImplementation((path: string) =>
+      path.endsWith("/exports/audit.csv") ? pending : Promise.resolve({ items: [item] })
+    );
+    const screen = render(<CommercialInventoryRoute />);
+    await screen.findByText("Kelp Meal");
+    fireEvent.press(screen.getByLabelText("Export commercial inventory full audit CSV"));
+    screen.unmount();
+    await act(async () => {
+      fail(new Error("Prior session failed"));
+    });
+    expect(mockMapApiError).not.toHaveBeenCalled();
+    expect(mockExportCsvContent).not.toHaveBeenCalled();
   });
 
   it("wires Commercial list import refresh and item export to the canonical ledger", async () => {
