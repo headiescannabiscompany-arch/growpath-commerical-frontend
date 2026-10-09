@@ -30,6 +30,7 @@ import { InlineError } from "@/components/InlineError";
 import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { personalMoreReturnHref } from "@/utils/personalMoreReturn";
 import GrowInterestPicker from "@/components/GrowInterestPicker";
 import VideoCard from "@/components/videos/VideoCard";
 import VideoReadinessBoundary from "@/components/videos/VideoReadinessBoundary";
@@ -98,15 +99,21 @@ function durationSeconds(asset: any) {
 }
 
 export default function VideosRoute() {
+  const { from } = useLocalSearchParams<{ from?: string | string[] }>();
+  const moreReturn = personalMoreReturnHref(from);
   return (
-    <VideoReadinessBoundary>
+    <VideoReadinessBoundary
+      backFallbackHref={moreReturn}
+      preferBackFallback={Boolean(moreReturn)}
+    >
       <ReadyVideosRoute />
     </VideoReadinessBoundary>
   );
 }
 
 function ReadyVideosRoute() {
-  const params = useLocalSearchParams<{ tab?: string }>();
+  const params = useLocalSearchParams<{ tab?: string; from?: string | string[] }>();
+  const moreReturn = personalMoreReturnHref(params.from);
   const router = useRouter();
   const auth = useAuth();
   const entitlements = useEntitlements();
@@ -508,6 +515,8 @@ function ReadyVideosRoute() {
 
   return (
     <AppPage
+      backFallbackHref={moreReturn}
+      preferBackFallback={Boolean(moreReturn)}
       routeKey="videos"
       header={
         <View>

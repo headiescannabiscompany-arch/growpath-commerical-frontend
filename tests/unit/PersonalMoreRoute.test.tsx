@@ -53,10 +53,10 @@ describe("PersonalMoreRoute", () => {
     ).toBeTruthy();
 
     const destinations = [
-      ["Create and manage courses", "/courses"],
-      ["Manage videos", "/videos?tab=library"],
-      ["Live Studio", "/live-studio"],
-      ["Billing and seller payouts", "/home/personal/profile/billing"]
+      ["Create and manage courses", "/courses?from=personal-more"],
+      ["Manage videos", "/videos?tab=library&from=personal-more"],
+      ["Live Studio", "/live-studio?from=personal-more"],
+      ["Billing and seller payouts", "/home/personal/profile/billing?from=personal-more"]
     ];
     for (const [label, href] of destinations) {
       const links = screen.getAllByRole("link", { name: `Open ${label}` });

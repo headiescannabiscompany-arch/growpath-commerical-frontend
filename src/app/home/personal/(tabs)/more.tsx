@@ -51,25 +51,25 @@ const groups: Array<{
     destinations: [
       {
         label: "Create and manage courses",
-        href: "/courses",
+        href: "/courses?from=personal-more",
         description:
           "Browse courses or use Create Course to build lessons with your available tools."
       },
       {
         label: "Manage videos",
-        href: "/videos?tab=library",
+        href: "/videos?tab=library&from=personal-more",
         description:
           "Open your video library to manage uploads, drafts, and published videos."
       },
       {
         label: "Live Studio",
-        href: "/live-studio",
+        href: "/live-studio?from=personal-more",
         description:
           "Prepare a live show or premiere using the existing hosting tools. Opening the studio does not start a broadcast."
       },
       {
         label: "Billing and seller payouts",
-        href: "/home/personal/profile/billing",
+        href: "/home/personal/profile/billing?from=personal-more",
         description:
           "Optional for eligible paid sales: review seller payout setup in Billing. This is not creator activation."
       }

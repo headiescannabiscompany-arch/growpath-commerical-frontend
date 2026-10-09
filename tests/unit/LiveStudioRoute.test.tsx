@@ -16,6 +16,7 @@ const mockPublishLive = jest.fn();
 const mockUpdateLive = jest.fn();
 let mockSearchParams: Record<string, string> = {};
 let mockHostId = "host-1";
+const mockBackButton = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockSearchParams,
@@ -51,7 +52,10 @@ jest.mock("@/api/discordLive", () => ({
   disconnectDiscordLive: jest.fn()
 }));
 
-jest.mock("@/components/nav/BackButton", () => () => null);
+jest.mock("@/components/nav/BackButton", () => (props: any) => {
+  mockBackButton(props);
+  return null;
+});
 jest.mock("@/components/schedule/SchedulePicker", () => () => null);
 
 describe("LiveStudioRoute", () => {
@@ -91,6 +95,23 @@ describe("LiveStudioRoute", () => {
 
       expect(styles.page.backgroundColor).toBe(palette.page);
       expect(styles.container.backgroundColor).toBe(palette.page);
+    }
+  );
+
+  it.each(["personal-more", "https://example.com", undefined])(
+    "uses a fixed More return only for its source marker %j",
+    async (from) => {
+      mockSearchParams = from ? { from } : {};
+      render(<LiveStudioRoute />);
+      await waitFor(() => expect(mockGetHostedLiveStatus).toHaveBeenCalled());
+      expect(mockBackButton).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fallbackHref: from === "personal-more" ? "/home/personal/more" : "/lives",
+          preferFallback: from === "personal-more"
+        })
+      );
+      expect(createLive).not.toHaveBeenCalled();
+      expect(provisionHostedLiveInput).not.toHaveBeenCalled();
     }
   );
 

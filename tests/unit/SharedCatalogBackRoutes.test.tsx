@@ -6,6 +6,10 @@ import SharedForumRoute from "@/app/forum";
 import FacilityFeedRoute from "@/app/home/facility/feed";
 
 let mockIsAuthed = false;
+let mockFrom: string | string[] | undefined;
+const mockBoundary = jest.fn();
+
+jest.mock("expo-router", () => ({ useLocalSearchParams: () => ({ from: mockFrom }) }));
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
@@ -18,12 +22,16 @@ jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
   return {
-    ScreenBoundary: ({ backFallbackHref, children, showBack, title }: any) => (
-      <View>
-        <Text>{`${title}:${showBack ? "back" : "no-back"}:${backFallbackHref}`}</Text>
-        {children}
-      </View>
-    )
+    ScreenBoundary: (props: any) => {
+      mockBoundary(props);
+      const { backFallbackHref, children, showBack, title } = props;
+      return (
+        <View>
+          <Text>{`${title}:${showBack ? "back" : "no-back"}:${backFallbackHref}`}</Text>
+          {children}
+        </View>
+      );
+    }
   };
 });
 
@@ -51,6 +59,34 @@ jest.mock("@/app/feed", () => {
 describe("shared catalog route Back controls", () => {
   beforeEach(() => {
     mockIsAuthed = false;
+    mockFrom = undefined;
+    mockBoundary.mockClear();
+  });
+
+  it.each(["personal-more", ["personal-more", "/admin"]])(
+    "returns to More for the supported source %j instead of stale tab history",
+    (from) => {
+      mockIsAuthed = true;
+      mockFrom = from;
+      render(<CoursesRoute />);
+      expect(mockBoundary).toHaveBeenCalledWith(
+        expect.objectContaining({
+          backFallbackHref: "/home/personal/more",
+          preferBackFallback: true
+        })
+      );
+    }
+  );
+
+  it("does not use an arbitrary catalog return URL", () => {
+    mockFrom = "https://example.com";
+    render(<CoursesRoute />);
+    expect(mockBoundary).toHaveBeenCalledWith(
+      expect.objectContaining({
+        backFallbackHref: "/",
+        preferBackFallback: false
+      })
+    );
   });
 
   it("keeps one shared Back boundary on Courses", () => {

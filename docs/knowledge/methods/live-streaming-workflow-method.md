@@ -1,5 +1,10 @@
 # Live Streaming and Premiere Workflow
 
+Personal More links to the existing Live Studio with `from=personal-more`.
+Only that exact first marker returns Back to Personal More, including after
+reload. Other entries retain history and the Lives fallback. Opening this link
+never creates or publishes a session, provisions an encoder or starts a broadcast.
+
 GrowPath Lives are available to eligible signed-in Personal, Commercial, and Facility
 accounts. A creator label is not required. A live directory must distinguish scheduled
 sessions, sessions live now, premieres, and replays, and must support search, Following,

@@ -13,9 +13,11 @@ let mockHydrating = false;
 let mockBootstrapError: any = null;
 let mockTab = "library";
 const mockRetryMe = jest.fn();
+let mockFrom: string | undefined;
+const mockAppPage = jest.fn();
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ tab: mockTab }),
+  useLocalSearchParams: () => ({ tab: mockTab, from: mockFrom }),
   useRouter: () => ({
     back: jest.fn(),
     push: jest.fn(),
@@ -61,7 +63,9 @@ jest.mock("@/api/videos", () => ({
 
 jest.mock("@/components/layout/AppPage", () => ({
   __esModule: true,
-  default: ({ header, children }: any) => {
+  default: (props: any) => {
+    mockAppPage(props);
+    const { header, children } = props;
     const MockView = require("react-native").View;
     return (
       <MockView>
@@ -126,6 +130,8 @@ describe("universal Videos route", () => {
     mockHydrating = false;
     mockBootstrapError = null;
     mockTab = "library";
+    mockFrom = undefined;
+    mockAppPage.mockClear();
     mockRetryMe.mockReset();
     mockListVideoLibrary.mockReset();
     mockSearchVideos.mockReset();
@@ -141,6 +147,23 @@ describe("universal Videos route", () => {
     };
   }
 
+  it.each(["personal-more", "https://example.com", undefined])(
+    "keeps explicit More entry separate from ordinary library history for %j",
+    async (from) => {
+      mockFrom = from;
+      mockListVideoLibrary.mockResolvedValue(libraryResult());
+      render(<VideosRoute />);
+      await screen.findByText("Current video");
+      expect(mockAppPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          backFallbackHref: from === "personal-more" ? "/home/personal/more" : undefined,
+          preferBackFallback: from === "personal-more"
+        })
+      );
+      expect(mockListVideoLibrary).toHaveBeenCalled();
+    }
+  );
+
   it("does not claim an empty library or expose the writer after a failed read; retry recovers", async () => {
     mockListVideoLibrary.mockRejectedValueOnce(new Error("offline"));
     mockListVideoLibrary.mockResolvedValueOnce(libraryResult());
@@ -153,6 +176,25 @@ describe("universal Videos route", () => {
     await screen.findByText("Current video");
     expect(screen.getByText("1 KB used of 2 KB")).toBeTruthy();
   });
+
+  it.each([false, true])(
+    "retains the More return while access is unresolved (failed=%s)",
+    (failed) => {
+      mockFrom = "personal-more";
+      mockReady = false;
+      mockHydrating = !failed;
+      mockBootstrapError = failed ? new Error("offline") : null;
+      render(<VideosRoute />);
+      expect(mockAppPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          backFallbackHref: "/home/personal/more",
+          preferBackFallback: true
+        })
+      );
+      expect(mockListVideoLibrary).not.toHaveBeenCalled();
+      expect(screen.queryByText("Add a video")).toBeNull();
+    }
+  );
 
   it("waits for access readiness without requesting a library or rendering unknown quota", async () => {
     mockHydrating = true;

@@ -7,6 +7,8 @@ import PersonalBillingRoute from "@/app/home/personal/(tabs)/profile/billing";
 const mockCan = jest.fn();
 const mockBillingHome = jest.fn();
 const mockScreenBoundary = jest.fn();
+let mockFrom: string | undefined;
+jest.mock("expo-router", () => ({ useLocalSearchParams: () => ({ from: mockFrom }) }));
 
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { COURSES_SELL_PAID: "COURSES_SELL_PAID" },
@@ -38,6 +40,21 @@ describe.each([
 ] as const)("%s billing payout eligibility", (_name, Route, backFallbackHref) => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFrom = undefined;
+  });
+
+  it("only gives Personal Billing an explicit More return without changing payout eligibility", () => {
+    mockFrom = "personal-more";
+    mockCan.mockReturnValue(false);
+    render(<Route />);
+    expect(mockBillingHome).toHaveBeenCalledWith({ showCreatorPayouts: false });
+    expect(mockScreenBoundary).toHaveBeenCalledWith(
+      expect.objectContaining({
+        backFallbackHref:
+          _name === "Personal profile" ? "/home/personal/more" : backFallbackHref,
+        ...(_name === "Personal profile" ? { preferBackFallback: true } : {})
+      })
+    );
   });
 
   it.each([true, false])("passes paid-course seller capability %p", (allowed) => {

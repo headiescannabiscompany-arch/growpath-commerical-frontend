@@ -1,5 +1,14 @@
 # Course Media Workflow
 
+Personal More groups existing creator tools without a new role or signup. The
+shared catalog, video library, Live Studio and Personal Billing accept only the
+first exact `from=personal-more` marker for Back to `/home/personal/more`, including
+after reload; other sources keep ordinary history and their existing fallbacks.
+This uses existing Back controls, never an arbitrary redirect, and does not alter
+the Full Course Builder's separate source allowlist or any entitlement. Billing
+remains optional eligible paid-sales setup, not creator activation. Navigation
+does not create, publish, upload, connect a provider or broadcast.
+
 Course video is a lesson resource, not proof that GrowPath owns, hosts, continuously monitors, or can measure viewing at a third-party provider. The authoring contract is shared by Personal, Commercial, and Facility educators.
 
 Published course imagery follows one learner-facing hierarchy across workspaces. Catalog and feed cards may show a compact thumbnail, cover, or banner when the author supplied one; they must not manufacture a generic course image when none exists. The opened course shows one full-width hero image, preferring the dedicated banner and otherwise reusing the best saved cover or thumbnail. Do not render both a banner and a duplicate cover in the same overview. Missing optional imagery leaves a deliberate text-only layout rather than a broken or unexplained gap.

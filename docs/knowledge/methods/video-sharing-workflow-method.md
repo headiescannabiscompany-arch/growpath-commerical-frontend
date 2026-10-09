@@ -1,5 +1,11 @@
 # Video Sharing Workflow
 
+Opening the existing library from Personal More carries the fixed
+`from=personal-more` marker. Only its exact first value makes Back return to
+Personal More, including pending/failed access checks and reload. Other entries
+keep ordinary history and fallback; this navigation does not change scope,
+permissions, storage, saved drafts or publication.
+
 GrowPath video is a shared Personal, Commercial, and Facility capability. It is not
 limited to accounts labeled as creators. Creator or payout status may control
 monetization, verification, and earnings, but it must not determine whether an eligible

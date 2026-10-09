@@ -32,6 +32,7 @@ import {
 import { listVideoLibrary, type GrowPathVideo } from "@/api/videos";
 import { useAuth } from "@/auth/AuthContext";
 import BackButton from "@/components/nav/BackButton";
+import { personalMoreReturnHref } from "@/utils/personalMoreReturn";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { useEntitlements } from "@/entitlements";
 import {
@@ -61,7 +62,11 @@ const STREAM_DESTINATIONS: Array<{ value: StreamPlatform; label: string }> = [
 
 export default function LiveStudioRoute() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ editSessionId?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    editSessionId?: string | string[];
+    from?: string | string[];
+  }>();
+  const moreReturn = personalMoreReturnHref(params.from);
   const editSessionId = String(
     Array.isArray(params.editSessionId)
       ? params.editSessionId[0] || ""
@@ -524,7 +529,10 @@ export default function LiveStudioRoute() {
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.container}>
-      <BackButton fallbackHref="/lives" />
+      <BackButton
+        fallbackHref={moreReturn || "/lives"}
+        preferFallback={Boolean(moreReturn)}
+      />
       <View style={styles.hero}>
         <Text style={styles.kicker}>Live Studio</Text>
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>

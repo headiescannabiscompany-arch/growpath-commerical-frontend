@@ -9,10 +9,14 @@ import { useAppTheme } from "@/theme/appTheme";
 /** Readiness and state isolation only; current API authorization still decides access. */
 export default function VideoReadinessBoundary({
   children,
-  detail = false
+  detail = false,
+  backFallbackHref,
+  preferBackFallback = false
 }: {
   children: React.ReactNode;
   detail?: boolean;
+  backFallbackHref?: string;
+  preferBackFallback?: boolean;
 }) {
   const auth = useAuth();
   const access = useEntitlements();
@@ -51,7 +55,8 @@ export default function VideoReadinessBoundary({
   return (
     <AppPage
       routeKey={detail ? "video-detail" : "videos"}
-      backFallbackHref={detail ? "/videos" : undefined}
+      backFallbackHref={backFallbackHref || (detail ? "/videos" : undefined)}
+      preferBackFallback={preferBackFallback}
       header={
         <Text
           accessibilityRole="header"
