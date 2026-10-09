@@ -21,6 +21,7 @@ import {
 } from "@/api/tasks";
 import { listToolRuns, type ToolRun } from "@/api/toolRuns";
 import { withFreshnessParam } from "@/api/freshRequest";
+import { strictRecordCollection } from "@/api/strictRecordCollection";
 
 export type GrowWorkspace = "personal" | "commercial";
 
@@ -45,7 +46,38 @@ function normalizeGrow(value: any): PersonalGrow | null {
   return { ...value, id, _id: value._id || id } as PersonalGrow;
 }
 
-function normalizeRows(response: any, keys: string[]) {
+function normalizeRows(
+  response: any,
+  keys: string[],
+  options: { throwOnError?: boolean; verifyRecords?: boolean } = {}
+) {
+  if (options.verifyRecords) {
+    return strictRecordCollection<any>(
+      response,
+      [
+        ...keys.flatMap((key) => [[key], ["data", key]]),
+        ["items"],
+        ["data", "items"],
+        ["data"]
+      ],
+      "Grow records",
+      {
+        stringFields: [
+          "name",
+          "title",
+          "notes",
+          "description",
+          "date",
+          "createdAt",
+          "updatedAt",
+          "dueAt",
+          "dueDate",
+          "growId",
+          "linkedGrowId"
+        ]
+      }
+    );
+  }
   if (Array.isArray(response)) return response;
   for (const key of keys) {
     if (Array.isArray(response?.[key])) return response[key];
@@ -72,7 +104,7 @@ function commercialGrowChildPath(
 
 export async function listWorkspaceGrows(
   workspace: GrowWorkspace,
-  options: { throwOnError?: boolean } = {}
+  options: { archived?: boolean; throwOnError?: boolean; verifyRecords?: boolean } = {}
 ): Promise<PersonalGrow[]> {
   if (workspace === "personal") return listPersonalGrows(options);
   const response = await apiRequest("/api/commercial/grows", {
@@ -80,17 +112,22 @@ export async function listWorkspaceGrows(
     cache: "no-store",
     params: withFreshnessParam()
   });
-  return normalizeRows(response, ["grows", "commercialGrows"])
+  return normalizeRows(response, ["grows", "commercialGrows"], options)
     .map(normalizeGrow)
     .filter(Boolean) as PersonalGrow[];
 }
 
 export async function getWorkspaceGrow(
   workspace: GrowWorkspace,
-  growId: string
+  growId: string,
+  options: { verifyRecords?: boolean } = {}
 ): Promise<PersonalGrow | null> {
   const id = String(growId || "").trim();
-  if (!id) return null;
+  if (!id) {
+    if (workspace === "commercial" && options.verifyRecords)
+      throw new Error("Selected grow could not be verified. Please retry.");
+    return null;
+  }
   if (workspace === "personal") {
     const rows = await listPersonalGrows();
     return rows.find((grow) => entityId(grow as any) === id) || null;
@@ -99,6 +136,33 @@ export async function getWorkspaceGrow(
     `/api/commercial/grows/${encodeURIComponent(id)}`,
     { method: "GET", cache: "no-store", params: withFreshnessParam() }
   );
+  if (options.verifyRecords) {
+    const invalid = () => new Error("Selected grow could not be verified. Please retry.");
+    if (!response || typeof response !== "object" || Array.isArray(response))
+      throw invalid();
+    const has = (value: any, key: string) =>
+      value != null &&
+      typeof value === "object" &&
+      Object.prototype.hasOwnProperty.call(value, key);
+    // Honor an explicitly returned canonical field, even when it is malformed;
+    // never recover a failed exact read through another envelope's record.
+    const row = has(response, "grow")
+      ? response.grow
+      : has(response, "commercialGrow")
+        ? response.commercialGrow
+        : has(response.data, "grow")
+          ? response.data.grow
+          : response.data;
+    const [verified] = strictRecordCollection<PersonalGrow>(
+      { ...response, verifiedGrow: [row] },
+      [["verifiedGrow"]],
+      "Selected grow",
+      { stringFields: ["name", "title", "createdAt", "updatedAt"] }
+    );
+    const grow = normalizeGrow(verified);
+    if (grow?.id !== id) throw invalid();
+    return grow;
+  }
   return normalizeGrow(
     response?.grow ?? response?.commercialGrow ?? response?.data?.grow ?? response?.data
   );
@@ -232,9 +296,10 @@ function commercialTasks(
 
 export async function listWorkspacePlants(
   workspace: GrowWorkspace,
-  growId: string
+  growId: string,
+  options: { throwOnError?: boolean; verifyRecords?: boolean } = {}
 ): Promise<PersonalPlant[]> {
-  if (workspace === "personal") return listPersonalPlants({ growId });
+  if (workspace === "personal") return listPersonalPlants({ growId, ...options });
   const response = await apiRequest(commercialGrowChildPath(growId, "plants"), {
     method: "GET",
     cache: "no-store",
@@ -242,7 +307,7 @@ export async function listWorkspacePlants(
   });
   return commercialPlants({
     id: growId,
-    plants: normalizeRows(response, ["plants"])
+    plants: normalizeRows(response, ["plants"], options)
   });
 }
 
@@ -266,9 +331,10 @@ export async function createWorkspacePlant(
 
 export async function listWorkspaceLogs(
   workspace: GrowWorkspace,
-  growId: string
+  growId: string,
+  options: { throwOnError?: boolean; verifyRecords?: boolean } = {}
 ): Promise<PersonalLog[]> {
-  if (workspace === "personal") return listPersonalLogs({ growId });
+  if (workspace === "personal") return listPersonalLogs({ growId, ...options });
   const response = await apiRequest(commercialGrowChildPath(growId, "logs"), {
     method: "GET",
     cache: "no-store",
@@ -276,7 +342,7 @@ export async function listWorkspaceLogs(
   });
   return commercialLogs({
     id: growId,
-    logs: normalizeRows(response, ["logs"])
+    logs: normalizeRows(response, ["logs"], options)
   });
 }
 
@@ -301,7 +367,7 @@ export async function createWorkspaceLog(
 export async function listWorkspaceTasks(
   workspace: GrowWorkspace,
   growId: string,
-  options?: { throwOnError?: boolean }
+  options?: { throwOnError?: boolean; verifyRecords?: boolean }
 ): Promise<PersonalTask[]> {
   if (workspace === "personal") return listPersonalTasks({ growId, ...options });
   const response = await apiRequest(commercialGrowChildPath(growId, "tasks"), {
@@ -311,7 +377,7 @@ export async function listWorkspaceTasks(
   });
   return commercialTasks({
     id: growId,
-    tasks: normalizeRows(response, ["tasks"])
+    tasks: normalizeRows(response, ["tasks"], options)
   });
 }
 
@@ -443,13 +509,18 @@ function commercialTimelineEvent(
 
 export async function getWorkspaceGrowTimeline(
   workspace: GrowWorkspace,
-  growId: string
+  growId: string,
+  options: { throwOnError?: boolean; verifyRecords?: boolean } = {}
 ): Promise<PersonalGrowTimelineEvent[]> {
-  if (workspace === "personal") return getPersonalGrowTimeline(growId);
+  if (workspace === "personal") {
+    return options.throwOnError || options.verifyRecords
+      ? getPersonalGrowTimeline(growId, options)
+      : getPersonalGrowTimeline(growId);
+  }
   const [logs, plants, tasks, runs] = await Promise.all([
-    listWorkspaceLogs(workspace, growId),
-    listWorkspacePlants(workspace, growId),
-    listWorkspaceTasks(workspace, growId),
+    listWorkspaceLogs(workspace, growId, options),
+    listWorkspacePlants(workspace, growId, options),
+    listWorkspaceTasks(workspace, growId, options),
     listToolRuns({ growId, workspaceType: "commercial" })
   ]);
   return [

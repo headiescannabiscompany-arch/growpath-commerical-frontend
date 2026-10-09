@@ -1,6 +1,7 @@
 // CONTRACT: All facility-scoped resources must use endpoints.ts (no hardcoded paths)
 // and must return canonical envelopes.
 import { apiRequest } from "./apiRequest";
+import { strictRecordCollection } from "./strictRecordCollection";
 import { withFreshnessParam } from "./freshRequest";
 import { endpoints } from "./endpoints";
 import routes from "./routes.js";
@@ -154,12 +155,27 @@ export interface PersonalGrowTimelineEvent {
  * Personal mode is user-scoped; no facilityId parameter.
  */
 export async function listPersonalGrows(
-  options: { archived?: boolean; throwOnError?: boolean } = {}
+  options: { archived?: boolean; throwOnError?: boolean; verifyRecords?: boolean } = {}
 ): Promise<PersonalGrow[]> {
   try {
     const personalRes = await apiRequest("/api/personal/grows", {
-      params: options.archived ? { archived: "true" } : undefined
+      ...(options.verifyRecords ? { cache: "no-store" as const } : {}),
+      params: options.verifyRecords
+        ? withFreshnessParam(options.archived ? { archived: "true" } : {})
+        : options.archived
+          ? { archived: "true" }
+          : undefined
     });
+    if (options.verifyRecords) {
+      return strictRecordCollection<PersonalGrow>(
+        personalRes,
+        [["grows"], ["data", "grows"]],
+        "Grow list",
+        {
+          stringFields: ["name", "title", "createdAt", "updatedAt"]
+        }
+      ).map((grow) => ({ ...grow, id: String(grow.id || (grow as any)._id) }));
+    }
     if (Array.isArray(personalRes)) return personalRes as PersonalGrow[];
     if (personalRes && typeof personalRes === "object") {
       const topLevel = (personalRes as any).grows;
@@ -171,7 +187,7 @@ export async function listPersonalGrows(
       throw new Error("Could not read your grow list. Try again.");
     return [];
   } catch (_err) {
-    if (options.throwOnError) throw _err;
+    if (options.throwOnError || options.verifyRecords) throw _err;
     return [];
   }
 }
@@ -196,14 +212,32 @@ export function restorePersonalGrow(growId: string) {
 }
 
 export async function getPersonalGrowTimeline(
-  growId: string
+  growId: string,
+  options: { throwOnError?: boolean; verifyRecords?: boolean } = {}
 ): Promise<PersonalGrowTimelineEvent[]> {
-  if (!growId) return [];
+  if (!growId) {
+    if (options.throwOnError || options.verifyRecords)
+      throw new Error("Choose a grow before reading its timeline.");
+    return [];
+  }
   try {
     const res = await apiRequest(
       `/api/personal/grows/${encodeURIComponent(growId)}/timeline`,
       { cache: "no-store", params: withFreshnessParam() }
     );
+    if (options.verifyRecords) {
+      return strictRecordCollection<PersonalGrowTimelineEvent>(
+        res,
+        [["timeline"], ["events"], ["items"], ["data", "timeline"]],
+        "Grow timeline",
+        {
+          stringFields: ["type", "sourceModel", "sourceId", "title", "summary", "growId"],
+          validate: (row) =>
+            typeof row.timestamp === "string" &&
+            Number.isFinite(Date.parse(row.timestamp))
+        }
+      );
+    }
     const rows = Array.isArray(res)
       ? res
       : Array.isArray((res as any)?.timeline)
@@ -217,6 +251,7 @@ export async function getPersonalGrowTimeline(
               : [];
     return rows.filter((row: any) => row && typeof row === "object");
   } catch (err) {
+    if (options.throwOnError || options.verifyRecords) throw err;
     console.error("[getPersonalGrowTimeline] Error:", err);
     return [];
   }

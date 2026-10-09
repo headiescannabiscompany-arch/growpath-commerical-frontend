@@ -1,5 +1,6 @@
 import { apiRequest } from "./apiRequest";
 import { withFreshnessParam } from "./freshRequest";
+import { strictRecordCollection } from "./strictRecordCollection";
 import { endpoints } from "./endpoints";
 import routes from "./routes.js";
 
@@ -263,6 +264,7 @@ export interface PersonalTask {
 export async function listPersonalTasks(options?: {
   growId?: string;
   throwOnError?: boolean;
+  verifyRecords?: boolean;
 }): Promise<PersonalTask[]> {
   try {
     const listPersonalRes = await apiRequest("/api/personal/tasks", {
@@ -270,6 +272,24 @@ export async function listPersonalTasks(options?: {
       cache: "no-store",
       params: withFreshnessParam(options?.growId ? { growId: options.growId } : {})
     });
+
+    if (options?.verifyRecords) {
+      return strictRecordCollection<PersonalTask>(
+        listPersonalRes,
+        [["data", "tasks"], ["tasks"], ["items"]],
+        "Task records",
+        {
+          stringFields: [
+            "title",
+            "description",
+            "dueDate",
+            "dueAt",
+            "createdAt",
+            "growId"
+          ]
+        }
+      );
+    }
 
     if (
       typeof listPersonalRes === "object" &&
@@ -283,7 +303,7 @@ export async function listPersonalTasks(options?: {
     const tasks = listPersonalRes?.tasks ?? listPersonalRes?.items;
     return Array.isArray(tasks) ? (tasks as PersonalTask[]) : [];
   } catch (_err) {
-    if (options?.throwOnError) throw _err;
+    if (options?.throwOnError || options?.verifyRecords) throw _err;
     return [];
   }
 }

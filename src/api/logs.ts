@@ -1,6 +1,7 @@
 // src/api/logs.ts
 import { apiRequest } from "./apiRequest";
 import { withFreshnessParam } from "./freshRequest";
+import { strictRecordCollection } from "./strictRecordCollection";
 
 export interface PersonalLog {
   id: string;
@@ -61,15 +62,28 @@ function normalizePersonalLog(response: any): PersonalLog | null {
 
 export async function listPersonalLogs(options?: {
   growId?: string;
+  throwOnError?: boolean;
+  verifyRecords?: boolean;
 }): Promise<PersonalLog[]> {
   try {
     const res: any = await apiRequest(`/api/personal/logs`, {
       cache: "no-store",
       params: withFreshnessParam(options?.growId ? { growId: options.growId } : {})
     });
+    if (options?.verifyRecords) {
+      return strictRecordCollection<PersonalLog>(
+        res,
+        [["data", "logs"], ["logs"], ["items"]],
+        "Journal records",
+        {
+          stringFields: ["title", "notes", "date", "createdAt", "updatedAt", "growId"]
+        }
+      );
+    }
     const logs = res?.data?.logs ?? res?.logs ?? res?.items;
     return Array.isArray(logs) ? (logs as PersonalLog[]) : [];
   } catch (_err) {
+    if (options?.throwOnError || options?.verifyRecords) throw _err;
     return [];
   }
 }

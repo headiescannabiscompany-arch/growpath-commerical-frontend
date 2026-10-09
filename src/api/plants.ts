@@ -1,4 +1,6 @@
 import { apiRequest } from "./apiRequest";
+import { strictRecordCollection } from "./strictRecordCollection";
+import { withFreshnessParam } from "./freshRequest";
 import { endpoints } from "./endpoints";
 import routes from "./routes.js";
 import { persistImageUri } from "@/utils/photoUploads";
@@ -145,14 +147,32 @@ function normalizePersonalPlants(response: any): PersonalPlant[] {
 
 export async function listPersonalPlants(options?: {
   growId?: string;
+  throwOnError?: boolean;
+  verifyRecords?: boolean;
 }): Promise<PersonalPlant[]> {
   try {
     const response = await apiRequest("/api/personal/plants", {
       method: "GET",
-      params: options?.growId ? { growId: options.growId } : undefined
+      ...(options?.verifyRecords ? { cache: "no-store" as const } : {}),
+      params: options?.verifyRecords
+        ? withFreshnessParam(options.growId ? { growId: options.growId } : {})
+        : options?.growId
+          ? { growId: options.growId }
+          : undefined
     });
+    if (options?.verifyRecords) {
+      return strictRecordCollection<PersonalPlant>(
+        response,
+        [["plants"], ["items"], ["data", "plants"], ["data", "items"]],
+        "Plant records",
+        {
+          stringFields: ["name", "growId", "createdAt", "updatedAt"]
+        }
+      );
+    }
     return normalizePersonalPlants(response);
   } catch (_error) {
+    if (options?.throwOnError || options?.verifyRecords) throw _error;
     return [];
   }
 }

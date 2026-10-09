@@ -23,12 +23,22 @@ jest.mock("expo-router", () => ({
 }));
 jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { TOOL_PDF_EXPORT: "TOOL_PDF_EXPORT" },
-  useEntitlements: () => ({ can: mockCan })
+  useEntitlements: () => ({ can: mockCan, ready: true, mode: "personal" })
+}));
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({
+    user: { id: "owner-1" },
+    token: "session-1",
+    isAuthed: true,
+    isHydrating: false,
+    meStatus: "ready"
+  })
 }));
 jest.mock("@/api/toolRuns", () => ({
   listToolRuns: jest.fn(async () => [])
 }));
 jest.mock("@/features/grows/workspaceData", () => ({
+  getWorkspaceGrow: jest.fn(async () => null),
   getWorkspaceGrowTimeline: jest.fn(async () => []),
   listWorkspaceGrows: jest.fn(async () => []),
   listWorkspaceLogs: jest.fn(async () => []),
@@ -61,6 +71,9 @@ describe("grow-scoped export Back navigation", () => {
     ]) {
       (loader as jest.Mock).mockResolvedValue([]);
     }
+    (listWorkspaceGrows as jest.Mock).mockResolvedValue([
+      { id: "grow-1", name: "Tomatoes" }
+    ]);
   });
 
   it("returns a locked export to its grow instead of unrelated router history", () => {
@@ -77,7 +90,10 @@ describe("grow-scoped export Back navigation", () => {
     mockCan.mockReturnValue(true);
     const screen = render(<PdfExportScreen />);
     await waitFor(() =>
-      expect(listWorkspaceLogs).toHaveBeenCalledWith("personal", "grow-1")
+      expect(listWorkspaceLogs).toHaveBeenCalledWith("personal", "grow-1", {
+        throwOnError: true,
+        verifyRecords: true
+      })
     );
     fireEvent.press(screen.getByLabelText("Back"));
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows/grow-1/timeline");

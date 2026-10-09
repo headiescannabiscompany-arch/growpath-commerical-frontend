@@ -129,6 +129,21 @@ if eligible. This must not alter or republish the private grow or frozen snapsho
 Do not label self-attestation as verified identity, expose birth dates, or replace
 known age/provider records to make a shared link readable.
 
+Grow Reports & Export waits for settled authentication, export entitlement and a
+successful read of every required record family for the current grow/workspace.
+Pending, failed or malformed reads are not READY, zero records or an empty grow.
+Provide a single-flight read-only Retry; do not export a partial or previous-context
+package. Account/session, entitlement, grow and workspace changes invalidate older
+results, new action invocations and late feedback, including an A-to-B-to-A
+transition. Delivery already handed to the existing CSV/HTML utility is not
+cancellable by this screen; do not claim that guarantee. Existing shared readers
+retain their default and existing throw-on-error contracts; this export explicitly
+opts into record verification. An active-list miss is not proof of missing ownership:
+preserve selected archived Personal grows through the owner archived list and older
+Commercial grows through the exact owner-authorized grow lookup, matching its ID.
+Retry does not publish, save records, run AI or change plan permissions. CSV and
+visual HTML remain distinct from a genuine PDF; do not claim one format is another.
+
 Viewer-friendly downloads follow the same disclosure boundary even when the file remains
 private. They render short human-readable event summaries, not embedded model JSON, provider
 payloads, internal evidence fingerprints, receipts or record identifiers. When a saved note

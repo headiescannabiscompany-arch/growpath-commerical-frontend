@@ -227,6 +227,14 @@ describe("GrowPath knowledge registries", () => {
     );
   });
 
+  it("keeps export readiness and actual file formats distinct", () => {
+    const warnings = getMethod("public-copy-sharing")?.warnings.join(" ") || "";
+    expect(warnings).toContain("successful current grow/workspace reads before READY");
+    expect(warnings).toContain("Pending, failed and malformed data are not empty");
+    expect(warnings).toContain("Single-flight Retry is read-only");
+    expect(warnings).toContain("CSV and visual HTML are not genuine PDF output");
+  });
+
   it("limits context-specific sources to supported decisions", () => {
     expect(evaluateSourceForDecision("uc-ipm", "ipm")).toBe("allow");
     expect(evaluateSourceForDecision("breeder-site", "cultivar_parentage")).toBe(
