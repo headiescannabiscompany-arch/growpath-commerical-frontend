@@ -15,9 +15,6 @@ import {
 type VerifyState = "checking" | "success" | "error";
 
 export default function VerifyEmailScreen() {
-  const router = useRouter();
-  const { palette } = useAppTheme();
-  const styles = createVerifyEmailStyles(palette);
   const params = useLocalSearchParams<{
     token?: string | string[];
     next?: string | string[];
@@ -27,6 +24,16 @@ export default function VerifyEmailScreen() {
     const raw = params.token;
     return Array.isArray(raw) ? raw[0] || "" : raw || "";
   }, [params.token]);
+
+  // Each link owns its result and account hint, including missing-token links.
+  // A new token must not briefly display or reuse a previous account's success.
+  return <VerificationResult key={token} token={token} safeNext={safeNext} />;
+}
+
+function VerificationResult({ token, safeNext }: { token: string; safeNext: string }) {
+  const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = createVerifyEmailStyles(palette);
 
   const [state, setState] = useState<VerifyState>("checking");
   const [message, setMessage] = useState("Verifying your email address...");

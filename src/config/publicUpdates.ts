@@ -323,10 +323,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "free-product-signup-return",
         title: "Keep your product link through Free signup",
-        date: "September 27, 2026",
+        date: "October 9, 2026",
         dateLabel: "Released",
         summary:
-          "Free-account signup from a saved product can now retain that destination through email verification and matching sign-in in the same browser for up to one hour, including another tab. Immediate sign-in still completes normal onboarding first. Returning never purchases or records interest automatically. Other browsers and paid-plan signup remain separate follow-ups. Course signup is covered in its own release note."
+          "Free-account signup from a saved product can now retain that destination through email verification and matching sign-in in the same browser for up to one hour, including another tab. Immediate sign-in still completes normal onboarding first. Opening a different email-verification link now clears the previous link's result and account hint while the new link is checked. Returning never purchases or records interest automatically. Other browsers and paid-plan signup remain separate follow-ups. Course signup is covered in its own release note."
       },
       {
         id: "course-discovery-signin",

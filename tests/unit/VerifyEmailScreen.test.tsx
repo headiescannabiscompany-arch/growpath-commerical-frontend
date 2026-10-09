@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import VerifyEmailScreen from "@/app/verify-email";
 import {
@@ -75,6 +75,78 @@ describe("VerifyEmailScreen", () => {
     });
 
     expect(mockConfirmEmailVerification).not.toHaveBeenCalled();
+  });
+
+  it("clears an earlier verified account while a different link is being checked", async () => {
+    mockConfirmEmailVerification.mockResolvedValueOnce({
+      ok: true,
+      user: { email: "first@example.com" }
+    });
+    const screen = render(<VerifyEmailScreen />);
+    await screen.findByText("Your email is verified. You can sign in to GrowPath.");
+
+    let rejectNext!: (error: Error) => void;
+    mockConfirmEmailVerification.mockImplementationOnce(
+      () =>
+        new Promise((_, reject) => {
+          rejectNext = reject;
+        })
+    );
+    mockParams = { token: "second-token" };
+    screen.rerender(<VerifyEmailScreen />);
+    expect(
+      screen.queryByText("Your email is verified. You can sign in to GrowPath.")
+    ).toBeNull();
+    expect(screen.getByText("Verifying your email address...")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Go to sign in"));
+    expect(mockReplace).toHaveBeenLastCalledWith("/login");
+
+    await act(async () => rejectNext(new Error("This verification link has expired.")));
+    expect(screen.getByText("This verification link has expired.")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Go to sign in"));
+    expect(mockReplace).toHaveBeenLastCalledWith("/login");
+  });
+
+  it("does not reuse a previously verified account for a link without a token", async () => {
+    mockConfirmEmailVerification.mockResolvedValueOnce({
+      ok: true,
+      user: { email: "first@example.com" }
+    });
+    const screen = render(<VerifyEmailScreen />);
+    await screen.findByText("Your email is verified. You can sign in to GrowPath.");
+    mockParams = {};
+    screen.rerender(<VerifyEmailScreen />);
+    expect(screen.getByText("This verification link is missing a token.")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Go to sign in"));
+    expect(mockReplace).toHaveBeenCalledWith("/login");
+    expect(mockConfirmEmailVerification).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores an old link response after the newer link has verified", async () => {
+    let resolveFirst!: (value: unknown) => void;
+    mockConfirmEmailVerification.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveFirst = resolve;
+        })
+    );
+    const screen = render(<VerifyEmailScreen />);
+    mockConfirmEmailVerification.mockResolvedValueOnce({
+      ok: true,
+      user: { email: "second@example.com" }
+    });
+    mockParams = { token: "second-token", next: "/feedback" };
+    screen.rerender(<VerifyEmailScreen />);
+    await screen.findByText("Your email is verified. You can sign in to GrowPath.");
+    await act(async () =>
+      resolveFirst({ ok: true, user: { email: "first@example.com" } })
+    );
+    fireEvent.press(screen.getByLabelText("Go to sign in"));
+    expect(mockReplace).toHaveBeenCalledWith(
+      "/login?email=second%40example.com&next=%2Ffeedback"
+    );
+    screen.rerender(<VerifyEmailScreen />);
+    expect(mockConfirmEmailVerification).toHaveBeenCalledTimes(2);
   });
 
   it("keeps a legacy gift token out of the sign-in continuation", async () => {
