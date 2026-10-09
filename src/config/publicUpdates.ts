@@ -250,11 +250,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "timeline-export-return",
-        title: "Timeline downloads with saved photos and a clear return",
-        date: "October 8, 2026",
+        title: "Personal timeline PDFs, saved photos and a clear return",
+        date: "October 9, 2026",
         dateLabel: "Released",
         summary:
-          "Web visual-timeline downloads now include prepared photos inside the HTML file instead of broken relative image paths or private storage links. Photo-path summaries become readable labels; an unreadable photo stops the download with an error rather than saving an incomplete story. Original photos are unchanged. After opening export from a Personal grow, Back still returns to that same grow's timeline, including when export is locked by your plan. Export permissions, published shares, and the existing layout stay unchanged; native sharing remains text-only."
+          "Eligible Personal growers can now download a real PDF with dated entries and saved photos on web. Journal photos appear once with their entry, rather than again as a separate photo-added event. The PDF is a bounded selected-grow snapshot, not a complete backup or compliance certificate; each photo must fit within 8 MiB. Failed source or photo checks save no partial PDF and offer a retry. Visual HTML still includes prepared photos inside the HTML file; CSV and original photos are unchanged. Opening export from a Personal grow's timeline keeps Back pointed to that timeline, including when export is locked by your plan. Export permissions, published shares, and the existing layout stay unchanged. Native PDF and separate Commercial export checks remain open; native visual-timeline sharing remains text-only."
       },
       {
         id: "general-crop-calendar-access",

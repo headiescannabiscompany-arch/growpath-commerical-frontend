@@ -702,7 +702,7 @@ describe("public Updates page", () => {
     expect(photoEntry?.summary).toContain("separate grow-list display correction");
   });
 
-  it("groups the web photo-export repair with the retained Personal return behavior", () => {
+  it("groups verified Personal web PDF and HTML without closing other export scopes", () => {
     const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (item) => item.id === "timeline-export-return"
     );
@@ -712,10 +712,24 @@ describe("public Updates page", () => {
       "published shares, and the existing layout stay unchanged"
     );
     expect(entry?.summary).not.toMatch(/unlocks|all exports.*verified/i);
-    expect(entry?.date).toBe("October 8, 2026");
+    expect(entry?.date).toBe("October 9, 2026");
     expect(entry?.summary).toContain("photos inside the HTML file");
-    expect(entry?.summary).toContain("an unreadable photo stops the download");
-    expect(entry?.summary).toContain("native sharing remains text-only");
+    expect(entry?.summary).toContain("download a real PDF");
+    expect(entry?.summary).toContain("Journal photos appear once");
+    expect(entry?.summary).toContain("save no partial PDF");
+    expect(entry?.summary).toContain("8 MiB");
+    expect(entry?.summary).toContain("not a complete backup or compliance certificate");
+    expect(entry?.summary).toContain(
+      "Native PDF and separate Commercial export checks remain open"
+    );
+    expect(entry?.summary).toContain("native visual-timeline sharing remains text-only");
+    expect(entry?.summary).not.toMatch(/yahoo|qa\.invalid|6a96ca5a|Triple Bag/i);
+    const group = PUBLIC_UPDATE_GROUPS.find((item) => item.id === "journals");
+    expect(group?.entryIds.filter((id) => id === "timeline-export-return")).toHaveLength(
+      1
+    );
+    expect(group?.live).toContain("Personal web PDFs with saved photos");
+    expect(group?.next).toContain("native PDF checks, Commercial exports");
   });
 
   it("describes only the crop-calendar access correction", () => {

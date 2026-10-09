@@ -114,9 +114,9 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     title: "Grow journals and visual timeline fixes",
     status: "complete",
     scope:
-      "The released photo, timeline-sharing, creation and grow-navigation fixes—not every future timeline enhancement.",
-    live: "Larger journal-photo handling, adding photos to older entries, clearer grow limits, duplicate-looking timeline cleanup, visual multi-point/photo sharing, phone headings and safe return paths are live.",
-    next: "Separate follow-ups remain for reported date mismatches, longer timelines and additional sharing destinations. They do not reopen the completed fixes above.",
+      "The released photo, Personal web PDF/HTML, timeline-sharing, creation and grow-navigation fixes—not every future timeline enhancement.",
+    live: "Larger journal-photo handling, adding photos to older entries, clearer grow limits, duplicate-looking timeline cleanup, visual multi-point/photo sharing, Personal web PDFs with saved photos, portable HTML downloads, phone headings and safe return paths are live.",
+    next: "Separate follow-ups remain for reported date mismatches, longer timelines, native PDF checks, Commercial exports and additional sharing destinations. They do not reopen the completed fixes above.",
     entryIds: [
       "grow-list-readiness",
       "timeline-export-return",
