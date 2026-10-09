@@ -20,6 +20,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { submitReport } from "@/api/reports";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 import { InlineError } from "@/components/InlineError";
+import OwnerFeedCampaignsPanel from "@/components/feed/OwnerFeedCampaignsPanel";
 import {
   createCommercialFeedCampaign,
   fetchFeedCampaignAnalytics,
@@ -236,8 +237,8 @@ function campaignReadinessWarnings({
 }
 
 function authorLabel(post: CommercialFeedCampaign) {
-  if (post.author?.displayName || post.author?.email) {
-    return post.author.displayName || post.author.email || "";
+  if (post.author?.displayName) {
+    return post.author.displayName;
   }
   if (post.authorType === "facility" || post.workspaceType === "facility") {
     return "Facility account";
@@ -722,6 +723,7 @@ function CommercialFeedForm({
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [ownerCampaignsBusy, setOwnerCampaignsBusy] = useState(false);
   const [creatingSetupTask, setCreatingSetupTask] = useState(false);
   const [error, setError] = useState<any>(null);
   const [loadError, setLoadError] = useState<any>(null);
@@ -742,6 +744,13 @@ function CommercialFeedForm({
   const [destinationOptionsError, setDestinationOptionsError] = useState("");
   const [showAdvancedReferences, setShowAdvancedReferences] = useState(false);
   const recordedImpressions = useRef(new Set<string>());
+  // Keep confirmed withdrawals out of both current cards and late public reads.
+  // This does not hide the retained record in the separate owner-management list.
+  const unpublishedCampaignIds = useRef(new Set<string>());
+  const onCampaignUnpublished = useCallback((id: string) => {
+    unpublishedCampaignIds.current.add(id);
+    setItems((previous) => previous.filter((item) => item.id !== id));
+  }, []);
 
   useEffect(() => {
     if (!allowedTypes.includes(type)) setType(allowedTypes[0]);
@@ -770,7 +779,11 @@ function CommercialFeedForm({
     placements
   });
   const canCreate =
-    canManageCampaigns && title.trim().length > 0 && body.trim().length > 0 && !creating;
+    canManageCampaigns &&
+    title.trim().length > 0 &&
+    body.trim().length > 0 &&
+    !creating &&
+    !ownerCampaignsBusy;
   if (previewUri && imagePreview.status !== "loaded") {
     readinessWarnings.push(
       imagePreview.status === "failed"
@@ -806,7 +819,9 @@ function CommercialFeedForm({
           limit: 30
         });
         if (!isCurrent()) return;
-        setItems(res.items);
+        setItems(
+          res.items.filter((item) => !unpublishedCampaignIds.current.has(item.id))
+        );
         setLoadedQuery(queryKey);
         if (canManageCampaigns) {
           try {
@@ -1210,6 +1225,12 @@ function CommercialFeedForm({
         </Text>
         <Text style={styles.subtitle}>{helper}</Text>
       </View>
+
+      <OwnerFeedCampaignsPanel
+        disabled={creating}
+        onUnpublished={onCampaignUnpublished}
+        onBusyChange={setOwnerCampaignsBusy}
+      />
 
       {!canManageCampaigns ? (
         <View style={styles.card}>

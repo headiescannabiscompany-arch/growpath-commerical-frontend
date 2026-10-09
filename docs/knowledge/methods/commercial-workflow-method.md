@@ -1,5 +1,39 @@
 # Commercial Workflow
 
+## Standard Feed campaign withdrawal
+
+Your campaigns is an explicitly opened, authenticated owner list for standard Feed
+campaigns, including scheduled and withdrawn records. It is not the public Feed or
+the separate Marketing Planner. Listing these records never records impressions or
+clicks. Unknown/failed reads are not an empty list; provide single-flight read-only
+Refresh and pagination, label retained snapshots, and preserve unsaved authoring.
+Account, session, workspace and Facility role changes discard earlier records and
+confirmation state and invalidate late reads/writes, including a return to the same
+account after an intervening change. Never put session credentials into a UI key.
+
+The exact authenticated author may explicitly Unpublish a standard campaign after
+an in-page confirmation names it. This is a withdrawal-only exception for an owner
+whose paid plan has ended: it does not grant creation, editing, analytics access or
+republication. Facility-bound campaigns additionally retain current Owner/Manager
+membership checks. Quarantine, account mutation restrictions, moderation and legal
+preservation controls remain authoritative; platform Admin is not another author's
+owner. Harvest publications retain their separate source-bound withdrawal engine.
+
+Withdrawal sets the existing cancelled lifecycle state (shown as Unpublished),
+removes fresh public Feed/share-preview/event eligibility and retains the campaign
+and recorded analytics. It never deletes files, source products, history or other
+campaigns, changes purchase eligibility, or republishes. Previously copied/cached
+content cannot be recalled. The owner's list retains the record after reload.
+Duplicate withdrawal is idempotent. An uncertain write offers state recovery, not
+automatic resubmission or false success; further writes wait for a successful read.
+
+Public campaign author data includes only the existing public display name and
+identifier, never account legal name, email, role, plan or subscription status. Do not use email
+as a display-name fallback, including against an older API response. Preserve
+deliberately published external/contact links and campaign destinations.
+Owner lists may show a safe Unavailable moderation state, but internal case reasons,
+reviewer identities and preservation/quarantine identifiers remain server-side.
+
 Commercial External Channels and Public Links are More-menu offshoots. Their page
 Back control returns explicitly to `/home/commercial/more`, including after reload
 or when tab history points at Dashboard. Ordinary shared-page history behavior

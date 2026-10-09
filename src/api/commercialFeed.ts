@@ -30,6 +30,7 @@ export type CommercialFeedCampaign = {
   facilityId?: string;
   campaignType?: "product" | "course" | "live" | "storefront" | "facility" | "general";
   status?: "draft" | "scheduled" | "active" | "paused" | "ended" | "cancelled";
+  isHidden?: boolean;
   title?: string;
   body: string;
   tags: string[];
@@ -68,9 +69,8 @@ export type CommercialFeedCampaign = {
   relevanceScore?: number;
   createdAt?: string;
   author?: {
+    id?: string;
     displayName?: string;
-    email?: string;
-    plan?: string;
   } | null;
 };
 
@@ -137,6 +137,17 @@ function normalizeCampaign(row: any): CommercialFeedCampaign {
     }));
   return {
     ...row,
+    // Never use private account fields as public campaign identity, even while
+    // an older API deployment still includes them in its response.
+    author:
+      row?.author && typeof row.author === "object" && !Array.isArray(row.author)
+        ? {
+            ...(typeof row.author.id === "string" ? { id: row.author.id } : {}),
+            ...(typeof row.author.displayName === "string"
+              ? { displayName: row.author.displayName }
+              : {})
+          }
+        : null,
     id: String(
       row?.id ||
         row?._id ||
@@ -244,6 +255,66 @@ export async function createCommercialFeedCampaign(input: {
     }
   });
   return normalizeCampaign(res?.item ?? res?.post ?? res);
+}
+
+const ownerCampaignResponseError = () =>
+  new Error(
+    "Saved campaign state could not be verified. Refresh Your campaigns before trying again."
+  );
+
+function ownedCampaignDTO(row: any): CommercialFeedCampaign {
+  const id = row?.id ?? row?._id;
+  if (
+    !row ||
+    typeof row !== "object" ||
+    Array.isArray(row) ||
+    typeof id !== "string" ||
+    !id.trim() ||
+    (row.sourceType != null && row.sourceType !== "standard") ||
+    (row.status != null &&
+      !["draft", "scheduled", "active", "paused", "ended", "cancelled"].includes(
+        row.status
+      ))
+  )
+    throw ownerCampaignResponseError();
+  return normalizeCampaign(row);
+}
+
+/** Private owner read; opening this list must not record public engagement. */
+export async function listOwnedFeedCampaigns(
+  params: { limit?: number; cursor?: string | null } = {}
+): Promise<{ items: CommercialFeedCampaign[]; nextCursor: string | null }> {
+  const res: any = await apiRequest("/api/commercial/feed/mine", {
+    cache: "no-store",
+    retries: 0,
+    invalidateOn401: false,
+    params: {
+      ...(params.limit ? { limit: params.limit } : {}),
+      ...(params.cursor ? { cursor: params.cursor } : {})
+    }
+  });
+  if (
+    !Array.isArray(res?.items) ||
+    (res.nextCursor != null &&
+      (typeof res.nextCursor !== "string" || !res.nextCursor.trim()))
+  )
+    throw ownerCampaignResponseError();
+  const items = res.items.map(ownedCampaignDTO);
+  if (new Set(items.map((item: CommercialFeedCampaign) => item.id)).size !== items.length)
+    throw ownerCampaignResponseError();
+  return { items, nextCursor: res.nextCursor ?? null };
+}
+
+/** Explicit withdrawal only. No automatic retry, deletion, edit or republish. */
+export async function unpublishFeedCampaign(id: string): Promise<CommercialFeedCampaign> {
+  if (typeof id !== "string" || !id.trim()) throw ownerCampaignResponseError();
+  const res: any = await apiRequest(
+    `/api/commercial/feed/${encodeURIComponent(id)}/unpublish`,
+    { method: "POST", body: {}, retries: 0, invalidateOn401: false }
+  );
+  const item = ownedCampaignDTO(res?.item);
+  if (item.id !== id || item.status !== "cancelled") throw ownerCampaignResponseError();
+  return item;
 }
 
 export async function recordFeedCampaignEvent(

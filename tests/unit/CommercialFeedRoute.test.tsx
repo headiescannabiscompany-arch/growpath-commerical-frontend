@@ -140,6 +140,173 @@ describe("CommercialFeedRoute", () => {
     });
   });
 
+  it("loads owner campaigns only on request without private-list impressions or public shares", async () => {
+    const baseRequest = mockApiRequest.getMockImplementation()!;
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/feed/mine")
+        return Promise.resolve({
+          items: [
+            {
+              id: "private-campaign",
+              type: "update",
+              title: "Unpublished workshop",
+              body: "Retained record",
+              sourceType: "standard",
+              status: "cancelled"
+            }
+          ],
+          nextCursor: null
+        });
+      return baseRequest(path, options);
+    });
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByLabelText("Hide Live soil demo");
+    expect(
+      mockApiRequest.mock.calls.some(([path]) => path === "/api/commercial/feed/mine")
+    ).toBe(false);
+    expect(screen.queryByText("Unpublished workshop")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Open your campaigns"));
+    await screen.findByText("Unpublished workshop");
+    expect(screen.getByText("Unpublished")).toBeTruthy();
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([path]) => path === "/api/commercial/feed/private-campaign/events"
+      )
+    ).toBe(false);
+    expect(screen.queryByLabelText("Share Unpublished workshop")).toBeNull();
+    expect(screen.queryByLabelText("Hide Unpublished workshop")).toBeNull();
+    expect(mockSharePublicLink).not.toHaveBeenCalled();
+  });
+
+  it("withdraws only after named confirmation, keeps the unsaved draft and suppresses late public cards", async () => {
+    const baseRequest = mockApiRequest.getMockImplementation()!;
+    const saved = {
+      id: "campaign-1",
+      type: "update",
+      title: "Live soil demo",
+      body: "Saved workshop",
+      sourceType: "standard",
+      status: "active"
+    };
+    let resolvePublic!: (value: any) => void;
+    let holdPublic = false;
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/feed/mine")
+        return Promise.resolve({ items: [saved], nextCursor: null });
+      if (path === "/api/commercial/feed/campaign-1/unpublish")
+        return Promise.resolve({ item: { ...saved, status: "cancelled" } });
+      if (path === "/api/commercial/feed" && holdPublic)
+        return new Promise((resolve) => {
+          resolvePublic = resolve;
+        });
+      return baseRequest(path, options);
+    });
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByLabelText("Hide Live soil demo");
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign title"),
+      "Keep this unfinished draft"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Feed campaign body"),
+      "Draft details stay here"
+    );
+    fireEvent.press(screen.getByLabelText("Open your campaigns"));
+    await screen.findByLabelText("Unpublish Live soil demo");
+    fireEvent.press(screen.getByLabelText("Unpublish Live soil demo"));
+    fireEvent.press(screen.getByLabelText("Cancel unpublish"));
+    expect(mockApiRequest.mock.calls.some(([path]) => path.endsWith("/unpublish"))).toBe(
+      false
+    );
+    holdPublic = true;
+    fireEvent.press(screen.getByLabelText("Refresh campaigns"));
+    fireEvent.press(screen.getByLabelText("Unpublish Live soil demo"));
+    fireEvent.press(screen.getByLabelText("Confirm unpublish Live soil demo"));
+    await screen.findByText("Unpublished");
+    expect(screen.queryByLabelText("Hide Live soil demo")).toBeNull();
+    expect(screen.queryByLabelText("Share Live soil demo")).toBeNull();
+    expect(screen.getByText("Live soil demo")).toBeTruthy();
+    await act(async () => resolvePublic({ items: [saved] }));
+    expect(screen.queryByLabelText("Hide Live soil demo")).toBeNull();
+    expect(screen.queryByLabelText("Share Live soil demo")).toBeNull();
+    expect(screen.getByLabelText("Feed campaign title").props.value).toBe(
+      "Keep this unfinished draft"
+    );
+    expect(screen.getByLabelText("Feed campaign body").props.value).toBe(
+      "Draft details stay here"
+    );
+    expect(
+      mockApiRequest.mock.calls.filter(([path]) => path.endsWith("/unpublish"))
+    ).toHaveLength(1);
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([path, options]) => path === "/api/commercial/feed" && options?.method === "POST"
+      )
+    ).toBe(false);
+  });
+
+  it("offers owner withdrawal to a personal viewer without adding authoring controls", async () => {
+    mockMode = "personal";
+    const baseRequest = mockApiRequest.getMockImplementation()!;
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/feed/mine")
+        return Promise.resolve({
+          items: [
+            {
+              id: "campaign-1",
+              type: "update",
+              title: "Prior campaign",
+              body: "Retained",
+              status: "active"
+            }
+          ],
+          nextCursor: null
+        });
+      return baseRequest(path, options);
+    });
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByLabelText("Hide Live soil demo");
+    expect(screen.queryByLabelText("Feed campaign title")).toBeNull();
+    expect(screen.queryByLabelText("Publish feed campaign")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Open your campaigns"));
+    await screen.findByLabelText("Unpublish Prior campaign");
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([path]) => path === "/api/commercial/feed-analytics"
+      )
+    ).toBe(false);
+  });
+
+  it("does not expose an author's private email as a public display-name fallback", async () => {
+    mockMode = "personal";
+    mockApiRequest.mockImplementation((path: string) =>
+      Promise.resolve(
+        path === "/api/commercial/feed"
+          ? {
+              items: [
+                {
+                  id: "campaign-private-author",
+                  type: "update",
+                  title: "Public workshop",
+                  body: "Public body",
+                  author: {
+                    id: "owner-private",
+                    email: "private-owner@example.invalid",
+                    role: "admin",
+                    plan: "commercial"
+                  }
+                }
+              ]
+            }
+          : {}
+      )
+    );
+    const screen = render(<CommercialFeedRoute />);
+    await screen.findByText("Public workshop");
+    expect(screen.queryByText(/private-owner@example.invalid/)).toBeNull();
+    expect(screen.getByText("Commercial account")).toBeTruthy();
+  });
+
   it("starts an unsaved product campaign from current owned published data without writing", async () => {
     mockRouteParams = { productId: "product-1" };
     mockProducts.mockResolvedValue([
@@ -173,8 +340,17 @@ describe("CommercialFeedRoute", () => {
       "vegetables"
     );
     expect(screen.getByLabelText("External link URL").props.value).toBe("");
+    // Public cards keep their accepted impression event; opening a product
+    // handoff must not create a campaign or perform any other write.
     expect(
-      mockApiRequest.mock.calls.some(([, options]) => options?.method === "POST")
+      mockApiRequest.mock.calls.some(
+        ([path, options]) =>
+          options?.method === "POST" &&
+          !(
+            path === "/api/commercial/feed/campaign-1/events" &&
+            options.body?.eventType === "impression"
+          )
+      )
     ).toBe(false);
     fireEvent.changeText(
       screen.getByLabelText("Feed campaign title"),

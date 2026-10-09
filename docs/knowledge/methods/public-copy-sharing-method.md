@@ -5,6 +5,17 @@ journals, AI results and operational records do not become public when Share is 
 They require a reviewed public copy whose data, media and lifecycle are separate from the
 private source.
 
+Standard Feed campaigns have an explicit exact-author Unpublish action, separate
+from local Hide and from the Marketing Planner. It removes fresh public list,
+share-preview and engagement-event eligibility while retaining the owner record
+and analytics. There is no delete or automatic republish action; cached or copied
+content may persist outside GrowPath. Facility membership, moderation, quarantine
+and preservation controls remain authoritative; Harvest uses its existing engine.
+Public campaign author identity omits account email and entitlement fields without
+removing deliberately published campaign links.
+Private moderation reasons and reviewer identities are never campaign-response data,
+including in the owner's retained-campaign list.
+
 ## Explicit creator profile publication
 
 Personal Profile's creator profile and links reuse the account's profile foundation,
