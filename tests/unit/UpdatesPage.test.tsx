@@ -43,7 +43,7 @@ describe("public Updates page", () => {
     ).toContain("nothing was published");
   });
 
-  it("groups product-campaign handoff without claiming publication acceptance", () => {
+  it("groups campaign controls and timing while retaining handoff safeguards", () => {
     const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
       (entry) => entry.id === "campaign-feed-readiness"
     );
@@ -51,12 +51,30 @@ describe("public Updates page", () => {
       "Publishing waits for the current image preview to load"
     );
     expect(notes).toHaveLength(1);
-    expect(notes[0].date).toBe("October 5, 2026");
+    expect(notes[0].date).toBe("October 9, 2026");
     expect(notes[0].summary).toContain("Nothing is automatically published");
     expect(notes[0].summary).toContain("unsaved form for review");
-    expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === "shopping")?.status).toBe(
-      "partial"
+    expect(notes[0].summary).toContain(
+      "unpublish standard Feed campaigns while retaining records and analytics"
     );
+    expect(notes[0].summary).toContain(
+      "fresh Feed and share-preview requests no longer show them"
+    );
+    expect(notes[0].summary).toContain(
+      "Public author details exclude private account fields"
+    );
+    expect(notes[0].summary).toContain(
+      "Campaign times follow the displayed device timezone"
+    );
+    expect(notes[0].summary).toContain("invalid or ambiguous clock-change times blocked");
+    expect(notes[0].summary).not.toMatch(/qa\.invalid|acceptance-c|6ac8e088|6aa5967e/i);
+    const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "shopping");
+    expect(group?.status).toBe("partial");
+    expect(group?.entryIds.filter((id) => id === "campaign-feed-readiness")).toHaveLength(
+      1
+    );
+    expect(group?.live).toContain("unpublish while retaining records and analytics");
+    expect(group?.live).toContain("scheduling follows the displayed timezone");
   });
   it("groups payout-status recovery without claiming another financial acceptance", () => {
     const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(

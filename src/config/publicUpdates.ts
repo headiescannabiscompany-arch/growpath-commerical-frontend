@@ -187,10 +187,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "campaign-feed-readiness",
         title: "Connected product campaigns and clearer recovery",
-        date: "October 5, 2026",
+        date: "October 9, 2026",
         dateLabel: "Released",
         summary:
-          "Create Campaign on a published product now carries that product's saved text, image and destination into an unsaved form for review, instead of opening a blank form. Only products still published in the signed-in seller's catalog are loaded. Publishing waits for the current image preview to load; a failed image offers Retry or replacement without losing the draft. Feed/Campaigns separates unavailable results from an empty feed and provides Retry campaigns. Retrying preserves unfinished edits and does not publish anything. Nothing is automatically published; prices, placements and server publication rules stay unchanged."
+          "Create Campaign on a published product now carries that product's saved text, image and destination into an unsaved form for review, instead of opening a blank form. Only products still published in the signed-in seller's catalog are loaded. Publishing waits for the current image preview to load; a failed image offers Retry or replacement without losing the draft. Feed/Campaigns separates unavailable results from an empty feed and provides Retry campaigns. Retrying preserves unfinished edits and does not publish anything. Nothing is automatically published; prices, placements and server publication rules stay unchanged. Owners can unpublish standard Feed campaigns while retaining records and analytics; fresh Feed and share-preview requests no longer show them. Public author details exclude private account fields. Campaign times follow the displayed device timezone, with invalid or ambiguous clock-change times blocked."
       },
       {
         id: "seller-summary-readiness",
