@@ -465,6 +465,7 @@ export default function CommercialTrialsRoute() {
                 accessibilityLabel={`${concept.title}${
                   approved ? "" : ", final artwork approval required"
                 }`}
+                aria-checked={selected}
                 accessibilityState={{
                   checked: selected,
                   disabled: !approved || conceptSaving

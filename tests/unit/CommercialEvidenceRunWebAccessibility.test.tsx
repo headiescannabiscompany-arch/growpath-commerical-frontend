@@ -235,4 +235,47 @@ describe("Commercial Evidence Run web accessibility", () => {
     expect(mockCreateProductTrial).not.toHaveBeenCalled();
     expect(mockUpdateCommercialGrow).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ["Evidence run product", "Synthetic product", "Evidence run product line"],
+    ["Evidence run product line", "Synthetic line", "Evidence run product"]
+  ])(
+    "exposes %s linking and unlinking without changing the other picker",
+    async (label, recordName, otherLabel) => {
+      mockFetchProducts.mockResolvedValue([
+        { id: "product-1", name: "Synthetic product" }
+      ]);
+      mockFetchProductLines.mockResolvedValue([{ id: "line-1", name: "Synthetic line" }]);
+      await renderRoute(false);
+
+      const group = `${label} choices`;
+      const unlinked = `${label}: Not linked yet`;
+      const linked = `${label}: ${recordName}`;
+      expectSelection(group, unlinked);
+      await click(linked);
+      expectSelection(group, linked);
+      expectSelection(`${otherLabel} choices`, `${otherLabel}: Not linked yet`);
+      await click(unlinked);
+      expectSelection(group, unlinked);
+      expect(mockCreateCommercialGrow).not.toHaveBeenCalled();
+      expect(mockUpdateCommercialGrow).not.toHaveBeenCalled();
+    }
+  );
+
+  it("exposes selected and unselected hat concepts when the local choice changes without creating a trial", async () => {
+    await act(async () => root.render(<CommercialTrialsRoute />));
+    const midnight = "GrowPathAI Circuit Leaf — Midnight";
+    const sage = "GrowPathAI Circuit Leaf — Tonal Sage";
+    expect(named(midnight).getAttribute("role")).toBe("radio");
+    expect(named(sage).getAttribute("role")).toBe("radio");
+    expect(named(midnight).getAttribute("aria-checked")).toBe("true");
+    expect(named(sage).getAttribute("aria-checked")).toBe("false");
+    await click(sage);
+    expect(named(midnight).getAttribute("aria-checked")).toBe("false");
+    expect(named(sage).getAttribute("aria-checked")).toBe("true");
+    await click(midnight);
+    expect(named(midnight).getAttribute("aria-checked")).toBe("true");
+    expect(named(sage).getAttribute("aria-checked")).toBe("false");
+    expect(mockCreateProductTrial).not.toHaveBeenCalled();
+  });
 });
