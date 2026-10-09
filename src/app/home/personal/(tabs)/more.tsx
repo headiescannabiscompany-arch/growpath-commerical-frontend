@@ -14,7 +14,11 @@ type Destination = {
   label: string;
 };
 
-const groups: Array<{ title: string; destinations: Destination[] }> = [
+const groups: Array<{
+  title: string;
+  description?: string;
+  destinations: Destination[];
+}> = [
   {
     title: "Tools and AI",
     destinations: [
@@ -41,18 +45,39 @@ const groups: Array<{ title: string; destinations: Destination[] }> = [
     ]
   },
   {
-    title: "Learning and records",
+    title: "Creator tools",
+    description:
+      "Use your existing account to teach, share videos, or host a show. No separate creator signup is needed. Your plan's permissions and storage limits still apply.",
     destinations: [
       {
-        label: "Courses",
+        label: "Create and manage courses",
         href: "/courses",
-        description: "Open training, lessons, and learning resources."
+        description:
+          "Browse courses or use Create Course to build lessons with your available tools."
       },
       {
-        label: "Videos",
+        label: "Manage videos",
         href: "/videos?tab=library",
-        description: "Open the video library and storage-managed uploads."
+        description:
+          "Open your video library to manage uploads, drafts, and published videos."
       },
+      {
+        label: "Live Studio",
+        href: "/live-studio",
+        description:
+          "Prepare a live show or premiere using the existing hosting tools. Opening the studio does not start a broadcast."
+      },
+      {
+        label: "Billing and seller payouts",
+        href: "/home/personal/profile/billing",
+        description:
+          "Optional for eligible paid sales: review seller payout setup in Billing. This is not creator activation."
+      }
+    ]
+  },
+  {
+    title: "Records and tasks",
+    destinations: [
       {
         label: "Logs",
         href: "/home/personal/grows",
@@ -137,6 +162,11 @@ export default function PersonalMoreRoute() {
           >
             {group.title}
           </Text>
+          {group.description ? (
+            <Text style={[styles.groupDescription, { color: palette.textMuted }]}>
+              {group.description}
+            </Text>
+          ) : null}
           <View style={styles.destinationGrid}>
             {group.destinations.map((destination) => (
               <MoreLink key={destination.href} {...destination} />
@@ -201,6 +231,11 @@ const styles = StyleSheet.create({
   groupTitle: {
     fontSize: 18,
     fontWeight: "900",
+    marginBottom: 12
+  },
+  groupDescription: {
+    fontSize: 14,
+    lineHeight: 20,
     marginBottom: 12
   },
   header: {

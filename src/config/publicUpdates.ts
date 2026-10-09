@@ -90,11 +90,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "course-builder-source-return",
-        title: "Course Builder returns to its starting page",
-        date: "October 2, 2026",
+        title: "Find creator tools and return from the Course Builder",
+        date: "October 8, 2026",
         dateLabel: "Released",
         summary:
-          "Back from the Full Course Builder now returns to the Commercial Courses, Storefront or Personal Courses page that opened it, including after a reload. Unsupported return links use normal history and a safe default. Course content, publishing, payments, permissions and the existing layout stay unchanged."
+          "Personal More groups the existing course catalog, video library and Live Studio under Creator tools. No separate creator signup is required; existing permissions and storage limits still apply. Billing and seller payouts are labeled as optional setup for eligible paid sales, not creator activation. Opening a tool does not publish content or start a broadcast. The earlier Course Builder return fix remains: Back returns to the Commercial Courses, Storefront or Personal Courses page that opened it, including after a reload. Unsupported return links use normal history and a safe default. Course content, publishing, payments and permissions stay unchanged."
       },
       {
         id: "commercial-brand-profile-readiness",
