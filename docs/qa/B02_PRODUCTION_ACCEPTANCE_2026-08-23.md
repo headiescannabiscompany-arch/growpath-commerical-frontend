@@ -304,3 +304,24 @@ fixture exists; its save/reload and actual complete audit export passed. Its arc
 cleanup remains mandatory. Admin sign-in and the second fixture are pending. No
 production changes, new account/Facility pair, stock movements or paid infrastructure.
 Exact private fixture ID/CSV digest and outstanding cleanup are in the root receipt.
+
+## October 9 staging-only archive acceptance and bounded isolation
+
+The narrow frontend79530e0b was approved, pushed to the existing feature branch
+and deployed to staging only: dep-db4kvmrncjis73fu7cu0 LIVE20:36:23UTC.
+Named archive confirmation/cancel, concurrent-control locking, canonical list return
+and persisted empty lists passed. Both explicitly approved zero-stock synthetic
+fixtures were soft-archived; no outstanding cleanup and no stock movements.
+Two separate Commercial sessions showed distinct private fields; reciprocal copied
+foreign-item URLs returned not found without exposing private content. Admin's
+downloaded audit retains only its scoped record/create/archive events, COMPLETE.
+
+Limits: not a same-browser account-switch/race, Facility-pair or production check.
+QA C's newer export reported ready but its actual file was not recovered; earlier
+single-account CSV evidence remains retained, not upgraded to pair evidence.
+Same SKU in the empty second workspace was rejected. The code's canonical SKU
+indexes and guarded migration already exist, and the August23 PRODUCTION index
+repair above stays closed. Inspect actual staging index state before proposing a
+database change; no runtime rebuild, index write or extra fixture authorized here.
+Full B02 remains open. Root receipt contains exact IDs/files/digests/screenshots:
+outputs/B02_Same_Type_Isolation_Preflight_2026-10-09.md.

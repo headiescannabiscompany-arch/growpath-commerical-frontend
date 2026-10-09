@@ -829,3 +829,15 @@ You` truthfully showed no matches while `All Discussions` loaded retained text, 
    real supplier models/textiles/colorways and include source art, placement/thread/stitch
    specifications, returned `DST` plus editable machine source, and exact-blank sew-outs.
 10. Complete App Store and Play Store work last.
+# October 9 B02 bounded staging addendum
+
+Frontend79530e0b staging archive-control acceptance and both approved synthetic
+fixture cleanups are closed (dep-db4kvmrncjis73fu7cu0,20:36:23UTC live). Two-session
+Commercial private reads and reciprocal foreign-ID denials passed; Admin scoped
+audit/archive-history artifact verified. Full B02/production remains open: newer
+QA C audit file not captured, same-browser switch/race and Facility pair unproven,
+and cross-workspace equal-SKU create failed on staging. Reconcile actual staging
+indexes using the existing guarded migration; preserve the August23 production
+index repair and accepted ledger. No new fixtures, database writes or production
+release approved here. See B02_PRODUCTION_ACCEPTANCE_2026-08-23.md and the root
+outputs/B02_Same_Type_Isolation_Preflight_2026-10-09.md for exact finite evidence.
