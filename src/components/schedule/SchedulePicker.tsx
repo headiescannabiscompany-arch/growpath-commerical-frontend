@@ -11,6 +11,7 @@ type SchedulePickerProps = {
   recurrence: string;
   allDay?: boolean;
   dateTime?: boolean;
+  localDateTimeQuickDates?: boolean;
   timezone?: string;
   lightsOnTime?: string;
   lightsOffTime?: string;
@@ -27,17 +28,24 @@ type SchedulePickerProps = {
   recurrencePlaceholder?: string;
 };
 
-function dateKey(daysFromToday = 0) {
+function calendarKey(date: Date, localCalendar: boolean) {
+  if (!localCalendar) return date.toISOString().slice(0, 10);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate()
+  ).padStart(2, "0")}`;
+}
+
+function dateKey(daysFromToday = 0, localCalendar = false) {
   const date = new Date();
   date.setDate(date.getDate() + daysFromToday);
-  return date.toISOString().slice(0, 10);
+  return calendarKey(date, localCalendar);
 }
 
-function eveningKey() {
-  return `${dateKey(0)}T18:00`;
+function eveningKey(localCalendar = false) {
+  return `${dateKey(0, localCalendar)}T18:00`;
 }
 
-function nextTimeKey(time: string) {
+function nextTimeKey(time: string, localCalendar = false) {
   const normalized = String(time || "").trim();
   if (!/^\d{2}:\d{2}$/.test(normalized)) return "";
   const now = new Date();
@@ -45,15 +53,15 @@ function nextTimeKey(time: string) {
   const [hours, minutes] = normalized.split(":").map(Number);
   candidate.setHours(hours, minutes, 0, 0);
   if (candidate <= now) candidate.setDate(candidate.getDate() + 1);
-  return `${candidate.toISOString().slice(0, 10)}T${normalized}`;
+  return `${calendarKey(candidate, localCalendar)}T${normalized}`;
 }
 
-function nextWeekKey() {
+function nextWeekKey(localCalendar = false) {
   const date = new Date();
   const day = date.getDay();
   const daysUntilNextMonday = (8 - day) % 7 || 7;
   date.setDate(date.getDate() + daysUntilNextMonday);
-  return date.toISOString().slice(0, 10);
+  return calendarKey(date, localCalendar);
 }
 
 export default function SchedulePicker({
@@ -62,6 +70,7 @@ export default function SchedulePicker({
   recurrence,
   allDay = false,
   dateTime = false,
+  localDateTimeQuickDates = false,
   timezone,
   lightsOnTime,
   lightsOffTime,
@@ -81,18 +90,26 @@ export default function SchedulePicker({
   const styles = useMemo(() => createStyles(palette), [palette]);
   const resolvedTimezone =
     timezone || Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || "local time";
+  const localQuickDates = localDateTimeQuickDates && dateTime && !allDay;
   const quickDates = [
-    ["Today", dateKey(0)],
-    ["This evening", eveningKey()],
-    ["Tomorrow", dateKey(1)],
-    lightsOnTime ? ["Next lights on", nextTimeKey(lightsOnTime)] : null,
-    lightsOffTime ? ["Next lights off", nextTimeKey(lightsOffTime)] : null,
-    ["In 3 days", dateKey(3)],
-    ["In 7 days", dateKey(7)],
-    ["In 14 days", dateKey(14)],
-    ["In 21 days", dateKey(21)],
-    ["Next week", nextWeekKey()]
-  ].filter((row): row is string[] => Array.isArray(row) && Boolean(row[1]));
+    ["Today", dateKey(0, localQuickDates)],
+    ["This evening", eveningKey(localQuickDates)],
+    ["Tomorrow", dateKey(1, localQuickDates)],
+    lightsOnTime ? ["Next lights on", nextTimeKey(lightsOnTime, localQuickDates)] : null,
+    lightsOffTime
+      ? ["Next lights off", nextTimeKey(lightsOffTime, localQuickDates)]
+      : null,
+    ["In 3 days", dateKey(3, localQuickDates)],
+    ["In 7 days", dateKey(7, localQuickDates)],
+    ["In 14 days", dateKey(14, localQuickDates)],
+    ["In 21 days", dateKey(21, localQuickDates)],
+    ["Next week", nextWeekKey(localQuickDates)]
+  ]
+    .filter((row): row is string[] => Array.isArray(row) && Boolean(row[1]))
+    .map(([label, value]) => [
+      label,
+      localQuickDates && /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00` : value
+    ]);
   const reminderPresets = [
     "no reminder",
     "at due time",

@@ -4,6 +4,121 @@ import { fireEvent, render } from "@testing-library/react-native";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 
 describe("SchedulePicker", () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it.each([0, 23])(
+    "uses the local calendar for opt-in timed quick dates at hour %s",
+    (hour) => {
+      jest.useFakeTimers();
+      const now = new Date(2026, 9, 9, hour, 30);
+      jest.setSystemTime(now);
+      const onDueDateChange = jest.fn();
+      const screen = render(
+        <SchedulePicker
+          dueDate=""
+          reminder=""
+          recurrence=""
+          dateTime
+          localDateTimeQuickDates
+          lightsOnTime="00:15"
+          lightsOffTime="23:45"
+          onDueDateChange={onDueDateChange}
+          onReminderChange={jest.fn()}
+          onRecurrenceChange={jest.fn()}
+          accessibilityPrefix="Campaign"
+        />
+      );
+
+      const choices = [
+        ["Today", "2026-10-09T00:00"],
+        ["This evening", "2026-10-09T18:00"],
+        ["Tomorrow", "2026-10-10T00:00"],
+        ["Next lights on", "2026-10-10T00:15"],
+        ["Next lights off", "2026-10-09T23:45"],
+        ["In 3 days", "2026-10-12T00:00"],
+        ["In 7 days", "2026-10-16T00:00"],
+        ["In 14 days", "2026-10-23T00:00"],
+        ["In 21 days", "2026-10-30T00:00"],
+        ["Next week", "2026-10-12T00:00"]
+      ];
+      for (const [label, expected] of choices) {
+        fireEvent.press(screen.getByLabelText(`Campaign quick date ${label}`));
+        expect(onDueDateChange).toHaveBeenLastCalledWith(expected);
+      }
+      // Local constructors keep these assertions independent of the runner's zone.
+      // In a non-UTC zone one edge also differs from the UTC calendar date.
+      expect(onDueDateChange.mock.calls[0][0].slice(0, 10)).toBe("2026-10-09");
+      if (now.toISOString().slice(0, 10) !== "2026-10-09") {
+        expect(onDueDateChange.mock.calls[0][0].slice(0, 10)).not.toBe(
+          now.toISOString().slice(0, 10)
+        );
+      }
+    }
+  );
+
+  it("keeps the chosen lights time on its next local day for opted-in timed dates", () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 9, 9, 7, 30));
+    const onDueDateChange = jest.fn();
+    const screen = render(
+      <SchedulePicker
+        dueDate=""
+        reminder=""
+        recurrence=""
+        dateTime
+        localDateTimeQuickDates
+        lightsOnTime="06:15"
+        lightsOffTime="18:45"
+        onDueDateChange={onDueDateChange}
+        onReminderChange={jest.fn()}
+        onRecurrenceChange={jest.fn()}
+        accessibilityPrefix="Campaign"
+      />
+    );
+
+    fireEvent.press(screen.getByLabelText("Campaign quick date Next lights on"));
+    expect(onDueDateChange).toHaveBeenLastCalledWith("2026-10-10T06:15");
+    fireEvent.press(screen.getByLabelText("Campaign quick date Next lights off"));
+    expect(onDueDateChange).toHaveBeenLastCalledWith("2026-10-09T18:45");
+  });
+
+  it.each([
+    { dateTime: true },
+    { dateTime: true, localDateTimeQuickDates: false },
+    { dateTime: false, localDateTimeQuickDates: true },
+    { dateTime: true, allDay: true, localDateTimeQuickDates: true }
+  ])("preserves existing quick dates when the opt-in is inactive: %j", (options) => {
+    jest.useFakeTimers();
+    const now = new Date(2026, 9, 9, 23, 30);
+    jest.setSystemTime(now);
+    const onDueDateChange = jest.fn();
+    const screen = render(
+      <SchedulePicker
+        dueDate=""
+        reminder=""
+        recurrence=""
+        {...options}
+        onDueDateChange={onDueDateChange}
+        onReminderChange={jest.fn()}
+        onRecurrenceChange={jest.fn()}
+        accessibilityPrefix="Existing workflow"
+      />
+    );
+    const nextDay = new Date(now);
+    nextDay.setDate(nextDay.getDate() + 1);
+
+    fireEvent.press(screen.getByLabelText("Existing workflow quick date Today"));
+    expect(onDueDateChange).toHaveBeenLastCalledWith(now.toISOString().slice(0, 10));
+    fireEvent.press(screen.getByLabelText("Existing workflow quick date Tomorrow"));
+    expect(onDueDateChange).toHaveBeenLastCalledWith(nextDay.toISOString().slice(0, 10));
+    fireEvent.press(screen.getByLabelText("Existing workflow quick date This evening"));
+    expect(onDueDateChange).toHaveBeenLastCalledWith(
+      `${now.toISOString().slice(0, 10)}T18:00`
+    );
+  });
+
   it("supports the shared quick schedule chips from task workflows", () => {
     const onDueDateChange = jest.fn();
     const screen = render(

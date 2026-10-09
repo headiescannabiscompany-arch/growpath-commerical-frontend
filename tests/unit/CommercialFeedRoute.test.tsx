@@ -15,6 +15,10 @@ jest.mock("@/api/storefront", () => ({
   fetchStorefront: (...args: any[]) => mockStorefront(...args)
 }));
 let mockUserId = "seller-1";
+jest.mock("@/utils/feedCampaignSchedule", () => ({
+  ...jest.requireActual("@/utils/feedCampaignSchedule"),
+  getFeedCampaignTimeZone: () => "America/New_York"
+}));
 jest.mock("@/api/products", () => ({
   fetchProducts: (...args: any[]) => mockProducts(...args)
 }));
@@ -902,8 +906,8 @@ describe("CommercialFeedRoute", () => {
             linkedTrialId: "trial-demo-1",
             linkedGrowId: "trial-demo-1",
             growInterests: ["living soil", "recipe building"],
-            campaignStartsAt: "2026-07-17T21:00",
-            campaignEndsAt: "2026-07-24T21:00",
+            campaignStartsAt: "2026-07-18T01:00:00.000Z",
+            campaignEndsAt: "2026-07-25T01:00:00.000Z",
             recurrenceRule: "weekly",
             allDay: true,
             calendarType: "commercial_feed_campaign_setup",
@@ -972,8 +976,8 @@ describe("CommercialFeedRoute", () => {
           linkedForumThreadId: "thread-q-and-a",
           imageUrl: "https://example.com/demo.jpg",
           creativeImageUrl: "https://example.com/demo.jpg",
-          startsAt: "2026-07-17T21:00",
-          endsAt: "2026-07-24T21:00",
+          startsAt: "2026-07-18T01:00:00.000Z",
+          endsAt: "2026-07-25T01:00:00.000Z",
           reminderPreference: "1 hour before",
           recurrenceRule: "weekly",
           placements: ["feed", "tool"],
@@ -982,6 +986,97 @@ describe("CommercialFeedRoute", () => {
       })
     );
   });
+
+  it.each(["commercial", "facility"])(
+    "submits the selected local expiry as an explicit instant for %s",
+    async (mode) => {
+      mockMode = mode;
+      const screen = render(<CommercialFeedRoute />);
+      await screen.findByText(
+        mode === "facility" ? "Facility Outreach" : "Feed / Campaigns"
+      );
+      if (mode === "facility") {
+        fireEvent.press(screen.getByLabelText("Show advanced destination references"));
+      } else {
+        fireEvent.press(screen.getByLabelText("Select General campaign campaign type"));
+      }
+      fireEvent.changeText(
+        screen.getByLabelText("Feed campaign title"),
+        "Local education event"
+      );
+      fireEvent.changeText(
+        screen.getByLabelText("Feed campaign body"),
+        "Learn together."
+      );
+      fireEvent.changeText(
+        screen.getByLabelText("External link URL"),
+        "https://example.com/education"
+      );
+      fireEvent.changeText(
+        screen.getByLabelText("Feed campaign image URL"),
+        "https://example.com/education.jpg"
+      );
+      fireEvent(screen.getByLabelText("Feed campaign image preview"), "load");
+      chooseDateTime(screen, "Feed campaign schedule end", "2026-10-09T12:58");
+      expect(screen.getByText("Ready to publish.")).toBeTruthy();
+      fireEvent.press(
+        screen.getByLabelText(
+          mode === "facility" ? "Publish facility outreach" : "Publish feed campaign"
+        )
+      );
+      await waitFor(() =>
+        expect(mockApiRequest).toHaveBeenCalledWith(
+          "/api/commercial/feed",
+          expect.objectContaining({
+            method: "POST",
+            body: expect.objectContaining({
+              workspaceType: mode,
+              startsAt: undefined,
+              endsAt: "2026-10-09T16:58:00.000Z",
+              status: "active"
+            })
+          })
+        )
+      );
+    }
+  );
+
+  it.each([
+    ["2026-03-08T02:30", /does not exist/],
+    ["2026-11-01T01:30", /occurs twice/]
+  ])(
+    "keeps the draft and blocks both writes for clock-change time %s",
+    async (value, warning) => {
+      const screen = render(<CommercialFeedRoute />);
+      await screen.findByText("Feed / Campaigns");
+      fireEvent.changeText(
+        screen.getByLabelText("Feed campaign title"),
+        "Keep this schedule draft"
+      );
+      chooseDateTime(screen, "Feed campaign schedule start", value);
+      expect(screen.getAllByText(warning).length).toBeGreaterThan(0);
+      expect(
+        screen.getByLabelText("Publish feed campaign").props.accessibilityState?.disabled
+      ).toBe(true);
+      expect(
+        screen.getByLabelText("Create feed campaign setup task").props.accessibilityState
+          ?.disabled
+      ).toBe(true);
+      fireEvent.press(screen.getByLabelText("Publish feed campaign"));
+      fireEvent.press(screen.getByLabelText("Create feed campaign setup task"));
+      expect(
+        mockApiRequest.mock.calls.some(
+          ([path, options]) =>
+            ["/api/commercial/feed", "/api/tasks"].includes(path) &&
+            options?.method === "POST"
+        )
+      ).toBe(false);
+      expect(screen.getByLabelText("Feed campaign title").props.value).toBe(
+        "Keep this schedule draft"
+      );
+      expect(screen.getAllByText(warning).length).toBeGreaterThan(0);
+    }
+  );
 
   it("focuses a linked live campaign from live reminder route params", async () => {
     mockRouteParams = { liveId: "live-1" };

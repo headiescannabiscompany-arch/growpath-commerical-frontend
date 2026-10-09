@@ -10,6 +10,14 @@ import {
 } from "@/knowledge";
 
 describe("GrowPath knowledge registries", () => {
+  it.each(["commercial-workflow", "facility-workflow"])(
+    "keeps %s campaign timing explicit without changing other schedulers",
+    (methodId) => {
+      expect(getMethod(methodId)?.requiredOutputs).toContain(
+        "Feed campaign start/end, planned status and setup-task timestamp metadata use the same explicit ISO instants resolved from the displayed device timezone; reject invalid or ambiguous/nonexistent clock-change times without writes or draft loss. Campaign-only quick dates use local calendar/time while all-day task dates, other scheduler callers and stored campaigns remain unchanged."
+      );
+    }
+  );
   it("keeps the general crop calendar separate from cannabis-only tool access", () => {
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
       "Do not gate the general Grow Planner / Auto Grow Calendar route or interest filter behind cannabis visibility; preserve selected-grow context, ownership, entitlements, and separate cannabis-only tool restrictions."

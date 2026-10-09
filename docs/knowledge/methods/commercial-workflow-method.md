@@ -151,6 +151,16 @@ Commercial tab navigation must expose only the active screen to web keyboard and
 
 Commercial campaign, live-event, production, trial, and task dates use the shared date picker with direct year, month, and day selection. Timed events also expose hour and minute selection. Persist stable ISO date or local date-time values while presenting readable dates; never require an ordinary Commercial user to type an ISO date string.
 
+Standard Feed campaign authoring interprets its start/end selections in the displayed
+device timezone and reuses the existing strict timezone converter before sending
+explicit ISO instants. Validation, planned status and setup-task campaign timestamp
+metadata use the same instants. Reject invalid, nonexistent or ambiguous clock-change
+times visibly without publishing, creating a task with invalid timing, or clearing the
+draft. This form alone opts in to local-calendar quick dates with an explicit time
+(midnight for date-only shortcuts); its all-day setup-task due date remains the
+selected calendar date. Do not alter other scheduler callers, recurrence/reminder
+delivery, backend parsing or previously stored campaigns for this correction.
+
 Commercial grow tools that require grow context must never link to an empty `growId`. When
 the workspace has no grow, keep the tools visibly gated by that prerequisite and provide a
 named Create Grow action. Once a grow exists, integrations, reports, journals, timelines,

@@ -144,6 +144,13 @@ dashboard summaries never certify compliance or grant permission to a linked act
 
 Facility outreach analytics use the same recorded Feed campaign events as Commercial while remaining facility scoped. Measure education/outreach impressions, clicks, explicit conversions, hides, and reports without introducing direct-sales claims or exposing viewer identity in owner-facing summaries.
 
+Facility outreach uses the same Feed campaign local-clock boundary as Commercial:
+resolve the displayed device timezone to explicit ISO start/end instants before
+publication or setup-task campaign metadata. Reject invalid and ambiguous/nonexistent
+clock-change times without writes or draft loss. Campaign quick dates use the local
+calendar and an explicit time; preserve all-day task due dates, other Facility
+schedulers, membership gates, reminders and existing stored records unchanged.
+
 Facility outreach destinations must be selected from readable public course, live-event, and Forum/Q&A records whenever those lists are available. Show record titles instead of internal identifiers, preserve the selected canonical identifier in the campaign payload, and keep manual identifiers or slugs behind an explicitly labeled advanced fallback. A failure in one destination list must not erase the other lists or prevent an authorized operator from using a known valid reference.
 
 Facility Forum participation uses the shared discussion engine with membership-verified Facility identity and Facility/room/SOP-adjacent context links. Facility-only discussion must remain scoped to the selected Facility and must not become public commercial advertising.

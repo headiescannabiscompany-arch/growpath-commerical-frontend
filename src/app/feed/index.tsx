@@ -42,6 +42,10 @@ import {
 import { resolveImageUri } from "@/utils/photoUploads";
 import { useCampaignImagePreview } from "@/hooks/useCampaignImagePreview";
 import { sharePublicLink } from "@/utils/publicLinks";
+import {
+  getFeedCampaignTimeZone,
+  resolveFeedCampaignSchedule
+} from "@/utils/feedCampaignSchedule";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
@@ -162,8 +166,7 @@ function campaignReadinessWarnings({
   linkedForumThreadId,
   externalLinkUrl,
   imageUrl,
-  campaignStart,
-  campaignEnd,
+  scheduleWarnings,
   placements
 }: {
   campaignKind: CampaignKind;
@@ -175,11 +178,10 @@ function campaignReadinessWarnings({
   linkedForumThreadId: string;
   externalLinkUrl: string;
   imageUrl: string;
-  campaignStart: string;
-  campaignEnd: string;
+  scheduleWarnings: string[];
   placements: FeedCampaignPlacement[];
 }) {
-  const warnings: string[] = [];
+  const warnings: string[] = [...scheduleWarnings];
   const hasDestination =
     linkedProductId.trim() ||
     linkedProductLineId.trim() ||
@@ -212,23 +214,6 @@ function campaignReadinessWarnings({
   }
   if (externalLinkUrl.trim() && !/^https?:\/\//i.test(externalLinkUrl.trim())) {
     warnings.push("External destination must start with http:// or https://.");
-  }
-  const start = campaignStart.trim() ? new Date(campaignStart.trim()) : null;
-  const end = campaignEnd.trim() ? new Date(campaignEnd.trim()) : null;
-  if (start && Number.isNaN(start.getTime())) {
-    warnings.push("Campaign start date is invalid.");
-  }
-  if (end && Number.isNaN(end.getTime())) {
-    warnings.push("Campaign end date is invalid.");
-  }
-  if (
-    start &&
-    end &&
-    !Number.isNaN(start.getTime()) &&
-    !Number.isNaN(end.getTime()) &&
-    end <= start
-  ) {
-    warnings.push("Campaign end must be after its start.");
   }
   if (!placements.length) {
     warnings.push("Select at least one campaign placement.");
@@ -764,6 +749,11 @@ function CommercialFeedForm({
   }, [allowedCampaignKinds, campaignKind]);
 
   const canAccess = ent.ready;
+  const campaignTimeZone = getFeedCampaignTimeZone();
+  const campaignSchedule = useMemo(
+    () => resolveFeedCampaignSchedule(campaignStart, campaignEnd, campaignTimeZone),
+    [campaignStart, campaignEnd, campaignTimeZone]
+  );
   const readinessWarnings = campaignReadinessWarnings({
     campaignKind,
     linkedProductId,
@@ -774,8 +764,7 @@ function CommercialFeedForm({
     linkedForumThreadId,
     externalLinkUrl,
     imageUrl,
-    campaignStart,
-    campaignEnd,
+    scheduleWarnings: campaignSchedule.warnings,
     placements
   });
   const canCreate =
@@ -967,7 +956,7 @@ function CommercialFeedForm({
         facilityId: isFacility ? ent.facilityId || undefined : undefined,
         campaignType: canonicalCampaignType(campaignKind),
         status:
-          campaignStart.trim() && new Date(campaignStart.trim()) > new Date()
+          campaignSchedule.startsAt && new Date(campaignSchedule.startsAt) > new Date()
             ? "scheduled"
             : "active",
         title: cleanTitle,
@@ -986,8 +975,8 @@ function CommercialFeedForm({
         linkedForumThreadId: linkedForumThreadId.trim() || undefined,
         storefrontSlug: storefrontSlug.trim() || undefined,
         imageUrl: imageUrl.trim() || undefined,
-        startsAt: campaignStart.trim() || undefined,
-        endsAt: campaignEnd.trim() || undefined,
+        startsAt: campaignSchedule.startsAt,
+        endsAt: campaignSchedule.endsAt,
         reminderPreference: campaignReminder.trim() || undefined,
         recurrenceRule: campaignRecurrence.trim() || undefined,
         externalLinks: cleanExternalUrl
@@ -1031,6 +1020,7 @@ function CommercialFeedForm({
 
   async function createCampaignSetupTask() {
     if (!readinessWarnings.length || creatingSetupTask || !title.trim()) return;
+    if (campaignSchedule.warnings.length) return;
     setCreatingSetupTask(true);
     setError(null);
     setFeedback("");
@@ -1058,8 +1048,8 @@ function CommercialFeedForm({
           linkedForumThreadId: linkedForumThreadId.trim() || undefined,
           linkedStorefrontSlug: storefrontSlug.trim() || undefined,
           growInterests: splitTags(growInterests),
-          campaignStartsAt: campaignStart.trim() || undefined,
-          campaignEndsAt: campaignEnd.trim() || undefined,
+          campaignStartsAt: campaignSchedule.startsAt,
+          campaignEndsAt: campaignSchedule.endsAt,
           recurrenceRule: campaignRecurrence.trim() || undefined,
           allDay: true,
           calendarType: `${isFacility ? "facility" : "commercial"}_feed_campaign_setup`,
@@ -1568,11 +1558,25 @@ function CommercialFeedForm({
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Create feed campaign setup task"
-                    disabled={creatingSetupTask || !title.trim()}
+                    disabled={
+                      creatingSetupTask ||
+                      !title.trim() ||
+                      campaignSchedule.warnings.length > 0
+                    }
+                    accessibilityState={{
+                      disabled:
+                        creatingSetupTask ||
+                        !title.trim() ||
+                        campaignSchedule.warnings.length > 0
+                    }}
                     onPress={createCampaignSetupTask}
                     style={[
                       styles.secondaryButton,
-                      creatingSetupTask || !title.trim() ? styles.disabled : null
+                      creatingSetupTask ||
+                      !title.trim() ||
+                      campaignSchedule.warnings.length > 0
+                        ? styles.disabled
+                        : null
                     ]}
                   >
                     <Text style={styles.secondaryButtonText}>
@@ -1661,6 +1665,8 @@ function CommercialFeedForm({
                 </Text>
                 <SchedulePicker
                   dateTime
+                  localDateTimeQuickDates
+                  timezone={campaignTimeZone}
                   dueDate={campaignStart}
                   reminder={campaignReminder}
                   recurrence={campaignRecurrence}
@@ -1677,6 +1683,7 @@ function CommercialFeedForm({
                 />
                 <CalendarDateField
                   mode="datetime"
+                  timeZoneLabel={campaignTimeZone}
                   label="Campaign end"
                   value={campaignEnd}
                   onChange={setCampaignEnd}
@@ -1696,7 +1703,8 @@ function CommercialFeedForm({
             <Text style={styles.linkBoxText}>
               CTA: {ctaLabel.trim() || externalLinkLabel.trim() || "Open"} · Will publish
               as:{" "}
-              {campaignStart.trim() && new Date(campaignStart.trim()) > new Date()
+              {campaignSchedule.startsAt &&
+              new Date(campaignSchedule.startsAt) > new Date()
                 ? "Scheduled"
                 : "Active"}
               {cannabisSpecific ? " · Marked cannabis content" : ""}
