@@ -210,6 +210,15 @@ Commercial Inventory Support creation is a single confirmed write. Quantity and 
 
 Commercial Inventory Support list loading, record refresh, and detail editing must be single-flight. A blank quantity or reorder point remains unknown, while every supplied value must be finite and non-negative; never silently omit an invalid detail value. Lock detail fields and refresh while saving, retain the owner's draft after failure, and show load retry, progress, save success, and load/save errors inside the page. A failed or competing refresh must not overwrite an unsaved detail draft or detach the record from its existing Commercial links.
 
+Commercial Inventory Support detail also provides Archive Item under the B-02 method's
+existing soft-archive contract. Require a named in-page confirmation against the saved
+matching record, keep cancellation and failure draft-safe, and serialize archival with
+reads, saves and lot/movement operations. Stock rejection and audit retention remain
+server-authoritative; no quantity adjustment, hard deletion or new ledger is implied.
+Identity/session/workspace/capability/route changes clear confirmation and private state
+and suppress late completion feedback or navigation. Success returns to the canonical
+Commercial inventory list; archived history remains read-only.
+
 Commercial analytics must be owner-scoped and event-backed. Attribute public storefront, product, course, and live activity through a published storefront; combine it with recorded Feed events, course engagement, live RSVPs, and paid internal orders. Preserve order currency, sanitize event labels and grow interests, and never infer a view, click, conversion, RSVP, order, or revenue value from another event. Keep one level-one Commercial Analytics page heading and expose each metrics, breakdown, and guidance section as a level-two heading.
 
 Commercial Forum participation uses the shared discussion engine and a server-verified brand identity. Preserve links to products, courses, lessons, lives, storefronts, evidence runs, tasks, and alerts, but keep promotional outreach in Feed campaigns.

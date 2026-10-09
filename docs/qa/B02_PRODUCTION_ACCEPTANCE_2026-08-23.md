@@ -278,5 +278,29 @@ backend `dd63b7ce3b5e9f2aef9404d8755ce9877bebe993` on production parent `a655e09
 local only, no runtime change or release. Lists/private fields, copied foreign IDs,
 import history and modern/legacy audit query scope covered for two identities.
 This does NOT close hosted same-type switch/reload, membership middleware or
-populated audit evidence. Prior production acceptance below remains intact.
+populated audit evidence. Prior production acceptance above remains intact.
 See `outputs/B02_Same_Type_Isolation_Preflight_2026-10-09.md` in the root workspace.
+
+## October 9 Commercial archive-control gap — local repair only
+
+The approved zero-stock staging fixture exposed a missing Commercial Archive action;
+the existing B-02 backend already supplies audited zero-balance soft archive. The
+shared normal/legacy Commercial detail now adds a named in-page confirmation,
+draft-safe cancel/failure, operation serialization, matching readable-record checks,
+context invalidation and canonical inventory-list return. No backend/ledger rewrite.
+Two method documents and the runtime registry record the same bounded behavior.
+
+148 unique checks across six affected suites passed, including 37 final Commercial
+inventory-state checks, full TypeScript, focused source lint, contamination and diff
+checks. Independent review found no actionable issue. Local production-target web
+export also passed (`dist-b02-commercial-archive-20261009`, bundle
+`index-a49413d980be3095d5781c0383744fb6.js`); this does not deploy production.
+The broader business-production textual guard has an unchanged pre-existing failure:
+its Facility-list regex still expects inline apiRequest, whereas accepted Facility
+code uses useFacilityCollectionRead. No Facility rewrite was performed for that guard.
+
+Hosted archive and same-type isolation remain OPEN. Only the approved QA C zero-stock
+fixture exists; its save/reload and actual complete audit export passed. Its archive
+cleanup remains mandatory. Admin sign-in and the second fixture are pending. No
+production changes, new account/Facility pair, stock movements or paid infrastructure.
+Exact private fixture ID/CSV digest and outstanding cleanup are in the root receipt.

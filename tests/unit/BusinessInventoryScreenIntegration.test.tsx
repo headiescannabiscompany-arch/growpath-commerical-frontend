@@ -19,7 +19,12 @@ const mockReplace = jest.fn();
 const mockRouter = { push: mockPush, replace: mockReplace };
 const mockApiErrorHook: any = (error: unknown) => mockMapApiError(error);
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "qa-inventory" }, token: "test-session" })
+  useAuth: () => ({
+    user: { id: "qa-inventory" },
+    token: "test-session",
+    isAuthed: true,
+    isHydrating: false
+  })
 }));
 mockApiErrorHook.clearError = mockClearError;
 mockApiErrorHook.error = null;

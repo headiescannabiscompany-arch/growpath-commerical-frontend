@@ -1,5 +1,19 @@
 # Business Inventory (B-02) method
 
+Commercial Inventory detail exposes Archive Item through a separate in-page confirmation
+naming the saved record, not an unsaved edited name. Archival uses the existing owner-scoped
+ledger endpoint; the server rejects remaining item or active-lot stock, soft-archives only
+the selected record, and retains its audit history. Unsaved changes are not saved by archive;
+Cancel performs no write or draft reset, and failure retains the record and draft for a
+deliberate retry. There is no restore action on this screen. A confirmed archive returns to
+the canonical Commercial inventory list. Current capability, a matching readable saved
+record and a finite stock balance are prerequisites; failed/stale reads or archived records
+cannot authorize writes. Archive, saves, refresh/history and existing lot/movement operations
+serialize. Same-context read recovery preserves drafts; refresh invalidates confirmation.
+Account, session, workspace, capability and route changes discard private state and ignore
+late completions, including successful archive navigation. Session credentials are never
+rendered as component keys. Local tests are not hosted archival or isolation evidence.
+
 Facility Inventory detail requires a matching saved identity and finite stock balance before enabling changes. Failed reads offer visible Retry without claiming missing or zero stock; retained snapshots are labeled and same-context retries preserve detail, movement and lot drafts. Refresh, history reads, detail saves, movements, lot creation and removal serialize. Removal names the saved item, requires explicit confirmation, preserves drafts on Cancel and retains the backend archival/ledger rules. Archived history remains readable. Confirmed writes distinguish failed follow-up reads; account, session, Facility, role and route changes clear drafts and ignore late completions. Hosted missing-record/read-only evidence is distinct from automated populated-write tests.
 
 B-02 is GrowPathAI's one canonical inventory ledger for Commercial and Facility workspaces.

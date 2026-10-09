@@ -218,6 +218,11 @@ production migration, deployment or live multi-role workflow gate.
 October9 same-type isolation addendum: test-only local backend `dd63b7c` on
 production-aligned `a655e09` adds eight Commercial/Facility read-scope contracts;
 90/90 route tests PASS. No runtime change/deploy or hosted isolation acceptance.
+Subsequent approved staging fixture exposed a missing Commercial Archive control.
+Narrow frontend repair is LOCAL only: 148 unique checks/six suites, types/lint,
+independent review and offline web export PASS. Actual QA C zero-stock save/reload/
+complete audit export passed; fixture cleanup, second Admin session and hosted
+archive/isolation remain OPEN. No backend change, stock movement or production release.
 The August23 production receipt retains its exact open gates. Root evidence:
 `outputs/B02_Same_Type_Isolation_Preflight_2026-10-09.md`.
 

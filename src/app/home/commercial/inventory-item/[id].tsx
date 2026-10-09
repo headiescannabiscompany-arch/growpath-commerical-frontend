@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -28,6 +35,7 @@ import {
 import { BusinessInventoryOperations } from "@/components/inventory/BusinessInventoryOperations";
 import { BusinessInventoryAlerts } from "@/components/inventory/BusinessInventoryAlerts";
 import CalendarDateField from "@/components/forms/CalendarDateField";
+import { useAuth } from "@/auth/AuthContext";
 
 type AnyRec = Record<string, any>;
 
@@ -79,7 +87,40 @@ function draftFromItem(item: AnyRec | null) {
   };
 }
 
+function inventoryScope(values: unknown[], generation: number) {
+  return {
+    generation,
+    matches: (next: unknown[]) => values.every((value, index) => value === next[index])
+  };
+}
+
 export default function CommercialInventoryItemDetailRoute() {
+  const auth = useAuth();
+  const ent = useEntitlements();
+  const params = useLocalSearchParams();
+  const values = [
+    auth.user?.id || auth.user?._id,
+    auth.token,
+    auth.isAuthed,
+    auth.isHydrating,
+    ent.ready,
+    ent.mode,
+    ent.facilityId,
+    ent.facilityRole,
+    !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE),
+    safeId(params)
+  ];
+  // Keep session identity in a closure, not a rendered React key or URL.
+  const [scope, setScope] = useState(() => inventoryScope(values, 0));
+  if (!scope.matches(values)) {
+    setScope(inventoryScope(values, scope.generation + 1));
+    return null;
+  }
+  if (!auth.isAuthed || auth.isHydrating || !ent.ready) return null;
+  return <CommercialInventoryItemDetailContent key={scope.generation} />;
+}
+
+function CommercialInventoryItemDetailContent() {
   const { palette } = useAppTheme();
   const styles = useMemo(
     () => createCommercialInventoryItemDetailStyles(palette),
@@ -102,22 +143,90 @@ export default function CommercialInventoryItemDetailRoute() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const [confirmingArchive, setConfirmingArchive] = useState(false);
+  const [archiveError, setArchiveError] = useState<any>(null);
+  const [childBusy, setChildBusy] = useState(false);
+  const [archivedHere, setArchivedHere] = useState(false);
   const [loadError, setLoadError] = useState<any>(null);
   const [saveError, setSaveError] = useState<any>(null);
   const [feedback, setFeedback] = useState("");
   const [draft, setDraft] = useState(() => draftFromItem(null));
   const loadInFlightRef = useRef(false);
   const saveInFlightRef = useRef(false);
+  const mounted = useRef(true);
+  const draftInitialized = useRef(false);
+  useLayoutEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  const canEdit = !!ent?.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE);
+  const itemArchived = Boolean(
+    archivedHere || item?.deletedAt || item?.itemStatus === "archived"
+  );
+  const readable = !!item && !loadError && !loading && !refreshing;
+  const busy =
+    loading || refreshing || loadingOlderMovements || saving || archiving || childBusy;
+  const canMutate = canEdit && readable && !busy && !itemArchived;
+  const canSave = canMutate && !confirmingArchive;
+  const fieldsLocked = busy || confirmingArchive || !readable || itemArchived;
+  const itemPath = useCallback(
+    () =>
+      (endpoints as any)?.commercial?.inventoryItem?.(id) ??
+      (endpoints as any)?.inventoryItemGlobal?.(id) ??
+      `/api/inventory/${encodeURIComponent(id)}`,
+    [id]
+  );
+
+  const matchingItem = useCallback(
+    (response: any) => {
+      const record =
+        response && Object.prototype.hasOwnProperty.call(response, "item")
+          ? response.item
+          : response;
+      const identity = record?.id ?? record?._id;
+      const quantity =
+        record?.quantity ?? record?.quantityOnHand ?? record?.qty ?? record?.onHand;
+      if (
+        !record ||
+        typeof record !== "object" ||
+        Array.isArray(record) ||
+        typeof identity !== "string" ||
+        identity !== id ||
+        (record.id && record._id && record.id !== record._id) ||
+        quantity == null ||
+        typeof quantity === "boolean" ||
+        String(quantity).trim() === "" ||
+        !Number.isFinite(Number(quantity))
+      ) {
+        throw new Error(
+          "The inventory record is unavailable. Retry to load the saved item."
+        );
+      }
+      return record;
+    },
+    [id]
+  );
 
   const load = useCallback(
-    async (opts?: { refresh?: boolean }) => {
-      if (loadInFlightRef.current || saveInFlightRef.current) return;
+    async (opts?: { refresh?: boolean; afterWrite?: boolean }) => {
+      if (
+        !mounted.current ||
+        loadInFlightRef.current ||
+        (saveInFlightRef.current && !opts?.afterWrite) ||
+        archivedHere
+      )
+        return;
       if (!id) {
         setLoading(false);
         setLoadError(new Error("This inventory link is missing its record ID."));
         return;
       }
       loadInFlightRef.current = true;
+      setConfirmingArchive(false);
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -125,13 +234,9 @@ export default function CommercialInventoryItemDetailRoute() {
       try {
         setLoadError(null);
 
-        const path =
-          (endpoints as any)?.commercial?.inventoryItem?.(id) ??
-          (endpoints as any)?.inventoryItemGlobal?.(id) ??
-          `/api/inventory/${encodeURIComponent(id)}`;
-
-        const res = await apiRequest(path, { method: "GET" });
-        const nextItem = res?.item ?? res ?? null;
+        const res = await apiRequest(itemPath(), { method: "GET" });
+        if (!mounted.current) return;
+        const nextItem = matchingItem(res);
         setItem(nextItem);
         setLots(Array.isArray(res?.lots) ? res.lots : []);
         setMovements(Array.isArray(res?.movements) ? res.movements : []);
@@ -146,22 +251,38 @@ export default function CommercialInventoryItemDetailRoute() {
               }
             : null
         );
-        setDraft(draftFromItem(nextItem));
+        if (!draftInitialized.current) {
+          setDraft(draftFromItem(nextItem));
+          draftInitialized.current = true;
+        }
       } catch (e) {
-        setLoadError(mapApiError(e) ?? e);
+        if (mounted.current) setLoadError(mapApiError(e) ?? e);
       } finally {
         loadInFlightRef.current = false;
-        setLoading(false);
-        setRefreshing(false);
+        if (mounted.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
-    [id, mapApiError]
+    [id, mapApiError, itemPath, matchingItem, archivedHere]
   );
 
   const loadOlderMovements = useCallback(async () => {
     const cursor = String(movementPage?.nextCursor || "").trim();
-    if (!id || !movementPage?.hasMore || !cursor || loadingOlderMovements) return;
+    if (
+      !mounted.current ||
+      !id ||
+      !readable ||
+      !movementPage?.hasMore ||
+      !cursor ||
+      loadInFlightRef.current ||
+      saveInFlightRef.current ||
+      confirmingArchive
+    )
+      return;
 
+    loadInFlightRef.current = true;
     setLoadingOlderMovements(true);
     setLoadError(null);
     try {
@@ -173,6 +294,7 @@ export default function CommercialInventoryItemDetailRoute() {
         `${basePath}?movementLimit=50&movementCursor=${encodeURIComponent(cursor)}`,
         { method: "GET" }
       );
+      if (!mounted.current) return;
       const older = Array.isArray(res?.movements) ? res.movements : [];
       setMovements((current) => mergeBusinessInventoryMovements(current, older));
       setMovementPage(
@@ -187,11 +309,12 @@ export default function CommercialInventoryItemDetailRoute() {
           : null
       );
     } catch (caught) {
-      setLoadError(mapApiError(caught) ?? caught);
+      if (mounted.current) setLoadError(mapApiError(caught) ?? caught);
     } finally {
-      setLoadingOlderMovements(false);
+      loadInFlightRef.current = false;
+      if (mounted.current) setLoadingOlderMovements(false);
     }
-  }, [id, loadingOlderMovements, mapApiError, movementPage]);
+  }, [id, readable, confirmingArchive, mapApiError, movementPage]);
 
   useEffect(() => {
     if (!ent?.ready) return;
@@ -203,11 +326,16 @@ export default function CommercialInventoryItemDetailRoute() {
   }, [ent?.ready, ent?.mode, load, router]);
 
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
-  const canEdit = !!ent?.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE);
-  const canSave = canEdit && !!item && !!id && !saving;
-
   const save = useCallback(async () => {
-    if (!id || !item || !canEdit || saveInFlightRef.current) return;
+    if (
+      !mounted.current ||
+      !id ||
+      !item ||
+      !canSave ||
+      loadInFlightRef.current ||
+      saveInFlightRef.current
+    )
+      return;
     if (!draft.name.trim() || !draft.sku.trim() || !draft.unit.trim()) {
       setSaveError(new Error("Name, SKU, and stock-counting unit are required."));
       setFeedback("");
@@ -265,18 +393,61 @@ export default function CommercialInventoryItemDetailRoute() {
         method: "PATCH",
         data: payload
       });
-
-      const nextItem = res?.item ?? res ?? item;
+      if (!mounted.current) return;
+      const nextItem = matchingItem(res);
       setItem(nextItem);
       setDraft(draftFromItem(nextItem));
       setFeedback("Inventory support record updated.");
     } catch (e) {
-      setSaveError(mapApiError(e) ?? e);
+      if (mounted.current) setSaveError(mapApiError(e) ?? e);
     } finally {
       saveInFlightRef.current = false;
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
-  }, [canEdit, draft, id, item, mapApiError]);
+  }, [canSave, draft, id, item, mapApiError, matchingItem]);
+
+  const archive = async () => {
+    if (
+      !mounted.current ||
+      !canMutate ||
+      !confirmingArchive ||
+      loadInFlightRef.current ||
+      saveInFlightRef.current
+    )
+      return;
+    saveInFlightRef.current = true;
+    setArchiving(true);
+    setArchiveError(null);
+    try {
+      await apiRequest(itemPath(), { method: "DELETE" });
+      if (!mounted.current) return;
+      setArchivedHere(true);
+      setConfirmingArchive(false);
+      router.replace("/home/commercial/inventory");
+    } catch (error) {
+      if (mounted.current) setArchiveError(mapApiError(error) ?? error);
+    } finally {
+      saveInFlightRef.current = false;
+      if (mounted.current) setArchiving(false);
+    }
+  };
+
+  const beginChildOperation = () => {
+    if (
+      !mounted.current ||
+      !canSave ||
+      loadInFlightRef.current ||
+      saveInFlightRef.current
+    )
+      return false;
+    saveInFlightRef.current = true;
+    setChildBusy(true);
+    return true;
+  };
+  const endChildOperation = () => {
+    saveInFlightRef.current = false;
+    if (mounted.current) setChildBusy(false);
+  };
 
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") return null;
@@ -307,7 +478,7 @@ export default function CommercialInventoryItemDetailRoute() {
         refreshControl={
           <RefreshControl
             colors={[palette.accent]}
-            enabled={!saving}
+            enabled={!busy}
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
             tintColor={palette.accent}
@@ -321,12 +492,9 @@ export default function CommercialInventoryItemDetailRoute() {
               <TouchableOpacity
                 accessibilityLabel="Retry commercial inventory record"
                 accessibilityRole="button"
-                disabled={loading || saving}
+                disabled={busy}
                 onPress={() => load()}
-                style={[
-                  styles.actionBtn,
-                  (loading || saving) && styles.primaryBtnDisabled
-                ]}
+                style={[styles.actionBtn, busy && styles.primaryBtnDisabled]}
               >
                 <Text style={styles.actionText}>Retry</Text>
               </TouchableOpacity>
@@ -340,6 +508,18 @@ export default function CommercialInventoryItemDetailRoute() {
           </Text>
           <Text style={styles.muted}>id: {id || "(missing)"}</Text>
         </View>
+
+        {item && (loading || refreshing || loadError) ? (
+          <Text style={styles.muted}>
+            Showing previously loaded inventory. Retry or wait for the read before making
+            changes.
+          </Text>
+        ) : null}
+        {itemArchived ? (
+          <Text style={styles.muted}>
+            This archived item is read-only. Its record and audit history are retained.
+          </Text>
+        ) : null}
 
         {loading ? (
           <View
@@ -401,7 +581,11 @@ export default function CommercialInventoryItemDetailRoute() {
 
         {item ? (
           <BusinessInventoryOperations
-            canWrite={canEdit}
+            canWrite={canEdit && !itemArchived}
+            blocked={!readable || busy || confirmingArchive || itemArchived}
+            historyBlocked={!readable || busy || confirmingArchive}
+            onBeginOperation={beginChildOperation}
+            onEndOperation={endChildOperation}
             itemId={id}
             itemQuantity={Number.isFinite(quantity) ? quantity : 0}
             lots={lots}
@@ -409,7 +593,7 @@ export default function CommercialInventoryItemDetailRoute() {
             movements={movements}
             hasMoreMovements={Boolean(movementPage?.hasMore)}
             onLoadOlderMovements={loadOlderMovements}
-            onReload={() => load({ refresh: true })}
+            onReload={() => load({ refresh: true, afterWrite: true })}
             workspace={{}}
           />
         ) : null}
@@ -515,7 +699,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     <Text style={styles.label}>Name</Text>
                     <TextInput
                       value={draft.name}
-                      editable={!saving}
+                      editable={!fieldsLocked}
                       onChangeText={(v) => setDraft((d) => ({ ...d, name: v }))}
                       style={styles.input}
                       placeholder="Item name"
@@ -526,7 +710,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     <Text style={styles.label}>SKU</Text>
                     <TextInput
                       value={draft.sku}
-                      editable={!saving}
+                      editable={!fieldsLocked}
                       onChangeText={(v) => setDraft((d) => ({ ...d, sku: v }))}
                       style={styles.input}
                       placeholder="SKU"
@@ -537,7 +721,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     <Text style={styles.label}>Unit</Text>
                     <TextInput
                       value={draft.unit}
-                      editable={!saving}
+                      editable={!fieldsLocked}
                       onChangeText={(v) => setDraft((d) => ({ ...d, unit: v }))}
                       style={styles.input}
                       placeholder="e.g., lbs"
@@ -548,7 +732,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     <Text style={styles.label}>Reorder point</Text>
                     <TextInput
                       value={draft.reorderPoint}
-                      editable={!saving}
+                      editable={!fieldsLocked}
                       onChangeText={(v) => setDraft((d) => ({ ...d, reorderPoint: v }))}
                       style={styles.input}
                       placeholder="0"
@@ -560,7 +744,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     <Text style={styles.label}>Vendor</Text>
                     <TextInput
                       value={draft.vendor}
-                      editable={!saving}
+                      editable={!fieldsLocked}
                       onChangeText={(v) => setDraft((d) => ({ ...d, vendor: v }))}
                       style={styles.input}
                       placeholder="Vendor"
@@ -571,7 +755,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     <Text style={styles.label}>Category</Text>
                     <TextInput
                       value={draft.category}
-                      editable={!saving}
+                      editable={!fieldsLocked}
                       onChangeText={(v) => setDraft((d) => ({ ...d, category: v }))}
                       style={styles.input}
                       placeholder="Category"
@@ -582,7 +766,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     <Text style={styles.label}>Authorized unit cost</Text>
                     <TextInput
                       value={draft.authorizedUnitCost}
-                      editable={!saving}
+                      editable={!fieldsLocked}
                       onChangeText={(v) =>
                         setDraft((d) => ({ ...d, authorizedUnitCost: v }))
                       }
@@ -596,7 +780,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     <Text style={styles.label}>Currency</Text>
                     <TextInput
                       value={draft.currency}
-                      editable={!saving}
+                      editable={!fieldsLocked}
                       onChangeText={(v) => setDraft((d) => ({ ...d, currency: v }))}
                       style={styles.input}
                       placeholder="e.g., USD"
@@ -607,7 +791,7 @@ export default function CommercialInventoryItemDetailRoute() {
 
                     <CalendarDateField
                       accessibilityLabel="Commercial detail source freshness date"
-                      disabled={saving}
+                      disabled={fieldsLocked}
                       label="Source freshness date"
                       maximumDate={new Date().toISOString().slice(0, 10)}
                       onChange={(value) =>
@@ -624,7 +808,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     <Text style={styles.label}>Notes</Text>
                     <TextInput
                       value={draft.notes}
-                      editable={!saving}
+                      editable={!fieldsLocked}
                       onChangeText={(v) => setDraft((d) => ({ ...d, notes: v }))}
                       style={[styles.input, styles.notesInput]}
                       placeholder="Notes"
@@ -685,6 +869,85 @@ export default function CommercialInventoryItemDetailRoute() {
                   : "Missing inventory record id in route params."}
               </Text>
             )}
+          </View>
+        ) : null}
+
+        {item && canEdit && !itemArchived ? (
+          <View style={styles.card}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+              Archive Item
+            </Text>
+            <Text style={styles.muted}>
+              Archive an unused, duplicate or mistaken item from active inventory. Its
+              saved record and audit history remain available.
+            </Text>
+            {confirmingArchive ? (
+              <View style={styles.form}>
+                <Text
+                  accessibilityRole="header"
+                  aria-level={3}
+                  style={styles.sectionTitle}
+                >
+                  {`Archive "${item.name || item.sku || "this inventory item"}"?`}
+                </Text>
+                <Text style={styles.muted}>
+                  This archives the saved item and retains its record and audit history.
+                  Unsaved edits are not saved. Items or active lots with stock remaining
+                  cannot be archived. This screen has no restore action.
+                </Text>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel commercial inventory archive"
+                  accessibilityState={{ disabled: busy }}
+                  disabled={busy}
+                  onPress={() => {
+                    setConfirmingArchive(false);
+                    setArchiveError(null);
+                  }}
+                  style={styles.actionBtn}
+                >
+                  <Text style={styles.actionText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Confirm archive commercial inventory item"
+                  accessibilityState={{ disabled: !canMutate, busy: archiving }}
+                  disabled={!canMutate}
+                  onPress={archive}
+                  style={[styles.actionBtn, !canMutate && styles.primaryBtnDisabled]}
+                >
+                  <Text style={styles.actionText}>
+                    {archiving ? "Archiving..." : "Confirm Archive"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Archive commercial inventory item"
+                accessibilityState={{ disabled: !canMutate }}
+                disabled={!canMutate}
+                onPress={() => {
+                  if (
+                    !mounted.current ||
+                    !canMutate ||
+                    loadInFlightRef.current ||
+                    saveInFlightRef.current
+                  )
+                    return;
+                  setArchiveError(null);
+                  setConfirmingArchive(true);
+                }}
+                style={[styles.actionBtn, !canMutate && styles.primaryBtnDisabled]}
+              >
+                <Text style={styles.actionText}>Archive Item</Text>
+              </TouchableOpacity>
+            )}
+            {archiveError ? (
+              <View accessibilityRole="alert" accessibilityLiveRegion="assertive">
+                <InlineError error={archiveError} />
+              </View>
+            ) : null}
           </View>
         ) : null}
 

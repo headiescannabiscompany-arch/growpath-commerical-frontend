@@ -234,6 +234,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "one canonical item, lot, receiving, movement, adjustment, hold, consumption, search, import, and audit-export ledger",
+      "Commercial saved-item Archive confirmation uses the existing zero-stock soft-archive endpoint, preserves drafts on Cancel/failure and audit history on success, serializes with reads/saves/movements/lots, and invalidates private state and late navigation across account/session/workspace/capability/route changes",
       "transactionally consistent item and lot balances with append-only actor-attributed movements",
       "deterministic low-stock, near-expiry, expired, held, unallocated, and lot-discrepancy warnings with freshness",
       "full-balance-only item and lot relocations that preserve quantity and audit the stored source location",
@@ -1224,6 +1225,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "named Inventory Support item types and readable Product or Evidence Run pickers with an explicit advanced fallback",
       "single-flight Commercial Inventory Support creation with non-negative stock validation and retained failed drafts",
       "single-flight Commercial Inventory Support loading and detail editing with non-negative stock validation and retained drafts",
+      "Commercial Inventory Support named saved-record Archive confirmation with draft-safe Cancel/retry, matching current readable identity and capability, existing server stock/audit rules, shared operation lock and canonical list return; identity changes discard confirmation and late completion",
       "Commercial Inventory Support item and stock totals remain unknown before first successful load; refreshing or failed refreshes label retained records as previously loaded while preserving search, per-unit calculations and canonical ledger/audit permissions",
       "forum alerts",
       "accessible inline Forum reply expansion and text reply composition on canonical post previews",

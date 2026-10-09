@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList } from "react-native";
+import { FlatList, RefreshControl } from "react-native";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import CommercialInventoryItemDetailRoute from "@/app/home/commercial/inventory/[id]";
@@ -10,9 +10,19 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockMapApiError = jest.fn();
 const mockRouter = { push: mockPush, replace: mockReplace };
+let mockParams = { id: "inventory-1" };
+let mockCanWrite = true;
+let mockAuth = {
+  user: { id: "owner-1" },
+  token: "session-1",
+  isAuthed: true,
+  isHydrating: false
+};
+
+jest.mock("@/auth/AuthContext", () => ({ useAuth: () => mockAuth }));
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ id: "inventory-1" }),
+  useLocalSearchParams: () => mockParams,
   useRouter: () => mockRouter
 }));
 
@@ -40,7 +50,7 @@ jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     ready: true,
     mode: "commercial",
-    can: () => true
+    can: () => mockCanWrite
   })
 }));
 
@@ -101,6 +111,14 @@ describe("Commercial Inventory workflow state", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.resetAllMocks();
+    mockParams = { id: "inventory-1" };
+    mockCanWrite = true;
+    mockAuth = {
+      user: { id: "owner-1" },
+      token: "session-1",
+      isAuthed: true,
+      isHydrating: false
+    };
     mockMapApiError.mockImplementation((error: any) => ({
       message: error?.message || String(error)
     }));
@@ -523,5 +541,365 @@ describe("Commercial Inventory workflow state", () => {
     ["Connected Workflows", "Update Item", "Details"].forEach((heading) => {
       expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
     });
+  });
+
+  it("confirms archiving the saved zero-stock item and cancels without losing edits", async () => {
+    mockApiRequest.mockResolvedValue({ item: { ...inventoryItem, quantity: 0 } });
+    const screen = render(<CommercialInventoryItemDetailRoute />);
+    await screen.findByLabelText("Commercial detail notes");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial detail item name"),
+      "Unsaved name"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial detail notes"),
+      "Keep my draft"
+    );
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    expect(screen.getByText('Archive "Kelp Meal"?')).toBeTruthy();
+    expect(screen.getByText(/retains its record and audit history/)).toBeTruthy();
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByLabelText("Cancel commercial inventory archive"));
+    expect(screen.queryByText('Archive "Kelp Meal"?')).toBeNull();
+    expect(screen.getByLabelText("Commercial detail notes").props.value).toBe(
+      "Keep my draft"
+    );
+    expect(screen.getByLabelText("Commercial detail item name").props.value).toBe(
+      "Unsaved name"
+    );
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it("archives once and locks save, refresh, lots and movements until canonical list return", async () => {
+    let resolveArchive: (value: any) => void = () => {};
+    mockApiRequest.mockImplementation((_path: string, options?: any) =>
+      options?.method === "DELETE"
+        ? new Promise((resolve) => {
+            resolveArchive = resolve;
+          })
+        : Promise.resolve({ item: { ...inventoryItem, quantity: 0 } })
+    );
+    const screen = render(<CommercialInventoryItemDetailRoute />);
+    await screen.findByLabelText("Archive commercial inventory item");
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    const confirm = screen.getByLabelText("Confirm archive commercial inventory item");
+    fireEvent.press(confirm);
+    fireEvent.press(confirm);
+    fireEvent.press(screen.getByLabelText("Save commercial inventory changes"));
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), "refresh");
+    expect(screen.getByLabelText("Commercial detail notes").props.editable).toBe(false);
+    expect(screen.getByLabelText("New inventory lot code").props.editable).toBe(false);
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
+    expect(mockApiRequest).toHaveBeenLastCalledWith(
+      "/api/business-inventory/inventory-1",
+      { method: "DELETE" }
+    );
+    expect(mockReplace).not.toHaveBeenCalled();
+    await act(async () => resolveArchive({ success: true }));
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith("/home/commercial/inventory");
+    expect(screen.queryByLabelText("Archive commercial inventory item")).toBeNull();
+  });
+
+  it("retains the record and draft after backend archive refusal and allows a deliberate retry", async () => {
+    let deletes = 0;
+    mockApiRequest.mockImplementation((_path: string, options?: any) => {
+      if (options?.method === "DELETE")
+        return ++deletes === 1
+          ? Promise.reject(
+              new Error("Inventory with an on-hand balance cannot be removed")
+            )
+          : Promise.resolve({ success: true });
+      return Promise.resolve({ item: inventoryItem });
+    });
+    const screen = render(<CommercialInventoryItemDetailRoute />);
+    await screen.findByLabelText("Commercial detail notes");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial detail notes"),
+      "Retain after refusal"
+    );
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    fireEvent.press(screen.getByLabelText("Confirm archive commercial inventory item"));
+    await screen.findByText("Inventory with an on-hand balance cannot be removed");
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Commercial detail notes").props.value).toBe(
+      "Retain after refusal"
+    );
+    fireEvent.press(screen.getByLabelText("Confirm archive commercial inventory item"));
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/home/commercial/inventory")
+    );
+    expect(deletes).toBe(2);
+  });
+
+  it.each([
+    null,
+    {},
+    { ...inventoryItem, id: "other-item" },
+    { ...inventoryItem, _id: "conflicting-item" },
+    { ...inventoryItem, quantity: undefined },
+    { ...inventoryItem, quantity: "" },
+    { ...inventoryItem, quantity: "not a balance" },
+    { ...inventoryItem, quantity: true }
+  ])(
+    "does not expose archive or writes for an unavailable/mismatched record (%j)",
+    async (item) => {
+      mockApiRequest.mockResolvedValue({ item });
+      const screen = render(<CommercialInventoryItemDetailRoute />);
+      await screen.findByLabelText("Retry commercial inventory record");
+      expect(screen.queryByLabelText("Archive commercial inventory item")).toBeNull();
+      expect(screen.queryByLabelText("Save commercial inventory changes")).toBeNull();
+      expect(mockApiRequest).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it("does not offer archive to a read-only account or for an archived record", async () => {
+    mockCanWrite = false;
+    mockApiRequest.mockResolvedValue({ item: inventoryItem });
+    const screen = render(<CommercialInventoryItemDetailRoute />);
+    await screen.findByText("You do not have permission to update inventory items.");
+    expect(screen.queryByLabelText("Archive commercial inventory item")).toBeNull();
+    mockCanWrite = true;
+    mockApiRequest.mockResolvedValue({
+      item: { ...inventoryItem, itemStatus: "archived" }
+    });
+    screen.rerender(<CommercialInventoryItemDetailRoute />);
+    await screen.findByText(
+      "This archived item is read-only. Its record and audit history are retained."
+    );
+    expect(screen.queryByLabelText("Archive commercial inventory item")).toBeNull();
+    expect(
+      screen.getByLabelText("Save commercial inventory changes").props.accessibilityState
+        .disabled
+    ).toBe(true);
+  });
+
+  it("invalidates confirmation on refresh while preserving unsaved edits", async () => {
+    mockApiRequest.mockResolvedValue({ item: { ...inventoryItem, quantity: 0 } });
+    const screen = render(<CommercialInventoryItemDetailRoute />);
+    await screen.findByLabelText("Commercial detail notes");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial detail notes"),
+      "Preserve while reloading"
+    );
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), "refresh");
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalledTimes(2));
+    expect(
+      screen.queryByLabelText("Confirm archive commercial inventory item")
+    ).toBeNull();
+    expect(screen.getByLabelText("Commercial detail notes").props.value).toBe(
+      "Preserve while reloading"
+    );
+  });
+
+  it("blocks archive while a refresh or save is pending", async () => {
+    let resolveRead: (value: any) => void = () => {};
+    mockApiRequest.mockResolvedValueOnce({ item: inventoryItem }).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRead = resolve;
+        })
+    );
+    const screen = render(<CommercialInventoryItemDetailRoute />);
+    await screen.findByLabelText("Archive commercial inventory item");
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), "refresh");
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    expect(
+      screen.queryByLabelText("Confirm archive commercial inventory item")
+    ).toBeNull();
+    await act(async () => resolveRead({ item: inventoryItem }));
+    mockApiRequest.mockImplementation(() => new Promise(() => {}));
+    fireEvent.press(screen.getByLabelText("Save commercial inventory changes"));
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    expect(
+      screen.queryByLabelText("Confirm archive commercial inventory item")
+    ).toBeNull();
+    expect(mockApiRequest).toHaveBeenCalledTimes(3);
+  });
+
+  it("blocks archive during an existing lot operation and preserves edits through its reload", async () => {
+    let resolveLot: (value: any) => void = () => {};
+    mockApiRequest.mockImplementation((_path: string, options?: any) =>
+      options?.method === "POST"
+        ? new Promise((resolve) => {
+            resolveLot = resolve;
+          })
+        : Promise.resolve({ item: inventoryItem })
+    );
+    const screen = render(<CommercialInventoryItemDetailRoute />);
+    await screen.findByLabelText("Commercial detail notes");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial detail notes"),
+      "Still unsaved"
+    );
+    fireEvent.changeText(screen.getByLabelText("New inventory lot code"), "LOT-1");
+    fireEvent.press(screen.getByLabelText("Create inventory lot"));
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    expect(
+      screen.queryByLabelText("Confirm archive commercial inventory item")
+    ).toBeNull();
+    expect(screen.getByLabelText("Commercial detail notes").props.editable).toBe(false);
+    await act(async () => resolveLot({ lot: { id: "lot-1" } }));
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalledTimes(3));
+    expect(screen.getByLabelText("Commercial detail notes").props.value).toBe(
+      "Still unsaved"
+    );
+  });
+
+  it.each(["account", "session", "route", "capability", "unmount"])(
+    "ignores late archive completion after %s changes",
+    async (context) => {
+      let resolveArchive: (value: any) => void = () => {};
+      mockApiRequest.mockImplementation((_path: string, options?: any) =>
+        options?.method === "DELETE"
+          ? new Promise((resolve) => {
+              resolveArchive = resolve;
+            })
+          : Promise.resolve({ item: { ...inventoryItem, id: mockParams.id } })
+      );
+      const screen = render(<CommercialInventoryItemDetailRoute />);
+      await screen.findByLabelText("Archive commercial inventory item");
+      fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+      fireEvent.press(screen.getByLabelText("Confirm archive commercial inventory item"));
+      if (context === "account") mockAuth = { ...mockAuth, user: { id: "owner-2" } };
+      if (context === "session") mockAuth = { ...mockAuth, token: "session-2" };
+      if (context === "route") mockParams = { id: "inventory-2" };
+      if (context === "capability") mockCanWrite = false;
+      if (context === "unmount") screen.unmount();
+      else screen.rerender(<CommercialInventoryItemDetailRoute />);
+      await act(async () => resolveArchive({ success: true }));
+      expect(mockReplace).not.toHaveBeenCalled();
+    }
+  );
+
+  it("does not replay old confirmation or restore drafts after an account A/B/A transition", async () => {
+    mockApiRequest.mockImplementation(() =>
+      Promise.resolve({ item: { ...inventoryItem, notes: `Saved ${mockAuth.user.id}` } })
+    );
+    const screen = render(<CommercialInventoryItemDetailRoute />);
+    await screen.findByLabelText("Commercial detail notes");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial detail notes"),
+      "Private A draft"
+    );
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    mockAuth = { ...mockAuth, user: { id: "owner-2" } };
+    screen.rerender(<CommercialInventoryItemDetailRoute />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Commercial detail notes").props.value).toBe(
+        "Saved owner-2"
+      )
+    );
+    mockAuth = { ...mockAuth, user: { id: "owner-1" } };
+    screen.rerender(<CommercialInventoryItemDetailRoute />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Commercial detail notes").props.value).toBe(
+        "Saved owner-1"
+      )
+    );
+    expect(
+      screen.queryByLabelText("Confirm archive commercial inventory item")
+    ).toBeNull();
+    expect(
+      mockApiRequest.mock.calls.filter(([, options]) => options.method === "DELETE")
+    ).toHaveLength(0);
+  });
+
+  it("returns after archive to the actual inventory list and reads its now-empty collection", async () => {
+    let archived = false;
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (options?.method === "DELETE") {
+        archived = true;
+        return Promise.resolve({ success: true });
+      }
+      if (path === "/api/business-inventory")
+        return Promise.resolve({ items: archived ? [] : [inventoryItem] });
+      return Promise.resolve({ item: inventoryItem });
+    });
+    function RouteHarness() {
+      const [atList, setAtList] = React.useState(false);
+      mockReplace.mockImplementation((path) => {
+        if (path === "/home/commercial/inventory") setAtList(true);
+      });
+      return atList ? (
+        <CommercialInventoryRoute />
+      ) : (
+        <CommercialInventoryItemDetailRoute />
+      );
+    }
+    const screen = render(<RouteHarness />);
+    await screen.findByLabelText("Archive commercial inventory item");
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    fireEvent.press(screen.getByLabelText("Confirm archive commercial inventory item"));
+    await screen.findByText("No inventory support records yet");
+    expect(screen.queryByText("Kelp Meal")).toBeNull();
+    expect(mockApiRequest).toHaveBeenLastCalledWith("/api/business-inventory", {
+      method: "GET"
+    });
+  });
+
+  it("withholds archive after failed refresh until successful retry without clearing the draft", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({ item: inventoryItem })
+      .mockRejectedValueOnce(new Error("Inventory temporarily unavailable"))
+      .mockResolvedValueOnce({ item: inventoryItem });
+    const screen = render(<CommercialInventoryItemDetailRoute />);
+    await screen.findByLabelText("Commercial detail notes");
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial detail notes"),
+      "Keep through recovery"
+    );
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), "refresh");
+    await screen.findByLabelText("Retry commercial inventory record");
+    expect(
+      screen.getByLabelText("Archive commercial inventory item").props.accessibilityState
+        .disabled
+    ).toBe(true);
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    expect(
+      screen.queryByLabelText("Confirm archive commercial inventory item")
+    ).toBeNull();
+    fireEvent.press(screen.getByLabelText("Retry commercial inventory record"));
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Archive commercial inventory item").props
+          .accessibilityState.disabled
+      ).toBe(false)
+    );
+    expect(screen.getByLabelText("Commercial detail notes").props.value).toBe(
+      "Keep through recovery"
+    );
+  });
+
+  it("serializes archive and older movement-history reads", async () => {
+    let resolveHistory: (value: any) => void = () => {};
+    mockApiRequest
+      .mockResolvedValueOnce({
+        item: inventoryItem,
+        movementPage: { hasMore: true, nextCursor: "older" }
+      })
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveHistory = resolve;
+          })
+      );
+    const screen = render(<CommercialInventoryItemDetailRoute />);
+    await screen.findByLabelText("Load older inventory movements");
+    fireEvent.press(screen.getByLabelText("Load older inventory movements"));
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    expect(
+      screen.queryByLabelText("Confirm archive commercial inventory item")
+    ).toBeNull();
+    await act(async () =>
+      resolveHistory({
+        movements: [],
+        movementPage: { hasMore: true, nextCursor: "older-still" }
+      })
+    );
+    fireEvent.press(screen.getByLabelText("Archive commercial inventory item"));
+    fireEvent.press(screen.getByLabelText("Load older inventory movements"));
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
   });
 });

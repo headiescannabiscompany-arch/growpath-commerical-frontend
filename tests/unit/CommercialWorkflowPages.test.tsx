@@ -3128,6 +3128,13 @@ describe("commercial workflow pages", () => {
   });
 
   it("opens commercial inventory detail and keeps it connected to commercial workflows", async () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: "commercial-owner", email: "brand@example.com", role: "user" },
+      token: "inventory-test-session",
+      isAuthed: true,
+      isHydrating: false,
+      logout: jest.fn()
+    });
     const screen = render(<CommercialInventoryItemDetailRoute />);
 
     await waitFor(() => expect(screen.getByText("Kelp Meal")).toBeTruthy());
