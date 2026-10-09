@@ -398,12 +398,14 @@ describe("PersonalCreatorProfileScreen", () => {
     expect(screen.queryByText(/Creator profile withdrawn/)).toBeNull();
   });
 
-  it("opens only the published canonical creator route", async () => {
+  it("opens only the published creator route with the fixed editor return marker", async () => {
     mockGet.mockResolvedValue(state({ published: snapshot }));
     render(<PersonalCreatorProfileScreen />);
     await ready();
     press("View public creator page");
-    expect(mockPush).toHaveBeenCalledWith("/creators/owner-1");
+    expect(mockPush).toHaveBeenCalledWith(
+      "/creators/owner-1?from=creator-profile-editor"
+    );
     expect(mockPublish).not.toHaveBeenCalled();
   });
 

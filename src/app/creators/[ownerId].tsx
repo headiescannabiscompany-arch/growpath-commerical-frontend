@@ -24,20 +24,34 @@ import PublicShareActions from "@/components/sharing/PublicShareActions";
 import VideoCard from "@/components/videos/VideoCard";
 import VideoReadinessBoundary from "@/components/videos/VideoReadinessBoundary";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import { CREATOR_PROFILE_EDITOR_PATH } from "@/utils/authReturnPath";
 
 export default function CreatorProfileRoute() {
-  const params = useLocalSearchParams<{ ownerId?: string }>();
+  const params = useLocalSearchParams<{ ownerId?: string; from?: string | string[] }>();
   const ownerId = String(
     Array.isArray(params.ownerId) ? params.ownerId[0] : params.ownerId || ""
   );
+  const backToEditor =
+    (Array.isArray(params.from) ? params.from[0] : params.from) ===
+    "creator-profile-editor";
   return (
-    <VideoReadinessBoundary detail>
-      <ReadyCreatorProfile key={ownerId} ownerId={ownerId} />
+    <VideoReadinessBoundary
+      detail
+      backFallbackHref={backToEditor ? CREATOR_PROFILE_EDITOR_PATH : "/videos"}
+      preferBackFallback={backToEditor}
+    >
+      <ReadyCreatorProfile key={ownerId} ownerId={ownerId} backToEditor={backToEditor} />
     </VideoReadinessBoundary>
   );
 }
 
-function ReadyCreatorProfile({ ownerId }: { ownerId: string }) {
+function ReadyCreatorProfile({
+  ownerId,
+  backToEditor
+}: {
+  ownerId: string;
+  backToEditor: boolean;
+}) {
   const auth = useAuth();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -154,7 +168,8 @@ function ReadyCreatorProfile({ ownerId }: { ownerId: string }) {
   return (
     <AppPage
       routeKey="creator-profile"
-      backFallbackHref="/videos"
+      backFallbackHref={backToEditor ? CREATOR_PROFILE_EDITOR_PATH : "/videos"}
+      preferBackFallback={backToEditor}
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>GrowPath creator</Text>
@@ -301,12 +316,12 @@ const createStyles = (palette: ThemePalette) =>
       textTransform: "capitalize"
     },
     identityCard: {
-      alignItems: "center",
-      flexDirection: "row",
+      alignItems: "stretch",
+      flexDirection: "column",
       gap: 12,
       justifyContent: "space-between"
     },
-    identityCopy: { flex: 1 },
+    identityCopy: { minWidth: 0, width: "100%" },
     identityName: { color: palette.text, fontSize: 20, fontWeight: "900" },
     identityMeta: { color: palette.textMuted, marginTop: 4 },
     bio: { color: palette.text, fontSize: 16, lineHeight: 24 },

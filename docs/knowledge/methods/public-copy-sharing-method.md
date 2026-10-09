@@ -30,6 +30,13 @@ export includes the private draft; account deletion clears it. Commercial links
 and entitlement gates remain separate and unchanged. Public links and canonical
 creator-page sharing are deliberate visitor actions, not automatic publication.
 
+Opening the published creator page from its private editor carries only the fixed
+`from=creator-profile-editor` marker. Only its exact first value makes Back return
+to `/home/personal/more/links`, including reload or unresolved access. Other entries
+retain their existing history/fallback. Never copy this editor marker into shared
+URLs or accept an arbitrary return address. Long public names must wrap inside the
+real identity card at narrow widths; do not truncate the saved name to hide overflow.
+
 Forum directory and shared-discussion readers wait for authentication and entitlement
 readiness before checking capability denial or mounting record readers. An initial
 access-check failure is recoverable with Retry, not proof of denied access. Changing

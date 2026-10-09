@@ -1,19 +1,35 @@
 import React from "react";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
-import { Linking } from "react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within
+} from "@testing-library/react-native";
+import { Linking, StyleSheet, View } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 
 import CreatorProfileRoute from "@/app/creators/[ownerId]";
+import AppCard from "@/components/layout/AppCard";
 
 const mockSearchVideos = jest.fn();
 const mockGetPublicCreatorProfile = jest.fn();
 const mockRetryMe = jest.fn();
+const mockBack = jest.fn();
+const mockReplace = jest.fn();
 let mockParams: Record<string, unknown>;
 let mockAuth: any;
 let mockAccess: any;
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
-  useRouter: () => ({ push: jest.fn() })
+  useRouter: () => ({
+    push: jest.fn(),
+    back: mockBack,
+    replace: mockReplace,
+    canGoBack: () => true
+  })
 }));
 jest.mock("@/api/videos", () => ({
   searchVideos: (...args: any[]) => mockSearchVideos(...args)
@@ -30,14 +46,12 @@ jest.mock("@/components/FollowButton", () => {
   const { Text } = require("react-native");
   return ({ userId }: any) => <Text accessibilityLabel={`Follow ${userId}`}>Follow</Text>;
 });
-jest.mock("@/components/layout/AppCard", () => {
-  const { View } = require("react-native");
-  return ({ children }: any) => <View>{children}</View>;
-});
 jest.mock("@/components/layout/AppPage", () => {
   const { View } = require("react-native");
-  return ({ header, children }: any) => (
+  const BackButton = require("@/components/nav/BackButton").default;
+  return ({ header, children, backFallbackHref, preferBackFallback }: any) => (
     <View>
+      <BackButton fallbackHref={backFallbackHref} preferFallback={preferBackFallback} />
       {header}
       {children}
     </View>
@@ -116,6 +130,62 @@ describe("CreatorProfileRoute", () => {
     expect(screen.queryByTestId("public-share-path")).toBeNull();
   });
 
+  it.each([
+    { from: "creator-profile-editor", editor: true },
+    { from: ["creator-profile-editor", "https://example.com"], editor: true },
+    { from: ["https://example.com", "creator-profile-editor"], editor: false },
+    { from: "https://example.com", editor: false },
+    { from: "/home/personal/more/links", editor: false },
+    { from: "creator-profile-editor?next=/admin", editor: false },
+    { from: " creator-profile-editor", editor: false },
+    { from: undefined, editor: false }
+  ])(
+    "uses only the exact first editor marker after a fresh mount: $from",
+    async ({ from, editor }) => {
+      mockParams = { ...mockParams, from };
+      mockGetPublicCreatorProfile.mockResolvedValue(published());
+      render(<CreatorProfileRoute />);
+      await screen.findByText("Learning one plant at a time.");
+
+      fireEvent.press(screen.getByRole("button", { name: "Back" }));
+      if (editor) {
+        expect(mockReplace).toHaveBeenCalledWith("/home/personal/more/links");
+        expect(mockBack).not.toHaveBeenCalled();
+      } else {
+        expect(mockBack).toHaveBeenCalledTimes(1);
+        expect(mockReplace).not.toHaveBeenCalled();
+      }
+      expect(screen.getByTestId("public-share-path").props.children).toBe(
+        "The Basil Journal: /creators/owner-1"
+      );
+    }
+  );
+
+  it.each(["authentication", "entitlements", "failed access"])(
+    "retains the fixed editor return during %s readiness without reading records",
+    (status) => {
+      mockParams = { ...mockParams, from: "creator-profile-editor" };
+      if (status === "authentication") mockAuth.isHydrating = true;
+      else mockAccess.ready = false;
+      if (status === "failed access") mockAccess.bootstrapError = new Error("offline");
+      render(<CreatorProfileRoute />);
+      fireEvent.press(screen.getByRole("button", { name: "Back" }));
+      expect(mockReplace).toHaveBeenCalledWith("/home/personal/more/links");
+      expect(mockBack).not.toHaveBeenCalled();
+      expect(mockGetPublicCreatorProfile).not.toHaveBeenCalled();
+      expect(mockSearchVideos).not.toHaveBeenCalled();
+    }
+  );
+
+  it("ignores an arbitrary return URL while readiness is unresolved", () => {
+    mockParams = { ...mockParams, from: "https://example.com" };
+    mockAuth.isHydrating = true;
+    render(<CreatorProfileRoute />);
+    fireEvent.press(screen.getByRole("button", { name: "Back" }));
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
   it("shows a deliberately published profile before its first video, without sign-in", async () => {
     mockAuth = { ...mockAuth, isAuthed: false, user: null, token: null };
     mockSearchVideos.mockResolvedValue([]);
@@ -154,6 +224,37 @@ describe("CreatorProfileRoute", () => {
     expect(screen.queryByLabelText("Follow owner-1")).toBeNull();
     expect(screen.queryByText(/Private|private@example/)).toBeNull();
   });
+
+  it.each([true, false])(
+    "keeps a long creator name within the real card's wrapping column (signed in: %s)",
+    async (signedIn) => {
+      const displayName =
+        "QA creator profile — synthetic 2026-10-09 — a long public display name";
+      if (!signedIn) mockAuth = { ...mockAuth, isAuthed: false, user: null, token: null };
+      mockSearchVideos.mockResolvedValue([]);
+      mockGetPublicCreatorProfile.mockResolvedValue(published({ displayName }));
+      render(<CreatorProfileRoute />);
+      await waitFor(() => expect(screen.getAllByText(displayName)).toHaveLength(2));
+
+      // Use the real AppCard: it wraps children in its own content View. A row
+      // on the outer card lets that wrapper overflow before the name can wrap.
+      const card = screen.UNSAFE_getAllByType(AppCard)[0];
+      expect(StyleSheet.flatten(card.props.style)).toMatchObject({
+        alignItems: "stretch",
+        flexDirection: "column"
+      });
+      expect(
+        card
+          .findAllByType(View)
+          .some((node: { props: { style?: StyleProp<ViewStyle> } }) => {
+            const style = StyleSheet.flatten(node.props.style);
+            return style?.minWidth === 0 && style?.width === "100%";
+          })
+      ).toBe(true);
+      expect(within(card).getByText(displayName).props.numberOfLines).toBeUndefined();
+      expect(Boolean(screen.queryByLabelText("Follow owner-1"))).toBe(signedIn);
+    }
+  );
 
   it("keeps an absent/withdrawn profile private and does not invent a public name from the session", async () => {
     mockAuth.user = { id: "owner-1", name: "Private account name" };

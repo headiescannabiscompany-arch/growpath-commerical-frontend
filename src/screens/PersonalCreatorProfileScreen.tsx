@@ -439,7 +439,9 @@ function CreatorEditor({ ownerId }: { ownerId: string }) {
               ? button(
                   "View public creator page",
                   () =>
-                    router.push(`/creators/${encodeURIComponent(saved.ownerId)}` as any),
+                    router.push(
+                      `/creators/${encodeURIComponent(saved.ownerId)}?from=creator-profile-editor` as any
+                    ),
                   busy,
                   true
                 )
