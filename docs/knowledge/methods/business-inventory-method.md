@@ -143,12 +143,13 @@ display; numeric quantities remain numeric.
 
 ## Full audit export
 
-Commercial full-audit requests are single-flight. Leaving/unmounting the inventory
-route invalidates pending audit responses and errors before file dispatch; a late
-response must not start a private download after navigation or logout. Failed
-current requests retain readable errors and permit a deliberate retry. This does
-not cancel a server request or recall a file whose download was already dispatched.
-The existing Facility route retains its own selected-context lifetime guard.
+Commercial and Facility full-audit requests are single-flight. Losing screen focus
+(including a tab switch that keeps the component mounted) or unmounting invalidates
+pending responses/errors before file dispatch. Returning to the same screen must
+not revive an earlier response. The request lock lasts until settlement, then a
+fresh deliberate export remains available. Failed current requests retain readable
+errors and permit retry. This does not cancel server work or recall a file already
+dispatched. Facility's selected-context remount guard remains in place.
 
 The workspace-scoped full audit export includes items, archived history, lots, append-only
 movements, import lifecycle/provenance, and scoped import-row before/after events. It streams

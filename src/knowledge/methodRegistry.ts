@@ -241,7 +241,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "movement history whose adjustment quantity matches its signed delta, whose hold or release covers the selected balance, and whose older pages remain explicitly reachable",
       "explicitly reviewed inventory imports with detected-column mapping, conflict evidence, version fences, atomic row checkpoints, and withdrawal",
       "workspace-scoped full audit export covering items, lots, movements, imports, provenance, and import-row before/after evidence",
-      "single-flight Commercial audit requests discard late responses and errors after route unmount before download dispatch; failed current requests allow deliberate retry, without recalling already dispatched files",
+      "single-flight Commercial and Facility audit requests discard late responses and errors after screen blur or unmount before download dispatch, including refocus; requests unlock after settlement for deliberate retry, without recalling already dispatched files",
       "audit export manifest with fixed membership cutoffs, read timestamps, changed-after-start flags, terminal counts, and explicit system, user, or legacy-unverified origin",
       "explicit unknown currency until an authorized cost is paired with a reviewed three-letter currency code",
       "provider-safe Facility Inventory Risk context with authorized item counts, units, reorder points, freshness and deterministic alerts, excluding vendor and authorized cost/currency"

@@ -17,6 +17,7 @@ const mockOperationsProps = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockRouter = { push: mockPush, replace: mockReplace };
+let mockFocused = true;
 const mockApiErrorHook: any = (error: unknown) => mockMapApiError(error);
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
@@ -39,7 +40,10 @@ jest.mock("@react-navigation/native", () => {
   const React = require("react");
   return {
     useFocusEffect: (callback: () => void) => {
-      React.useEffect(() => callback(), [callback]);
+      React.useEffect(
+        () => (mockFocused ? callback() : undefined),
+        [callback, mockFocused]
+      );
     }
   };
 });
@@ -179,6 +183,7 @@ function latestProps(mock: jest.Mock) {
 describe("B-02 inventory screen integration", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFocused = true;
     mockExportCsvContent.mockResolvedValue(undefined);
     mockExportToCsv.mockResolvedValue(undefined);
     mockHandleApiError.mockImplementation((error: unknown) => error);
@@ -252,6 +257,45 @@ describe("B-02 inventory screen integration", () => {
         finish("private prior-session audit");
       });
       expect(mockExportCsvContent).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    ["commercial", CommercialInventoryRoute],
+    ["facility", FacilityInventoryTab]
+  ] as const)(
+    "discards a delayed %s audit after blur/refocus without unmount",
+    async (scope, Route) => {
+      let finish!: (csv: string) => void;
+      const pending = new Promise<string>((resolve) => {
+        finish = resolve;
+      });
+      let exports = 0;
+      mockApiRequest.mockImplementation((path: string) => {
+        if (!path.endsWith("/exports/audit.csv"))
+          return Promise.resolve({ items: [item] });
+        return ++exports === 1 ? pending : Promise.resolve("fresh selected audit");
+      });
+      const screen = render(<Route />);
+      await screen.findByText("Kelp Meal");
+      fireEvent.press(screen.getByLabelText(`Export ${scope} inventory full audit CSV`));
+      mockFocused = false;
+      screen.rerender(<Route />);
+      mockFocused = true;
+      screen.rerender(<Route />);
+      await act(async () => {
+        finish("stale background audit");
+      });
+      expect(mockExportCsvContent).not.toHaveBeenCalled();
+      expect(screen.queryByText("Full inventory audit CSV is ready.")).toBeNull();
+      fireEvent.press(screen.getByLabelText(`Export ${scope} inventory full audit CSV`));
+      await waitFor(() =>
+        expect(mockExportCsvContent).toHaveBeenCalledWith(
+          "growpath-inventory-audit",
+          "fresh selected audit"
+        )
+      );
+      expect(exports).toBe(2);
     }
   );
 

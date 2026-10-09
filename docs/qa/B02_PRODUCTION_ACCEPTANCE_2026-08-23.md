@@ -343,3 +343,15 @@ cannot be recalled. 82 checks/five suites, TypeScript, lint and contamination/di
 checks passed. This is local evidence, not a hosted account-switch or production
 release. The hosted Facility-pair gap still lacks an approved second workspace;
 no new workspace, account, fixture or membership change was performed.
+
+### Hosted follow-up found retained-screen blur, not a new phase
+
+b60c6157 went live on staging dep-db4n3cm0tbcc73eh3l90 at23:00:20UTC.
+An actual slow-network audit followed by the More tab proved the screen remains
+mounted: More was visible before the response (only preflight204, no download),
+then audit200 arrived and a CSV download started. Unmount-only protection was
+insufficient; no production release occurred. Temporary network latency restored.
+Added focused blur/refocus regressions: both Commercial and Facility failed,
+then passed after extending their existing audit guards to focus lifetime. 84 tests
+across the same five suites now pass. Normal exports and fresh retry remain intact.
+This is a bounded repair of the reproduced gate, not a restart of accepted B02 work.

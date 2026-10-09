@@ -140,8 +140,18 @@ function FacilityInventoryContent() {
   const [query, setQuery] = useState("");
   const [exportingAudit, setExportingAudit] = useState(false);
   const auditInFlight = useRef(false);
+  const auditLifetime = useRef(0);
   const [auditFeedback, setAuditFeedback] = useState("");
   const onRefresh = load;
+
+  useFocusEffect(
+    useCallback(() => {
+      setAuditFeedback("");
+      return () => {
+        auditLifetime.current += 1;
+      };
+    }, [])
+  );
 
   useEffect(() => {
     if (!facilityId) {
@@ -200,16 +210,19 @@ function FacilityInventoryContent() {
 
   const exportFullAudit = useCallback(async () => {
     if (!facilityId || auditInFlight.current || !canReadAudit) return;
+    const lifetime = auditLifetime.current;
+    const isCurrent = () => mounted.current && lifetime === auditLifetime.current;
     auditInFlight.current = true;
     setExportingAudit(true);
     setAuditFeedback("");
     try {
       const csv = await getBusinessInventoryAuditCsv({ facilityId });
-      if (!mounted.current) return;
+      if (!isCurrent()) return;
       await exportCsvContent("growpath-inventory-audit", csv);
-      if (!mounted.current) return;
+      if (!isCurrent()) return;
       setAuditFeedback("Full inventory audit CSV is ready.");
     } catch (caught) {
+      if (!isCurrent()) return;
       handleApiError(caught);
     } finally {
       auditInFlight.current = false;

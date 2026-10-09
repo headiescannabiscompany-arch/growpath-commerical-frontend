@@ -124,13 +124,25 @@ export default function CommercialInventoryRoute() {
   const loadInFlightRef = useRef(false);
   const auditInFlightRef = useRef(false);
   const auditLifetimeRef = useRef(0);
+  const auditMountedRef = useRef(true);
 
   useEffect(() => {
+    auditMountedRef.current = true;
     // Invalidate pending downloads on navigation/logout, including effect replay.
     return () => {
       auditLifetimeRef.current += 1;
+      auditMountedRef.current = false;
     };
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      setAuditFeedback("");
+      return () => {
+        auditLifetimeRef.current += 1;
+      };
+    }, [])
+  );
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -229,7 +241,8 @@ export default function CommercialInventoryRoute() {
       setError(mapApiError(caught) ?? caught);
     } finally {
       auditInFlightRef.current = false;
-      if (isCurrent()) setExportingAudit(false);
+      // The lock prevents a newer request until this one settles, even after refocus.
+      if (auditMountedRef.current) setExportingAudit(false);
     }
   }, [mapApiError]);
 
