@@ -5,6 +5,7 @@ export const GIFT_CHECKOUT_SUCCESS_PATH = "/account/gift-checkout/success";
 export const GIFT_CHECKOUT_CANCEL_PATH = "/account/gift-checkout/cancel";
 export const GIFT_CHECKOUT_RECOVERY_PATH = "/account/gift-checkout/recover";
 export const OFFERS_GIFT_RETURN_PATH = "/offers?gift=1";
+export const CREATOR_PROFILE_EDITOR_PATH = "/home/personal/more/links";
 
 const MAX_RETURN_LENGTH = 1024;
 const SESSION_ID_PATTERN = /^cs_[A-Za-z0-9_]{3,252}$/;
@@ -206,6 +207,7 @@ export function parseSafeLoginReturnPath(value: unknown): string {
     parseAuthReturnPath(value) ||
     parseClaimReturnPath(value) ||
     (value === "/feedback" ? "/feedback" : "") ||
+    (value === CREATOR_PROFILE_EDITOR_PATH ? CREATOR_PROFILE_EDITOR_PATH : "") ||
     (value === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "")
   );
 }

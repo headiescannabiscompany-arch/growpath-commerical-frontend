@@ -1,14 +1,10 @@
 import { ScreenBoundary } from "@/components/ScreenBoundary";
-import LinksScreen from "@/screens/LinksScreen";
+import PersonalCreatorProfileScreen from "@/screens/PersonalCreatorProfileScreen";
 
 export default function PersonalLinksRoute() {
   return (
-    <ScreenBoundary
-      title="Public Links"
-      showBack
-      backFallbackHref="/home/personal/profile"
-    >
-      <LinksScreen />
+    <ScreenBoundary title="Creator profile & links" showBack={false}>
+      <PersonalCreatorProfileScreen />
     </ScreenBoundary>
   );
 }

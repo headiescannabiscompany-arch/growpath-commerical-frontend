@@ -5,6 +5,31 @@ journals, AI results and operational records do not become public when Share is 
 They require a reviewed public copy whose data, media and lifecycle are separate from the
 private source.
 
+## Explicit creator profile publication
+
+Personal Profile's creator profile and links reuse the account's profile foundation,
+not Commercial link permissions or a new creator signup/plan. The owner may create
+a profile before publishing a video. Start with an empty private draft: never copy
+the account name, email, biography, Commercial links or storefront links into it.
+Save only the authenticated owner's bounded plain-text public name, optional bio
+and up to eight named HTTPS links. Reject URL credentials, ambiguous backslashes
+and control characters; never fetch links or create external previews automatically.
+
+The owner saves the draft, reviews the saved fields and explicitly publishes that
+revision. Save and Publish use optimistic revisions; a stale tab must reload and
+review, not overwrite newer state. Keep a separate frozen published snapshot so
+later draft edits or ordinary account-profile edits cannot silently change the
+public page. An uncertain write must offer state recovery, not automatic retries
+or a false success. Unpublish withdraws the current snapshot, retains the private
+draft and invalidates outstanding publish revisions; it does not unpublish videos.
+
+Public creator readers return only the deliberate published snapshot, never the
+private draft, legal identity, email, billing, journal or follower records. Missing,
+withdrawn or unavailable accounts return a uniform unavailable result. Owner data
+export includes the private draft; account deletion clears it. Commercial links
+and entitlement gates remain separate and unchanged. Public links and canonical
+creator-page sharing are deliberate visitor actions, not automatic publication.
+
 Forum directory and shared-discussion readers wait for authentication and entitlement
 readiness before checking capability denial or mounting record readers. An initial
 access-check failure is recoverable with Retry, not proof of denied access. Changing

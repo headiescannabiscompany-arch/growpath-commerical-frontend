@@ -128,6 +128,17 @@ requiring a special creator account. A profile video library contains only recor
 viewer is authorized to see. Comments, follows, views, and popularity remain social
 signals rather than scientific evidence or AI-training permission.
 
+An explicitly published creator profile may exist before the first video. Its
+reviewed public name, biography and links come only from the published profile
+snapshot, not live private account fields. Without that snapshot, preserve existing
+creator identity from videos the viewer may access; unpublished draft links never
+appear. Profile and video reads recover independently: a video failure must not
+hide a published profile or claim zero videos, and a transient profile error must
+not be mistaken for an unpublished profile. Scope results to the current creator,
+account/session and workspace. Canonical creator-page sharing contains only the
+creator route, not account tokens, query state or protected media URLs. Unpublishing
+the profile does not delete or change the visibility of existing videos.
+
 ## Canonical sharing
 
 Published videos use the canonical GrowPath video page as their share target. Offer the

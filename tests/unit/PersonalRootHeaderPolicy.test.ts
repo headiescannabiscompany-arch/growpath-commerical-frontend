@@ -35,17 +35,20 @@ describe("Personal root header policy", () => {
     expect(billingPage).toContain("showBack");
   });
 
-  test("uses the Public Links page heading without Expo's duplicate white bar", () => {
+  test("lets the Personal creator editor own its heading and Back without duplicate chrome", () => {
     const personalLayout = read("src/app/home/personal/_layout.tsx");
     const linksRoute = read("src/app/home/personal/more/links.tsx");
-    const linksScreen = read("src/screens/LinksScreen.js");
+    const linksScreen = read("src/screens/PersonalCreatorProfileScreen.tsx");
 
     expect(personalLayout).toContain('options={{ title: "Links", headerShown: false }}');
     expect(linksRoute).toContain("ScreenBoundary");
-    expect(linksRoute).toContain("showBack");
-    expect(linksRoute).toContain('backFallbackHref="/home/personal/profile"');
+    expect(linksRoute).toContain("showBack={false}");
+    expect(linksScreen).toContain('backFallbackHref="/home/personal/profile"');
     expect(linksScreen).toContain('accessibilityRole="header"');
-    expect(linksScreen).toContain("Public Links");
+    expect(linksScreen).toContain("Creator profile & links");
+    expect(linksRoute).not.toContain('from "@/screens/LinksScreen"');
+    expect(read("src/app/home/commercial/links.tsx")).toContain("LinksScreen");
+    expect(read("src/api/links.ts")).toContain("/api/commercial/links");
   });
 
   test("keeps a single navigator title when the AI page has no content heading", () => {

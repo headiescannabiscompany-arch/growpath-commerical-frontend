@@ -97,6 +97,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Never publish private data merely because Share was pressed.",
+      "Personal creator profiles may be published before a video: start empty, save private bounded name/bio/HTTPS links, review the saved revision and explicitly publish a separate snapshot. Never import account identity or Commercial links. Stale tabs must reload; later drafts stay private. Withdrawal invalidates stale publication and leaves video visibility unchanged; owner export and deletion include the hidden draft.",
       "Public storefronts expose named Share and Copy Store Link controls. Copy only the rebuilt public store route without checkout/filter parameters; confirm successful clipboard writes or show a selectable URL, ignore late completion after navigation, and never publish or purchase as a side effect.",
       "X handoffs bound only the prefilled summary using official weighted counting of the full preview URL plus the hosted composer's separator and trailing space; preserve a fitting title/price and whole grapheme/URL boundaries. Hashtags still count. Source records, Copy Post and other destinations remain unchanged; a composer is not a published post.",
       "Public role demos use bundled synthetic screenshots and accurate limits, never private account reads; distinguish intake forms from results and one tracked Free plant from available household care tools. Keep genuine testimonials in the separate dynamic consented feed.",
@@ -961,6 +962,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Never limit video upload or sharing only to accounts labeled as creators.",
+      "Creator viewers use only an explicit published profile snapshot, with legacy accessible-video identity as fallback when no snapshot exists. Never expose draft links, treat failed reads as empty, or let a video error hide a published profile; recover each read independently and share only the canonical creator route under current account/workspace readiness.",
       "Wait for current account/workspace readiness and confirmed library quota; failed reads offer Retry, never invented zero usage, empty-library claims or upload controls. Discard superseded reads and clear prior records/forms on scope changes while preserving drafts during same-scope retries.",
       "Scope video detail, media, sharing and discussion to the exact video/session/workspace; read comments only after successful video access. Separate video and discussion Retry from mutations, preserve same-scope comment drafts, and never call a failed discussion empty.",
       "Never let Facility Staff remove another member's draft or any published Facility video.",

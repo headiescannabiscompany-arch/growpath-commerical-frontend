@@ -596,7 +596,9 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Manage profile links"
         >
-          <Text style={[styles.accountActionText, textStyle]}>Profile links</Text>
+          <Text style={[styles.accountActionText, textStyle]}>
+            Creator profile & links
+          </Text>
         </Pressable>
         <Pressable
           style={[styles.accountAction, { backgroundColor: palette.surface }]}

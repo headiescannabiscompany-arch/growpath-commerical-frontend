@@ -22,6 +22,30 @@ const SHARED_COURSE_PATH = `/courses?courseId=${COURSE_ID}`;
 const STOREFRONT_COURSE_PATH = `/store/growpathai/courses/${COURSE_ID}`;
 const PRODUCT_PATH = "/store/growpathai/products/6a90f76bf113936857750634";
 
+describe("creator profile editor login return", () => {
+  const next = "/home/personal/more/links";
+  it("returns to this exact editor without broadening signup or publishing", () => {
+    expect(parseSafeLoginReturnPath(next)).toBe(next);
+    expect(safeLoginPath("", next)).toBe(`/login?next=${encodeURIComponent(next)}`);
+    expect(parseShopperSignupReturnPath(next)).toBe("");
+  });
+  it.each([
+    `${next}?publish=1`,
+    `${next}#publish`,
+    `${next}/`,
+    ` ${next}`,
+    `${next}\n`,
+    `https://growpathai.com${next}`,
+    `/${next}`,
+    [next],
+    "/home/personal/more/links/../profile",
+    "/home/commercial/links"
+  ])("rejects noncanonical editor return %p", (value) => {
+    expect(parseSafeLoginReturnPath(value)).toBe("");
+    expect(safeLoginPath("", value)).toBe("/login");
+  });
+});
+
 describe("video login return", () => {
   const next = "/videos/6abec74c4b377597a8599928";
   it("allows an exact saved video only for login, not shopper signup storage", () => {
