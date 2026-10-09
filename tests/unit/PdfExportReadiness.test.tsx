@@ -13,6 +13,7 @@ import {
 } from "@/features/grows/workspaceData";
 import { exportToCsv } from "@/utils/exportToCsv";
 import { exportVisualTimeline } from "@/utils/exportVisualTimeline";
+import { downloadPersonalGrowTimelinePdf } from "@/utils/personalGrowPdfDownload";
 
 const mockParams = jest.fn();
 const mockAuth = jest.fn();
@@ -40,6 +41,9 @@ jest.mock("@/features/grows/workspaceData", () => ({
   listWorkspaceTasks: jest.fn()
 }));
 jest.mock("@/utils/exportToCsv", () => ({ exportToCsv: jest.fn() }));
+jest.mock("@/utils/personalGrowPdfDownload", () => ({
+  downloadPersonalGrowTimelinePdf: jest.fn()
+}));
 jest.mock("@/utils/exportVisualTimeline", () => ({
   exportVisualTimeline: jest.fn(),
   timelineSummaryForExport: (value: unknown) => String(value || "")
@@ -314,6 +318,7 @@ describe("export data readiness", () => {
       });
       expect(exportToCsv).not.toHaveBeenCalled();
       expect(exportVisualTimeline).not.toHaveBeenCalled();
+      expect(downloadPersonalGrowTimelinePdf).not.toHaveBeenCalled();
       if (change === "facility" || change === "capability")
         expect(listWorkspaceLogs).toHaveBeenCalledTimes(1);
       await act(async () => next.resolve([]));

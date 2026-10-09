@@ -4,7 +4,8 @@ import React, {
   useLayoutEffect,
   useMemo,
   useRef,
-  useState
+  useState,
+  useSyncExternalStore
 } from "react";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -18,6 +19,7 @@ import {
 
 import { type PersonalLog } from "@/api/logs";
 import { type PersonalPlant } from "@/api/plants";
+import { personalGrowPdfErrorMessage } from "@/api/personalGrowPdf";
 import { type PersonalTask } from "@/api/tasks";
 import { listToolRuns, type ToolRun } from "@/api/toolRuns";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
@@ -27,6 +29,7 @@ import { buildExportRows } from "@/features/personal/tools/advancedPlanning";
 import LockedToolCard from "@/features/personal/tools/LockedToolCard";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { exportToCsv } from "@/utils/exportToCsv";
+import { downloadPersonalGrowTimelinePdf } from "@/utils/personalGrowPdfDownload";
 import { type PersonalGrowTimelineEvent } from "@/api/grows";
 import {
   exportVisualTimeline as downloadVisualTimeline,
@@ -56,6 +59,23 @@ function exportScope(values: unknown[], generation: number) {
     generation,
     matches: (next: unknown[]) => values.every((value, index) => value === next[index])
   };
+}
+
+// A native share sheet cannot be recalled after handoff. Keep the lease until its
+// operation settles, even if the screen or account context has since changed.
+let exportFlight: object | null = null;
+const exportFlightListeners = new Set<() => void>();
+function subscribeExportFlight(listener: () => void) {
+  exportFlightListeners.add(listener);
+  return () => {
+    exportFlightListeners.delete(listener);
+  };
+}
+function exportFlightSnapshot() {
+  return exportFlight !== null;
+}
+function notifyExportFlight() {
+  exportFlightListeners.forEach((listener) => listener());
 }
 
 export default function PdfExportScreen({
@@ -262,12 +282,31 @@ function ExportData({
   const [timeline, setTimeline] = useState<PersonalGrowTimelineEvent[]>([]);
   const [growName, setGrowName] = useState("Grow");
   const [status, setStatus] = useState<"loading" | "error" | "ready">("loading");
+  const exporting = useSyncExternalStore(
+    subscribeExportFlight,
+    exportFlightSnapshot,
+    exportFlightSnapshot
+  );
   const pending = useRef(false);
+  const exportLease = useRef<object | null>(null);
+  const pdfController = useRef<AbortController | null>(null);
+  const pdfDispose = useRef<(() => void) | null>(null);
   const active = useRef(false);
+  const pdfEligible = workspaceType === "personal" && Boolean(growId);
+  const timeZone = useMemo(() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    } catch {
+      return "";
+    }
+  }, []);
   useLayoutEffect(() => {
     active.current = true;
     return () => {
       active.current = false;
+      pdfController.current?.abort();
+      pdfDispose.current?.();
+      pdfDispose.current = null;
     };
   }, []);
   const current = useCallback(() => active.current && isCurrentScope(), [isCurrentScope]);
@@ -342,34 +381,87 @@ function ExportData({
     [logs, tasks, plants, toolRuns]
   );
 
-  async function exportCsv() {
-    if (!current() || status !== "ready" || !rows.length) return;
-    const result = await exportToCsv("growpath-export", rows, [
-      { key: "type", label: "Type" },
-      { key: "date", label: "Date" },
-      { key: "title", label: "Title" },
-      { key: "detail", label: "Detail" }
-    ]);
-    if (current())
+  function beginExport() {
+    if (!current() || status !== "ready" || exportFlight) return false;
+    const lease = {};
+    exportLease.current = lease;
+    exportFlight = lease;
+    notifyExportFlight();
+    setFeedback("");
+    pdfDispose.current?.();
+    pdfDispose.current = null;
+    return true;
+  }
+  function finishExport() {
+    if (exportFlight === exportLease.current) {
+      exportFlight = null;
+      notifyExportFlight();
+    }
+    exportLease.current = null;
+  }
+  async function exportPdf() {
+    if (!pdfEligible || !timeZone || !beginExport()) return;
+    const controller = new AbortController();
+    pdfController.current = controller;
+    try {
+      const result = await downloadPersonalGrowTimelinePdf(growId, {
+        timeZone,
+        signal: controller.signal,
+        isCurrentScope: current
+      });
+      if (!current() || controller.signal.aborted) {
+        result.dispose();
+        return;
+      }
+      pdfDispose.current = result.dispose;
       setFeedback(
         result.method === "web-download"
-          ? "CSV download prepared."
-          : "CSV share sheet opened."
+          ? "PDF download requested. Check your browser downloads."
+          : "PDF share sheet opened."
       );
+    } catch (error) {
+      if (current()) setFeedback(personalGrowPdfErrorMessage(error));
+    } finally {
+      if (pdfController.current === controller) pdfController.current = null;
+      finishExport();
+    }
+  }
+  async function exportCsv() {
+    if (!rows.length || !beginExport()) return;
+    try {
+      const result = await exportToCsv("growpath-export", rows, [
+        { key: "type", label: "Type" },
+        { key: "date", label: "Date" },
+        { key: "title", label: "Title" },
+        { key: "detail", label: "Detail" }
+      ]);
+      if (current())
+        setFeedback(
+          result.method === "web-download"
+            ? "CSV download prepared."
+            : "CSV share sheet opened."
+        );
+    } finally {
+      finishExport();
+    }
   }
   async function exportVisualTimeline() {
-    if (!current() || status !== "ready" || !timeline.length) return;
-    const method = await downloadVisualTimeline(
-      `${growName} — Visual Grow Timeline`,
-      timeline
-    );
-    // A delivery already handed to the existing exporter is not cancellable here.
-    if (current())
-      setFeedback(
-        method === "web-download"
-          ? "Viewer-friendly timeline download prepared."
-          : "Timeline share sheet opened."
+    if (!timeline.length || !beginExport()) return;
+    try {
+      const method = await downloadVisualTimeline(
+        `${growName} — Visual Grow Timeline`,
+        timeline
       );
+      // A delivery already handed to the existing exporter is not cancellable here.
+      if (current())
+        setFeedback(
+          method === "web-download"
+            ? "Viewer-friendly timeline download prepared."
+            : "Timeline share sheet opened."
+        );
+    } finally {
+      finishExport();
+    }
   }
   if (status !== "ready")
     return (
@@ -424,15 +516,37 @@ function ExportData({
       }
       assumptions={[
         "This export uses records visible to the current account and optional grow context.",
-        "Use CSV export for the current release; PDF output is not exposed as a completed workflow."
+        ...(pdfEligible
+          ? [
+              "PDF covers this selected Personal grow's bounded timeline history, not a complete backup or compliance report.",
+              timeZone
+                ? `PDF timestamps use ${timeZone}.`
+                : "PDF is unavailable because this device's time zone could not be determined.",
+              "PDF photos must be readable and at most 8 MiB each. Unsupported text or unavailable photos stop generation without a partial PDF."
+            ]
+          : [
+              "PDF is available only for a selected Personal grow. HTML and CSV export are unchanged."
+            ])
       ]}
       actions={[
+        ...(pdfEligible
+          ? [
+              {
+                key: "pdf",
+                label: "Export PDF",
+                pendingLabel: "Preparing PDF...",
+                disabled: exporting || !timeZone,
+                onPress: exportPdf
+              }
+            ]
+          : []),
         ...(growId && timeline.length
           ? [
               {
                 key: "visual-timeline",
                 label: "Export Visual Timeline",
                 pendingLabel: "Preparing...",
+                disabled: exporting,
                 onPress: exportVisualTimeline
               }
             ]
@@ -441,11 +555,15 @@ function ExportData({
           key: "csv",
           label: "Export CSV",
           pendingLabel: "Preparing...",
-          disabled: !rows.length,
+          disabled: exporting || !rows.length,
           onPress: exportCsv
         }
       ]}
-      feedback={feedback}
+      feedback={
+        exporting && !exportLease.current
+          ? "Another export or share sheet is still open. Finish or close it before exporting again."
+          : feedback
+      }
     />
   );
 }

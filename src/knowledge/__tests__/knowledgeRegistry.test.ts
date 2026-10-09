@@ -233,6 +233,12 @@ describe("GrowPath knowledge registries", () => {
     expect(warnings).toContain("Pending, failed and malformed data are not empty");
     expect(warnings).toContain("Single-flight Retry is read-only");
     expect(warnings).toContain("CSV and visual HTML are not genuine PDF output");
+    expect(warnings).toContain("selected-Personal-grow action");
+    expect(warnings).toContain("source and photo-association checks");
+    expect(warnings).toContain("any unavailable or invalid photo fails the whole file");
+    expect(warnings).toContain("unsupported glyphs fail visibly");
+    expect(warnings).toContain("cancellable on account/session/entitlement/grow changes");
+    expect(warnings).toContain("already handed-off files cannot be recalled");
   });
 
   it("limits context-specific sources to supported decisions", () => {

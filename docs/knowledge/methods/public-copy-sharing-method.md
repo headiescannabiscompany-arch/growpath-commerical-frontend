@@ -144,6 +144,28 @@ Commercial grows through the exact owner-authorized grow lookup, matching its ID
 Retry does not publish, save records, run AI or change plan permissions. CSV and
 visual HTML remain distinct from a genuine PDF; do not claim one format is another.
 
+Genuine timeline PDF delivery is a separate selected-Personal-grow action. The
+server rechecks the current effective export plan, owner and Personal source scope;
+being an Admin or a member of a Facility never grants another owner's export.
+Archived owned grows remain eligible. Use server-derived timeline records and
+verified photo-to-grow associations, never client-supplied events, URLs or paths.
+Reuse private storage readers without creating evidence/publication records or
+calling AI. Preserve originals; orient and strip metadata in new pixel buffers.
+Any unavailable, oversized or invalid photo fails the entire PDF instead of
+silently omitting it. Disclose the 8 MiB per-photo input cap and bounded history,
+not a complete backup or regulatory submission. Supported font coverage is Latin,
+Greek and Cyrillic; unsupported glyphs must fail visibly, never disappear.
+
+Return only a fully generated, bounded PDF with private no-store delivery. Bind
+request and file preparation to the current account/session/entitlement/grow scope;
+abort a superseded request and recheck scope before handing off the file. Validate
+PDF MIME, size and signature before saving, clean temporary files and object URLs,
+and preserve separate web-download/native-share feedback. A browser download
+dispatch is not proof of a saved file, nor is opening a device share sheet proof
+of delivery. Files already handed to the browser/device cannot be recalled.
+Commercial aggregation, hosted evidence and native-device acceptance remain
+separate gates; do not mark them complete from a local Personal test.
+
 Viewer-friendly downloads follow the same disclosure boundary even when the file remains
 private. They render short human-readable event summaries, not embedded model JSON, provider
 payloads, internal evidence fingerprints, receipts or record identifiers. When a saved note
