@@ -5,6 +5,36 @@ import { fireEvent, render } from "@testing-library/react-native";
 import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
 
 describe("GrowTimelineFlow", () => {
+  it("preserves every point in a reversed 100-entry history and keeps selection by ID on refresh", () => {
+    const events = Array.from({ length: 100 }, (_, index) => ({
+      id: `history-${index + 1}`,
+      title: `History ${index + 1}`,
+      timestamp: new Date(Date.UTC(2026, 0, index + 1, 12)).toISOString(),
+      summary: `Saved detail ${index + 1}`
+    }));
+    const screen = render(<GrowTimelineFlow events={[...events].reverse()} />);
+    expect(screen.getAllByRole("button")).toHaveLength(100);
+    for (const point of [1, 50, 100]) {
+      const button = screen.getByLabelText(
+        `Open timeline entry ${point}: History ${point}`
+      );
+      fireEvent.press(button);
+      expect(button.props.accessibilityState).toEqual({ selected: true });
+      expect(screen.getByText(`Saved detail ${point}`)).toBeTruthy();
+      expect(screen.getByText(`POINT ${point}`)).toBeTruthy();
+    }
+    screen.rerender(<GrowTimelineFlow events={events.map((event) => ({ ...event }))} />);
+    expect(screen.getByText("Saved detail 100")).toBeTruthy();
+    screen.rerender(<GrowTimelineFlow events={events.slice(0, 99)} />);
+    expect(screen.getByText("Saved detail 1")).toBeTruthy();
+    expect(screen.queryByText("Saved detail 100")).toBeNull();
+    screen.rerender(<GrowTimelineFlow events={[]} />);
+    expect(
+      screen.getByText("No milestones are available for this visual timeline.")
+    ).toBeTruthy();
+    expect(screen.queryAllByRole("button")).toHaveLength(0);
+  });
+
   it("lets the heading wrap beside a stable count while long timelines keep every point selectable", () => {
     const events = Array.from({ length: 40 }, (_, index) => ({
       id: `point-${index}`,
