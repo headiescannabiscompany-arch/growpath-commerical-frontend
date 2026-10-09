@@ -783,7 +783,9 @@ export default function BackendCalculatorToolScreen({
       return;
     }
     let active = true;
-    const growRequest: Promise<SelectableGrow[]> = Promise.resolve().then(() =>
+    const growRequest: Promise<SelectableGrow[]> = Promise.resolve().then<
+      SelectableGrow[]
+    >(() =>
       workspaceType === "personal"
         ? listPersonalGrows()
         : workspaceType === "commercial"
