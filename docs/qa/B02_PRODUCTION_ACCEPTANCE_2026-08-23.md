@@ -1,5 +1,32 @@
 # B-02 production acceptance checkpoint — 2026-08-23
 
+## Current reconciliation — October 11, 2026
+
+The historical open-check statements below are superseded for these exact gates:
+Commercial and Facility populated same-type isolation, actual QA C-to-Admin browser
+switch, delayed audit focus guards, Staff/Viewer forced create denial, zero-stock
+partial-import review/resume, and one signed Sandbox purchase/redelivery with exactly
+one stock deduction all passed on staging. The existing production item's small-page
+older-history cursor/append check passed read-only. Synthetic inventory was archived,
+test products returned to private draft, runtime activation restored off and temporary
+Facility access revoked; approved Commercial test access was restored October 11.
+No login, fixture cleanup or repetition of these accepted checks remains.
+
+Evidence limitations remain: create denial is not every mutation endpoint; zero-stock
+resume is not server-crash/nonzero-stock recovery; small-page history is not a volume
+benchmark; Sandbox payment is not a production payment. No production activation is
+claimed. Existing production ledger/Owner/Manager/import/export acceptance is retained.
+Frontend archive/audit guards are live at58b2890b; production backend remainsa655e098.
+Read-only Render deployment reconciliation confirmed both October 11.
+
+NEXT is the separately controlled production stock-linked checkout readiness/rollout,
+not a ledger rewrite. Preserve the fail-closed rollout flag until the existing drained
+runtime and index/stock-hold verification requirements and exact release authority
+are satisfied. No real payment is authorized by this receipt. Detailed IDs, artifacts
+and restoration dates remain in the root finite B02 receipt; omit them from public copy.
+Grouped Updates keeps the October 9 feature release date and labels October 11 as
+verification, not a new feature launch or 100% completion.
+
 Matrix row: `B-02`  
 Related rows: `F-05`, `C-03`, `B-01`, `B-04`, `B-05`, `B-08`, `B-09`  
 Status: owner core ledger, Manager reversible mutation, one reviewed import, exports and

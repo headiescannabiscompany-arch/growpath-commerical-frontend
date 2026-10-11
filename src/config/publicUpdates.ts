@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "October 9, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "October 11, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -14,7 +14,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "October 9, 2026",
         dateLabel: "Released",
         summary:
-          "Commercial Inventory now offers Archive Item with a confirmation naming the saved record. Cancel preserves unfinished edits; archiving keeps the record and audit history, and the existing server rules reject items or active lots with stock remaining. Commercial and Facility audit exports ignore pending responses after you leave the screen, including tab changes; returning allows a fresh request after the earlier request settles. A file already downloaded cannot be recalled. Synthetic staging checks verified Commercial archive, reload, separate-account private-record isolation and delayed-download recovery. Actual same-browser account switching, additional Facility isolation checks and the remaining inventory acceptance checks are still open. Stock, payment and access rules are unchanged."
+          "Commercial Inventory offers Archive Item with a confirmation naming the saved record. Cancel preserves unfinished edits; archiving keeps the record and audit history, and existing server rules reject items or active lots with stock remaining. Commercial and Facility audit exports ignore pending responses after you leave the screen, including tab changes; a fresh export remains available after the earlier request settles. A file already downloaded cannot be recalled. Verification updated October 11: synthetic staging checks passed separate Commercial and Facility record isolation, same-browser account switching, Staff and Viewer create denial, delayed-download recovery, and interrupted zero-stock import resume. A Sandbox purchase and repeat delivery of its signed payment event deducted stock only once. Test inventory was archived and temporary test access restored. An existing production record also passed older-history paging. These checks do not activate stock-linked checkout in production; that rollout remains separate. Stock, payment and access rules are unchanged."
       },
       {
         id: "business-receipt-upload-readiness",

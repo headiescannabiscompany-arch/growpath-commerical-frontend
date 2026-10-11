@@ -34,8 +34,13 @@ describe("public Updates page", () => {
     expect(group?.next).toContain("not full inventory acceptance");
     expect(notes).toHaveLength(1);
     expect(notes[0].date).toBe("October 9, 2026");
-    expect(notes[0].summary).toContain("Synthetic staging checks");
-    expect(notes[0].summary).toContain("still open");
+    expect(notes[0].summary).toContain("synthetic staging checks passed");
+    expect(notes[0].summary).toContain("Verification updated October 11");
+    expect(notes[0].summary).toContain("do not activate stock-linked checkout in production");
+    expect(notes[0].summary).toContain("deducted stock only once");
+    expect(notes[0].summary).not.toContain("acceptance checks are still open");
+    expect(group?.next).toContain("including test cleanup");
+    expect(group?.next).toContain("separate readiness and rollout review");
     expect(notes[0].summary).toContain("cannot be recalled");
     expect(notes[0].summary).not.toMatch(/qa\.invalid|admin@|6ac950|6ac938|Erick|Rob/);
   });

@@ -2,6 +2,16 @@
 
 Updated: 2026-08-29
 
+B-02 status reconciliation, October 11, 2026: retain production owner/Manager ledger,
+imports/exports, AI and cross-mode acceptance. Subsequent staging same-type pairs,
+same-browser account transition, forced Staff/Viewer create denials, partial zero-stock
+import resume and signed Sandbox purchase/redelivery passed; all associated cleanup
+and temporary access restoration completed. Existing production older-history paging
+also passed read-only. These exact gaps are no longer pending. Full B-02 remains
+partial for the separate production stock-linked checkout readiness/rollout boundary;
+do not infer activation, all-mutation denial or crash/volume acceptance. See current
+reconciliation in B02_PRODUCTION_ACCEPTANCE_2026-08-23.md and the root finite receipt.
+
 This is the single product contract and execution order for finishing GrowPathAI.
 Detailed historical evidence remains in `CANONICAL_REMAINING_WORK_2026-08-08.md`, but
 that evidence ledger cannot create, reorder, reopen, or close a story in this matrix.
@@ -197,7 +207,7 @@ inventory, safety boundaries and mandatory production scenarios.
 | ID   | User story                                                                                                    | Status                                                                                                                                                                                      |
 | ---- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                                                                                                                  |
-| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; owner/Manager, Inventory AI, reviewed import, exports and Commercial/Facility cross-mode isolation accepted; forced-role, same-type isolation, history, retry/reconciliation open |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | partial; retained production ledger/import/export/AI and history acceptance; bounded staging isolation, forced create denial, partial-import resume, Sandbox exactly-once stock and cleanup accepted; production stock-linked checkout readiness/rollout remains separate |
 | B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF/VIEWER denial plus Facility MANAGER and Commercial OWNER create/reload/archive accepted; provider/isolation live gates open                                                 |
 | B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; Facility roles and Commercial OWNER lifecycle/item/lot/readiness accepted; protected-evidence/cross-workspace/actor-display open                                                  |
 | B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; Manager setup boundary accepted; Pulse credential/provider and TrolMaster adapter live acceptance open                                                                            |
