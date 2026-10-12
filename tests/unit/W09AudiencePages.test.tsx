@@ -77,6 +77,26 @@ describe("W09 audience destinations", () => {
     expect(screen.getByText(/not a complete original-photo backup/)).toBeTruthy();
   });
 
+  it("explains crop-aware planning and reviewed historical imports without universal device control", () => {
+    const screen = render(<PublicLandingPage page="personal-grower" />);
+    expect(screen.getByText(/uncertain details marked Not sure/)).toBeTruthy();
+    expect(screen.getByText(/review the proposed dates before creating tasks/)).toBeTruthy();
+    expect(screen.getByText("Bring your controller history with you")).toBeTruthy();
+    expect(screen.getByText(/selected Personal grow/)).toBeTruthy();
+    expect(screen.getByText(/timezone and column mapping first/)).toBeTruthy();
+    expect(screen.getByText(/does not promise live connection or control of every device/)).toBeTruthy();
+  });
+
+  it("explains learner continuity without granting Forum access through a private course", () => {
+    const screen = render(<PublicLandingPage page="creators-educators" />);
+    expect(screen.getByText("Keep learning connected")).toBeTruthy();
+    expect(screen.getByText(/Learners with access/)).toBeTruthy();
+    expect(screen.getByText(/mark them complete and return to saved progress/)).toBeTruthy();
+    expect(screen.getByText(/follow Open Discussion/)).toBeTruthy();
+    expect(screen.getByText(/visibility and participation rules apply separately/)).toBeTruthy();
+    expect(screen.getByText(/does not make its linked discussion private/)).toBeTruthy();
+  });
+
   it("surfaces accepted Commercial follow-up and care work without automatic outreach or fulfillment", () => {
     const screen = render(<PublicLandingPage page="commercial-cultivation" />);
     expect(screen.getByText(/Use Business Desk to save a lead/)).toBeTruthy();

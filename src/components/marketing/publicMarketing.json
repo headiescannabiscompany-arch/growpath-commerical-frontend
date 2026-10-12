@@ -82,7 +82,11 @@
       "sections": [
         {
           "title": "Grow your way",
-          "body": "Support for tents, rooms, greenhouses, containers, raised beds, hydroponics, living soil, fruit trees, vegetables, flowers, and other selected interests."
+          "body": "Support for tents, rooms, greenhouses, containers, raised beds, hydroponics, living soil, fruit trees, vegetables, flowers, and other selected interests. Record the crop and lifecycle you know, use reviewed guidance where available, and keep uncertain details marked Not sure. Carry the saved context into an editable grow lifecycle plan and review the proposed dates before creating tasks."
+        },
+        {
+          "title": "Bring your controller history with you",
+          "body": "Import supported controller CSV history into a selected Personal grow. Review the provider, grow or space, timezone and column mapping first, then return to the saved readings alongside that grow's records. This imports historical readings; it does not promise live connection or control of every device."
         },
         {
           "title": "Turn advice into a next step",
@@ -256,6 +260,10 @@
         {
           "title": "Build from real work",
           "body": "Use grow timelines, logs, photos, recipes, tool results, and forum answers you own or have permission to share as course source material. Prepare a private draft, add lessons, and review the learner-facing preview before publishing. Selecting a private grow record never publishes it automatically."
+        },
+        {
+          "title": "Keep learning connected",
+          "body": "Learners with access can open lessons, mark them complete and return to saved progress. When you link a Forum discussion, they can follow Open Discussion from the course to that thread. Forum visibility and participation rules apply separately; a Facility-only course does not make its linked discussion private."
         },
         {
           "title": "Teach live",
