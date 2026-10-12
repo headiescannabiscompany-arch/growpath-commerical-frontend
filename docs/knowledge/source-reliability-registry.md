@@ -11,6 +11,8 @@ Reliability is use-case specific. A breeder can be authoritative for its own par
 
 ## Initial authorities
 
+- [Stripe subscription cancellation documentation](https://docs.stripe.com/billing/subscriptions/cancel), reviewed 2026-10-12: Tier B provider authority for `cancel_at_period_end`, preserved paid-through time and terminal cancellation semantics. It does not prove a recipient's live status, authorize a cancellation, waive protected identities or establish a GrowPath release. Cross-check exact bound provider state, billing ledger and reviewed transaction evidence before changing access.
+
 - UC IPM, USDA/APHIS, Cornell, Penn State, NC State, Maryland, Oregon State, Colorado State, Clemson and Virginia Tech extension: Tier A for IPM, soil, fertility, water and horticultural principles.
 - UC IPM Thrips and Powdery Mildew pages, reviewed 2026-08-06: Tier A for distinguishing thrips-compatible silvering/stippling/scarring and black frass from superficial white-to-gray powdery growth. These traits support an evidence differential; they do not justify a confirmed diagnosis from one ambiguous photo.
 - USDA Agricultural Research Service Image Gallery, reviewed 2026-08-08: Tier A government media source for rights-cleared IPM evaluation candidates when the individual asset is marked copyright-free/public domain. Preserve the asset URL, ARS identifier, caption, photographer, downloaded original, and review date. Use the caption as a candidate label, not automatic diagnostic ground truth; independently verify the organism, visible sign, host, and intended evaluation label. Exclude any asset whose page says otherwise or whose rights are ambiguous.

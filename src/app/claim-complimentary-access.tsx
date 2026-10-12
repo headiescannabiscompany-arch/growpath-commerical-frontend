@@ -51,6 +51,8 @@ type State =
   | "ready"
   | "claiming"
   | "claimed"
+  | "scheduled"
+  | "renewal-required"
   | "blocked"
   | "signin-required"
   | "error"
@@ -73,6 +75,8 @@ export default function ClaimComplimentaryAccessScreen() {
   const [state, setState] = useState<State>("loading");
   const [message, setMessage] = useState("");
   const [retry, setRetry] = useState(0);
+  const afterPaidPeriod = summary?.startMode === "after_paid_period";
+  const completed = state === "claimed" || state === "scheduled";
 
   useEffect(() => {
     let mounted = true;
@@ -134,15 +138,18 @@ export default function ClaimComplimentaryAccessScreen() {
     try {
       const result = await claimComplimentaryGrant(token);
       await clearComplimentaryClaimToken();
-      setState("claimed");
-      setMessage(
-        `Your complimentary ${String(result?.plan || summary?.plan || "GrowPathAI")} access is active and will not renew.`
-      );
+      setState(result.scheduled ? "scheduled" : "claimed");
+      const successMessage = result.scheduled
+        ? `Your complimentary ${result.plan} gift is scheduled. Estimated start: ${new Date(result.startsAt).toLocaleString()}. You keep your remaining paid time. The gift is not active yet and will not renew automatically.`
+        : `Your complimentary ${String(result?.plan || summary?.plan || "GrowPathAI")} access is active and will not renew.`;
+      setMessage(successMessage);
       try {
         await auth.retryMe();
       } catch {
         setMessage(
-          "Complimentary access was claimed. Refresh the account if the new plan is not visible yet."
+          result.scheduled
+            ? `${successMessage} Refresh Billing if the scheduled gift is not visible yet.`
+            : "Complimentary access was claimed. Refresh the account if the new plan is not visible yet."
         );
       }
     } catch (error) {
@@ -159,6 +166,12 @@ export default function ClaimComplimentaryAccessScreen() {
       if (TERMINAL_CODES.has(code)) {
         await clearComplimentaryClaimToken();
         setState("terminal");
+      } else if (code === "COMPLIMENTARY_RENEWAL_CANCELLATION_REQUIRED") {
+        setState("renewal-required");
+        setMessage(
+          "Stop renewal in Billing, then return to this invitation to schedule the gift. Your paid access continues through its current period. This invitation has been kept; it does not cancel your subscription."
+        );
+        return;
       } else if (BLOCKED_CODES.has(code)) {
         setState("blocked");
       } else {
@@ -197,8 +210,9 @@ export default function ClaimComplimentaryAccessScreen() {
           Complimentary GrowPathAI access
         </Text>
         <Text style={styles.copy}>
-          This is Admin-issued access. No payment was made, no card is required, and it
-          will not renew automatically.
+          {afterPaidPeriod
+            ? "This is an Admin-issued free gift. It does not charge you or change your existing paid subscription. The gift will not renew automatically."
+            : "This is Admin-issued access. No payment was made, no card is required, and it will not renew automatically."}
         </Text>
 
         {state === "loading" || state === "claiming" ? (
@@ -213,7 +227,11 @@ export default function ClaimComplimentaryAccessScreen() {
             <Text style={styles.copy}>Recipient: {summary.recipientEmail}</Text>
             {summary.message ? <Text style={styles.note}>{summary.message}</Text> : null}
             <Text style={styles.helper}>
-              Access starts only when the matching verified account claims it.
+              {afterPaidPeriod
+                ? completed
+                  ? "Check Billing for the gift's current status. Scheduling does not start the free access early."
+                  : "You keep the time you already paid for. This gift starts after the current paid period on the same plan. The invitation does not stop renewal: use Billing to stop renewal, then return here to schedule the gift with the matching verified account."
+                : "Access starts only when the matching verified account claims it."}
             </Text>
             {summary.plan === "facility" && summary.facilityId ? (
               <Text style={styles.helper}>
@@ -226,8 +244,8 @@ export default function ClaimComplimentaryAccessScreen() {
 
         {message ? (
           <Text
-            accessibilityRole={state === "claimed" ? undefined : "alert"}
-            style={[styles.feedback, state === "claimed" ? styles.success : styles.error]}
+            accessibilityRole={completed ? undefined : "alert"}
+            style={[styles.feedback, completed ? styles.success : styles.error]}
           >
             {message}
           </Text>
@@ -274,14 +292,46 @@ export default function ClaimComplimentaryAccessScreen() {
 
         {summary && auth.token && ["ready", "claiming"].includes(state) ? (
           <Pressable
-            accessibilityLabel="Activate complimentary access"
+            accessibilityLabel={
+              afterPaidPeriod
+                ? "Schedule complimentary access"
+                : "Activate complimentary access"
+            }
             accessibilityRole="button"
             disabled={state === "claiming"}
             style={[styles.primary, state === "claiming" && styles.disabled]}
             onPress={() => void claim()}
           >
-            <Text style={styles.primaryText}>Activate complimentary access</Text>
+            <Text style={styles.primaryText}>
+              {afterPaidPeriod
+                ? "Schedule complimentary access"
+                : "Activate complimentary access"}
+            </Text>
           </Pressable>
+        ) : null}
+
+        {auth.token &&
+        ((afterPaidPeriod && state === "ready") || state === "renewal-required") ? (
+          <View style={styles.actions}>
+            <Pressable
+              accessibilityLabel="Open Billing to manage renewal"
+              accessibilityRole="button"
+              style={styles.secondary}
+              onPress={() => router.push("/account/billing" as any)}
+            >
+              <Text style={styles.secondaryText}>Open Billing to manage renewal</Text>
+            </Pressable>
+            {state === "renewal-required" ? (
+              <Pressable
+                accessibilityLabel="Check again after stopping renewal"
+                accessibilityRole="button"
+                style={styles.primary}
+                onPress={() => void claim()}
+              >
+                <Text style={styles.primaryText}>Check again after stopping renewal</Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : null}
 
         {state === "signin-required" ? (
@@ -316,7 +366,7 @@ export default function ClaimComplimentaryAccessScreen() {
           </Pressable>
         ) : null}
 
-        {state === "claimed" ? (
+        {completed ? (
           <Pressable
             accessibilityRole="button"
             style={styles.primary}

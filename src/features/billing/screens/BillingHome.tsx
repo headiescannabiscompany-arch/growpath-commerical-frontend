@@ -196,6 +196,31 @@ export function formatGiftEntitlementEnd(value: unknown) {
   });
 }
 
+function scheduledComplimentaryGift(value: unknown): {
+  plan: "pro" | "commercial";
+  duration: "month" | "year";
+  startsAt: string;
+  blocked: boolean;
+} | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const gift = value as Record<string, unknown>;
+  if (
+    !["pro", "commercial"].includes(gift.plan as string) ||
+    !["month", "year"].includes(gift.duration as string) ||
+    typeof gift.startsAt !== "string" ||
+    !Number.isFinite(Date.parse(gift.startsAt)) ||
+    new Date(gift.startsAt).toISOString() !== gift.startsAt ||
+    typeof gift.blocked !== "boolean"
+  )
+    return null;
+  return {
+    plan: gift.plan as "pro" | "commercial",
+    duration: gift.duration as "month" | "year",
+    startsAt: gift.startsAt,
+    blocked: gift.blocked
+  };
+}
+
 type BillingHomeProps = {
   purchaserHistoryOnly?: boolean;
   showCreatorPayouts?: boolean;
@@ -434,6 +459,9 @@ export default function BillingHome({
   );
   const cancellationScheduled = access.cancelScheduled;
   const paidThrough = formatGiftEntitlementEnd(access.paidThrough);
+  const scheduledGift = scheduledComplimentaryGift(plan?.scheduledComplimentaryAccess);
+  const scheduledGiftUnavailable =
+    plan?.scheduledComplimentaryAccess != null && !scheduledGift;
 
   const showSentGiftsSection =
     purchaserHistoryOnly ||
@@ -482,6 +510,36 @@ export default function BillingHome({
                   ? `Renewal is canceled. Your paid access remains available through ${paidThrough}.`
                   : access.message}
           </Text>
+          {!loading && planLoaded && scheduledGift ? (
+            <View style={styles.giftCard}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+                Scheduled complimentary gift
+              </Text>
+              <Text style={styles.meta}>
+                One {scheduledGift.duration} of{" "}
+                {scheduledGift.plan === "pro" ? "Personal Pro" : "Commercial"}
+              </Text>
+              <Text style={styles.meta}>
+                Estimated gift start: {formatGiftEntitlementEnd(scheduledGift.startsAt)}
+              </Text>
+              <Text style={styles.note}>
+                Your gift is not active yet. You keep any remaining paid time. The full
+                free {scheduledGift.duration} begins only after billing verifies that your
+                paid subscription has ended. The gift will not renew automatically.
+              </Text>
+              {scheduledGift.blocked ? (
+                <Text accessibilityRole="alert" style={styles.errorText}>
+                  This gift needs Admin review before it can start. Contact GrowPathAI
+                  Admin for help.
+                </Text>
+              ) : null}
+            </View>
+          ) : !loading && planLoaded && scheduledGiftUnavailable ? (
+            <Text accessibilityRole="alert" style={styles.errorText}>
+              The scheduled gift status could not be confirmed. Refresh status or contact
+              GrowPathAI Admin for help.
+            </Text>
+          ) : null}
           <Pressable
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={() => void loadPlan()}

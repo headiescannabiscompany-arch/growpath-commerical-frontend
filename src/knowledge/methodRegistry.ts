@@ -41,6 +41,33 @@ function method(
 
 export const methodRegistry: GrowPathMethod[] = [
   method(
+    "complimentary-access",
+    "Complimentary Subscription Access",
+    ["billing", "admin_review", "complimentary_access"],
+    "complimentary-access-method.md",
+    [
+      "verify recipient and billing authority",
+      "issue nonpaid invitation without changing paid access",
+      "verify matching recipient claim and selected timing",
+      "activate only from verified entitlement authority",
+      "expire or revoke with retained audit"
+    ],
+    ["verified recipient", "Admin audit reason", "exact billing and workspace scope"],
+    [
+      "separate pending, scheduled and active states",
+      "full gift duration beginning at verified activation",
+      "nonpaid nonrenewing access and retained audit"
+    ],
+    [
+      "After-paid-period scheduling is default-off and limited to the existing same-plan Pro or Commercial Stripe subscription.",
+      "An invitation never cancels renewal; the recipient uses existing Billing controls before scheduling.",
+      "Preserve paid time, exact provider binding, protected identities, Facility ownership and account restrictions.",
+      "Canceling a scheduled gift never restarts paid renewal; uncertain provider state holds access for review.",
+      "Do not call local tests a production release or expose claim tokens and provider identifiers in UI or analytics."
+    ],
+    ["account-billing", "admin-complimentary-grants", "claim-complimentary-access"]
+  ),
+  method(
     "testimonial-feedback",
     "Genuine Feedback and Optional Testimonials",
     ["feedback", "testimonials", "public_marketing", "admin_review"],

@@ -132,6 +132,90 @@ describe("ComplimentaryGrantsAdminCard", () => {
     expect(screen.getByText("new@example.com · pro · month")).toBeTruthy();
   });
 
+  it("hides paid-period timing when the server does not enable it", async () => {
+    const screen = render(<ComplimentaryGrantsAdminCard />);
+    await waitFor(() => expect(screen.getByText(/pending · nonpaid/)).toBeTruthy());
+    expect(screen.queryByLabelText("Complimentary start timing")).toBeNull();
+  });
+
+  it("issues an explicitly selected paid-period gift and resets timing for Facility", async () => {
+    mockList.mockResolvedValue({
+      grants: [pendingGrant],
+      nextCursor: null,
+      paidPeriodGiftsEnabled: true
+    });
+    mockIssue.mockResolvedValue({
+      grant: { ...pendingGrant, startMode: "after_paid_period" },
+      deliveryAccepted: true
+    });
+    const screen = render(<ComplimentaryGrantsAdminCard />);
+    const timing = await screen.findByLabelText("Complimentary start timing");
+    expect(screen.queryByText(/The invitation does not stop renewal/)).toBeNull();
+    fireEvent(timing, "valueChange", "after_paid_period");
+    expect(screen.getByText(/The invitation does not stop renewal/)).toBeTruthy();
+    fireEvent.changeText(
+      screen.getByLabelText("Complimentary recipient email"),
+      "recipient@example.com"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Complimentary audit reason"),
+      "Approved paid-period gift"
+    );
+    fireEvent.press(screen.getByText("Issue complimentary access"));
+    await waitFor(() =>
+      expect(mockIssue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          plan: "pro",
+          startMode: "after_paid_period"
+        })
+      )
+    );
+    fireEvent(screen.getByLabelText("Complimentary plan"), "valueChange", "facility");
+    expect(screen.queryByLabelText("Complimentary start timing")).toBeNull();
+    fireEvent(screen.getByLabelText("Complimentary plan"), "valueChange", "commercial");
+    expect(screen.getByLabelText("Complimentary start timing")).toBeTruthy();
+    expect(screen.queryByText(/The invitation does not stop renewal/)).toBeNull();
+  });
+
+  it("shows scheduled gift timing and cancels only the gift, not Stripe renewal", async () => {
+    const scheduled = {
+      ...pendingGrant,
+      status: "scheduled",
+      startMode: "after_paid_period",
+      scheduledStartsAt: "2026-10-15T22:15:22.000Z",
+      scheduledBlockCode: null
+    };
+    mockList.mockResolvedValue({
+      grants: [scheduled],
+      nextCursor: null,
+      paidPeriodGiftsEnabled: true
+    });
+    mockRevoke.mockResolvedValue({ ...scheduled, status: "revoked" });
+    const screen = render(<ComplimentaryGrantsAdminCard />);
+    expect(await screen.findByText(/Estimated gift start:/)).toBeTruthy();
+    expect(screen.queryByText("Resend claim email")).toBeNull();
+    expect(
+      screen.getByText(/Canceling this gift does not restart Stripe renewal/)
+    ).toBeTruthy();
+    fireEvent.changeText(
+      screen.getByLabelText("Action reason for recipient@example.com"),
+      "Recipient requested cancellation"
+    );
+    fireEvent.press(screen.getByText("Cancel scheduled gift"));
+    await waitFor(() =>
+      expect(mockRevoke).toHaveBeenCalledWith(
+        "grant-1",
+        "Recipient requested cancellation"
+      )
+    );
+    expect(
+      screen.getByText(
+        "The scheduled gift was canceled. Stripe renewal was not restarted."
+      )
+    ).toBeTruthy();
+    expect(mockIssue).not.toHaveBeenCalled();
+  });
+
   it("keeps issuance disabled until email and audit reason are valid", async () => {
     const screen = render(<ComplimentaryGrantsAdminCard />);
     await waitFor(() => expect(mockList).toHaveBeenCalled());

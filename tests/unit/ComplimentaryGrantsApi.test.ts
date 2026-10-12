@@ -92,7 +92,11 @@ describe("complimentary grant API", () => {
 
     await expect(
       listComplimentaryGrants({ limit: 25, cursor: "cursor-1" })
-    ).resolves.toEqual({ grants: [grant], nextCursor: "next-cursor" });
+    ).resolves.toEqual({
+      grants: [grant],
+      nextCursor: "next-cursor",
+      paidPeriodGiftsEnabled: false
+    });
     await expect(
       issueComplimentaryGrant({
         recipientEmail: "recipient@example.com",
@@ -211,6 +215,153 @@ describe("complimentary grant API", () => {
     mockApiRequest.mockResolvedValueOnce({ grants: null, nextCursor: 42 });
 
     await expect(listComplimentaryGrants()).rejects.toThrow(
+      "invalid complimentary-access response"
+    );
+  });
+
+  it("accepts a scheduled nonpaid claim without pretending the gift is active", async () => {
+    const scheduled = {
+      ...claimResult,
+      scheduled: true,
+      startsAt: "2026-10-15T22:15:22.000Z",
+      expiresAt: null
+    };
+    mockApiRequest.mockResolvedValue({ data: scheduled });
+    await expect(claimComplimentaryGrant("claim-token")).resolves.toEqual(scheduled);
+  });
+
+  it.each([
+    { startsAt: "not-a-date" },
+    { startsAt: null },
+    { expiresAt: "2027-10-15T22:15:22.000Z" },
+    { plan: "facility", facilityId: "507f191e810c19729de86001" },
+    { renews: true },
+    { paymentState: "paid" },
+    { scheduled: "true" }
+  ])("rejects an invalid scheduled claim result: %j", async (override) => {
+    mockApiRequest.mockResolvedValue({
+      ...claimResult,
+      scheduled: true,
+      startsAt: "2026-10-15T22:15:22.000Z",
+      expiresAt: null,
+      ...override
+    });
+    await expect(claimComplimentaryGrant("claim-token")).rejects.toThrow(
+      "invalid complimentary-access response"
+    );
+  });
+
+  it("validates the paid-period capability and scheduled Admin record", async () => {
+    const scheduled = {
+      ...grant,
+      status: "scheduled",
+      startMode: "after_paid_period",
+      scheduledStartsAt: "2026-10-15T22:15:22.000Z",
+      scheduledBlockCode: null
+    };
+    mockApiRequest.mockResolvedValue({
+      grants: [scheduled],
+      nextCursor: null,
+      paidPeriodGiftsEnabled: true
+    });
+    await expect(listComplimentaryGrants()).resolves.toEqual({
+      grants: [scheduled],
+      nextCursor: null,
+      paidPeriodGiftsEnabled: true
+    });
+    mockApiRequest.mockResolvedValue({
+      grants: [scheduled],
+      nextCursor: null,
+      paidPeriodGiftsEnabled: "true"
+    });
+    await expect(listComplimentaryGrants()).rejects.toThrow(
+      "invalid complimentary-access response"
+    );
+  });
+
+  it.each([
+    { startMode: "on_claim" },
+    { scheduledStartsAt: "invalid" },
+    { scheduledBlockCode: 42 },
+    { entitlementEndsAt: "2027-10-15T22:15:22.000Z" }
+  ])("rejects malformed scheduled Admin metadata: %j", async (override) => {
+    mockApiRequest.mockResolvedValue({
+      grants: [
+        {
+          ...grant,
+          status: "scheduled",
+          startMode: "after_paid_period",
+          scheduledStartsAt: "2026-10-15T22:15:22.000Z",
+          scheduledBlockCode: null,
+          ...override
+        }
+      ],
+      nextCursor: null
+    });
+    await expect(listComplimentaryGrants()).rejects.toThrow(
+      "invalid complimentary-access response"
+    );
+  });
+
+  it("binds an issued grant to its requested start mode", async () => {
+    const input = {
+      recipientEmail: grant.recipientEmail,
+      plan: grant.plan,
+      duration: grant.duration,
+      reason: grant.reason,
+      startMode: "after_paid_period" as const
+    };
+    mockApiRequest
+      .mockResolvedValueOnce({
+        grant: { ...grant, startMode: "after_paid_period" },
+        deliveryAccepted: true
+      })
+      .mockResolvedValueOnce({ grant, deliveryAccepted: true });
+    await expect(issueComplimentaryGrant(input)).resolves.toMatchObject({
+      grant: { startMode: "after_paid_period" }
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/admin/complimentary-grants", {
+      method: "POST",
+      body: input
+    });
+    await expect(issueComplimentaryGrant(input)).rejects.toThrow(
+      "invalid complimentary-access response"
+    );
+  });
+
+  it("rejects scheduled Facility issuance without making a request", async () => {
+    await expect(
+      issueComplimentaryGrant({
+        recipientEmail: grant.recipientEmail,
+        plan: "facility",
+        duration: "year",
+        facilityId: "507f191e810c19729de86001",
+        reason: grant.reason,
+        startMode: "after_paid_period"
+      })
+    ).rejects.toThrow("invalid complimentary-access response");
+    expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
+  it("accepts only supported preview timing and leaves Facility unchanged", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({ grant: { ...grant, startMode: "after_paid_period" } })
+      .mockResolvedValueOnce({ grant: { ...grant, startMode: "unknown" } })
+      .mockResolvedValueOnce({
+        grant: {
+          ...grant,
+          plan: "facility",
+          facilityId: "507f191e810c19729de86001",
+          startMode: "after_paid_period"
+        }
+      });
+    await expect(previewComplimentaryGrant("token")).resolves.toMatchObject({
+      startMode: "after_paid_period"
+    });
+    await expect(previewComplimentaryGrant("token")).rejects.toThrow(
+      "invalid complimentary-access response"
+    );
+    await expect(previewComplimentaryGrant("token")).rejects.toThrow(
       "invalid complimentary-access response"
     );
   });
