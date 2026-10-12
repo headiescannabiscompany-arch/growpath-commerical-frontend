@@ -86,7 +86,7 @@ describe("reviewed audience story evidence", () => {
     expect(stories.pro.limits).toContain("PDF with dated notes and permitted photos");
     expect(stories.pro.limits).toContain("does not include native-app PDF export");
     expect(stories.pro.limits).toContain("complete original-photo archive");
-    expect(stories.pro.limits).toContain("export preparation, not the downloaded PDF");
+    expect(stories.pro.limits).toContain("export screenshot shows package preparation, not the downloaded PDF");
     expect(stories.pro.scenes[2].caption).toContain("October 5, 2026");
     expect(stories.pro.scenes[2].caption).toContain("not a picture of a downloaded file");
   });
