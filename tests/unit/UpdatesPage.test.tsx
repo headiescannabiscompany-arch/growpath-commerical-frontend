@@ -24,23 +24,24 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
-  it("groups inventory repairs without claiming full inventory acceptance", () => {
+  it("closes the scoped inventory rollout while retaining evidence limits", () => {
     const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "inventory");
     const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
       (entry) => entry.id === "inventory-archive-export-safety"
     );
-    expect(group?.status).toBe("partial");
+    expect(group?.status).toBe("complete");
     expect(group?.entryIds).toEqual(["inventory-archive-export-safety"]);
-    expect(group?.next).toContain("not full inventory acceptance");
+    expect(group?.next).toContain("Payment evidence remains Sandbox-only");
     expect(notes).toHaveLength(1);
-    expect(notes[0].date).toBe("October 9, 2026");
-    expect(notes[0].summary).toContain("synthetic staging checks passed");
-    expect(notes[0].summary).toContain("Verification updated October 11");
-    expect(notes[0].summary).toContain("do not activate stock-linked checkout in production");
+    expect(notes[0].date).toBe("October 12, 2026");
+    expect(notes[0].summary).toContain("Synthetic staging checks passed");
+    expect(notes[0].summary).toContain("October 9 archive and download release is retained");
+    expect(notes[0].summary).toContain("stock-linked storefront checkout was enabled in production");
     expect(notes[0].summary).toContain("deducted stock only once");
     expect(notes[0].summary).not.toContain("acceptance checks are still open");
     expect(group?.next).toContain("including test cleanup");
-    expect(group?.next).toContain("separate readiness and rollout review");
+    expect(group?.next).toContain("not crash recovery");
+    expect(notes[0].summary).toContain("No real purchase was made");
     expect(notes[0].summary).toContain("cannot be recalled");
     expect(notes[0].summary).not.toMatch(/qa\.invalid|admin@|6ac950|6ac938|Erick|Rob/);
   });
@@ -531,7 +532,7 @@ describe("public Updates page", () => {
       PUBLIC_UPDATE_GROUPS.filter((group) => group.status === "complete").map(
         (group) => group.id
       )
-    ).toEqual(["feedback", "journals", "billing", "hosted-live"]);
+    ).toEqual(["inventory", "feedback", "journals", "billing", "hosted-live"]);
     for (const id of ["courses", "shopping", "admin", "public-website"]) {
       expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === id)?.status).toBe(
         "partial"

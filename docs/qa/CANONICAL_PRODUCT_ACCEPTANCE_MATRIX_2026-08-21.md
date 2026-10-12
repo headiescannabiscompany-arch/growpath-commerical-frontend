@@ -2,7 +2,16 @@
 
 Updated: 2026-08-29
 
-B-02 status reconciliation, October 11, 2026: retain production owner/Manager ledger,
+B-02 October12 reconciliation: the separately controlled production stock-linked
+checkout rollout is now CLOSED on a655e098, final deploy
+dep-db6c0sd9fdbs73fjv0t0 LIVE11:13:47.753626Z. Public linked checkout and all five
+payment readiness checks pass, normal commands restored, checkout reopened.
+All previously accepted bounded checks and cleanup remain closed. No real purchase
+or blanket role/device/crash/volume acceptance is claimed. The public Inventory
+milestone is finite; do not silently convert the broad canonical story to fully
+live accepted. See the B02 receipt for exact boundaries and operational events.
+
+Historical B-02 status reconciliation, October 11, 2026: retain production owner/Manager ledger,
 imports/exports, AI and cross-mode acceptance. Subsequent staging same-type pairs,
 same-browser account transition, forced Staff/Viewer create denials, partial zero-stock
 import resume and signed Sandbox purchase/redelivery passed; all associated cleanup
@@ -207,7 +216,7 @@ inventory, safety boundaries and mandatory production scenarios.
 | ID   | User story                                                                                                    | Status                                                                                                                                                                                      |
 | ---- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                                                                                                                  |
-| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | partial; retained production ledger/import/export/AI and history acceptance; bounded staging isolation, forced create denial, partial-import resume, Sandbox exactly-once stock and cleanup accepted; production stock-linked checkout readiness/rollout remains separate |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | partial broad story; finite ledger/archive/audit/stock-linked rollout milestone closed October12; retained production ledger/import/export/AI/history and bounded staging isolation, create denial, partial-import resume, Sandbox exactly-once stock/cleanup; production activation and readiness accepted, no blanket device/all-mutation/crash/volume or real-payment proof |
 | B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF/VIEWER denial plus Facility MANAGER and Commercial OWNER create/reload/archive accepted; provider/isolation live gates open                                                 |
 | B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; Facility roles and Commercial OWNER lifecycle/item/lot/readiness accepted; protected-evidence/cross-workspace/actor-display open                                                  |
 | B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; Manager setup boundary accepted; Pulse credential/provider and TrolMaster adapter live acceptance open                                                                            |

@@ -27,11 +27,11 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     id: "inventory",
     tab: "Inventory",
     title: "Inventory records and audit exports",
-    status: "partial",
+    status: "complete",
     scope:
-      "The existing Commercial and Facility inventory ledger and its remaining acceptance checks.",
-    live: "Commercial Archive Item now confirms the saved record, preserves unfinished edits on Cancel and retains audit history. Stocked items cannot be archived. Commercial and Facility audit exports discard pending results after leaving the screen; a fresh deliberate export remains available after the earlier request settles.",
-    next: "The bounded isolation, account-switching, create-denial, import-resume, older-history and Sandbox stock-deduction checks are complete, including test cleanup. Production stock-linked checkout still needs its separate readiness and rollout review. Completed checks will not be repeated; this is not full inventory acceptance or production checkout activation.",
+      "The existing Commercial and Facility inventory ledger, archive and audit-download safeguards, and the stock-linked storefront checkout rollout.",
+    live: "Commercial Archive Item confirms the saved record, preserves unfinished edits on Cancel and retains audit history. Stocked items cannot be archived. Commercial and Facility audit exports discard pending results after leaving the screen; a fresh deliberate export remains available after the earlier request settles. Stock-linked storefront checkout is now enabled in production, with normal checkout reopened after readiness verification.",
+    next: "This milestone's recorded checks and production rollout are complete, including test cleanup. Completed checks will not be repeated without a reproduced defect or an affected change. Payment evidence remains Sandbox-only; the zero-stock import check is not crash recovery, and older-history paging is not a volume benchmark. Broader app and device reviews remain separate.",
     entryIds: ["inventory-archive-export-safety"]
   },
   {

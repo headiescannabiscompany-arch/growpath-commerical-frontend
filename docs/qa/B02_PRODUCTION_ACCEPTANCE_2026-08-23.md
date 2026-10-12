@@ -1,6 +1,28 @@
 # B-02 production acceptance checkpoint — 2026-08-23
 
-## Current reconciliation — October 11, 2026
+## Current reconciliation — October 12, 2026
+
+The scoped production stock-linked checkout rollout is CLOSED. Existing API
+srv-d8tdngn7f7vs73c5qamg stayed on a655e098314a0a9015dfe3f098c74fde09cbb4ab.
+Owner approved the broader temporary all-new-checkout pause, retaining webhook
+routes. After old-instance drain, verify-only index6/6 and stock checks passed
+with zero missing/created indexes, backfills or conflicts. Activation deployment
+dep-db6bprt9fdbs73fj7t3g went LIVE10:59:01.210790Z. Reopening deployment
+dep-db6c0sd9fdbs73fjv0t0 went LIVE11:13:47.753626Z. Public /ready confirms
+ready=true, linked=true, payment ready=true/nonstale and all five checks true.
+Original npm start and predeploy commands are restored; saved attestations unchanged.
+No real purchase, migration, new infrastructure or credential change occurred.
+Brief restart502s occurred; uninterrupted webhook availability is not claimed.
+One wrong-main auto-build was canceled before promotion, and one stalled
+reopening attempt was canceled before one successful same-SHA retry.
+Operational detail is retained in the root finite receipt.
+
+Grouped Updates closes this finite milestone with an October12 latest release,
+retaining October9 safeguards and the limits below. This is not blanket acceptance
+of every B-02 role/device/mutation/crash/volume path. Reopen only for a reproduced
+defect or affected change; the separately recorded broader app review remains.
+
+### Historical reconciliation — October 11, 2026
 
 The historical open-check statements below are superseded for these exact gates:
 Commercial and Facility populated same-type isolation, actual QA C-to-Admin browser
