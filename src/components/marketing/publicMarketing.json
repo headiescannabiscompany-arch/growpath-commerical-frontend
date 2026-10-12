@@ -85,12 +85,12 @@
           "body": "Support for tents, rooms, greenhouses, containers, raised beds, hydroponics, living soil, fruit trees, vegetables, flowers, and other selected interests."
         },
         {
-          "title": "Context-aware help",
-          "body": "Ask AI from a grow, plant, log, task, or photo so the relevant stage and recent history can travel with the question."
+          "title": "Turn advice into a next step",
+          "body": "Ask AI from a grow, plant, log, task, or photo so the relevant stage and recent history can travel with the question. Review a saved tool result, choose Save to Grow Log or Create Task, and reopen the source when you need to remember why you planned the task. You choose the action; AI use follows your plan's credit allowance."
         },
         {
           "title": "Keep a useful record",
-          "body": "Review what you fed, what you saw, and what you changed so you can repeat what worked and remember what you would do differently. Keep the results attached to the run, then export supported timelines and reports for your own records."
+          "body": "Review what you fed, what you saw, and what you changed so you can repeat what worked and remember what you would do differently. On an eligible paid plan, use your Personal web workspace to export a timeline PDF with dated notes and permitted photos, alongside supported CSV and viewer-friendly HTML exports. Review the included records before sharing. A timeline PDF is not a complete original-photo backup."
         }
       ]
     },
@@ -110,6 +110,10 @@
         {
           "title": "Trials and formulas",
           "body": "Connect recipes, batches, grow trials, and evidence runs to the product line they support. A saved calculation or trial observation does not establish a product-performance claim; review the evidence before using it publicly."
+        },
+        {
+          "title": "Keep follow-up and plant-care records together",
+          "body": "Use Business Desk to save a lead and its next reviewed action. In Horticulture Operations, keep care history linked to the relevant inventory item and lot, then review readiness before a person confirms fulfillment. Saving a readiness check does not reserve stock or complete an order; recording a lead does not contact anyone automatically."
         },
         {
           "title": "Selling products or downloads?",
@@ -255,7 +259,7 @@
         },
         {
           "title": "Teach live",
-          "body": "Schedule and explicitly publish a session so eligible viewers can RSVP and use in-app reminders. For GrowPath-hosted broadcasts, use OBS or another compatible encoder for cameras, microphones, and scenes; GrowPath provides the session, player, and chat. Check your hosting allowance and setup before broadcasting."
+          "body": "Schedule and explicitly publish a session so eligible viewers can RSVP and use in-app reminders. For GrowPath-hosted broadcasts, use OBS or another compatible encoder for cameras, microphones, and scenes; GrowPath provides the session, player, and chat. When its recording is ready, the session can offer a replay for viewers who missed the broadcast. Draft sessions stay private; published replays follow the session's access rules. Check your hosting allowance and setup before broadcasting."
         },
         {
           "title": "What must be ready before publication?",
