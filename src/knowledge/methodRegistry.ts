@@ -62,6 +62,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "After-paid-period scheduling is default-off and limited to the existing same-plan Pro or Commercial Stripe subscription.",
       "An invitation never cancels renewal; the recipient uses existing Billing controls before scheduling.",
       "Preserve paid time, exact provider binding, protected identities, Facility ownership and account restrictions.",
+      "The approved allowlisted protected-recipient exception is annual Pro only, bound to an immutable recipient ID; it never changes Admin, identity protection or Vault permissions.",
       "Canceling a scheduled gift never restarts paid renewal; uncertain provider state holds access for review.",
       "Do not call local tests a production release or expose claim tokens and provider identifiers in UI or analytics."
     ],

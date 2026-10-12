@@ -18,6 +18,9 @@ describe("GrowPath knowledge registries", () => {
     expect(entry?.warnings).toContain(
       "An invitation never cancels renewal; the recipient uses existing Billing controls before scheduling."
     );
+    expect(entry?.warnings).toContain(
+      "The approved allowlisted protected-recipient exception is annual Pro only, bound to an immutable recipient ID; it never changes Admin, identity protection or Vault permissions."
+    );
     expect(getSourceEntry("stripe-subscription-cancellation-docs")).toMatchObject({
       reliabilityTier: "B",
       trustedFor: ["subscription_billing"],

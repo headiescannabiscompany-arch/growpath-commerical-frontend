@@ -37,8 +37,18 @@ review codes. A blocked gift remains pending review, never silently active.
 
 ## Evidence and release boundaries
 
+One owner-approved protected-recipient exception permits only Personal Pro for
+one year, on claim or after the matching paid period. The server records an
+immutable allowlisted policy and existing recipient ID on each invitation;
+matching verified email, account availability and all billing checks still apply.
+It is not a general Admin override. The account's Admin role, protected flag and
+Vault permissions remain unchanged. Exact security fields are matched, never
+rewritten, during entitlement updates. Revocation/expiry remove only that gift;
+another annual gift requires a new eligible invitation and claim. Keep identity
+and exception audit details out of public marketing and claim previews.
+
 Paid immediate overrides, cross-plan gifts, Facility scheduling, App Store gifts,
-protected-account exceptions and actual paid-subscription changes are not included.
+other protected-account exceptions and actual paid-subscription changes are not included.
 Use official Stripe cancellation documentation for provider semantics, and fresh
 bound server state plus local transaction tests for implementation evidence.
 Mocked/unit tests are not hosted provider proof. Deployment requires add-only
