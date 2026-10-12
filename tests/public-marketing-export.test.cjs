@@ -72,12 +72,25 @@ test("crawler copy includes the accepted saved-work, Personal web PDF and hosted
   const demo = publicMarketingMarkup("demo");
   assert.match(demo, /Personal web exports include CSV/);
   assert.match(demo, /does not include native-app PDF export/);
-  assert.match(demo, /export preparation, not the downloaded PDF/);
+  assert.match(demo, /export screenshot shows package preparation, not the downloaded PDF/);
   const commercial = publicMarketingMarkup("commercial-cultivation");
   assert.match(commercial, /Use Business Desk to save a lead/);
   assert.match(commercial, /care history linked to the relevant inventory item and lot/);
   assert.match(commercial, /does not reserve stock or complete an order/);
   assert.match(commercial, /does not contact anyone automatically/);
+});
+test("crawler copy preserves reviewed crop/history and separate learner discussion access", () => {
+  const personal = publicMarketingMarkup("personal-grower");
+  assert.match(personal, /uncertain details marked Not sure/);
+  assert.match(personal, /review the proposed dates before creating tasks/);
+  assert.match(personal, /selected Personal grow/);
+  assert.match(personal, /timezone and column mapping first/);
+  assert.match(personal, /does not promise live connection or control of every device/);
+  const creator = publicMarketingMarkup("creators-educators");
+  assert.match(creator, /Learners with access/);
+  assert.match(creator, /mark them complete and return to saved progress/);
+  assert.match(creator, /follow Open Discussion/);
+  assert.match(creator, /does not make its linked discussion private/);
 });
 test("no-signup demo includes all synthetic entries without JavaScript or private data", () => {
   const html = publicMarketingMarkup("demo");
