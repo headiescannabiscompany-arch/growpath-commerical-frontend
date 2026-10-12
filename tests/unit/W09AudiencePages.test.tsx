@@ -31,8 +31,9 @@ describe("W09 audience destinations", () => {
   it("does not require video or a Commercial subscription for every course", () => {
     const screen = render(<PublicLandingPage page="creators-educators" />);
     expect(
-      screen.getByText(/All users can create and publish free or paid courses/)
+      screen.getByText(/All users can create free or paid courses within plan limits/)
     ).toBeTruthy();
+    expect(screen.getByText("Publish courses on every plan")).toBeTruthy();
     expect(
       screen.getByText(/Video is optional; text lessons are supported too/)
     ).toBeTruthy();
@@ -55,6 +56,43 @@ describe("W09 audience destinations", () => {
     expect(screen.getByText(/grow timelines, logs, photos, recipes, tool results, and forum answers/)).toBeTruthy();
     expect(screen.getByText(/you own or have permission to share/)).toBeTruthy();
     expect(screen.getByText(/eligible viewers can RSVP and use in-app reminders/)).toBeTruthy();
+  });
+
+  it("explains the accepted Personal result-to-journal-to-task loop without autonomous action", () => {
+    const screen = render(<PublicLandingPage page="personal-grower" />);
+    expect(screen.getByText("Turn advice into a next step")).toBeTruthy();
+    expect(screen.getByText(/choose Save to Grow Log or Create Task/)).toBeTruthy();
+    expect(screen.getByText(/reopen the source/)).toBeTruthy();
+    expect(screen.getByText(/You choose the action/)).toBeTruthy();
+    expect(screen.getByText(/credit allowance/)).toBeTruthy();
+  });
+
+  it("describes the accepted Personal web PDF without claiming an original-photo backup", () => {
+    const screen = render(<PublicLandingPage page="personal-grower" />);
+    expect(screen.getByText(/Personal web workspace/)).toBeTruthy();
+    expect(screen.getByText(/On an eligible paid plan/)).toBeTruthy();
+    expect(screen.getByText(/timeline PDF with dated notes and permitted photos/)).toBeTruthy();
+    expect(screen.getByText(/CSV and viewer-friendly HTML/)).toBeTruthy();
+    expect(screen.getByText(/Review the included records before sharing/)).toBeTruthy();
+    expect(screen.getByText(/not a complete original-photo backup/)).toBeTruthy();
+  });
+
+  it("surfaces accepted Commercial follow-up and care work without automatic outreach or fulfillment", () => {
+    const screen = render(<PublicLandingPage page="commercial-cultivation" />);
+    expect(screen.getByText(/Use Business Desk to save a lead/)).toBeTruthy();
+    expect(screen.getByText(/care history linked to the relevant inventory item and lot/)).toBeTruthy();
+    expect(screen.getByText(/does not reserve stock or complete an order/)).toBeTruthy();
+    expect(screen.getByText(/does not contact anyone automatically/)).toBeTruthy();
+  });
+
+  it("explains hosted replay without turning private drafts public or replacing OBS", () => {
+    const screen = render(<PublicLandingPage page="creators-educators" />);
+    expect(screen.getByText(/OBS or another compatible encoder/)).toBeTruthy();
+    expect(screen.getByText(/When its recording is ready/)).toBeTruthy();
+    expect(screen.getByText(/replay for viewers who missed the broadcast/)).toBeTruthy();
+    expect(screen.getByText(/Draft sessions stay private/)).toBeTruthy();
+    expect(screen.getByText(/published replays follow the session's access rules/)).toBeTruthy();
+    expect(screen.getByText(/hosting allowance/)).toBeTruthy();
   });
 
   it.each([

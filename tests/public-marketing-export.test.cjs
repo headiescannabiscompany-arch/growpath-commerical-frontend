@@ -54,6 +54,31 @@ test("audit delta exposes existing paid-tool output twice without changing prici
     publicMarketingMarkup("").includes("does not replace your required compliance system")
   );
 });
+
+test("crawler copy includes the accepted saved-work, Personal web PDF and hosted-replay outcomes", () => {
+  const personal = publicMarketingMarkup("personal-grower");
+  assert.match(personal, /choose Save to Grow Log or Create Task/);
+  assert.match(personal, /reopen the source/);
+  assert.match(personal, /You choose the action/);
+  assert.match(personal, /Personal web workspace/);
+  assert.match(personal, /On an eligible paid plan/);
+  assert.match(personal, /timeline PDF with dated notes and permitted photos/);
+  assert.match(personal, /not a complete original-photo backup/);
+  const creator = publicMarketingMarkup("creators-educators");
+  assert.match(creator, /When its recording is ready/);
+  assert.match(creator, /Draft sessions stay private/);
+  assert.match(creator, /published replays follow the session(?:'|&#39;|&apos;)s access rules/);
+  assert.match(creator, /OBS or another compatible encoder/);
+  const demo = publicMarketingMarkup("demo");
+  assert.match(demo, /Personal web exports include CSV/);
+  assert.match(demo, /does not include native-app PDF export/);
+  assert.match(demo, /export preparation, not the downloaded PDF/);
+  const commercial = publicMarketingMarkup("commercial-cultivation");
+  assert.match(commercial, /Use Business Desk to save a lead/);
+  assert.match(commercial, /care history linked to the relevant inventory item and lot/);
+  assert.match(commercial, /does not reserve stock or complete an order/);
+  assert.match(commercial, /does not contact anyone automatically/);
+});
 test("no-signup demo includes all synthetic entries without JavaScript or private data", () => {
   const html = publicMarketingMarkup("demo");
   assert.equal((html.match(/<h1>/g) || []).length, 1);

@@ -80,4 +80,14 @@ describe("reviewed audience story evidence", () => {
     expect(stories.facility.limits).toMatch(/legacy\/unverified/);
     expect(stories.free.limits).toMatch(/1 grow and 1 plant/);
   });
+
+  it("adds the accepted Personal web PDF without recasting the retained preparation screenshot", () => {
+    expect(stories.pro.limits).toContain("Personal web exports include CSV");
+    expect(stories.pro.limits).toContain("PDF with dated notes and permitted photos");
+    expect(stories.pro.limits).toContain("does not include native-app PDF export");
+    expect(stories.pro.limits).toContain("complete original-photo archive");
+    expect(stories.pro.limits).toContain("export preparation, not the downloaded PDF");
+    expect(stories.pro.scenes[2].caption).toContain("October 5, 2026");
+    expect(stories.pro.scenes[2].caption).toContain("not a picture of a downloaded file");
+  });
 });

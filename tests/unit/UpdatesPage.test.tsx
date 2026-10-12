@@ -249,7 +249,12 @@ describe("public Updates page", () => {
     expect(notes).toHaveLength(1);
     const note = notes[0];
     expect(note.dateLabel).toBe("Released");
-    expect(note.date).toBe("October 5, 2026");
+    expect(note.date).toBe("October 12, 2026");
+    expect(note.summary).toContain("The October 5 repairs remain");
+    expect(note.summary).toContain("eligible paid Personal web PDFs");
+    expect(note.summary).toContain("Commercial lead follow-up and inventory-linked care");
+    expect(note.summary).toContain("ready hosted replays");
+    expect(note.summary).toContain("copy update, not a new feature engine");
     expect(note.summary).toContain("Free, Pro, seller, creator and Facility");
     expect(note.summary).toContain("Labeled synthetic examples");
     expect(note.summary).toContain(
