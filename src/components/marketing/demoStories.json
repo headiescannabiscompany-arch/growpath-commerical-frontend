@@ -45,7 +45,7 @@
     "title": "Use the records from your grows",
     "description": "When you have several runs, keep their notes available for questions, comparisons and a record you can take away.",
     "result": "This example connects saved notes, a bounded history answer, an honest comparison and an export package. It does not establish why the plants differed or which run was better.",
-    "limits": "Pro includes 10 grows, 50 plants and 100 AI credits per week. These tools are also available on eligible higher plans; this is not an exclusive Pro feature claim. AI uses the displayed action cost. Personal web exports include CSV, viewer-friendly timeline HTML and a PDF with dated notes and permitted photos. This does not include native-app PDF export or a complete original-photo archive. The retained screenshot below shows export preparation, not the downloaded PDF.",
+    "limits": "Pro includes 10 grows, 50 plants and 100 AI credits per week. These tools are also available on eligible higher plans; this is not an exclusive Pro feature claim. AI uses the displayed action cost. Personal web exports include CSV, viewer-friendly timeline HTML and a PDF with dated notes and permitted photos. This does not include native-app PDF export or a complete original-photo archive. The retained export screenshot shows package preparation, not the downloaded PDF.",
     "ctaHref": "/pricing",
     "ctaLabel": "Compare Free and Pro allowances",
     "scenes": [
