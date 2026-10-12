@@ -584,7 +584,11 @@ describe("public Updates page", () => {
     expect(courses.status).toBe("partial");
     expect(courses.live).toContain("Creator tools");
     expect(courses.live).toContain("private drafts separate from reviewed publication");
-    expect(courses.next).toContain("Ordinary Free/Pro hosted creator-profile checks");
+    expect(courses.next).toContain("Ordinary Free creator-profile staging checks passed");
+    expect(courses.next).toContain("Paid-Pro accounts");
+    expect(courses.next).toContain("accounts confirmed to have no prior videos");
+    expect(courses.next).toContain("native devices");
+    expect(courses.next).not.toContain("Ordinary Free/Pro hosted creator-profile checks");
     expect(courses.next).toContain("external social composers remain unverified");
     expect(note.date).toBe("October 9, 2026");
     expect(note.summary).toContain("No separate creator signup is required");
@@ -597,8 +601,19 @@ describe("public Updates page", () => {
     expect(note.summary).toContain("keeping the draft and existing videos");
     expect(note.summary).toContain("Copy Link omits editor parameters");
     expect(note.summary).toContain("Synthetic staging checks");
-    expect(note.summary).toContain("Ordinary Free/Pro hosted checks");
+    expect(note.summary).toContain("On October 12, an ordinary Free account");
+    expect(note.summary).toContain("synthetic draft save/reload, reviewed publication");
+    expect(note.summary).toContain("copied-link viewing, public-read verification");
+    expect(note.summary).toContain("withdrawal and blank-draft restoration");
+    expect(note.summary).toContain(
+      "evidence for the existing release, not a new feature"
+    );
+    expect(note.summary).toContain("Ordinary paid-Pro accounts");
+    expect(note.summary).toContain("accounts confirmed to have no prior videos");
+    expect(note.summary).toContain("native devices");
+    expect(note.summary).not.toContain("Ordinary Free/Pro hosted checks");
     expect(note.summary).toContain("external social composers remain unverified");
+    expect(note.summary).not.toMatch(/qa\.invalid|acceptance-a|acceptance-c|556705449/);
   });
 
   it("is public without requiring an entitlement and has public metadata", () => {
