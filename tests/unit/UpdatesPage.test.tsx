@@ -35,8 +35,12 @@ describe("public Updates page", () => {
     expect(notes).toHaveLength(1);
     expect(notes[0].date).toBe("October 12, 2026");
     expect(notes[0].summary).toContain("Synthetic staging checks passed");
-    expect(notes[0].summary).toContain("October 9 archive and download release is retained");
-    expect(notes[0].summary).toContain("stock-linked storefront checkout was enabled in production");
+    expect(notes[0].summary).toContain(
+      "October 9 archive and download release is retained"
+    );
+    expect(notes[0].summary).toContain(
+      "stock-linked storefront checkout was enabled in production"
+    );
     expect(notes[0].summary).toContain("deducted stock only once");
     expect(notes[0].summary).not.toContain("acceptance checks are still open");
     expect(group?.next).toContain("including test cleanup");
@@ -892,14 +896,32 @@ describe("public Updates page", () => {
     expect(entry?.summary).toMatch(/never submits interest or starts a purchase/);
   });
 
-  it("bounds Free product signup claims to the same browser without transactions", () => {
+  it("groups cross-browser product signup with bounded Free evidence and no transactions", () => {
     const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (item) => item.id === "free-product-signup-return"
     );
-    expect(entry?.summary).toMatch(/same browser for up to one hour/);
+    expect(entry?.date).toBe("October 12, 2026");
+    expect(entry?.summary).toContain("matching-account sign-in");
+    expect(entry?.summary).toContain("same or another browser for up to one hour");
+    expect(entry?.summary).toContain("October 9 recovery fix is retained");
+    expect(entry?.summary).toContain("previous link's result and account hint");
     expect(entry?.summary).toMatch(/never purchases or records interest automatically/);
-    expect(entry?.summary).toMatch(/Other browsers and paid-plan signup remain separate/);
-    expect(entry?.summary).toMatch(/Course signup is covered in its own release note/);
+    expect(entry?.summary).toContain(
+      "Synthetic staging checks verified a Free product return"
+    );
+    expect(entry?.summary).toContain("reload and no repeat return after use");
+    expect(entry?.summary).toContain(
+      "Physical-phone and native-app checks remain separate"
+    );
+    expect(entry?.summary).toContain("unpaid Pro-choice return");
+    expect(entry?.summary).not.toContain(
+      "Other browsers and paid-plan signup remain separate"
+    );
+    const group = PUBLIC_UPDATE_GROUPS.find((item) => item.id === "shopping");
+    expect(group?.status).toBe("partial");
+    expect(group?.live).toContain("retains the product across browsers");
+    expect(group?.entryIds.filter((id) => id === entry?.id)).toHaveLength(1);
+    expect(entry?.summary).not.toMatch(/qa\.invalid|acceptance-c|6aa5967e|6aa2f5c5/);
     expect(
       PUBLIC_UPDATE_SECTIONS[0].entries.find(
         (item) => item.id === "product-buy-signin-return"
@@ -919,19 +941,39 @@ describe("public Updates page", () => {
     );
   });
 
-  it("bounds course signup to the same browser without promising paid access", () => {
+  it("groups cross-browser course signup without promising paid access or full acceptance", () => {
     const entry = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (item) => item.id === "free-course-signup-return"
     );
-    expect(entry?.summary).toMatch(/Free-account signup/);
-    expect(entry?.summary).toMatch(/same browser for up to one hour/);
-    expect(entry?.summary).toMatch(/matching sign-in/);
+    expect(entry?.date).toBe("October 12, 2026");
+    expect(entry?.summary).toContain("matching-account sign-in");
+    expect(entry?.summary).toContain("same or another browser for up to one hour");
+    expect(entry?.summary).toContain("retains normal onboarding");
+    expect(entry?.summary).toContain(
+      "separate Return to course action alongside checkout"
+    );
+    expect(entry?.summary).toContain("selecting Pro does not activate paid access");
     expect(entry?.summary).toMatch(
       /never enrolls, purchases or unlocks paid lessons automatically/
     );
-    expect(entry?.summary).toMatch(
-      /Other browsers, paid-plan signup and course gifting remain separate work/
+    expect(entry?.summary).toContain(
+      "Synthetic staging checks verified an unpaid Pro-choice"
     );
+    expect(entry?.summary).toContain(
+      "retained return after reload and no repeat return after use"
+    );
+    expect(entry?.summary).toContain("Physical-phone and native-app checks");
+    expect(entry?.summary).toContain(
+      "active paid-Pro creator tools and course gifting remain separate"
+    );
+    expect(entry?.summary).not.toContain("Other browsers, paid-plan signup");
+    const group = PUBLIC_UPDATE_GROUPS.find((item) => item.id === "courses");
+    expect(group?.status).toBe("partial");
+    expect(group?.live).toContain(
+      "separate course return without activating paid access"
+    );
+    expect(group?.entryIds.filter((id) => id === entry?.id)).toHaveLength(1);
+    expect(entry?.summary).not.toMatch(/qa\.invalid|acceptance-c|6aa5967e|6aa2f5c5/);
   });
 
   it.each(["day", "night"] as const)(

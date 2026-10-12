@@ -298,11 +298,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "free-course-signup-return",
-        title: "Keep your course link through Free signup",
-        date: "September 27, 2026",
+        title: "Keep your course link through verified signup",
+        date: "October 12, 2026",
         dateLabel: "Released",
         summary:
-          "Free-account signup from a public course now keeps that course destination through email verification and matching sign-in in the same browser for up to one hour, including another tab. Immediate sign-in still completes normal onboarding first. Returning never enrolls, purchases or unlocks paid lessons automatically. Other browsers, paid-plan signup and course gifting remain separate work."
+          "Signup from a public course now keeps that destination through email verification and matching-account sign-in in the same or another browser for up to one hour. Choosing Pro retains normal onboarding and offers a separate Return to course action alongside checkout; selecting Pro does not activate paid access. Returning never enrolls, purchases or unlocks paid lessons automatically. Synthetic staging checks verified an unpaid Pro-choice course return after sign-in in another browser, a retained return after reload and no repeat return after use. Physical-phone and native-app checks, active paid-Pro creator tools and course gifting remain separate work."
       },
       {
         id: "product-description-display",
@@ -330,11 +330,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "free-product-signup-return",
-        title: "Keep your product link through Free signup",
-        date: "October 9, 2026",
+        title: "Keep your product link through verified signup",
+        date: "October 12, 2026",
         dateLabel: "Released",
         summary:
-          "Free-account signup from a saved product can now retain that destination through email verification and matching sign-in in the same browser for up to one hour, including another tab. Immediate sign-in still completes normal onboarding first. Opening a different email-verification link now clears the previous link's result and account hint while the new link is checked. Returning never purchases or records interest automatically. Other browsers and paid-plan signup remain separate follow-ups. Course signup is covered in its own release note."
+          "Signup from a saved product now keeps that destination through email verification and matching-account sign-in in the same or another browser for up to one hour. Existing onboarding remains in place. The October 9 recovery fix is retained: opening a different email-verification link clears the previous link's result and account hint while the new link is checked. Returning never purchases or records interest automatically. Synthetic staging checks verified a Free product return after sign-in in another browser, reload and no repeat return after use. Physical-phone and native-app checks remain separate. Course signup and the unpaid Pro-choice return are covered in the course release note."
       },
       {
         id: "course-discovery-signin",

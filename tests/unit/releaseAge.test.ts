@@ -1,5 +1,5 @@
 import { releaseAgeLabel, releaseDay } from "@/utils/releaseAge";
-import { latestGroupRelease } from "@/config/publicUpdateGroups";
+import { latestGroupRelease, PUBLIC_UPDATE_GROUPS } from "@/config/publicUpdateGroups";
 
 describe("public release age", () => {
   it("counts local calendar dates including singular and today", () => {
@@ -49,4 +49,16 @@ describe("public release age", () => {
       latestGroupRelease({ ...group, entryIds: ["course-gifting"] }, new Date(2026, 9, 6))
     ).toBeNull();
   });
+  it.each(["shopping", "courses"])(
+    "uses the verified signup release date for the existing %s milestone",
+    (id) => {
+      const group = PUBLIC_UPDATE_GROUPS.find((item) => item.id === id)!;
+      expect(group.status).toBe("partial");
+      const latest = latestGroupRelease(group, new Date(2026, 9, 12));
+      expect(latest).toBe("October 12, 2026");
+      expect(releaseAgeLabel(latest!, new Date(2026, 9, 12))).toBe(
+        "Released today · 0 days ago"
+      );
+    }
+  );
 });
