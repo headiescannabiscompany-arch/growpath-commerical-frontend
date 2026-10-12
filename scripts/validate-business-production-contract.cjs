@@ -163,7 +163,10 @@ const tests = {
 });
 
 [
-  ["facility inventory list", /apiRequest\(endpoints\.inventory\(facilityId\)\)/],
+  [
+    "facility inventory list through scoped collection reader",
+    /useFacilityCollectionRead\(\s*facilityId\s*\?\s*endpoints\.inventory\(facilityId\)\s*:\s*null\s*,\s*normalizeInventory\s*\)/
+  ],
   ["facility inventory create route", /router\.push\("\/home\/facility\/inventory\/new"\)/],
   ["facility inventory detail route", /\/home\/facility\/inventory\/\[id\]/],
   ["facility low stock display", /low stock|stockStatus/],
