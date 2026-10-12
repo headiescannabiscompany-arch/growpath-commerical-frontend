@@ -185,9 +185,24 @@ function DocumentControl({
           signal
         );
       } catch (error) {
+        if (
+          error instanceof ApiError &&
+          error.status === 429 &&
+          error.code === "DOCUMENT_UPLOAD_BUSY"
+        ) {
+          if (!alive.current || signal.aborted) return;
+          // This exact response guarantees pre-reservation refusal. Never infer
+          // that guarantee from a generic 429, 409, timeout or missing status.
+          setKey("");
+          selectedFile.current = undefined;
+          setMessage(
+            "Document processing is busy. This upload was not accepted. Wait 15 seconds, then choose the file again. Existing lesson content is unchanged."
+          );
+          return;
+        }
         if (error instanceof ApiError && error.code === "DOCUMENT_FILE_REJECTED") {
           if (!alive.current || signal.aborted) return;
-          // Only this explicit server pre-reservation rejection permits a new
+          // An explicit server pre-reservation rejection permits a new
           // file choice. Lost replies retain the original correlation key.
           setKey("");
           selectedFile.current = undefined;

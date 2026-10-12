@@ -134,6 +134,11 @@ macros, external links, embedded objects and unsupported formulas are rejected,
 including otherwise valid files outside this subset. Never rewrite a file or imply
 legacy DOC/XLS support. Only an explicit pre-reservation server rejection allows a
 fresh choice; uncertain upload replies retain the existing recovery key.
+An exact HTTP 429 `DOCUMENT_UPLOAD_BUSY` is a pre-reservation refusal, not a
+pending scan. Explain that the file was not accepted, ask the author to wait
+15 seconds, and permit a deliberate new choice without automatically resending
+bytes. Generic rate limits, conflicts, lost replies and a later missing-status
+response do not establish that guarantee and must retain the recovery key.
 The course builder adds verified files to its existing document collection without
 resending bytes on Save. A second file choice is available only after the previous
 file is verified; pending or ambiguous attempts keep their tracking key. Course

@@ -286,6 +286,72 @@ test("PDF-only server never offers unsupported Office choices", async () => {
   );
   expect(s.queryByText(/Some otherwise valid Office files/)).toBeNull();
 });
+test("explicit pre-reservation busy rejection permits deliberate retry without automatic resend", async () => {
+  mock(api.uploadFacilityDocument).mockRejectedValueOnce(
+    new ApiError("DOCUMENT_UPLOAD_BUSY", 429)
+  );
+  const s = setup();
+  fireEvent.press(await s.findByText("Choose and scan document"));
+  await s.findByText(/not accepted.*Wait 15 seconds/);
+  expect(s.getByText("Choose and scan document")).toBeTruthy();
+  expect(s.queryByText("Check document status")).toBeNull();
+  expect(api.uploadFacilityDocument).toHaveBeenCalledTimes(1);
+  expect(api.findFacilityDocument).not.toHaveBeenCalled();
+  expect(s.onReady).not.toHaveBeenCalled();
+  fireEvent.press(s.getByText("Choose and scan document"));
+  await s.findByText(/Scanning is still pending/);
+  expect(api.uploadFacilityDocument).toHaveBeenCalledTimes(2);
+});
+
+test("late busy rejection from the previous Facility does not alter the new editor", async () => {
+  let rejectUpload: (error: Error) => void = () => {};
+  mock(api.uploadFacilityDocument).mockImplementationOnce(
+    () =>
+      new Promise((_resolve, reject) => {
+        rejectUpload = reject;
+      })
+  );
+  const s = setup();
+  fireEvent.press(await s.findByText("Choose and scan document"));
+  await waitFor(() => expect(api.uploadFacilityDocument).toHaveBeenCalledTimes(1));
+  s.rerender(<FacilityLessonDocument {...s.props} facilityId="other-facility" />);
+  await s.findByText("Choose and scan document");
+  await act(async () => rejectUpload(new ApiError("DOCUMENT_UPLOAD_BUSY", 429)));
+  expect(s.queryByText(/This upload was not accepted/)).toBeNull();
+  expect(s.onReady).not.toHaveBeenCalled();
+  expect(api.uploadFacilityDocument).toHaveBeenCalledTimes(1);
+});
+
+test.each([
+  ["DOCUMENT_UPLOAD_RECHECK_REQUIRED", 409],
+  ["DOCUMENT_RATE_LIMITED", 429],
+  ["DOCUMENT_UPLOAD_BUSY", 409]
+])(
+  "uncertain %s/%s response and missing status retain the same attempt",
+  async (code, status) => {
+    mock(api.uploadFacilityDocument).mockRejectedValueOnce(
+      new ApiError(String(code), Number(status))
+    );
+    mock(api.findFacilityDocument).mockRejectedValueOnce(
+      new ApiError("DOCUMENT_NOT_FOUND", 404)
+    );
+    const s = setup();
+    fireEvent.press(await s.findByText("Choose and scan document"));
+    await s.findByText(/verification is unavailable/);
+    fireEvent.press(s.getByText("Check document status"));
+    await waitFor(() => expect(api.findFacilityDocument).toHaveBeenCalledTimes(1));
+    expect(s.queryByText("Choose and scan document")).toBeNull();
+    expect(api.uploadFacilityDocument).toHaveBeenCalledTimes(1);
+    expect(api.findFacilityDocument).toHaveBeenCalledWith(
+      "test-facility",
+      "synthetic-attempt-01",
+      "synthetic",
+      expect.anything()
+    );
+    expect(s.onReady).not.toHaveBeenCalled();
+  }
+);
+
 test("server content rejection explains restrictions and allows another choice without attaching", async () => {
   mock(api.uploadFacilityDocument).mockRejectedValueOnce(
     new ApiError("DOCUMENT_FILE_REJECTED", 422)
