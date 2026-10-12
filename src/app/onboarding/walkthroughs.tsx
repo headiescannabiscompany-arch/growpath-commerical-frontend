@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -10,6 +10,8 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { useAuth } from "@/auth/AuthContext";
+import ShopperReturnAction from "@/components/auth/ShopperReturnAction";
+import { parseShopperSignupReturnPath } from "@/utils/authReturnPath";
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -119,7 +121,11 @@ export default function WalkthroughsScreen() {
   const { palette } = useAppTheme();
   const styles = createWalkthroughStyles(palette);
   const { width } = useWindowDimensions();
-  const params = useLocalSearchParams<{ plan?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    plan?: string | string[];
+    shopperNext?: string | string[];
+  }>();
+  const shopperNext = parseShopperSignupReturnPath(params.shopperNext);
   const requestedPlan = singleParam(params.plan);
   const modePlan: PlanKey =
     entitlements.mode === "facility"
@@ -128,6 +134,25 @@ export default function WalkthroughsScreen() {
         ? "commercial"
         : "pro";
   const plan = requestedPlan ? normalizePlan(requestedPlan) : modePlan;
+  const returnScopeValue = JSON.stringify([
+    auth.token,
+    auth.user?.id,
+    auth.meStatus,
+    auth.isHydrating,
+    auth.isAuthed,
+    plan,
+    shopperNext
+  ]);
+  const [returnScope, setReturnScope] = useState({
+    value: returnScopeValue,
+    generation: 0
+  });
+  if (returnScope.value !== returnScopeValue) {
+    setReturnScope({
+      value: returnScopeValue,
+      generation: returnScope.generation + 1
+    });
+  }
   const data = WALKTHROUGHS[plan];
   const isWide = width >= 900;
   const subscriptionActive = ["active", "trial", "trialing"].includes(
@@ -209,6 +234,18 @@ export default function WalkthroughsScreen() {
           >
             <Text style={styles.buttonText}>{ctaLabel}</Text>
           </Pressable>
+          {auth.isAuthed &&
+          auth.token &&
+          auth.meStatus === "ready" &&
+          !auth.isHydrating &&
+          auth.user?.id ? (
+            <ShopperReturnAction
+              key={returnScope.generation}
+              sessionToken={auth.token}
+              plan={plan}
+              directPath={shopperNext}
+            />
+          ) : null}
         </View>
       </View>
     </ScrollView>

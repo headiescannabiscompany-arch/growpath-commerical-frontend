@@ -47,6 +47,7 @@ export default function GuildOnboardingScreen() {
     next?: string | string[];
     mode?: string | string[];
     plan?: string | string[];
+    shopperNext?: string | string[];
   }>();
   const requestedNext = singleParam(params.next);
   const claimNext = parseClaimReturnPath(requestedNext);
@@ -59,6 +60,10 @@ export default function GuildOnboardingScreen() {
         : "/");
   const mode = singleParam(params.mode);
   const plan = singleParam(params.plan);
+  const walkthroughShopperNext =
+    next === "/onboarding/walkthroughs"
+      ? parseShopperSignupReturnPath(params.shopperNext)
+      : "";
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
 
@@ -80,7 +85,15 @@ export default function GuildOnboardingScreen() {
       mountedRef.current = false;
       saveGeneration.current += 1;
     };
-  }, [next, mode, plan, auth.token, auth.user?._id, auth.user?.id]);
+  }, [
+    next,
+    mode,
+    plan,
+    walkthroughShopperNext,
+    auth.token,
+    auth.user?._id,
+    auth.user?.id
+  ]);
 
   useEffect(() => {
     let mounted = true;
@@ -144,7 +157,11 @@ export default function GuildOnboardingScreen() {
       if (next === "/onboarding/walkthroughs") {
         router.replace({
           pathname: "/onboarding/walkthroughs",
-          params: { mode, plan }
+          params: {
+            mode,
+            plan,
+            ...(walkthroughShopperNext ? { shopperNext: walkthroughShopperNext } : {})
+          }
         } as any);
       } else {
         router.replace(next as any);

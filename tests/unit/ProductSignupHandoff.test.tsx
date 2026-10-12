@@ -31,6 +31,7 @@ jest.mock("@/api/apiRequest", () => ({
 }));
 
 jest.mock("@/utils/shopperProductContinuation", () => ({
+  ...jest.requireActual("@/utils/shopperProductContinuation"),
   rememberShopperSignupContinuation: (...args: any[]) => mockRemember(...args)
 }));
 
@@ -129,7 +130,8 @@ describe.each([
         plan: "free",
         mode: "personal",
         dateOfBirth: "1990-01-01",
-        showCannabisContent: false
+        showCannabisContent: false,
+        shopperReturnPath: destination
       });
       expect(screen.getByLabelText("Register password")).toHaveProp("value", "");
       expect(screen.getByText(/Account created\./)).toBeTruthy();
@@ -149,6 +151,29 @@ describe.each([
     expect(await screen.findByText(/Account created\. Check your email/)).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();
   });
+
+  it.each(["Free", "Pro", "Commercial", "Facility"])(
+    "does not create a second local continuation when %s signup stored it on the account",
+    async (label) => {
+      mockSignup.mockResolvedValue({
+        emailVerificationRequired: true,
+        emailSent: true,
+        shopperContinuationStored: true
+      });
+      const screen = render(<RegisterScreen />);
+      fillSignup(screen);
+      fireEvent.press(screen.getByLabelText(`Select ${label} account`));
+      fireEvent.press(screen.getByLabelText(`Create ${label} account`));
+      await screen.findByText(/Account created\./);
+      expect(mockSignup).toHaveBeenCalledWith(
+        expect.objectContaining({ shopperReturnPath: destination })
+      );
+      expect(mockRemember).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+      fireEvent.press(screen.getByLabelText("Back to login"));
+      expect(mockReplace).toHaveBeenCalledWith("/login?email=shopper%40example.com");
+    }
+  );
 
   it("does not remember failed signup and retains the destination on Back to login", async () => {
     mockSignup.mockRejectedValue(new Error("Signup unavailable"));
@@ -242,7 +267,12 @@ describe.each([
       await waitFor(() =>
         expect(mockReplace).toHaveBeenCalledWith({
           pathname: "/onboarding/guilds",
-          params: { next: "/onboarding/walkthroughs", mode, plan }
+          params: {
+            next: "/onboarding/walkthroughs",
+            mode,
+            plan,
+            shopperNext: destination
+          }
         })
       );
       expect(mockRemember).not.toHaveBeenCalled();
@@ -413,6 +443,24 @@ describe.each([
         expect(mockReplace).toHaveBeenCalledWith({
           pathname: "/onboarding/walkthroughs",
           params: { plan: "facility", mode: "facility" }
+        })
+      );
+    });
+
+    it("carries only a strict browsing destination through paid guild onboarding", async () => {
+      mockParams = {
+        next: "/onboarding/walkthroughs",
+        plan: "pro",
+        mode: "personal",
+        shopperNext: destination
+      };
+      const screen = render(<GuildOnboardingScreen />);
+      await screen.findByLabelText("Join Herbs group");
+      fireEvent.press(screen.getByLabelText("Continue after selecting forum groups"));
+      await waitFor(() =>
+        expect(mockReplace).toHaveBeenCalledWith({
+          pathname: "/onboarding/walkthroughs",
+          params: { plan: "pro", mode: "personal", shopperNext: destination }
         })
       );
     });

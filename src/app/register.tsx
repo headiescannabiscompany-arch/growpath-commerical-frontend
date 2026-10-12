@@ -26,7 +26,11 @@ import {
 } from "@/utils/authReturnPath";
 import { parseClaimReturnPath } from "@/utils/claimReturnPath";
 import { COMPLIMENTARY_CLAIM_PATH } from "@/utils/complimentaryClaimTokenStore";
-import { rememberShopperSignupContinuation } from "@/utils/shopperProductContinuation";
+import {
+  consumeShopperSignupContinuation,
+  readShopperSignupContinuation,
+  rememberShopperSignupContinuation
+} from "@/utils/shopperProductContinuation";
 
 type AccountChoice = {
   key: "free" | "pro" | "commercial" | "facility";
@@ -112,6 +116,10 @@ export default function RegisterScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [infoMsg, setInfoMsg] = useState<string | null>(null);
+  const [serverReturnOwner, setServerReturnOwner] = useState<{
+    email: string;
+    path: string;
+  } | null>(null);
   const submittingRef = useRef(false);
   const mountedRef = useRef(true);
   const submitGeneration = useRef(0);
@@ -149,6 +157,7 @@ export default function RegisterScreen() {
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
+      const previousContinuation = readShopperSignupContinuation(normalizedEmail);
       const signupChoice = entitlementClaimNext ? giftSignupChoice : choice;
       const payload: SignupBody = {
         name: name.trim(),
@@ -158,12 +167,30 @@ export default function RegisterScreen() {
         plan: signupChoice.key,
         mode: signupChoice.mode,
         dateOfBirth,
-        showCannabisContent: cannabisEligible && showCannabisContent
+        showCannabisContent: cannabisEligible && showCannabisContent,
+        ...(shopperNext && !entitlementClaimNext
+          ? { shopperReturnPath: shopperNext }
+          : {})
       };
       const signupResult = await auth.signup(payload);
       if (!isCurrent()) return;
       if (signupResult.emailVerificationRequired && !signupResult.token) {
-        if (signupChoice.key === "free" && shopperNext && !entitlementClaimNext) {
+        if (
+          signupResult.shopperContinuationStored === true &&
+          shopperNext &&
+          !entitlementClaimNext
+        ) {
+          setServerReturnOwner({ email: normalizedEmail, path: shopperNext });
+        }
+        if (signupResult.shopperContinuationStored === true && previousContinuation) {
+          consumeShopperSignupContinuation(previousContinuation);
+        }
+        if (
+          signupResult.shopperContinuationStored !== true &&
+          signupChoice.key === "free" &&
+          shopperNext &&
+          !entitlementClaimNext
+        ) {
           rememberShopperSignupContinuation(normalizedEmail, shopperNext);
         }
         setPassword("");
@@ -183,7 +210,8 @@ export default function RegisterScreen() {
         params: {
           next: choice.key === "free" && shopperNext ? shopperNext : choice.afterSignup,
           mode: choice.mode,
-          plan: choice.key
+          plan: choice.key,
+          ...(choice.key !== "free" && shopperNext ? { shopperNext } : {})
         }
       } as any);
     } catch (e: any) {
@@ -372,7 +400,14 @@ export default function RegisterScreen() {
           <Pressable
             onPress={() =>
               router.replace(
-                safeLoginPath(email, entitlementClaimNext || shopperNext) as any
+                safeLoginPath(
+                  email,
+                  entitlementClaimNext ||
+                    (serverReturnOwner?.email === email.trim().toLowerCase() &&
+                    serverReturnOwner.path === shopperNext
+                      ? ""
+                      : shopperNext)
+                ) as any
               )
             }
             accessibilityRole="button"

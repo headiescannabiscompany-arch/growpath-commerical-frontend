@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { getToken } from "../../src/auth/tokenStore";
-import { apiRequest, setOnUnauthorized } from "../../src/api/apiRequest";
+import {
+  apiRequest,
+  setOnUnauthorized,
+  subscribeToApiTransport
+} from "../../src/api/apiRequest";
 import { subscribeToTokenBalanceChange } from "../../src/utils/tokenBalanceEvents";
 
 jest.mock("../../src/auth/tokenStore", () => ({
@@ -10,6 +14,56 @@ jest.mock("../../src/auth/tokenStore", () => ({
 const mockGetToken = jest.mocked(getToken);
 
 describe("apiRequest authentication contract", () => {
+  it.each([undefined, true, false])(
+    "preserves transport reporting unless notifyTransport is explicitly false: %s",
+    async (notifyTransport) => {
+      const listener = jest.fn();
+      const unsubscribe = subscribeToApiTransport(listener);
+      try {
+        global.fetch = jest.fn(async () => ({ ok: true, text: async () => "{}" })) as any;
+        await apiRequest("/api/optional", { notifyTransport, retries: 0, silent: true });
+        if (notifyTransport === false) expect(listener).not.toHaveBeenCalled();
+        else expect(listener).toHaveBeenCalledWith({ type: "recovered" });
+        listener.mockClear();
+        global.fetch = jest.fn(async () => ({
+          ok: false,
+          status: 503,
+          text: async () => "{}"
+        })) as any;
+        await expect(
+          apiRequest("/api/optional", { notifyTransport, retries: 0, silent: true })
+        ).rejects.toMatchObject({ status: 503 });
+        if (notifyTransport === false) expect(listener).not.toHaveBeenCalled();
+        else
+          expect(listener).toHaveBeenCalledWith(
+            expect.objectContaining({ type: "error" })
+          );
+      } finally {
+        unsubscribe();
+      }
+    }
+  );
+
+  it("does not emit a global timeout for an optional request", async () => {
+    const listener = jest.fn();
+    const unsubscribe = subscribeToApiTransport(listener);
+    global.fetch = jest.fn(
+      (_url: string, options: any) =>
+        new Promise((_resolve, reject) => {
+          options.signal.addEventListener("abort", () =>
+            reject(Object.assign(new Error("Aborted"), { name: "AbortError" }))
+          );
+        })
+    ) as any;
+    try {
+      await expect(
+        apiRequest("/api/optional", { notifyTransport: false, retries: 0, timeoutMs: 5 })
+      ).rejects.toMatchObject({ code: "TIMEOUT" });
+      expect(listener).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
+  });
   beforeEach(() => {
     jest.resetAllMocks();
     mockGetToken.mockResolvedValue("stored-token");
