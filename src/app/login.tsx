@@ -13,6 +13,10 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
 import { requestEmailVerification } from "@/api/auth";
+import {
+  consumeAccountShopperContinuation,
+  readAccountShopperContinuation
+} from "@/api/shopperContinuation";
 import { useAuth } from "@/auth/AuthContext";
 import AuthAutofillStyle from "@/components/auth/AuthAutofillStyle";
 import LegalLinks from "@/components/LegalLinks";
@@ -62,23 +66,58 @@ export default function LoginScreen() {
   const [shopperResume, setShopperResume] = useState<{
     attempt: number;
     email: string;
-    snapshot: ShopperSignupContinuation;
+    snapshot: ShopperSignupContinuation | null;
   } | null>(null);
   const mounted = useRef(true);
   const attempt = useRef(0);
   const inFlight = useRef(false);
   const resumeToken = useRef<string | null>(null);
+  const resumeStarted = useRef(0);
+  const resumeGeneration = useRef<number | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+  const sessionKey = JSON.stringify([
+    auth.token,
+    auth.user?.id,
+    auth.user?.email,
+    auth.isAuthed,
+    auth.meStatus,
+    auth.isHydrating,
+    safeNext
+  ]);
+  const sessionScope = useRef({ key: sessionKey, generation: 0 });
+  if (sessionScope.current.key !== sessionKey) {
+    sessionScope.current = {
+      key: sessionKey,
+      generation: sessionScope.current.generation + 1
+    };
+  }
 
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
       attempt.current += 1;
+      activeRequest.current?.abort();
     };
   }, []);
 
   useEffect(() => {
     if (!shopperResume || shopperResume.attempt !== attempt.current) return;
+    const finish = () => {
+      setShopperResume(null);
+      inFlight.current = false;
+      setSubmitting(false);
+    };
+    if (
+      resumeStarted.current === shopperResume.attempt &&
+      resumeGeneration.current !== sessionScope.current.generation
+    ) {
+      activeRequest.current?.abort();
+      finish();
+      if (safeNext) router.replace(safeNext as any);
+      else setErrMsg("Unable to verify this sign-in. Please try again.");
+      return;
+    }
     // login() can resolve even when /me fails. A saved destination is not proof
     // of authentication; wait for this deliberate sign-in's verified session.
     const changedSession =
@@ -92,18 +131,72 @@ export default function LoginScreen() {
       Boolean(auth.token) &&
       auth.meStatus === "ready" &&
       auth.user?.email?.trim().toLowerCase() === shopperResume.email;
-    setShopperResume(null);
-    inFlight.current = false;
-    setSubmitting(false);
     if (!verified) {
-      setErrMsg("Unable to verify this sign-in. Please try again.");
+      activeRequest.current?.abort();
+      finish();
+      if (safeNext) router.replace(safeNext as any);
+      else if (shopperResume.snapshot || changedSession)
+        setErrMsg("Unable to verify this sign-in. Please try again.");
+      else router.replace("/account/workspace" as any);
       return;
     }
-    // A newer signup in another tab must not be consumed by this attempt.
-    const destination = consumeShopperSignupContinuation(shopperResume.snapshot)
-      ? shopperResume.snapshot.path
-      : "/account/workspace";
-    router.replace(destination as any);
+    if (resumeStarted.current === shopperResume.attempt) return;
+    resumeStarted.current = shopperResume.attempt;
+    const generation = sessionScope.current.generation;
+    resumeGeneration.current = generation;
+    const token = auth.token!;
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const current = () =>
+      mounted.current &&
+      !controller.signal.aborted &&
+      attempt.current === shopperResume.attempt &&
+      sessionScope.current.generation === generation;
+    void (async () => {
+      let serverRecord;
+      try {
+        serverRecord = await readAccountShopperContinuation(token, controller.signal);
+      } catch {
+        // Optional recovery must not prevent login or the accepted local fallback.
+      }
+      if (!current()) return;
+      if (serverRecord) {
+        if (serverRecord.plan !== "free") {
+          finish();
+          // Keep the intent until the shopper deliberately chooses Return in the walkthrough.
+          router.replace({
+            pathname: "/onboarding/guilds",
+            params: {
+              next: "/onboarding/walkthroughs",
+              plan: serverRecord.plan,
+              mode: serverRecord.mode
+            }
+          } as any);
+          return;
+        }
+        let consumed = null;
+        try {
+          consumed = await consumeAccountShopperContinuation(
+            serverRecord,
+            token,
+            controller.signal
+          );
+        } catch {
+          // An uncertain consume is never automatically retried or treated as success.
+        }
+        if (!current()) return;
+        finish();
+        router.replace((consumed?.path || "/account/workspace") as any);
+        return;
+      }
+      // A newer local signup must not be consumed or adopted by this attempt.
+      const destination =
+        shopperResume.snapshot && consumeShopperSignupContinuation(shopperResume.snapshot)
+          ? shopperResume.snapshot.path
+          : "/account/workspace";
+      finish();
+      router.replace(destination as any);
+    })();
   }, [
     shopperResume,
     auth.isHydrating,
@@ -111,6 +204,7 @@ export default function LoginScreen() {
     auth.meStatus,
     auth.token,
     auth.user?.email,
+    auth.user?.id,
     safeNext,
     router
   ]);
@@ -124,6 +218,7 @@ export default function LoginScreen() {
     inFlight.current = true;
     const currentAttempt = ++attempt.current;
     resumeToken.current = null;
+    activeRequest.current?.abort();
     let awaitingSession = false;
     setErrMsg(null);
     setVerificationMsg(null);
@@ -134,7 +229,7 @@ export default function LoginScreen() {
       const snapshot = !safeNext ? readShopperSignupContinuation(normalizedEmail) : null;
       await auth.login(normalizedEmail, password);
       if (!mounted.current || currentAttempt !== attempt.current) return;
-      if (snapshot) {
+      if (!safeNext) {
         awaitingSession = true;
         setShopperResume({ attempt: currentAttempt, email: normalizedEmail, snapshot });
         return;

@@ -14,6 +14,8 @@ const mockLogin = jest.fn();
 const mockApiRequest = jest.fn();
 const mockConfirmEmailVerification = jest.fn();
 const mockRequestEmailVerification = jest.fn();
+const mockReadAccountContinuation = jest.fn();
+const mockConsumeAccountContinuation = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 let mockParams: Record<string, string | string[]> = {};
@@ -41,6 +43,12 @@ jest.mock("@/api/apiRequest", () => ({
 jest.mock("@/api/auth", () => ({
   requestEmailVerification: (...args: any[]) => mockRequestEmailVerification(...args),
   confirmEmailVerification: (...args: any[]) => mockConfirmEmailVerification(...args)
+}));
+jest.mock("@/api/shopperContinuation", () => ({
+  readAccountShopperContinuation: (...args: any[]) =>
+    mockReadAccountContinuation(...args),
+  consumeAccountShopperContinuation: (...args: any[]) =>
+    mockConsumeAccountContinuation(...args)
 }));
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
@@ -118,6 +126,8 @@ describe.each([
     mockLogin.mockReset().mockResolvedValue(undefined);
     mockConfirmEmailVerification.mockReset().mockResolvedValue({ user: { email } });
     mockRequestEmailVerification.mockResolvedValue({ emailSent: true });
+    mockReadAccountContinuation.mockReset().mockResolvedValue(null);
+    mockConsumeAccountContinuation.mockReset().mockResolvedValue(null);
     mockParams = {};
     mockAuth = {
       token: null,
@@ -496,4 +506,116 @@ describe.each([
     expect(readShopperSignupContinuation(email)).toBeNull();
     expect(mockPush).not.toHaveBeenCalled();
   });
+
+  function serverRecord(plan = "free") {
+    return {
+      path: destination,
+      revision: "a".repeat(32),
+      expiresAt: new Date(Date.now() + 60000).toISOString(),
+      plan,
+      mode: plan === "free" || plan === "pro" ? "personal" : plan
+    };
+  }
+
+  it("recovers the account-owned destination in an independent empty browser store", async () => {
+    const record = serverRecord();
+    mockReadAccountContinuation.mockResolvedValue(record);
+    mockConsumeAccountContinuation.mockResolvedValue(record);
+    localValues = new Map();
+    freshBrowserTab();
+    mockLogin.mockImplementationOnce(async () => readyAccount());
+    const screen = render(<LoginScreen />);
+    expect(mockReadAccountContinuation).not.toHaveBeenCalled();
+    submit(screen);
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(destination));
+    expect(mockConsumeAccountContinuation).toHaveBeenCalledWith(
+      record,
+      "synthetic-session-token",
+      expect.anything()
+    );
+    expect(localValues.size).toBe(0);
+  });
+
+  it.each(["pro", "commercial", "facility"])(
+    "preserves %s guild/walkthrough without consuming the paid choice",
+    async (plan) => {
+      const record = serverRecord(plan);
+      mockReadAccountContinuation.mockResolvedValue(record);
+      mockLogin.mockImplementationOnce(async () => readyAccount());
+      const screen = render(<LoginScreen />);
+      submit(screen);
+      await waitFor(() =>
+        expect(mockReplace).toHaveBeenCalledWith({
+          pathname: "/onboarding/guilds",
+          params: { next: "/onboarding/walkthroughs", plan, mode: record.mode }
+        })
+      );
+      expect(mockConsumeAccountContinuation).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(["read", "consume"])(
+    "ignores a late server %s after an account A-to-B-to-A transition",
+    async (stage) => {
+      const pending = deferred<any>();
+      const record = serverRecord();
+      mockReadAccountContinuation.mockResolvedValue(record);
+      mockConsumeAccountContinuation.mockResolvedValue(record);
+      (stage === "read"
+        ? mockReadAccountContinuation
+        : mockConsumeAccountContinuation
+      ).mockReturnValueOnce(pending.promise);
+      mockLogin.mockImplementationOnce(async () => readyAccount());
+      const screen = render(<LoginScreen />);
+      submit(screen);
+      await waitFor(() =>
+        expect(
+          stage === "read" ? mockReadAccountContinuation : mockConsumeAccountContinuation
+        ).toHaveBeenCalled()
+      );
+      readyAccount("other@example.com");
+      await showCurrentAuth(screen);
+      readyAccount();
+      await showCurrentAuth(screen);
+      await act(async () => pending.resolve(record));
+      expect(mockReplace).not.toHaveBeenCalled();
+      if (stage === "read") expect(mockConsumeAccountContinuation).not.toHaveBeenCalled();
+    }
+  );
+
+  it("does not read or consume server state when an explicit claim takes precedence", async () => {
+    mockParams = { next: "/claim-gift" };
+    mockLogin.mockImplementationOnce(async () => readyAccount());
+    const screen = render(<LoginScreen />);
+    submit(screen);
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/claim-gift"));
+    expect(mockReadAccountContinuation).not.toHaveBeenCalled();
+    expect(mockConsumeAccountContinuation).not.toHaveBeenCalled();
+  });
+
+  it("uses the accepted local fallback when optional server recovery fails", async () => {
+    rememberShopperSignupContinuation(email, destination);
+    mockReadAccountContinuation.mockRejectedValue(
+      new Error("Optional endpoint unavailable")
+    );
+    mockLogin.mockImplementationOnce(async () => readyAccount());
+    const screen = render(<LoginScreen />);
+    submit(screen);
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(destination));
+  });
+
+  it.each([null, new Error("Uncertain consume")])(
+    "does not replay an unconfirmed server consume: %p",
+    async (outcome) => {
+      mockReadAccountContinuation.mockResolvedValue(serverRecord());
+      if (outcome instanceof Error)
+        mockConsumeAccountContinuation.mockRejectedValue(outcome);
+      else mockConsumeAccountContinuation.mockResolvedValue(outcome);
+      mockLogin.mockImplementationOnce(async () => readyAccount());
+      const screen = render(<LoginScreen />);
+      submit(screen);
+      await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/account/workspace"));
+      expect(mockConsumeAccountContinuation).toHaveBeenCalledTimes(1);
+    }
+  );
 });

@@ -15,6 +15,7 @@ export type ApiRequestOptions = {
   timeout?: number;
   auth?: boolean; // default true
   silent?: boolean;
+  notifyTransport?: boolean; // default true; optional recovery may opt out of global banners
   invalidateOn401?: boolean;
   retries?: number;
   retryDelay?: number;
@@ -433,7 +434,7 @@ export async function apiRequest<T = any>(
       } else if (consumedCredits !== undefined && consumedCredits !== null) {
         publishTokenBalanceChange(0);
       }
-      emitTransportEvent({ type: "recovered" });
+      if (opts.notifyTransport !== false) emitTransportEvent({ type: "recovered" });
       return result;
     } catch (err: any) {
       cleanupAbort();
@@ -451,7 +452,8 @@ export async function apiRequest<T = any>(
         }
         const timeoutError = new ApiError("TIMEOUT", null, { cause: err });
         timeoutError.message = "The request timed out.";
-        emitTransportEvent({ type: "error", error: timeoutError });
+        if (opts.notifyTransport !== false)
+          emitTransportEvent({ type: "error", error: timeoutError });
         throw timeoutError;
       }
 
@@ -466,7 +468,8 @@ export async function apiRequest<T = any>(
       }
 
       const normalized = err instanceof ApiError ? err : toNetworkError(err);
-      emitTransportEvent({ type: "error", error: normalized });
+      if (opts.notifyTransport !== false)
+        emitTransportEvent({ type: "error", error: normalized });
       throw normalized;
     }
   }

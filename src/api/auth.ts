@@ -83,6 +83,7 @@ export type SignupBody = {
   mode?: "personal" | "commercial" | "facility";
   dateOfBirth?: string;
   showCannabisContent?: boolean;
+  shopperReturnPath?: string;
 };
 
 export type LoginBody = {
@@ -100,6 +101,7 @@ export type SignupResponse = {
   user?: AuthUser;
   emailVerificationRequired?: boolean;
   emailSent?: boolean;
+  shopperContinuationStored?: boolean;
 };
 
 export type EmailVerificationResponse = {
