@@ -25,6 +25,39 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("groups the released W10 corrections without closing genuine proof or device checks", () => {
+    const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "public-website")!;
+    const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
+      (entry) => entry.id === "public-website-audit"
+    );
+    expect(notes).toHaveLength(1);
+    expect(notes[0].date).toBe("October 14, 2026");
+    expect(notes[0].dateLabel).toBe("Released");
+    for (const phrase of [
+      "The October 8 release",
+      "AI help explicit above its existing journal headline",
+      "no-card and eligible-checkout details beside signup",
+      "dated public plant observations",
+      "Forum access still requires sign-in",
+      "not customer reviews, usage counts or verified growing results",
+      "Production Pricing passed a 375px browser layout check",
+      "not physical-phone acceptance or a new native release",
+      "Real-user testimonials are deferred"
+    ]) {
+      expect(notes[0].summary).toContain(phrase);
+    }
+    expect(notes[0].summary).not.toMatch(/84\/100|qa\.invalid|dep-|srv-|4c98ea81/);
+    expect(group.status).toBe("partial");
+    expect(group.entryIds.filter((id) => id === notes[0].id)).toHaveLength(1);
+    expect(group.next).toContain("verified usage proof and genuine outside endorsements");
+    expect(latestGroupRelease(group, new Date("2026-10-14T20:00:00Z"))).toBe(
+      "October 14, 2026"
+    );
+    expect(latestGroupRelease(group, new Date("2026-10-13T20:00:00Z"))).toBe(
+      "October 12, 2026"
+    );
+  });
+
   it("keeps the full payment plan separate from released billing and its release age", () => {
     const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "payment-roadmap")!;
     expect(group.status).toBe("planned");
@@ -249,7 +282,8 @@ describe("public Updates page", () => {
     const note = PUBLIC_UPDATE_SECTIONS[0].entries.find(
       (entry) => entry.id === "public-website-audit"
     );
-    expect(note?.date).toBe("October 8, 2026");
+    expect(note?.date).toBe("October 14, 2026");
+    expect(note?.summary).toContain("The October 8 release");
     expect(note?.summary).toContain("without promising savings");
     expect(note?.summary).toContain("still need real material");
     expect(note?.summary).toContain("labeled synthetic history answer");

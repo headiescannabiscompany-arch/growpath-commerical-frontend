@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "October 13, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "October 14, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -58,11 +58,11 @@ export const PUBLIC_UPDATE_SECTIONS = [
       },
       {
         id: "public-website-audit",
-        title: "Clearer grow journals, plans and public-page information",
-        date: "October 8, 2026",
+        title: "Clearer grow journals, plans and public discovery",
+        date: "October 14, 2026",
         dateLabel: "Released",
         summary:
-          "The homepage and personal-grower page explain how to keep this run's lessons for the next one, alongside Jay's supplied portrait, founder story, show link, professional LinkedIn profile and company context. Pro pricing compares separate journal tools without promising savings. The October 8 release clarifies how Facility room work differs from required compliance records, without claiming to replace a compliance system. Pricing links directly to a labeled synthetic history answer and grow comparison before signup. Registration fields are easier to read on narrow screens. Public pages now connect the website and organization information to the existing brand logo, add factual feature/storefront/course definitions, and record reviewed static-page modification dates without inventing dates for live catalogs. Public-page navigation includes About and Contact. Features links to Forum groups and deliberately shared plant observations; the signed-in campaign workspace is excluded from the public sitemap and marked not to index, without removing campaign tools. The permission-controlled customer-story feed stays hidden when empty. Prices, plan limits and private analytics boundaries are unchanged. Real-user testimonials are deferred until genuine feedback and publication permission are available; verified usage proof and outside endorsements still need real material."
+          "The homepage and personal-grower page explain how to keep this run's lessons for the next one, alongside Jay's supplied portrait, founder story, show link, professional LinkedIn profile and company context. Pro pricing compares separate journal tools without promising savings. The October 8 release clarifies how Facility room work differs from required compliance records, without claiming to replace a compliance system. Pricing links directly to a labeled synthetic history answer and grow comparison before signup. Registration fields are easier to read on narrow screens. Public pages connect the website and organization information to the existing brand logo, add factual feature/storefront/course definitions, and record reviewed static-page modification dates without inventing dates for live catalogs. Public-page navigation includes About and Contact. Features links to Forum groups and deliberately shared plant observations; the signed-in campaign workspace is excluded from the public sitemap and marked not to index, without removing campaign tools. On October 14, the homepage made AI help explicit above its existing journal headline. Home and Pricing now place no-card and eligible-checkout details beside signup. A homepage section links to dated public plant observations, courses and Forum discussions; Forum access still requires sign-in. Public posts are not customer reviews, usage counts or verified growing results. Production Pricing passed a 375px browser layout check; this is not physical-phone acceptance or a new native release. The permission-controlled customer-story feed stays hidden when empty. Prices, plan limits and private analytics boundaries are unchanged. Real-user testimonials are deferred until genuine feedback and publication permission are available; verified usage proof and outside endorsements still need real material."
       },
       {
         id: "course-media-playback-recovery",
