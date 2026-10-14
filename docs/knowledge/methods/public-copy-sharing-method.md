@@ -218,6 +218,16 @@ test ratings/counters that could be mistaken for real customer proof.
 Real testimonials remain a separate dynamic, approved/consented public feed, never
 synthetic proof or statically baked quotes.
 
+The marketing homepage may project at most three dated observations from the existing
+anonymous public field-observation endpoint. Omit credentials even when the viewer is
+signed in; never fall back to owner records or authenticated feeds. Display only a
+bounded title, actual publication date and rebuilt public-study link, not identities,
+photos, locations or working notes. Exclude clearly labeled QA/synthetic fixtures.
+Refresh on foreground and discard stale reads on background/unmount; show truthful
+empty/error states. Do not bake records into crawler HTML. Public activity is not a
+testimonial, customer count, third-party endorsement or verified growing result.
+Forum/course directory links do not establish public feed availability or paid access.
+
 Public storefronts retain device sharing and provide a separately named Copy Store Link
 control. Copy only the rebuilt public store route, excluding checkout, product-return and
 filter parameters. Confirm success only after the clipboard write succeeds; otherwise

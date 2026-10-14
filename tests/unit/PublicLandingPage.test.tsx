@@ -10,6 +10,7 @@ import PublicLandingPage, {
 import { getThemePalette } from "@/theme/appTheme";
 import marketing from "@/components/marketing/publicMarketing.json";
 import demo from "@/components/marketing/syntheticGrowDemo.json";
+jest.mock("@/components/marketing/PublicCommunityActivity", () => () => null);
 import { getPublicTestimonials } from "@/api/testimonials";
 
 jest.mock("@/api/testimonials", () => ({

@@ -67,6 +67,15 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
     href: showDemo ? "/demo" : "/features",
     label: showDemo ? "Try the sample journal" : "Explore features"
   };
+  const showReassurance = page === "home" || page === "pricing";
+  const primaryCta = (
+    <Link
+      href={primaryAction.href as never}
+      style={isCompact ? [styles.primary, styles.actionCompact] : styles.primary}
+    >
+      {primaryAction.label}
+    </Link>
+  );
   return (
     <ScrollView
       style={styles.page}
@@ -121,14 +130,20 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
           {copy.intro}
         </Text>
         <View
-          style={isCompact ? [styles.actions, styles.actionsCompact] : styles.actions}
+          style={[
+            styles.actions,
+            showReassurance && styles.actionsReassured,
+            isCompact && styles.actionsCompact
+          ]}
         >
-          <Link
-            href={primaryAction.href as never}
-            style={isCompact ? [styles.primary, styles.actionCompact] : styles.primary}
-          >
-            {primaryAction.label}
-          </Link>
+          {showReassurance ? (
+            <View style={styles.primaryActionGroup}>
+              {primaryCta}
+              <Text style={styles.ctaReassurance}>{marketing.ctaReassurance}</Text>
+            </View>
+          ) : (
+            primaryCta
+          )}
           <Link
             href={demoAction.href as never}
             style={
@@ -300,8 +315,16 @@ export function createPublicLandingStyles(palette: ThemePalette) {
     titleCompact: { fontSize: 32, lineHeight: 38, maxWidth: "100%" },
     intro: { color: palette.heroMuted, fontSize: 19, lineHeight: 29, maxWidth: 840 },
     introCompact: { fontSize: 17, lineHeight: 26 },
-    actions: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 8 },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      marginTop: 8
+    },
+    actionsReassured: { alignItems: "flex-start" },
     actionsCompact: { flexDirection: "column", alignItems: "stretch" },
+    primaryActionGroup: { gap: 8, maxWidth: 360, flexShrink: 1 },
+    ctaReassurance: { color: palette.heroMuted, fontSize: 14, lineHeight: 21 },
     primary: {
       minHeight: 44,
       lineHeight: 20,

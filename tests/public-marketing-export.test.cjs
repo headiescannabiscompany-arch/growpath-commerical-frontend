@@ -13,6 +13,34 @@ const {
   marketingCss,
   marketing
 } = require("../scripts/public-marketing.cjs");
+test("W10 puts truthful payment reassurance directly after the home/pricing signup CTA", () => {
+  for (const page of ["", "pricing"]) {
+    const html = publicMarketingMarkup(page);
+    assert.ok(
+      html.includes(
+        'Create free account</a><p class="cta-reassurance">' + marketing.ctaReassurance
+      )
+    );
+    assert.equal((html.match(/class="cta-reassurance"/g) || []).length, 1);
+    assert.ok(html.indexOf(marketing.ctaReassurance) < html.indexOf('class="secondary"'));
+  }
+  assert.equal(publicMarketingMarkup("about").includes('class="cta-reassurance"'), false);
+  assert.match(marketing.pages.home.eyebrow, /AI help.*personal growers/);
+});
+test("W10 public activity shell follows founder and precedes updates without baked user data", () => {
+  const html = publicMarketingMarkup("");
+  const index = html.indexOf(marketing.communityActivity.title);
+  assert.ok(index > html.indexOf("Meet Jay"));
+  assert.ok(index < html.indexOf("See what has actually shipped"));
+  for (const { href, label } of marketing.communityActivity.links) {
+    assert.ok(html.includes(`href="${href}">${label}</a>`));
+  }
+  assert.ok(html.includes("not customer reviews or verified growing results"));
+  assert.equal(marketing.proof.verifiedGrowerCount, null);
+  assert.deepEqual(marketing.proof.stories, []);
+  assert.deepEqual(marketing.proof.thirdPartyMentions, []);
+  assert.doesNotMatch(html, /Basil flowers|water lily|Queen Anne/);
+});
 test("SEO definitions stay factual and preserve plan, privacy and broadcasting limits", () => {
   assert.ok(
     publicMarketingMarkup("features").includes(
@@ -67,12 +95,18 @@ test("crawler copy includes the accepted saved-work, Personal web PDF and hosted
   const creator = publicMarketingMarkup("creators-educators");
   assert.match(creator, /When its recording is ready/);
   assert.match(creator, /Draft sessions stay private/);
-  assert.match(creator, /published replays follow the session(?:'|&#39;|&apos;)s access rules/);
+  assert.match(
+    creator,
+    /published replays follow the session(?:'|&#39;|&apos;)s access rules/
+  );
   assert.match(creator, /OBS or another compatible encoder/);
   const demo = publicMarketingMarkup("demo");
   assert.match(demo, /Personal web exports include CSV/);
   assert.match(demo, /does not include native-app PDF export/);
-  assert.match(demo, /export screenshot shows package preparation, not the downloaded PDF/);
+  assert.match(
+    demo,
+    /export screenshot shows package preparation, not the downloaded PDF/
+  );
   const commercial = publicMarketingMarkup("commercial-cultivation");
   assert.match(commercial, /Use Business Desk to save a lead/);
   assert.match(commercial, /care history linked to the relevant inventory item and lot/);

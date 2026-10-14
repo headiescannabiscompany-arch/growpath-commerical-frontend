@@ -53,6 +53,7 @@ function publicMarketingMarkup(route) {
   const copy = marketing.pages[page];
   if (!copy) return null;
   const grower = page === "home" || page === "personal-grower";
+  const reassure = page === "home" || page === "pricing";
   const showDemo = [
     "home",
     "features",
@@ -158,11 +159,19 @@ function publicMarketingMarkup(route) {
     escape(copy.title) +
     "</h1><p>" +
     escape(copy.intro) +
-    '</p><div class="marketing-actions"><a class="primary" href="' +
+    '</p><div class="marketing-actions' +
+    (reassure ? " with-reassurance" : "") +
+    '">' +
+    (reassure ? '<div class="primary-action-group">' : "") +
+    '<a class="primary" href="' +
     escape(primaryAction.href) +
     '">' +
     escape(primaryAction.label) +
-    '</a><a class="secondary" href="' +
+    "</a>" +
+    (reassure
+      ? '<p class="cta-reassurance">' + escape(marketing.ctaReassurance) + "</p></div>"
+      : "") +
+    '<a class="secondary" href="' +
     escape(demoAction.href) +
     '">' +
     escape(demoAction.label) +
@@ -210,6 +219,17 @@ function publicMarketingMarkup(route) {
         (marketing.founder.socialUrl
           ? "<p>" + anchor(["Jay on LinkedIn", marketing.founder.socialUrl]) + "</p>"
           : "") +
+        "</section>"
+      : "") +
+    (page === "home"
+      ? '<section class="marketing-card"><h2>' +
+        escape(marketing.communityActivity.title) +
+        "</h2><p>" +
+        escape(marketing.communityActivity.description) +
+        "</p>" +
+        marketing.communityActivity.links
+          .map((item) => "<p>" + anchor([item.label, item.href]) + "</p>")
+          .join("") +
         "</section>"
       : "") +
     (page === "about"
@@ -483,6 +503,9 @@ const marketingTapTargetCss =
 module.exports = {
   publicMarketingMarkup,
   marketingSchema,
-  marketingCss: marketingCss + marketingTapTargetCss,
+  marketingCss:
+    marketingCss +
+    marketingTapTargetCss +
+    ".marketing-actions.with-reassurance{align-items:flex-start}.primary-action-group{display:flex;flex-direction:column;gap:8px;max-width:360px;min-width:0}.marketing .cta-reassurance{font-size:14px;line-height:21px;margin:0}@media(max-width:599px){.marketing-actions.with-reassurance{align-items:stretch}.primary-action-group{max-width:100%}}",
   marketing
 };
