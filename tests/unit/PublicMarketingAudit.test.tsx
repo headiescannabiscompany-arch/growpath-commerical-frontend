@@ -14,6 +14,45 @@ jest.mock("@/api/testimonials", () => ({
 }));
 
 describe("HeyCatch audit corrections", () => {
+  it("names storefront sales and protected downloads without promising payment approval", () => {
+    const screen = render(<PublicLandingPage page="grow-stores" />);
+    expect(
+      screen.getByRole("header", { name: "Product sales and order follow-up" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("header", {
+        name: "Downloadable offers have their own sales view"
+      })
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Payment confirmation does not mean the product has shipped/)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Offer summaries are not a bank payout statement/)
+    ).toBeTruthy();
+    expect(screen.getByText(/product and buyer eligibility still apply/)).toBeTruthy();
+    expect(marketing.pages.pricing.sections[2].body).toContain(
+      "storefront product sales, downloadable offers, orders"
+    );
+    expect(marketing.pages.pricing.sections[2].body).toContain(
+      "seller and product eligibility"
+    );
+    expect(JSON.stringify(screen.toJSON())).not.toMatch(
+      /Interactive Framework Builders|Dart Bank|bank-approved|instant cashout/
+    );
+  });
+  it("keeps Personal creators separate from Commercial seller features", () => {
+    const screen = render(<PublicLandingPage page="creators-educators" />);
+    expect(
+      screen.getByText(/You do not need Commercial or a separate creator signup/)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/supported content and verified seller payment readiness/)
+    ).toBeTruthy();
+    expect(marketing.pages["commercial-cultivation"].sections[2].body).toContain(
+      "My Storefront Offers"
+    );
+  });
   it("links public plant findings and Forum groups from the relevant Features cards", () => {
     const screen = render(<PublicLandingPage page="features" />);
     const links = screen.UNSAFE_getAllByType(Link);

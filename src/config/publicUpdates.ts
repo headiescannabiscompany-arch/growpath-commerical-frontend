@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "October 12, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "October 13, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -541,6 +541,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Planned work, not a promise of a release date. Priorities may change.",
     emptyMessage: "No planned updates are currently listed.",
     entries: [
+      {
+        id: "payment-continuity-plan",
+        title: "Preserve subscriptions and the full seller sales workflow",
+        date: "October 13, 2026",
+        dateLabel: "Plan reviewed",
+        summary:
+          "Prepare a payment-provider replacement that preserves subscriptions, paid subscription gifts, separate complimentary access, courses, storefront product sales, protected downloads, seller commissions, orders, inventory reservations, refunds, disputes and purchase history. Product orders and downloadable offers remain separate workflows; a subscription-only replacement is not enough. Provider approval, supported categories, fees, seller settlement and migration checks must be verified before activation. No replacement is live, no new commission or payout timing is promised, and existing billing is unchanged. Creator tips and course gifting remain separate later plans; no customer wallet is planned."
+      },
       {
         id: "timeline-improvements",
         title: "Timeline and journal follow-up checks",

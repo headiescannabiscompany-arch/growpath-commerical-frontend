@@ -210,7 +210,9 @@ describe("PublicLandingPage", () => {
     expect(
       render(<PublicLandingPage page="about" />).getByText(marketing.founder.story)
     ).toBeTruthy();
-    expect(marketing.founder.socialUrl).toBeNull();
+    expect(marketing.founder.socialUrl).toBe(
+      "https://www.linkedin.com/in/johnabrahamcollins1979"
+    );
     expect(marketing.proof).toEqual({
       verifiedGrowerCount: null,
       stories: [],
