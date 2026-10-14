@@ -310,13 +310,33 @@ describe("HomeScheduleRoute", () => {
     }
   );
 
+  it.each([{ from: "facility-more" }, { from: ["facility-more", "/admin"] }])(
+    "returns an explicit Facility More visit to its existing menu for %j",
+    async ({ from }) => {
+      mockScheduleParams = { from };
+      const screen = render(<HomeScheduleRoute />);
+
+      await waitFor(() => expect(screen.getByText("Connect Stripe price")).toBeTruthy());
+      expect(screen.getByTestId("schedule-back")).toHaveProp(
+        "fallbackHref",
+        "/home/facility/more"
+      );
+      expect(screen.getByTestId("schedule-back")).toHaveProp("preferFallback", true);
+      // The entry marker is navigation only, not a workspace filter or authority.
+      expect(screen.getByText("Review personal grow task")).toBeTruthy();
+      expect(screen.getByText("Inspect sensor alert")).toBeTruthy();
+    }
+  );
+
   it.each([
     { from: undefined },
     { from: "" },
     { from: [] },
     { from: "/admin" },
     { from: "https://example.com" },
-    { from: ["/admin", "personal-more"] }
+    { from: ["/admin", "personal-more"] },
+    { from: ["/admin", "facility-more"] },
+    { from: "facility-more/../../admin" }
   ])("preserves ordinary Schedule history and fallback for %j", async ({ from }) => {
     mockScheduleParams = { from };
     const screen = render(<HomeScheduleRoute />);

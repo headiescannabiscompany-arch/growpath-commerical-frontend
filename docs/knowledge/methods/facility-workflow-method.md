@@ -1,5 +1,13 @@
 # Facility Workflow
 
+Facility More exposes the existing shared Schedule / Agenda beside Tasks. The exact
+`from=facility-more` navigation marker returns the page's Back control to Facility
+More, including after reload. It is not an arbitrary redirect, workspace selection,
+filter, permission grant or new calendar engine. Other entries retain their current
+history/fallback, including the accepted Personal More return. Existing Facility
+course scoping and server task access remain authoritative; this menu entry does
+not certify that every operational task or reminder is included or delivered.
+
 Complimentary-access activation rejected with HTTP 401 preserves the secure invitation
 and offers explicit sign-in recovery with a tokenless return to the claim page. Hide
 repeat activation until sign-in; never automatically log out from a feature error,

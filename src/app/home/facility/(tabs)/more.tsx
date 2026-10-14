@@ -48,6 +48,11 @@ const workspaceGroups: Array<{
         description: "Review assigned work, proof, approvals, and follow-up items."
       },
       {
+        label: "Schedule / Agenda",
+        href: "/home/schedule?from=facility-more",
+        description: "Open the shared calendar to review available tasks and course events."
+      },
+      {
         label: "SOPs",
         href: "/home/facility/sop-runs",
         description: "Run, compare, and review facility procedures."

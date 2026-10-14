@@ -97,6 +97,27 @@ describe("FacilityMoreRoute", () => {
     }
   );
 
+  it.each(["OWNER", "MANAGER", "STAFF", "VIEWER"])(
+    "exposes the existing read-only Schedule entry for Facility %s",
+    (role) => {
+      mockFacilityRole = role;
+      const screen = render(<FacilityMoreRoute />);
+
+      expect(screen.getByLabelText("Open Schedule / Agenda").props.href).toBe(
+        "/home/schedule?from=facility-more"
+      );
+      expect(
+        screen.getByText(
+          "Open the shared calendar to review available tasks and course events."
+        )
+      ).toBeTruthy();
+      expect(screen.getByLabelText("Open Tasks").props.href).toBe(
+        "/home/facility/tasks"
+      );
+      expect(screen.queryByLabelText("Open Business Desk")).toBeNull();
+    }
+  );
+
   it.each(["STAFF", "VIEWER", "QA"])(
     "hides Business Desk from Facility %s even if a stale capability says yes",
     (role) => {

@@ -432,7 +432,10 @@ function moveAnchor(anchorKey: string, view: CalendarView, direction: number) {
 
 export default function HomeScheduleRoute() {
   const { from } = useLocalSearchParams<{ from?: string | string[] }>();
-  const moreReturn = personalMoreReturnHref(from);
+  const source = Array.isArray(from) ? from[0] : from;
+  const moreReturn =
+    personalMoreReturnHref(source) ||
+    (source === "facility-more" ? "/home/facility/more" : undefined);
   const facilityEvents = useFacilityCourseLiveEvents();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
