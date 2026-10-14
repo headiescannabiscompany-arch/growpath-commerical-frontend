@@ -228,6 +228,15 @@ empty/error states. Do not bake records into crawler HTML. Public activity is no
 testimonial, customer count, third-party endorsement or verified growing result.
 Forum/course directory links do not establish public feed availability or paid access.
 
+Direct public-study URLs use a generic, record-free static app shell before runtime
+loads the requested study. Its initial HTML is noindex,nofollow and omits canonical,
+og:url and structured data because the build cannot know the requested record or
+publication state. Never fetch or freeze user studies into the build. The existing
+runtime supplies the clean route identity, retains noindex for individual studies,
+and keeps publication/access checks authoritative. The observation directory stays
+indexable in production; staging stays noindex. Rewriting to the shell must preserve
+the original study URL and bootstrap, not redirect visitors to the Home screen.
+
 Public storefronts retain device sharing and provide a separately named Copy Store Link
 control. Copy only the rebuilt public store route, excluding checkout, product-return and
 filter parameters. Confirm success only after the clipboard write succeeds; otherwise

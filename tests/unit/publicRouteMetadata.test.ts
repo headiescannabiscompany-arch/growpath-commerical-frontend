@@ -7,6 +7,34 @@ import {
 } from "@/seo/publicRouteMetadata";
 
 describe("public route metadata", () => {
+  it("fills the study shell identity from the route without indexing or retaining query data", () => {
+    document.head.innerHTML =
+      '<title>Field Study | GrowPathAI</title><meta name="robots" content="noindex,nofollow" />';
+    applyPublicRouteMetadata(
+      "/field-observations/woodland-study?private=not-for-sharing#note"
+    );
+    expect(document.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(
+      "https://growpathai.com/field-observations/woodland-study"
+    );
+    expect(
+      document.querySelector('meta[property="og:url"]')?.getAttribute("content")
+    ).toBe("https://growpathai.com/field-observations/woodland-study");
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute("content")).toBe(
+      "noindex,nofollow"
+    );
+    expect(document.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(
+      0
+    );
+    expect(document.head.innerHTML).not.toContain("not-for-sharing");
+    applyPublicRouteMetadata("/field-observations");
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute("content")).toBe(
+      "index,follow"
+    );
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(
+      "https://growpathai.com/field-observations"
+    );
+  });
   it("shares the synthetic demo screenshot and clears it when leaving the demo", () => {
     document.head.innerHTML = "";
     applyPublicRouteMetadata("/demo?growId=private#token");

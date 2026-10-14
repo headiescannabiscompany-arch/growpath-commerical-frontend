@@ -73,6 +73,53 @@ function main() {
   }
 
   const home = read("index.html");
+  const studyShell = read("_shells/field-study.html");
+  requireIncludes(studyShell, "<title>Field Study | GrowPathAI</title>", "study shell");
+  requireIncludes(
+    studyShell,
+    '<meta name="robots" content="noindex,nofollow"',
+    "study shell"
+  );
+  requireIncludes(studyShell, '<div id="root"></div>', "record-free study shell");
+  requireIncludes(studyShell, 'href="/field-observations"', "study noscript map link");
+  for (const forbidden of [
+    'rel="canonical"',
+    'property="og:url"',
+    "application/ld+json",
+    'id="seo-content"',
+    "The grow journal that remembers every run"
+  ]) {
+    if (studyShell.includes(forbidden)) {
+      throw new Error(
+        `Study shell inherits an unverified identity or Home content: ${forbidden}`
+      );
+    }
+  }
+  const appScripts = (html) =>
+    Array.from(
+      html.matchAll(/<script\b[^>]*\bsrc="(\/_expo\/static\/js\/[^\"]+)"/gi),
+      (match) => match[1]
+    );
+  if (
+    !appScripts(home).length ||
+    JSON.stringify(appScripts(studyShell)) !== JSON.stringify(appScripts(home))
+  ) {
+    throw new Error("Study shell must retain the exact versioned app scripts");
+  }
+  if (sitemap.includes("/_shells/") || sitemap.includes("/field-observations/")) {
+    throw new Error("Generic shells and unverified studies must not enter the sitemap");
+  }
+  const observationMap = read("field-observations/index.html");
+  requireIncludes(
+    observationMap,
+    '<meta name="robots" content="index,follow"',
+    "observation map"
+  );
+  requireIncludes(
+    observationMap,
+    '<link rel="canonical" href="https://growpathai.com/field-observations"',
+    "observation map"
+  );
   requireIncludes(
     home,
     "<title>GrowPathAI | The grow journal that remembers every run</title>",

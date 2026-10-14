@@ -117,10 +117,36 @@ describe("Render static route rewrites", () => {
         );
         expect({ route, destination: match?.destination }).toEqual({
           route,
-          destination: "/index.html"
+          destination: route.startsWith("field-observations/")
+            ? "/_shells/field-study.html"
+            : "/index.html"
         });
       }
       expect(rules.some((rule: { source: string }) => rule.source === "/*")).toBe(false);
+    }
+  );
+
+  it.each(["render.yaml", "render.staging.yaml"])(
+    "keeps the study fallback outside its own wildcard and leaves the map alone in %s",
+    (file) => {
+      const rules = yaml.load(fs.readFileSync(file, "utf8")).services[0].routes;
+      expect(
+        rules.filter(
+          (rule: { source: string }) => rule.source === "/field-observations/*"
+        )
+      ).toEqual([
+        {
+          type: "rewrite",
+          source: "/field-observations/*",
+          destination: "/_shells/field-study.html"
+        }
+      ]);
+      expect(rules.some((rule: { source: string }) => rule.source === "/_shells/*")).toBe(
+        false
+      );
+      expect(
+        rules.some((rule: { source: string }) => rule.source === "/field-observations")
+      ).toBe(false);
     }
   );
 

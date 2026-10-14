@@ -42,7 +42,7 @@ services:
         destination: /index.html
       - type: rewrite
         source: /field-observations/*
-        destination: /index.html
+        destination: /_shells/field-study.html
       - type: rewrite
         source: /facilities/*
         destination: /index.html
