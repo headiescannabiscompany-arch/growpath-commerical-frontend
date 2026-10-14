@@ -1,5 +1,18 @@
 # Commercial Workflow
 
+## Business plan and sales navigation
+
+Commercial More must expose Storefront, Products, My Storefront Offers, Orders,
+and Account Billing as separate existing destinations. Product orders, protected
+download aggregates and bank payouts are different records, not interchangeable
+sales totals. Courses remain available to eligible Personal and Commercial authors
+within existing plan limits; a new creator signup is not required. Navigation
+must not grant a plan, change workspace, start payment, publish or certify seller
+readiness. Preserve existing menus, server permissions and regulated-product gates.
+Public plan copy may describe existing workflows, but proposed provider changes,
+tips and course gifting remain explicitly planned until their own acceptance and
+release. Do not publish an unformed company or unapproved bank as the operator.
+
 ## Standard Feed campaign withdrawal
 
 Your campaigns is an explicitly opened, authenticated owner list for standard Feed

@@ -157,6 +157,17 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     ]
   },
   {
+    id: "payment-roadmap",
+    tab: "Payment roadmap",
+    title: "Payment continuity for buyers and sellers",
+    status: "planned",
+    scope:
+      "A payment-provider replacement for the full existing subscription and seller workflow, not a subscription-only switch.",
+    live: "Not released. Existing billing and checkout remain separate recorded releases; no provider replacement has been activated.",
+    next: "Verify support for subscriptions and gifts, courses, storefront product sales, protected downloads, commissions and seller settlement. Preserve complimentary access, stock reservations, orders, refunds, disputes and purchase history. Provider approval, fees and migration acceptance come before activation. Creator tips and course gifting stay in their separate later plans.",
+    entryIds: ["payment-continuity-plan"]
+  },
+  {
     id: "admin",
     tab: "Admin & recovery",
     title: "Admin safety and recovery",

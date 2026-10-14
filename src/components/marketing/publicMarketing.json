@@ -63,7 +63,7 @@
         },
         {
           "title": "Commercial — $50/month or $500/year",
-          "body": "For brands and sellers: 50 grows, 500 plants, and 500 AI credits each week, plus storefront, course, campaign, inventory, and trial workflows. Annual billing is charged as one $500 payment; save $100 compared with 12 monthly payments."
+          "body": "For brands and sellers: 50 grows, 500 plants, and 500 AI credits each week, plus storefront product sales, downloadable offers, orders, courses, campaigns, inventory, and trial workflows. Paid sales still require seller and product eligibility. Annual billing is charged as one $500 payment; save $100 compared with 12 monthly payments."
         },
         {
           "title": "Facility — $100/month or $1,000/year",
@@ -121,7 +121,7 @@
         },
         {
           "title": "Selling products or downloads?",
-          "body": "Start with a saved draft, review its description, price, and delivery setup, then explicitly publish. Public presentation and payment readiness are separate checks; a Commercial subscription does not make every product eligible for checkout.",
+          "body": "Use Storefront and Products for your product catalog, then Orders for recorded purchases, refunds, fulfillment and net sales before fees. My Storefront Offers has separate publication, Sales and Analytics views for downloadable files. Start with a saved draft, review its description, price, and delivery setup, then explicitly publish. Public presentation and payment readiness are separate checks; a Commercial subscription does not make every product eligible for checkout.",
           "href": "/grow-stores",
           "linkLabel": "Review store and seller setup"
         },
@@ -229,6 +229,14 @@
           "body": "Organize product lines, product pages, links, inventory context, and public brand information. Review the saved public presentation and publish when ready. Storefront Offers keeps downloadable offers in a separate draft-and-publish workflow. The example above shows owner controls, not a live shopping cart."
         },
         {
+          "title": "Product sales and order follow-up",
+          "body": "Eligible published products can use checkout. Commercial Orders keeps recorded payments, refunds and fulfillment together, with net sales shown before fees. Linked inventory uses stock reservations and records consumption when payment fulfillment succeeds. Payment confirmation does not mean the product has shipped or the seller's bank has received a payout."
+        },
+        {
+          "title": "Downloadable offers have their own sales view",
+          "body": "My Storefront Offers keeps digital files separate from product orders. Review each offer's publication, recorded revenue and downloads in its Sales and Analytics tabs. Paid files use authenticated delivery with current purchase-access checks. Offer summaries are not a bank payout statement; a file already downloaded cannot be recalled."
+        },
+        {
           "title": "Education",
           "body": "Explain how a product fits a growing workflow through reviewed courses or live education. Use Forum Q&A for customer questions and Feed campaigns for reviewed promotions. Keep supporting trial records connected, and qualify claims to the evidence you actually have.",
           "href": "/creators-educators",
@@ -275,7 +283,7 @@
         },
         {
           "title": "When does Commercial fit?",
-          "body": "Choose Commercial when your teaching also needs storefront and business records: $50/month or $500/year, with 50 grows, 500 plants, and 500 weekly AI credits. Compare course, lesson, and hosting limits before choosing.",
+          "body": "You do not need Commercial or a separate creator signup just to create courses. Choose Commercial when you also need a product storefront, downloadable offers, orders, inventory and business records: $50/month or $500/year, with 50 grows, 500 plants, and 500 weekly AI credits. Selling still depends on your plan limits, supported content and verified seller payment readiness. Compare course, lesson, and hosting limits before choosing.",
           "href": "/commercial-cultivation",
           "linkLabel": "Explore the Commercial plan's workflows"
         }

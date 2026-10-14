@@ -5,6 +5,7 @@ import { PUBLIC_UPDATE_SECTIONS, PUBLIC_UPDATES_REVIEWED } from "@/config/public
 import {
   PUBLIC_UPDATE_GROUPS,
   UPDATE_STATUS_LABELS,
+  latestGroupRelease,
   updateGroupSections
 } from "@/config/publicUpdateGroups";
 import { getThemePalette } from "@/theme/appTheme";
@@ -24,6 +25,39 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("keeps the full payment plan separate from released billing and its release age", () => {
+    const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "payment-roadmap")!;
+    expect(group.status).toBe("planned");
+    expect(latestGroupRelease(group, new Date("2026-10-13T16:00:00Z"))).toBeNull();
+    expect(group.entryIds).toEqual(["payment-continuity-plan"]);
+    const sections = updateGroupSections(group);
+    expect(sections.map((section) => section.id)).toEqual(["planned"]);
+    const note = sections[0].entries[0];
+    expect(note.dateLabel).toBe("Plan reviewed");
+    for (const phrase of [
+      "subscriptions",
+      "subscription gifts",
+      "complimentary access",
+      "courses",
+      "storefront product sales",
+      "protected downloads",
+      "seller commissions",
+      "inventory reservations",
+      "refunds",
+      "disputes",
+      "purchase history",
+      "No replacement is live",
+      "Creator tips and course gifting remain separate"
+    ]) {
+      expect(note.summary).toContain(phrase);
+    }
+    expect(PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "billing")?.status).toBe(
+      "complete"
+    );
+    expect(note.summary).not.toMatch(
+      /Interactive Framework Builders|Dart Bank|Stearns|North Bay|November 11/
+    );
+  });
   it("closes the scoped inventory rollout while retaining evidence limits", () => {
     const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "inventory");
     const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
@@ -626,6 +660,7 @@ describe("public Updates page", () => {
 
   it("includes the remaining public work without presenting it as released", () => {
     expect(PUBLIC_UPDATE_SECTIONS[2].entries.map((entry) => entry.id)).toEqual([
+      "payment-continuity-plan",
       "timeline-improvements",
       "store-discovery-review",
       "course-gifting"

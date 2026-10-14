@@ -17,6 +17,7 @@ type WorkspaceDestination = {
 
 const workspaceGroups: Array<{
   destinations: WorkspaceDestination[];
+  description?: string;
   title: string;
 }> = [
   {
@@ -84,16 +85,38 @@ const workspaceGroups: Array<{
   },
   {
     title: "Sales and measurement",
+    description:
+      "Product orders and downloadable offers use separate sales views. Your plan gives you workspace tools, not automatic payment approval. Seller, product and delivery requirements still apply; recorded sales are not bank payout confirmation.",
     destinations: [
+      {
+        label: "Storefront",
+        href: "/home/commercial/storefront",
+        description:
+          "Set up your public store and review products, courses and publication."
+      },
+      {
+        label: "Products",
+        href: "/home/commercial/products",
+        description:
+          "Manage product drafts, prices and eligible product sales separately from downloadable offers."
+      },
       {
         label: "My Storefront Offers",
         href: "/home/commercial/storefront/offers",
-        description: "Create downloadable offer drafts and review their publication."
+        description:
+          "Create downloadable offer drafts, review publication, and open their Sales and Analytics tabs."
       },
       {
         label: "Orders",
         href: "/home/commercial/orders",
-        description: "Review paid internal orders and fulfillment status."
+        description:
+          "Review storefront product orders, payment and refund history, fulfillment, and net sales before fees."
+      },
+      {
+        label: "Billing and seller payouts",
+        href: "/account/billing",
+        description:
+          "Review your subscription and eligible seller payout setup. This is not creator activation."
       },
       {
         label: "Analytics",
@@ -212,6 +235,9 @@ export default function CommercialMoreRoute() {
           <Text accessibilityRole="header" aria-level={2} style={styles.groupTitle}>
             {group.title}
           </Text>
+          {group.description ? (
+            <Text style={styles.groupDescription}>{group.description}</Text>
+          ) : null}
           <View style={styles.destinationGrid}>
             {group.destinations
               .filter(
@@ -286,6 +312,12 @@ export function createCommercialMoreStyles(palette: ThemePalette) {
       color: palette.text,
       fontSize: 18,
       fontWeight: "900",
+      marginBottom: 12
+    },
+    groupDescription: {
+      color: palette.textMuted,
+      fontSize: 14,
+      lineHeight: 20,
       marginBottom: 12
     },
     header: {

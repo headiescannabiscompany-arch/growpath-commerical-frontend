@@ -27,6 +27,7 @@ describe("Commercial overflow and tool-library active palette", () => {
     expect(styles.destinationDescription.color).toBe(nightPalette.textMuted);
     expect(styles.destinationAction.color).toBe(nightPalette.link);
     expect(styles.groupTitle.color).toBe(nightPalette.text);
+    expect(styles.groupDescription.color).toBe(nightPalette.textMuted);
     expect(styles.title.color).toBe(nightPalette.text);
     expect(styles.subtitle.color).toBe(nightPalette.textMuted);
   });
@@ -43,6 +44,9 @@ describe("Commercial overflow and tool-library active palette", () => {
   });
 
   it("keeps Day mode palette-driven and the route inventory unchanged", () => {
+    expect(createCommercialMoreStyles(dayPalette).groupDescription.color).toBe(
+      dayPalette.textMuted
+    );
     expect(createCommercialMoreStyles(dayPalette).destination).toEqual(
       expect.objectContaining({
         backgroundColor: dayPalette.surface,
