@@ -7,7 +7,7 @@ import {
   Text,
   View
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
@@ -17,6 +17,7 @@ import BackButton from "@/components/nav/BackButton";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
+import { personalMoreReturnHref } from "@/utils/personalMoreReturn";
 import { useFacilityCourseLiveEvents } from "@/hooks/useFacilityCourseLiveEvents";
 
 type CalendarItem = {
@@ -430,6 +431,8 @@ function moveAnchor(anchorKey: string, view: CalendarView, direction: number) {
 }
 
 export default function HomeScheduleRoute() {
+  const { from } = useLocalSearchParams<{ from?: string | string[] }>();
+  const moreReturn = personalMoreReturnHref(from);
   const facilityEvents = useFacilityCourseLiveEvents();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -586,7 +589,10 @@ export default function HomeScheduleRoute() {
       contentContainerStyle={styles.content}
     >
       <View style={styles.backRow}>
-        <BackButton fallbackHref="/account/workspace" />
+        <BackButton
+          fallbackHref={moreReturn || "/account/workspace"}
+          preferFallback={Boolean(moreReturn)}
+        />
       </View>
       <View style={styles.headerRow}>
         <View style={styles.headerText}>

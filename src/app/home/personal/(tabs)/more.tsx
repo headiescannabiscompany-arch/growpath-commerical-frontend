@@ -79,6 +79,11 @@ const groups: Array<{
     title: "Records and tasks",
     destinations: [
       {
+        label: "Schedule / Agenda",
+        href: "/home/schedule?from=personal-more",
+        description: "Review scheduled tasks and events in the shared calendar."
+      },
+      {
         label: "Logs",
         href: "/home/personal/grows",
         description: "Choose a grow to review its journal and event history."

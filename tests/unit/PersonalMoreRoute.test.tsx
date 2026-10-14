@@ -71,6 +71,7 @@ describe("PersonalMoreRoute", () => {
   it("preserves every unrelated destination", () => {
     const screen = render(<PersonalMoreRoute />);
     const destinations = [
+      ["Schedule / Agenda", "/home/schedule?from=personal-more"],
       ["AI Tools", "/home/personal/tools"],
       ["Diagnose", "/home/personal/diagnose"],
       ["Field Studies", "/home/personal/field-studies"],

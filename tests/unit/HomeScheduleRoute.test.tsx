@@ -1,9 +1,10 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import HomeScheduleRoute from "@/app/home/schedule";
 
 const mockApiRequest = jest.fn();
+let mockScheduleParams: { from?: string | string[] } = {};
 let mockFacilityEvents: any;
 const mockRefreshFacilityEvents = jest.fn();
 jest.mock("@/hooks/useFacilityCourseLiveEvents", () => ({
@@ -17,6 +18,7 @@ jest.mock("@/api/apiRequest", () => ({
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
+    useLocalSearchParams: () => mockScheduleParams,
     Link: ({ children, href }: any) =>
       React.isValidElement(children)
         ? React.cloneElement(children, { testID: `link-${href}` })
@@ -27,13 +29,18 @@ jest.mock("expo-router", () => {
 jest.mock("@/components/nav/BackButton", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return ({ fallbackHref }: any) =>
-    React.createElement(Text, null, `Shared Back ${fallbackHref}`);
+  return ({ fallbackHref, preferFallback }: any) =>
+    React.createElement(
+      Text,
+      { testID: "schedule-back", fallbackHref, preferFallback },
+      `Shared Back ${fallbackHref}`
+    );
 });
 
 describe("HomeScheduleRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockScheduleParams = {};
     mockFacilityEvents = {
       liveEvents: [],
       loading: false,
@@ -287,6 +294,41 @@ describe("HomeScheduleRoute", () => {
     });
   });
 
+  it.each([{ from: "personal-more" }, { from: ["personal-more", "/admin"] }])(
+    "returns an explicit Personal More visit to its existing menu for %j",
+    async ({ from }) => {
+      mockScheduleParams = { from };
+      const screen = render(<HomeScheduleRoute />);
+
+      await waitFor(() => expect(screen.getByText("Connect Stripe price")).toBeTruthy());
+      expect(screen.getByTestId("schedule-back")).toHaveProp(
+        "fallbackHref",
+        "/home/personal/more"
+      );
+      expect(screen.getByTestId("schedule-back")).toHaveProp("preferFallback", true);
+      expect(screen.getByLabelText("Schedule workspace filter all")).toBeTruthy();
+    }
+  );
+
+  it.each([
+    { from: undefined },
+    { from: "" },
+    { from: [] },
+    { from: "/admin" },
+    { from: "https://example.com" },
+    { from: ["/admin", "personal-more"] }
+  ])("preserves ordinary Schedule history and fallback for %j", async ({ from }) => {
+    mockScheduleParams = { from };
+    const screen = render(<HomeScheduleRoute />);
+
+    await waitFor(() => expect(screen.getByText("Connect Stripe price")).toBeTruthy());
+    expect(screen.getByTestId("schedule-back")).toHaveProp(
+      "fallbackHref",
+      "/account/workspace"
+    );
+    expect(screen.getByTestId("schedule-back")).toHaveProp("preferFallback", false);
+  });
+
   it("aggregates tasks, lives, course releases, and feed campaigns", async () => {
     const screen = render(<HomeScheduleRoute />);
 
@@ -481,7 +523,9 @@ describe("HomeScheduleRoute", () => {
     expect(screen.getByText(event.title)).toBeTruthy();
     expect(screen.queryByText(/Going · RSVP confirmed/)).toBeNull();
     expect(screen.getByText(/Course event · RSVP available/)).toBeTruthy();
-    fireEvent.press(screen.getByText("Refresh"));
+    await act(async () => {
+      fireEvent.press(screen.getByText("Refresh"));
+    });
     expect(mockRefreshFacilityEvents).toHaveBeenCalledTimes(1);
   });
 

@@ -35,6 +35,12 @@ inventory writer.
 
 ## Shared date-entry rule
 
+Personal More exposes the existing shared Schedule / Agenda under Records and tasks.
+Its fixed `from=personal-more` source marker returns Back to Personal More, including
+after reload; it is not a caller-supplied redirect. Other Schedule entry paths retain
+their existing history/fallback. Navigation must not create tasks, change workspace
+filters, grant capabilities, or alter the separate Grow Planner / Auto Calendar.
+
 User-facing calendar dates use the shared date picker: people select year, month, and day instead of typing a storage format. Date-and-time workflows add explicit hour and minute selection. Store stable ISO date or local date-time values, but display readable dates. Date of birth cannot be in the future and must offer direct year selection; ordinary users must never be forced through month-by-month navigation to reach an older year.
 
 ## Platform knowledge governance
