@@ -3,6 +3,7 @@ import { Image, Platform, Text, View } from "react-native";
 import { Link } from "expo-router";
 import { useAppTheme } from "@/theme/appTheme";
 import marketing from "./publicMarketing.json";
+import PublicCommunityActivity from "./PublicCommunityActivity";
 
 export const PLAN_COMPARISON_ROWS = [
   { title: "Tracked grows", key: "grows" },
@@ -202,6 +203,7 @@ export default function MarketingDetails({ page }: { page: string }) {
           <FounderProfessionalLink />
         </View>
       )}
+      {page === "home" && <PublicCommunityActivity />}
       {page === "about" && (
         <View style={card}>
           <Text accessibilityRole="header" aria-level={2} style={heading}>

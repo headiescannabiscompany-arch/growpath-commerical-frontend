@@ -8,12 +8,25 @@ import { FREE_POLICY } from "@/config/freePolicy";
 import { getPublicTestimonials } from "@/api/testimonials";
 import PublicTestimonials from "@/components/marketing/PublicTestimonials";
 import { Link } from "expo-router";
+jest.mock("@/components/marketing/PublicCommunityActivity", () => () => null);
 
 jest.mock("@/api/testimonials", () => ({
   getPublicTestimonials: jest.fn(() => new Promise(() => {}))
 }));
 
 describe("HeyCatch audit corrections", () => {
+  it.each(["home", "pricing"] as const)(
+    "keeps factual reassurance with the primary signup action on %s",
+    (page) => {
+      const screen = render(<PublicLandingPage page={page} />);
+      expect(screen.getByText(marketing.ctaReassurance)).toBeTruthy();
+      expect(marketing.ctaReassurance).toContain("Eligible paid checkout");
+      expect(marketing.ctaReassurance).toContain("does not store full card numbers");
+      expect(marketing.ctaReassurance).not.toMatch(
+        /guarantee|approved by Stripe|risk.free/i
+      );
+    }
+  );
   it("names storefront sales and protected downloads without promising payment approval", () => {
     const screen = render(<PublicLandingPage page="grow-stores" />);
     expect(

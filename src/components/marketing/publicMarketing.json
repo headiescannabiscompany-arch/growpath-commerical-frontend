@@ -1,7 +1,7 @@
 {
   "pages": {
     "home": {
-      "eyebrow": "A grow journal for personal growers",
+      "eyebrow": "A grow journal with AI help for personal growers",
       "title": "The grow journal that remembers every run.",
       "intro": "Stop piecing together phone photos, feeding notes, and calendar reminders. Keep a grow history you can use to repeat what worked — the way serious growers do. Get AI help when you need it. Free to start.",
       "sections": [
@@ -548,6 +548,17 @@
     ],
     "showUrl": "https://youtube.com/@etgujay",
     "socialUrl": "https://www.linkedin.com/in/johnabrahamcollins1979"
+  },
+  "ctaReassurance": "Free plan needs no card. Eligible paid checkout is handled by Stripe; GrowPathAI does not store full card numbers.",
+  "communityActivity": {
+    "title": "Explore what people share",
+    "description": "Browse public plant observations, courses and discussions. Public posts are not customer reviews or verified growing results.",
+    "observationsTitle": "From public field observations",
+    "links": [
+      { "label": "Browse public plant observations", "href": "/field-observations" },
+      { "label": "Browse courses", "href": "/courses" },
+      { "label": "Open Forum discussions — sign in required", "href": "/forum" }
+    ]
   },
   "proof": {
     "verifiedGrowerCount": null,
