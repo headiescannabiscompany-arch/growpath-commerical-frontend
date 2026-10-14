@@ -9,6 +9,11 @@ sales totals. Courses remain available to eligible Personal and Commercial autho
 within existing plan limits; a new creator signup is not required. Navigation
 must not grant a plan, change workspace, start payment, publish or certify seller
 readiness. Preserve existing menus, server permissions and regulated-product gates.
+
+The shared AI-credit widget follows the Facility method's display-only availability
+rule in every workspace: checking and unavailable reads are not zero credits, while
+a returned numeric zero stays visible. Do not change plans, credits or scoped reads.
+
 Public plan copy may describe existing workflows, but proposed provider changes,
 tips and course gifting remain explicitly planned until their own acceptance and
 release. Do not publish an unformed company or unapproved bank as the operator.

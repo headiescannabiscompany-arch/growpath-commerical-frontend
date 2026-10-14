@@ -1404,6 +1404,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "published Facility course/session calendar items with requester-verified RSVP reminders and Facility-safe source links",
       "selected-Facility renewal cancellation with active paid access through the recorded current period end",
       "selected-Facility AI balance, reservation, refund, and weekly usage ledger",
+      "Shared AI-credit widget separates checking, unavailable and no-selected-Facility states from returned balances; preserve numeric zero and show the meter/low styling only for readable current and allowance values, without changing scoped reads, refresh, plans or credits",
       "legacy missing-balance materialization from an effective owner Facility entitlement",
       "individual-versus-Facility workspace choice after sign-in",
       "direct-entry and hard-reload support for workspace choice and switching",

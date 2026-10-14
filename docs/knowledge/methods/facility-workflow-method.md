@@ -187,6 +187,12 @@ Facility subscription cancellation is selected-Facility scoped and schedules pro
 
 Facility AI credits belong to the selected Facility subscription. Balance display, provider-work reservation, failed-call refund, and the weekly usage ledger must all resolve the same authorized Facility identifier. A Facility AI request must fail when Facility context is missing or unauthorized and must never fall back to displaying, debiting, or refunding the individual member's Personal or Commercial credit balance. Personal and Commercial credit balances remain individual-account scoped outside Facility mode.
 
+The shared AI-credit widget distinguishes checking, unavailable, and no-selected-Facility
+states from a returned numeric balance. Missing or malformed amounts never become zero;
+a returned numeric zero remains zero. Only a readable current amount and positive allowance
+may show the balance meter or low-balance styling. This is display-only: preserve existing
+scoped reads, refresh events, plan checks, reservations, refunds and credit ledgers.
+
 For a legacy active Facility with no Facility subscription record, the backend may materialize the missing Facility balance only when the owner still has an effective active or trialing Facility-plan entitlement. Existing Facility subscription state remains authoritative, including canceled or delinquent state. Migration creates a new Facility-owned allowance and must never copy, display, debit, or refund the owner's individual balance.
 
 Facility membership does not replace the human's individual account. After ordinary sign-in, a human with both individual and Facility access must choose which workspace to enter, even when one choice matches the saved current preference. The same eligible choices remain available later through Switch Workspace; changing workspaces must not require another account or another login.

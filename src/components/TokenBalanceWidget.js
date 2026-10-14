@@ -9,6 +9,14 @@ import { useAppTheme } from "../theme/appTheme";
 import { subscribeToTokenBalanceChange } from "../utils/tokenBalanceEvents";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const readCreditAmount = (value) => {
+  if (
+    typeof value !== "number" &&
+    (typeof value !== "string" || !value.trim())
+  ) return null;
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount >= 0 ? amount : null;
+};
 
 /**
  * @param {{
@@ -156,17 +164,15 @@ export default function TokenBalanceWidget({
     commercialScoped
   ]);
 
-  const { aiTokens, maxTokens, percentage, isLow, missingMax } = useMemo(() => {
-    const rawMax = Number(balance?.maxTokens);
-    const hasValidMax = Number.isFinite(rawMax) && rawMax > 0;
+  const { aiTokens, maxTokens, percentage, isLow, missingMax, hasBalance } = useMemo(() => {
+    const rawMax = readCreditAmount(balance?.maxTokens);
+    const hasValidMax = rawMax !== null && rawMax > 0;
     const resolvedMax = hasValidMax ? rawMax : null;
-
-    const rawCurrent = Number(balance?.aiTokens);
-    const resolvedCurrent =
-      Number.isFinite(rawCurrent) && rawCurrent >= 0 ? rawCurrent : 0;
+    const resolvedCurrent = readCreditAmount(balance?.aiTokens);
+    const hasValidBalance = resolvedCurrent !== null && hasValidMax;
 
     const pct =
-      resolvedMax && resolvedMax > 0
+      hasValidBalance
         ? clamp((resolvedCurrent / resolvedMax) * 100, 0, 100)
         : 0;
 
@@ -174,8 +180,9 @@ export default function TokenBalanceWidget({
       aiTokens: resolvedCurrent,
       maxTokens: resolvedMax,
       percentage: pct,
-      isLow: resolvedMax ? pct < 30 : false,
-      missingMax: !hasValidMax
+      isLow: hasValidBalance && pct < 30,
+      missingMax: !hasValidMax,
+      hasBalance: hasValidBalance
     };
   }, [balance]);
 
@@ -185,11 +192,22 @@ export default function TokenBalanceWidget({
     }
   }, [balance, missingMax]);
 
-  const refillCopy = loadFailed
-    ? "Live balance is unavailable. No estimated balance is being shown."
-    : facilityScoped && !normalizedFacilityId
-      ? "Select a Facility to view and use its AI-credit balance."
-      : balance?.refillDescription || "Your configured allowance refreshes weekly.";
+  const needsFacility = facilityScoped && !normalizedFacilityId;
+  const balanceAvailable = !needsFacility && !loading && !loadFailed && hasBalance;
+  const balanceLabel = needsFacility
+    ? "Select a Facility"
+    : loading
+      ? "Checking balance..."
+      : balanceAvailable
+        ? `${aiTokens} / ${maxTokens}`
+        : "Balance unavailable";
+  const refillCopy = needsFacility
+    ? "Select a Facility to view and use its AI-credit balance."
+    : loading
+      ? null
+      : !balanceAvailable
+        ? "Live balance is unavailable. No estimated balance is being shown."
+        : balance?.refillDescription || "Your configured allowance refreshes weekly.";
   const usageCopy =
     "AI credits pay for real model work. Rule-based calculators and fallbacks are free; Plant Diagnose uses 3 credits and provider-backed text help uses 1.";
   const verifiedPlanCopy = balance?.plan
@@ -210,7 +228,7 @@ export default function TokenBalanceWidget({
 
   return (
     <Container
-      style={[styles.container, isLow && styles.containerLow]}
+      style={[styles.container, balanceAvailable && isLow && styles.containerLow]}
       {...(interactive ? { onPress: onPress || (() => router.push(detailsHref)) } : {})}
     >
       <View style={styles.headerRow}>
@@ -225,15 +243,15 @@ export default function TokenBalanceWidget({
                 ? "Commercial AI Credits"
                 : "AI Credits"}
           </Text>
-          <Text style={styles.balance}>
-            {aiTokens} / {maxTokens ?? "-"}
-          </Text>
+          <Text style={styles.balance}>{balanceLabel}</Text>
         </View>
-        <View style={styles.barContainer}>
-          <View
-            style={[styles.bar, { width: `${percentage}%` }, isLow && styles.barLow]}
-          />
-        </View>
+        {balanceAvailable ? (
+          <View testID="token-balance-meter" style={styles.barContainer}>
+            <View
+              style={[styles.bar, { width: `${percentage}%` }, isLow && styles.barLow]}
+            />
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.details}>
@@ -250,7 +268,7 @@ export default function TokenBalanceWidget({
         {loading ? (
           <Text style={styles.description}>Checking live AI-credit balance...</Text>
         ) : null}
-        <Text style={styles.description}>{refillCopy}</Text>
+        {refillCopy ? <Text style={styles.description}>{refillCopy}</Text> : null}
         {allowanceMismatch ? (
           <Text style={styles.syncWarning}>
             {facilityScoped ? "The Facility" : "Your paid or trial plan"} is active, but

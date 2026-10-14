@@ -1,5 +1,5 @@
 import React from "react";
-import { act, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { publishTokenBalanceChange } from "@/utils/tokenBalanceEvents";
@@ -43,17 +43,98 @@ describe("TokenBalanceWidget", () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it("does not invent a fallback balance when the API is unavailable", async () => {
+  it.each(["personal", "commercial", "facility"] as const)(
+    "does not invent a %s fallback balance when the API is unavailable",
+    async (workspaceType) => {
+      const screen = render(
+        <TokenBalanceWidget workspaceType={workspaceType} facilityId="facility-123" />
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.getByText(
+            "Live balance is unavailable. No estimated balance is being shown."
+          )
+        ).toBeTruthy()
+      );
+      expect(screen.getByText("Balance unavailable")).toBeTruthy();
+      expect(screen.queryByText("0 / -")).toBeNull();
+      expect(screen.queryByTestId("token-balance-meter")).toBeNull();
+      fireEvent.press(screen.getByText("See how AI credits work"));
+      expect(mockPush).toHaveBeenCalledWith(
+        workspaceType === "facility"
+          ? "/ai/how-it-works?workspaceType=facility&facilityId=facility-123"
+          : workspaceType === "commercial"
+            ? "/ai/how-it-works?workspaceType=commercial"
+            : "/ai/how-it-works"
+      );
+      expect(mockGetTokenBalance).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it("shows a checking state without an empty meter until the balance loads", async () => {
+    let resolveBalance: (balance: any) => void = () => {};
+    mockGetTokenBalance.mockImplementation(() => new Promise((resolve) => {
+      resolveBalance = resolve;
+    }));
     const screen = render(<TokenBalanceWidget />);
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          "Live balance is unavailable. No estimated balance is being shown."
-        )
-      ).toBeTruthy()
+    expect(screen.getByText("Checking balance...")).toBeTruthy();
+    expect(screen.queryByText("0 / -")).toBeNull();
+    expect(screen.queryByText("Balance unavailable")).toBeNull();
+    expect(screen.queryByTestId("token-balance-meter")).toBeNull();
+
+    await act(async () => resolveBalance({ aiTokens: 100, maxTokens: 100 }));
+    expect(screen.getByText("100 / 100")).toBeTruthy();
+    expect(screen.getByTestId("token-balance-meter")).toBeTruthy();
+    expect(screen.queryByText("Checking balance...")).toBeNull();
+  });
+
+  it.each([0, "0"])("preserves a confirmed zero balance (%p)", async (aiTokens) => {
+    mockGetTokenBalance.mockResolvedValue({ aiTokens, maxTokens: 100 });
+    const screen = render(<TokenBalanceWidget />);
+
+    await waitFor(() => expect(screen.getByText("0 / 100")).toBeTruthy());
+    expect(screen.getByTestId("token-balance-meter")).toBeTruthy();
+    expect(screen.queryByText("Balance unavailable")).toBeNull();
+  });
+
+  it.each([undefined, null, "", " ", false, [], -1, NaN, Infinity].map(
+    (aiTokens) => ({ aiTokens })
+  ))("does not coerce an invalid current balance into zero: $aiTokens", async ({ aiTokens }) => {
+    mockGetTokenBalance.mockResolvedValue({ aiTokens, maxTokens: 100 });
+    const screen = render(<TokenBalanceWidget />);
+
+    await waitFor(() => expect(screen.getByText("Balance unavailable")).toBeTruthy());
+    expect(screen.queryByText("0 / 100")).toBeNull();
+    expect(screen.queryByTestId("token-balance-meter")).toBeNull();
+  });
+
+  it.each([undefined, null, "", true, [], 0, -1, "invalid"].map(
+    (maxTokens) => ({ maxTokens })
+  ))("does not present a known allowance when it is invalid: $maxTokens", async ({ maxTokens }) => {
+    mockGetTokenBalance.mockResolvedValue({ aiTokens: 0, maxTokens });
+    const screen = render(<TokenBalanceWidget />);
+
+    await waitFor(() => expect(screen.getByText("Balance unavailable")).toBeTruthy());
+    expect(screen.queryByText("0 / -")).toBeNull();
+    expect(screen.queryByTestId("token-balance-meter")).toBeNull();
+  });
+
+  it("clears an unavailable state after an existing balance-refresh event", async () => {
+    mockGetTokenBalance
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce({ aiTokens: 2000, maxTokens: 2000 });
+    const screen = render(
+      <TokenBalanceWidget workspaceType="facility" facilityId="facility-123" />
     );
-    expect(screen.getByText("0 / -")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("Balance unavailable")).toBeTruthy());
+
+    act(() => publishTokenBalanceChange(2000));
+
+    await waitFor(() => expect(screen.getByText("2000 / 2000")).toBeTruthy());
+    expect(screen.queryByText("Balance unavailable")).toBeNull();
+    expect(mockGetTokenBalance).toHaveBeenCalledTimes(2);
   });
 
   it("does not invent a paid balance from the local preview flag", async () => {
@@ -64,7 +145,8 @@ describe("TokenBalanceWidget", () => {
 
     const screen = render(<TokenBalanceWidget />);
 
-    await waitFor(() => expect(screen.getByText("0 / -")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Balance unavailable")).toBeTruthy());
+    expect(screen.queryByText("0 / -")).toBeNull();
     expect(screen.queryByText("100 / 100")).toBeNull();
   });
 
@@ -279,7 +361,10 @@ describe("TokenBalanceWidget", () => {
         screen.getByText("Select a Facility to view and use its AI-credit balance.")
       ).toBeTruthy()
     );
-    expect(screen.getByText("0 / -")).toBeTruthy();
+    expect(screen.getByText("Select a Facility")).toBeTruthy();
+    expect(screen.queryByText("0 / -")).toBeNull();
+    expect(screen.queryByText("Balance unavailable")).toBeNull();
+    expect(screen.queryByTestId("token-balance-meter")).toBeNull();
     expect(mockGetTokenBalance).not.toHaveBeenCalled();
   });
 });
