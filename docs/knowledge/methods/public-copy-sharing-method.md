@@ -237,17 +237,21 @@ and keeps publication/access checks authoritative. The observation directory sta
 indexable in production; staging stays noindex. Rewriting to the shell must preserve
 the original study URL and bootstrap, not redirect visitors to the Home screen.
 
-Private `/home/*` routes use a separate record-free fallback outside that wildcard.
+Private `/home/*` routes and the legacy private `/facilities/*`, `/alerts/*`,
+`/tasks/*` and `/logs/*` record routes share a record-free fallback outside those
+wildcards. These record roots are not public storefront or community share pages.
 Its initial HTML is `noindex,nofollow` with no canonical, `og:url` or structured
 data: the shared file cannot identify the requested account, workspace or record.
 Keep the original URL and the existing app bootstrap and runtime access checks;
 do not redirect to Home or embed public-home marketing in the private shell.
-Literal route exports retain their existing private metadata. Public marketing,
+Literal account, Profile, Admin and Facility-directory exports retain their existing
+private metadata; do not add broader account or root rewrites. Public marketing,
 storefront sales, offers, creator pages and the observation directory keep their
 existing routing and metadata rules. `noindex` is not authorization or a guarantee
 of immediate search removal; robots directives and runtime permissions remain
-separate. Deploy and verify the artifact before changing the single hosted rewrite;
-local Blueprint parity does not establish hosted acceptance or authorize a sync.
+separate. Verify the existing deployed artifact before changing only separately
+approved hosted destinations; reuse that artifact without a new build when unchanged.
+Local Blueprint parity does not establish hosted acceptance or authorize a sync.
 
 Public storefronts retain device sharing and provide a separately named Copy Store Link
 control. Copy only the rebuilt public store route, excluding checkout, product-return and

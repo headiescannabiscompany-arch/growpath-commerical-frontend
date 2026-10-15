@@ -119,7 +119,7 @@ describe("Render static route rewrites", () => {
           route,
           destination: route.startsWith("field-observations/")
             ? "/_shells/field-study.html"
-            : route.startsWith("home/")
+            : /^(home|facilities|alerts|tasks|logs)\//.test(route)
               ? "/_shells/private-app.html"
               : "/index.html"
         });
@@ -129,28 +129,44 @@ describe("Render static route rewrites", () => {
   );
 
   it.each(["render.yaml", "render.staging.yaml"])(
-    "uses the private app fallback only for workspace routes in %s",
+    "uses the private app fallback only for workspace and private record routes in %s",
     (file) => {
       const rules = yaml.load(fs.readFileSync(file, "utf8")).services[0].routes;
       expect(
-        rules.filter((rule: { source: string }) => rule.source === "/home/*")
-      ).toEqual([
-        {
+        rules.filter(
+          (rule: { destination: string }) =>
+            rule.destination === "/_shells/private-app.html"
+        )
+      ).toEqual(
+        ["/home/*", "/facilities/*", "/alerts/*", "/tasks/*", "/logs/*"].map((source) => ({
           type: "rewrite",
-          source: "/home/*",
+          source,
           destination: "/_shells/private-app.html"
-        }
-      ]);
+        }))
+      );
       expect(
         rules.some((rule: { source: string }) => ["/*", "/_shells/*"].includes(rule.source))
       ).toBe(false);
       // Public sales, creator and community entry points keep their existing shell.
-      for (const source of ["/store/*", "/storefront/*", "/brands/*", "/creators/*", "/forum/*"]) {
+      for (const source of [
+        "/store/*",
+        "/storefront/*",
+        "/brands/*",
+        "/creators/*",
+        "/forum/*",
+        "/videos/*",
+        "/grow-timeline/*"
+      ]) {
         expect(rules.find((rule: { source: string }) => rule.source === source)).toEqual({
           type: "rewrite",
           source,
           destination: "/index.html"
         });
+      }
+      // Existing literal account/Admin pages already export private metadata.
+      // Do not introduce broader rewrites or change their distinct route behavior.
+      for (const source of ["/account/*", "/profile", "/admin", "/facilities"]) {
+        expect(rules.some((rule: { source: string }) => rule.source === source)).toBe(false);
       }
     }
   );

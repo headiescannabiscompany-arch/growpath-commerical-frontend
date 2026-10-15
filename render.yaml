@@ -45,16 +45,16 @@ services:
         destination: /_shells/field-study.html
       - type: rewrite
         source: /facilities/*
-        destination: /index.html
+        destination: /_shells/private-app.html
       - type: rewrite
         source: /alerts/*
-        destination: /index.html
+        destination: /_shells/private-app.html
       - type: rewrite
         source: /tasks/*
-        destination: /index.html
+        destination: /_shells/private-app.html
       - type: rewrite
         source: /logs/*
-        destination: /index.html
+        destination: /_shells/private-app.html
       - type: rewrite
         source: /updates
         destination: /updates/index.html
