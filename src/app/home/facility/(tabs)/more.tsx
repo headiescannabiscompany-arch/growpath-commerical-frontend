@@ -171,6 +171,7 @@ const workspaceGroups: Array<{
 
 const VIEWER_DESCRIPTIONS: Record<string, string> = {
   Plants: "Review plant records, context, and linked observations.",
+  SOPs: "Review facility procedures and recorded SOP runs.",
   Compliance: "Review verification and audit-readiness records.",
   Inventory: "Review facility inventory and lot records.",
   Team: "View facility members and their access roles.",

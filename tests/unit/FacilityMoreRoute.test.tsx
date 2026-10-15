@@ -82,6 +82,48 @@ describe("FacilityMoreRoute", () => {
     expect(screen.queryByLabelText("Open Business Desk")).toBeNull();
   });
 
+  it.each(["VIEWER", "viewer"])(
+    "describes SOPs as review-only for Facility %s without changing the destination",
+    (role) => {
+      mockFacilityRole = role;
+      // A stale capability must not turn Viewer menu copy into a write invitation.
+      mockCan.mockReturnValue(true);
+
+      const screen = render(<FacilityMoreRoute />);
+
+      expect(
+        screen.getByText("Review facility procedures and recorded SOP runs.")
+      ).toBeTruthy();
+      expect(
+        screen.queryByText("Run, compare, and review facility procedures.")
+      ).toBeNull();
+      expect(screen.getByLabelText("Open SOPs").props.href).toBe(
+        "/home/facility/sop-runs"
+      );
+      expect(mockCan).not.toHaveBeenCalledWith("SOP_RUNS_WRITE");
+    }
+  );
+
+  it.each(["OWNER", "MANAGER"])(
+    "preserves the existing SOP description and destination for Facility %s",
+    (role) => {
+      mockFacilityRole = role;
+      mockCan.mockReturnValue(true);
+
+      const screen = render(<FacilityMoreRoute />);
+
+      expect(
+        screen.getByText("Run, compare, and review facility procedures.")
+      ).toBeTruthy();
+      expect(
+        screen.queryByText("Review facility procedures and recorded SOP runs.")
+      ).toBeNull();
+      expect(screen.getByLabelText("Open SOPs").props.href).toBe(
+        "/home/facility/sop-runs"
+      );
+    }
+  );
+
   it.each(["OWNER", "MANAGER"])(
     "shows Business Desk to an eligible Facility %s",
     (role) => {
