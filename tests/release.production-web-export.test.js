@@ -235,6 +235,82 @@ describe("production web export", () => {
     ).toBe(true);
   });
 
+  it.each(["production", "staging"])(
+    "exports a record-free private app fallback with the same bootstrap for %s",
+    (target) => {
+      const tempRoot = createExportRoot();
+      const staging = target === "staging";
+      const apiUrl = staging
+        ? "https://growpath-api-staging.onrender.com"
+        : "https://api.growpathai.com";
+      const siteUrl = staging
+        ? "https://growpath-web-staging.onrender.com"
+        : "https://growpathai.com";
+      const privateRoutes = [
+        "home/personal/more",
+        "home/commercial/more",
+        "home/facility/profile",
+        "home/schedule"
+      ];
+      for (const route of privateRoutes) {
+        writeFile(tempRoot, `src/app/${route}.tsx`, "export default function Workspace() {}");
+      }
+      const result = runExport(tempRoot, {
+        GROWPATH_WEB_EXPORT_TARGET: target,
+        EXPO_PUBLIC_API_URL: apiUrl,
+        GROWPATH_SITE_URL: siteUrl
+      });
+      expect(result.status).toBe(0);
+      const out = path.join(tempRoot, "dist");
+      const html = fs.readFileSync(path.join(out, "_shells/private-app.html"), "utf8");
+      const home = fs.readFileSync(path.join(out, "index.html"), "utf8");
+      expect(html).toContain("<title>GrowPathAI App</title>");
+      expect(html).toContain('<meta name="robots" content="noindex,nofollow" />');
+      expect(html).toContain("Account and workspace access are checked when the app loads.");
+      expect(html).toContain('<div id="root"></div>');
+      expect(html).toContain(`window.__apiBase = "${apiUrl}"`);
+      expect(html).toContain(`window.__siteBase = "${siteUrl}"`);
+      expect(html).not.toMatch(/rel="canonical"|property="og:url"|application\/ld\+json|id="seo-content"/);
+      expect(html).not.toContain("The grow journal that remembers every run");
+      const scriptPattern = /src="(\/_expo\/static\/js\/web\/index-stable\.js\?v=[a-f0-9]{12})"/;
+      expect(html.match(scriptPattern)?.[1]).toMatch(/index-stable\.js\?v=[a-f0-9]{12}$/);
+      expect(html.match(scriptPattern)?.[1]).toBe(home.match(scriptPattern)?.[1]);
+
+      for (const route of privateRoutes) {
+        const literal = fs.readFileSync(path.join(out, route, "index.html"), "utf8");
+        expect(literal).toContain("<title>GrowPathAI App</title>");
+        expect(literal).toContain(
+          `<meta name="robots" content="${staging ? "noindex,nofollow" : "noindex,follow"}" />`
+        );
+        expect(literal).toContain(`<link rel="canonical" href="${siteUrl}/${route}" />`);
+        expect(literal).toContain('<div id="root"></div>');
+        expect(literal.match(scriptPattern)?.[1]).toBe(html.match(scriptPattern)?.[1]);
+      }
+
+      // A private fallback must not replace working public or shared-study metadata.
+      for (const route of ["", "pricing", "field-observations"]) {
+        const publicHtml = fs.readFileSync(path.join(out, route, "index.html"), "utf8");
+        expect(publicHtml).toContain(
+          `<meta name="robots" content="${staging ? "noindex,nofollow" : "index,follow"}" />`
+        );
+        expect(publicHtml).toContain(
+          `<link rel="canonical" href="${siteUrl}${route ? "/" + route : ""}" />`
+        );
+        expect(publicHtml).toContain('type="application/ld+json"');
+      }
+      const study = fs.readFileSync(path.join(out, "_shells/field-study.html"), "utf8");
+      expect(study).toContain("<title>Field Study | GrowPathAI</title>");
+      expect(study).toContain('content="noindex,nofollow"');
+      expect(study).not.toMatch(/rel="canonical"|property="og:url"|application\/ld\+json/);
+      expect(study).toContain('href="/field-observations"');
+      if (staging) {
+        expect(fs.existsSync(path.join(out, "sitemap.xml"))).toBe(false);
+      } else {
+        expect(fs.readFileSync(path.join(out, "sitemap.xml"), "utf8")).not.toContain("/_shells/");
+      }
+    }
+  );
+
   it("builds an exact isolated staging target without production request URLs", () => {
     const tempRoot = createExportRoot();
     const stagingApi = "https://growpath-api-staging.onrender.com";

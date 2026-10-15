@@ -119,10 +119,39 @@ describe("Render static route rewrites", () => {
           route,
           destination: route.startsWith("field-observations/")
             ? "/_shells/field-study.html"
-            : "/index.html"
+            : route.startsWith("home/")
+              ? "/_shells/private-app.html"
+              : "/index.html"
         });
       }
       expect(rules.some((rule: { source: string }) => rule.source === "/*")).toBe(false);
+    }
+  );
+
+  it.each(["render.yaml", "render.staging.yaml"])(
+    "uses the private app fallback only for workspace routes in %s",
+    (file) => {
+      const rules = yaml.load(fs.readFileSync(file, "utf8")).services[0].routes;
+      expect(
+        rules.filter((rule: { source: string }) => rule.source === "/home/*")
+      ).toEqual([
+        {
+          type: "rewrite",
+          source: "/home/*",
+          destination: "/_shells/private-app.html"
+        }
+      ]);
+      expect(
+        rules.some((rule: { source: string }) => ["/*", "/_shells/*"].includes(rule.source))
+      ).toBe(false);
+      // Public sales, creator and community entry points keep their existing shell.
+      for (const source of ["/store/*", "/storefront/*", "/brands/*", "/creators/*", "/forum/*"]) {
+        expect(rules.find((rule: { source: string }) => rule.source === source)).toEqual({
+          type: "rewrite",
+          source,
+          destination: "/index.html"
+        });
+      }
     }
   );
 

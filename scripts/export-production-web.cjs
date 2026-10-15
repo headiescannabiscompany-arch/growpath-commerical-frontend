@@ -801,9 +801,10 @@ function staticPublicMarkup(route, seo) {
   ].join("");
 }
 
-function applySeo(html, route, { dynamicStudyShell = false } = {}) {
-  // A shared fallback cannot know a study's identity or current publication state.
+function applySeo(html, route, { dynamicStudyShell = false, privateAppShell = false } = {}) {
+  // Shared fallbacks cannot know the requested record, account or workspace.
   // Keep the app bootstrap, but never inherit Home's indexable metadata or records.
+  const sharedShell = dynamicStudyShell || privateAppShell;
   const seo = dynamicStudyShell
     ? {
         title: "Field Study | GrowPathAI",
@@ -811,12 +812,19 @@ function applySeo(html, route, { dynamicStudyShell = false } = {}) {
           "Open a shared field study in GrowPathAI. Availability is checked when the app loads.",
         index: false
       }
-    : seoForRoute(route);
-  const canonical = dynamicStudyShell ? null : canonicalUrl(route);
+    : privateAppShell
+      ? {
+          title: "GrowPathAI App",
+          description:
+            "Sign in to open your GrowPathAI workspace. Account and workspace access are checked when the app loads.",
+          index: false
+        }
+      : seoForRoute(route);
+  const canonical = sharedShell ? null : canonicalUrl(route);
   const title = escapeHtml(seo.title);
   const description = escapeHtml(seo.description);
   const robots =
-    isStagingExport || dynamicStudyShell
+    isStagingExport || sharedShell
       ? "noindex,nofollow"
       : seo.index
         ? "index,follow"
@@ -844,7 +852,7 @@ function applySeo(html, route, { dynamicStudyShell = false } = {}) {
     `<meta name="twitter:description" content="${description}" />`
   ].join("\n    ");
   const staticIntro = escapeHtml(staticIntroForRoute(route, seo));
-  const structuredData = dynamicStudyShell
+  const structuredData = sharedShell
     ? ""
     : `<script type="application/ld+json">${structuredDataForRoute(route, seo, canonical)}</script>`;
   const staticMarkup = staticPublicMarkup(route, seo);
@@ -868,9 +876,11 @@ function applySeo(html, route, { dynamicStudyShell = false } = {}) {
       /<noscript>[\s\S]*?<\/noscript>/i,
       dynamicStudyShell
         ? `<noscript>${staticIntro} JavaScript is required to check and display this study. <a href="/field-observations">Open the observation map</a>.</noscript>`
-        : `<noscript>${staticIntro} JavaScript is required for the interactive app at ${escapeHtml(
-            routePath
-          )}.</noscript>`
+        : privateAppShell
+          ? `<noscript>${staticIntro} JavaScript is required to sign in and open your workspace.</noscript>`
+          : `<noscript>${staticIntro} JavaScript is required for the interactive app at ${escapeHtml(
+              routePath
+            )}.</noscript>`
     )
     .replace('<div id="root"></div>', `<div id="root">${staticMarkup}</div>`);
 }
@@ -882,6 +892,12 @@ fs.mkdirSync(path.join(absoluteOutputDir, "_shells"), { recursive: true });
 fs.writeFileSync(
   path.join(absoluteOutputDir, "_shells", "field-study.html"),
   applySeo(revisionedIndexHtml, "field-observations", { dynamicStudyShell: true })
+);
+// /home/* keeps its original route and existing runtime access checks. The generic
+// fallback lives outside that wildcard and contains no account or workspace data.
+fs.writeFileSync(
+  path.join(absoluteOutputDir, "_shells", "private-app.html"),
+  applySeo(revisionedIndexHtml, "home", { privateAppShell: true })
 );
 // Reuse the existing brand asset; this is not customer or outcome evidence.
 fs.mkdirSync(path.join(absoluteOutputDir, "images"), { recursive: true });

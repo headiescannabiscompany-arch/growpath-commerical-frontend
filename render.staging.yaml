@@ -39,7 +39,7 @@ services:
     routes:
       - type: rewrite
         source: /home/*
-        destination: /index.html
+        destination: /_shells/private-app.html
       - type: rewrite
         source: /videos/*
         destination: /index.html
