@@ -10,6 +10,7 @@ import {
 import ScreenContainer from "../components/ScreenContainer";
 import { getCategoryCourses } from "../api/courses";
 import { getCreatorName } from "../utils/creator";
+import { coursePriceLabel } from "../utils/coursePriceLabel";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 
 export default function CategoryCoursesScreen({ route, navigation }) {
@@ -56,8 +57,10 @@ export default function CategoryCoursesScreen({ route, navigation }) {
           keyExtractor={(item) => item._id}
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => {
-            const isPaid = item.price > 0;
-            const disabled = isPaid && !canViewPaidCourses;
+            const priceLabel = coursePriceLabel(item);
+            // An unavailable amount must not bypass the existing discovery gate.
+            // Opening details still relies on the server's learner-access checks.
+            const disabled = priceLabel !== "Free" && !canViewPaidCourses;
             return (
               <>
                 <TouchableOpacity
@@ -80,9 +83,7 @@ export default function CategoryCoursesScreen({ route, navigation }) {
                     <Text style={styles.rating}>
                       ⭐ {item.rating.toFixed(1)} ({item.ratingCount})
                     </Text>
-                    <Text style={styles.price}>
-                      {item.price > 0 ? `$${item.price.toFixed(2)}` : "FREE"}
-                    </Text>
+                    <Text style={styles.price}>{priceLabel}</Text>
                   </View>
                 </TouchableOpacity>
                 {disabled && (

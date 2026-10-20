@@ -17,6 +17,7 @@ import { RouteAccessGuard } from "../navigation/RouteAccessGuard";
 import { initMonitoring, wrapWithMonitoring } from "@/utils/monitoring";
 import { useNotificationDeepLinks } from "@/notifications/useNotificationDeepLinks";
 import { applyPublicRouteMetadata } from "@/seo/publicRouteMetadata";
+import { PreparedStagingCourseGiftWebBoundary as CourseGiftWebBoundary } from "@/components/courseGifts/PreparedStagingCourseGiftWebBoundary";
 
 enableScreens(true);
 initUnauthorizedHandler();
@@ -69,7 +70,9 @@ function RootShell() {
             <GlobalApiStatusBanner />
             <View style={{ flex: 1, backgroundColor: palette.page }}>
               <RouteAccessGuard>
-                <Slot />
+                <CourseGiftWebBoundary>
+                  <Slot />
+                </CourseGiftWebBoundary>
               </RouteAccessGuard>
             </View>
             <GlobalReportBugButton />

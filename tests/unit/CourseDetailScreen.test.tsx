@@ -1115,6 +1115,41 @@ describe("CourseDetailScreen learner player", () => {
     expect(await screen.findByText("Report submitted.")).toBeTruthy();
   });
 
+  it.each([
+    [
+      "paid access with no amount",
+      { access: "paid", price: 0 },
+      "Paid — price unavailable",
+      true
+    ],
+    [
+      "legacy provider price",
+      { stripePriceId: "price_synthetic", price: 0 },
+      "Paid — price unavailable",
+      true
+    ],
+    ["saved cents", { priceCents: 1250 }, "$12.50", true],
+    ["ordinary free", { access: "free", price: 0 }, "Free", false]
+  ] as const)("R09-04P shared detail label: %s", async (_name, pricing, label, paid) => {
+    const course = publishedCourse({
+      ...pricing,
+      creator: { id: "creator-1" },
+      _viewerHasAccess: false
+    });
+    mockGetCourse.mockResolvedValue(course);
+    mockGetEnrollmentStatus.mockResolvedValue({ enrolled: false });
+    const screen = render(
+      <CourseDetailScreen route={{ params: { id: publicCourseId } }} />
+    );
+    expect(await screen.findByText(`${label} | published`)).toBeTruthy();
+    expect(await screen.findByText(paid ? "Start Checkout" : "Enroll")).toBeTruthy();
+    if (paid) {
+      expect(screen.getByText("Locked — Payment Required")).toBeTruthy();
+      expect(screen.queryByText("Free | published")).toBeNull();
+    }
+    expectNoLearnerMutations();
+  });
+
   it("keeps unpaid lessons locked and hides refund or payment-issue forms", async () => {
     mockGetCourse.mockResolvedValue({
       id: "course-paid",

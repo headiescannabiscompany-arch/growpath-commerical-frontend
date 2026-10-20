@@ -3,6 +3,12 @@ import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { radius, spacing } from "../theme/theme";
 import { useAppTheme } from "@/theme/appTheme";
 
+/**
+ * @param {import("react-native").TouchableOpacityProps & {
+ *   title?: string,
+ *   textStyle?: import("react-native").StyleProp<import("react-native").TextStyle>
+ * }} props
+ */
 export default function PrimaryButton({
   title,
   onPress,

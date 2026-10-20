@@ -67,13 +67,18 @@ export function applyPublicRouteMetadata(pathname: string) {
   const route = normalizePublicRoute(pathname);
   const siteUrl = publicSiteUrl();
   const canonical = route ? `${siteUrl}/${route}` : siteUrl;
+  const privateGift = route === "claim-course-gift" || route === "course-gifts/checkout";
 
   document.title = metadata.title;
   upsertMeta('meta[name="description"]', { name: "description" }, metadata.description);
   upsertMeta(
     'meta[name="robots"]',
     { name: "robots" },
-    metadata.index && !forceNoIndex() ? "index,follow" : "noindex,nofollow"
+    privateGift
+      ? "noindex,nofollow,noarchive"
+      : metadata.index && !forceNoIndex()
+        ? "index,follow"
+        : "noindex,nofollow"
   );
   upsertMeta('meta[property="og:title"]', { property: "og:title" }, metadata.title);
   upsertMeta(
@@ -117,6 +122,41 @@ export function applyPublicRouteMetadata(pathname: string) {
     document.head.appendChild(canonicalLink);
   }
   canonicalLink.setAttribute("href", canonical);
+  if (privateGift) {
+    // A gift/attempt identity never belongs in canonical or share metadata.
+    for (const old of Array.from(
+      document.head.querySelectorAll('link[rel="canonical"], meta[property="og:url"]')
+    ))
+      old.remove();
+    let referrer = document.head.querySelector<HTMLMetaElement>('meta[name="referrer"]');
+    if (!referrer) {
+      referrer = document.createElement("meta");
+      referrer.setAttribute("name", "referrer");
+      referrer.setAttribute("data-course-gift-referrer", "created");
+      document.head.appendChild(referrer);
+    } else if (!referrer.hasAttribute("data-course-gift-referrer")) {
+      referrer.setAttribute("data-course-gift-referrer", "restore");
+      referrer.setAttribute(
+        "data-course-gift-previous",
+        referrer.getAttribute("content") || ""
+      );
+    }
+    referrer.setAttribute("content", "no-referrer");
+  } else {
+    const referrer = document.head.querySelector(
+      'meta[name="referrer"][data-course-gift-referrer]'
+    );
+    if (referrer?.getAttribute("data-course-gift-referrer") === "created")
+      referrer.remove();
+    else if (referrer) {
+      referrer.setAttribute(
+        "content",
+        referrer.getAttribute("data-course-gift-previous") || ""
+      );
+      referrer.removeAttribute("data-course-gift-referrer");
+      referrer.removeAttribute("data-course-gift-previous");
+    }
+  }
   // Replace the previous route's schema after SPA navigation as well as on reload.
   for (const old of Array.from(
     document.head.querySelectorAll('script[type="application/ld+json"]')

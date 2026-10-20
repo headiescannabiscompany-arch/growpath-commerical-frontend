@@ -20,6 +20,7 @@ import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "../theme/theme";
 import { resolveImageUri } from "../utils/photoUploads";
 import { readPendingBuyerCheckout } from "../utils/buyerCheckoutRecovery";
+import { coursePriceLabel } from "../utils/coursePriceLabel";
 import {
   canonicalGrowInterestTag,
   flattenGrowInterests,
@@ -48,6 +49,30 @@ function mergeCourses(...lists) {
     merged.set(id, { ...(merged.get(id) || {}), ...course });
   });
   return Array.from(merged.values());
+}
+
+// These responses have different authority and disclosure rules. Select a whole
+// record, never let a public Commercial preview fill/overwrite learner prices,
+// content or owner state. Same-authority Facility/detail merging stays separate.
+export function mergeCourseCatalogSources(
+  publicCourses,
+  ownedCourses,
+  commercialCourses
+) {
+  const selected = new Map();
+  for (const course of publicCourses) {
+    const id = String(course?._id || course?.id || "");
+    if (id && !selected.has(id)) selected.set(id, { ...course });
+  }
+  for (const course of ownedCourses) {
+    const id = String(course?._id || course?.id || "");
+    if (id) selected.set(id, { ...course, _viewerOwnsCourse: true });
+  }
+  for (const course of commercialCourses) {
+    const id = String(course?._id || course?.id || "");
+    if (id && !selected.has(id)) selected.set(id, { ...course });
+  }
+  return Array.from(selected.values());
 }
 
 export function courseInterestTags(course) {
@@ -82,13 +107,6 @@ export function matchesCourseInterests(course, userInterests) {
   }
   const selected = new Set(normalizedUserInterests.map((item) => item.toLowerCase()));
   return tags.some((tag) => selected.has(tag.toLowerCase()));
-}
-
-function coursePriceLabel(course) {
-  const cents = Number(course?.priceCents || 0);
-  if (Number.isFinite(cents) && cents > 0) return `$${(cents / 100).toFixed(2)}`;
-  const dollars = Number(course?.price || 0);
-  return Number.isFinite(dollars) && dollars > 0 ? `$${dollars.toFixed(2)}` : "Free";
 }
 
 export const COURSE_CATALOG_REQUEST_TIMEOUT_MS = 8000;
@@ -420,14 +438,9 @@ function CoursesSession({
             "Some course sources could not load. Showing the available courses."
           );
         }
-        const list = mergeCourses(
+        const list = mergeCourseCatalogSources(
           publicResult.status === "fulfilled" ? normalizeList(publicResult.value) : [],
-          ownedResult.status === "fulfilled"
-            ? normalizeList(ownedResult.value).map((course) => ({
-                ...course,
-                _viewerOwnsCourse: true
-              }))
-            : [],
+          ownedResult.status === "fulfilled" ? normalizeList(ownedResult.value) : [],
           commercialResult.status === "fulfilled"
             ? normalizeList(commercialResult.value)
             : []
@@ -445,9 +458,7 @@ function CoursesSession({
           : publicCleanScoped.filter(isPublishedCourse);
         let filtered = access.canSeePaidCourses
           ? publicationScoped
-          : publicationScoped.filter(
-              (c) => Number(c?.priceCents || 0) === 0 && Number(c?.price || 0) === 0
-            );
+          : publicationScoped.filter((course) => coursePriceLabel(course) === "Free");
         if (
           requestedCourseId &&
           String(requestedCourseId) !== dismissedRequestedCourseId &&

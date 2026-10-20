@@ -291,7 +291,15 @@ Gifted paid-plan checkouts must explicitly collect the recipient email and inten
 
 `/account/workspace` and `/account/mode` are production direct-entry and hard-reload routes. The production export and hosting fallback must serve the application for both routes instead of returning an HTTP 404.
 
-Public commercial-course discovery may expose a course only when both the course and its owning storefront are published. Return an explicit public-field projection with storefront identity and public course content; do not expose owner IDs, commercial account IDs, drafts, arbitrary authoring fields, or private workspace records. Reserve route words such as `public` before dynamic record-ID handlers, validate database IDs before querying, and forward route failures through the application error boundary instead of allowing a malformed public request to terminate the API.
+Public commercial-course discovery may expose a course only when both the course and its owning storefront are published and the source visibility is public. Return an explicit preview with storefront identity, public summary, module/lesson outlines and counts, never raw learning bodies, assessments, tasks, document/video URLs or authoring fields, even for a free course. Resolve linked product IDs to published, non-hidden products with the same storefront and owner; withhold unresolved operational links. Reuse the existing source-visibility mapping: private/Facility-only is unavailable, and unlisted retains metadata-only direct share eligibility but not discovery. Do not expose owner IDs, commercial account IDs, drafts or private workspace records, backfill a canonical course from a GET, or change learner grants. Reserve route words such as `public` before dynamic record-ID handlers, validate database IDs before querying, and forward route failures through the application error boundary instead of allowing a malformed public request to terminate the API. Metadata-only sharing is not proof that an unlisted storefront landing page can load its course; that direct-reader dependency needs separate acceptance before release.
+
+Saved Storefront course links use a distinct exact-ID metadata GET; unlisted courses
+remain excluded from discovery. Reuse published store/source ownership, visibility
+and safe-preview/product-link resolution; no raw record or learner grant is returned.
+The page validates the returned course/store identity and suppresses stale reads,
+failed direct-reader fallback and automatic checkout. Public title aliases retain
+directory-only lookup. R09-04V has 10 isolated API and 20 mocked UI/transport checks
+passing locally; release and browser/native/payment acceptance remain open.
 
 Every public Commercial projection, including storefront directories and detail, Feed, related records, and product checkout, must exclude records in `testing` status and records explicitly marked as test-only, QA-only, synthetic, or namespaced QA seed data. Authenticated owners may still review their own testing records inside owner-scoped Commercial workflows; owner access does not publish those records for another account or an anonymous visitor.
 
@@ -340,7 +348,202 @@ Regulated-commerce evidence belongs to a concrete Commercial storefront identity
 
 United States federal legalization may remove one federal barrier but must not bypass state, Tribal, territorial, local, destination, carrier, payment-provider, tax, marketplace, or app-store requirements. International routes require supported origin/export and destination/import rules for the exact product, including seed classification where applicable. Warnings, age gates, and seller attestations are supporting controls, not substitutes for legality. Until a market-specific capability is reviewed and implemented end to end, keep that capability unavailable rather than simulating checkout, payment, reservation, delivery, shipping, export, import, or completed fulfillment.
 
+Shared catalog composition must not overlay a parallel Commercial preview onto the
+same-ID learner or owned course response. Keep one complete record: owned authoring
+view first when available, otherwise the shared learner DTO, otherwise the standalone
+Commercial preview. Preserve the shared unavailable-price decision and learner
+destination, owner draft/management state, and Commercial-only storefront links.
+Partial-source failures retain existing warnings/retry; no new access or payment
+authority is inferred. R09-04W has 15 targeted mocked checks passing locally on their
+first run; content/version, checkout and hosted acceptance remain open.
+
+Dormant course-gift review also re-reads the exact bound Commercial source before
+and after seller preflight. Require published public/unlisted status, unchanged
+ownership/identity and a positive safe amount equal to the gift intent, using the
+existing source mapper. Bind normalized source sale facts into the buyer's existing
+review fingerprint; never substitute a conflicting price or infer seller consent.
+R09-04X has 24 new passing in-memory/mock checks. R09-04Y now implements a source
+write fence inside the existing low-level gift reservation/creation transactions,
+reusing the sale-field rules and bounded retry. Increment only the internal version,
+not authored data/public updatedAt; roll back with receipt/lease writes on failure.
+All 26 owner-approved new isolated transaction/recovery checks pass on the first
+run (37.127s), including competing source edits, rollback, same-attempt recovery and
+affected native/already-paid paths. Synthetic loopback data and mocked provider only;
+account/I/O guards and owned cleanup pass, zero mongod, no completed-check rerun.
+Complete content-version agreement and ordinary
+purchase consistency remain open; current source terms must not erase paid
+reconciliation/refund obligations. This does not enable gifting or change plans/credits.
+
+Ordinary paid-course checkout now has a separate R09-04Z read-only source prerequisite:
+capture exact source/mirror identity, owner, publication, visibility and matching safe
+amount before seller preflight, then re-read both before the existing checkout engine.
+Use the existing projection mappers; stale or changed sale facts reject, not auto-repair.
+The 28 approved new synthetic/mock checks pass first run (2.965s), including focused
+native/Facility handoffs and account/I/O guards. This is not real database/HTTP/provider
+or hosted acceptance. The snapshot is private and in-request only, not buyer consent
+or a full authored-content revision. At 04Z, edits after the last read, ordinary
+transaction fencing and full content agreement remained gaps; 05C below adds local evidence.
+Existing paid records/refunds/grants stay independent; no live gifting or release.
+
+R09-05A shares the writer's existing authored-content mapper with a new internal
+source/mirror comparison. Schema-normalized course presentation, ordered lessons,
+media, documents, live-session details and linked records must agree; private output
+contains only a versioned fingerprint, not bodies or URLs. Exclude learner progress,
+discussion, counts, revenue and internal versions. No record repair or historical
+archive is implied. All 24 new checks plus three directly affected mapper regressions
+pass first run (27/27, 1.08s), four unrelated legacy cases excluded, no database/network.
+R09-05B now connects this comparator to dormant gift review/reservation/creation,
+using shared complete Course fields and a bounded private selection of mapped source
+inputs. Bind its digest into the existing review fingerprint without changing receipt
+schema or exposing authored bodies/URLs. Changed content rejects new acquisition;
+old Commercial receipts remain retained, not backfilled. Native review hashes and
+paid reconciliation/refund/grant paths stay separate. All 29 new and two directly
+affected reader checks pass first run (31/31, 48.781s), 22 unrelated cases excluded.
+Synthetic loopback data/mocked payments only; account/I/O and owned cleanup pass.
+No 05A rerun, test repair or real provider call. Ordinary acquisition is separately
+addressed by 05C below; claims/learner reads, issued-session cancellation and provider/
+hosted/native gates remain outside 05B. No gift activation, plan/credit change or release.
+
+R09-05C extends the ordinary paid-course guard with the same private content comparison
+and shared bounded field selections. Its trusted server-only hook reuses the existing
+reservation/creation engine inside bounded transactions, re-reading source/mirror and
+fencing both internal versions without authored-content or public-timestamp changes.
+Reservation/lease writes share the session and roll back with failed fences; competing
+edits retry. Recheck before provider creation and cached-session return, then bind any
+issued open session before the final recheck. Withhold a stale redirect without losing
+the session/attempt. Completed responses still bind for paid reconciliation; current
+sale terms never erase existing money, refunds or access history. No provider call
+inside transaction retry, no request-supplied guard and no private content in parameters.
+32 new + three directly affected reader/route checks pass first run (35/35, 29.139s),
+49 unrelated excluded, with synthetic loopback MongoDB/mocked payments and owned cleanup.
+No test repair or broad completed-suite rerun. Per-request snapshot only, not persisted
+buyer content-version consent or an archive; a fresh request reads current content.
+Existing monetary/session fingerprints and unguarded native-course, Storefront-product
+and downloadable-Offer paths remain. Not remote atomicity, session cancellation, real
+HTTP/provider/browser/hosted acceptance or full gifting completion. Live gifting OFF,
+plans/credits unchanged; no schema/index change, deployment or activation.
+
+R09-05D implements a separate dormant, explicitly authorized gift-session expiry
+primitive. Resolve the exact stored owned gift/attempt/Session with matching test-provider
+fingerprint; never accept a Session or authority proof from request input. Retrieve and
+validate provider truth, recheck authority/local paid state, expire only an open/unpaid
+Session, and retrieve again even after an uncertain response. Only verified expired/
+unpaid evidence closes its reservation early through the existing state machine; retain
+the original deadline, receipt and gift. Completed/paid/pending payment remains with
+webhook reconciliation, never refund or grant from this response. Stable same-session
+retry, bounded provider calls outside transactions, private DTOs and safe errors apply.
+No other-kind/timer bypass, automatic course-edit/consent-withdrawal trigger, scheduler,
+ambiguous unbound-attempt recovery or ordinary checkout cancellation is enabled.
+Owner-approved 41 new + one affected expiry check pass first run:42/42,65.529s;49 unrelated
+excluded. Synthetic loopback DBs/mocked payments only; account/I/O/owned cleanup pass,
+zero mongod and unchanged hashes. No repair or completed-suite rerun. Separate checkout-time
+composition below has separate 38/38 local evidence; 05F writer hooks below have separate
+41/41 local evidence. Scheduling and actual provider/
+hosted/browser/native evidence remain separate.
+Live gifting OFF; plans/credits unchanged, not deployed.
+
+R09-05E implements checkout-time withdrawal using the existing reviewed-checkout and
+05D expiry engines. Re-prove changed/unavailable native or Commercial course authority
+or retained explicit creator revocation in a transaction with the saved buyer receipt
+and bound reservation. Missing consent/policy mismatch or read/provider/readiness
+failure alone is not revocation. Save a private reason/time/Session-hash marker on the
+gift before provider I/O; same-gift retries keep it and the original Session/key.
+Restored terms cannot reopen that checkout. The marker neither confirms expiry nor
+grants/refunds anything; paid accounting remains separate. Added optional local schema
+field uses existing retention, no new collection/TTL/index or hosted migration.
+Owner-approved 38 NEW isolated checks PASS first run,60.744s; no repair or completed-suite
+rerun. Synthetic loopback DB/mocked payments, account/I/O/owned cleanup guards pass;
+zero mongod and unchanged prepared hashes/HEAD. This 05E evidence does not certify the
+separate 05F writer hooks below, background processing,
+ordinary checkout cancellation or provider/hosted/browser/native acceptance. Public/
+live gifting OFF, plans/credits unchanged. Products, Offers, Orders and payouts stay distinct.
+
+R09-05F adds an atomic private Course generation/pending/cursor signal to existing
+authored saves/query updates, including the canonical projection in the existing
+Commercial lifecycle transaction. Consent withdrawal/supersession signals in its own
+existing transaction. Counters, questions, payment history and replayed revocation do
+not trigger new work. Gift reservation privately binds the generation; restoring edited
+content cannot revive an older checkout. Reuse 05E receipt/withdrawal proof and 05D expiry,
+including after sale-policy expiration when a distinct persisted change proves authority.
+The dormant per-course drain processes at most ten unpaid records, checkpoints by exact
+generation/cursor CAS and preserves retries, new edits and completing payments. The separate
+05G dispatcher/index work below has separate local acceptance. No worker startup, public route
+or activation; raw maintenance writes and hosted query/index review remain separate gates. Owner-approved 41 NEW isolated cases PASS
+first actual run,61.207s; sandbox TEMP denial preceded tests, then same command succeeded
+outside sandbox. No repair/completed-suite rerun. Account/I/O/owned cleanup guards pass;
+zero mongod and unchanged nine hashes/HEAD. Model/service scope only. No plan/credit change,
+provider action or deployment. See the course-media method for exact limitations.
+
+R09-05G adds a dormant indexed pending-course dispatcher around that existing engine:
+five-course limit, strict fresh index-metadata readiness, explicit query hints, persisted
+two-minute retry reservation, one-minute failure delay and one-second partial-page retry.
+Newer authoring generations cannot be postponed by older callbacks; preserve authored
+timestamps, paid accounting and separate Products/Offers/Orders/Billing-payouts. Legacy
+missing retry times are discoverable without backfill. No new collection, timer/service,
+startup/HTTP mount, hosted index build or activation. Owner-approved 37 NEW synthetic
+loopback/mocked cases, including equivalent read-selector query-plan probes, PASS first
+actual run,58.294s. Sandbox TEMP denial preceded tests; same command ran outside sandbox.
+No repair/completed-suite rerun. Account/I/O/owned cleanup pass, zero mongod and unchanged
+eight prepared hashes/backend HEAD. Hosted write plans/migration/topology/scale and full
+app/provider acceptance remain separate. Live gifting OFF; plans/credits unchanged.
+See the course-media method.
+
+R09-05H adds a disabled-by-default lifecycle, unmounted at that slice, around the accepted gift
+recovery dispatcher. Completion-based polling is single-flight; index/config failures,
+retry-required results and stale heartbeat cannot advertise readiness. Stop cancels
+future cycles, waits at most 7.5 seconds and retains draining until active work settles;
+restart cannot overlap it or reuse stopped readiness. Operational health is not checkout
+authority (activationAllowed stays false). Fixed safe diagnostics only. The existing
+authoring/Commercial projection/creator-revoke writer paths were inspected and left
+unchanged, not re-certified through HTTP. Owner-approved 33 NEW mock/fake-timer checks
+PASS first actual run,0.843s. Sandbox TEMP denial preceded tests; same command then ran
+outside sandbox. No repair/completed-check rerun. Blocked I/O and timer/env cleanup pass;
+zero mongod and three unchanged prepared hashes/backend HEAD. 05I supplies separate local
+DB composition evidence below; full app/provider/hosted lifecycle gates remain. No activation,
+plan/credit change, release or completed-suite rerun. Products, Offers, Orders and payouts
+remain distinct; see the course-media method for exact shutdown/evidence limits.
+
+R09-05I composes the unchanged worker, dispatcher and recovery engines against an
+installed temporary loopback database, actual indexes/transactions, mocked payments
+and controlled worker timers. All 16 owner-approved NEW integration checks PASS first
+actual run,39.684s, including transactional Commercial withdrawal and retained paid
+accounting. No repair/closed-test rerun; account/I/O/timer/owned cleanup guards pass,
+zero mongod and unchanged prepared hashes/HEAD. This is not authenticated authoring
+HTTP, full app startup/shutdown, provider/hosted or public release evidence. No worker
+mount, live gifting/expiry, plan/credit or separate Products/Offers/Orders/payout change.
+
+R09-05J adds separate authenticated authoring HTTP evidence: actual Commercial router,
+bearer/account/plan gates, transactional source/projection and later unpaid-checkout
+recovery. Owner-approved23 NEW native/Commercial/consent cases PASS,53.728s; first
+attempt stopped before tests/database on a fixture import, repaired only there.
+Wrong owners, published edits and cross-source native edits leave authority unchanged.
+Synthetic loopback HTTP/MongoDB, mocked payments and controlled worker timers only.
+Account/credit/lease/I/O and owned cleanup guards pass; no runtime route/engine edit,
+app startup mount or release. Full-app/browser/hosted/provider/native/policy gates
+remain; live gifting/expiry OFF. Products, Offers, Orders and payouts stay distinct.
+
+R09-05K registers that existing recovery factory in the server with literal OFF,
+not an environment activation switch. DB/current-startup-generation fences block
+late startup; safe `/ready` diagnostics stay separate from global API health and
+acquisition permission so failed expiry cannot take paid reconciliation offline.
+Drain precedes HTTP close; bounded stop precedes DB close. Unresolved/unreadable/
+rejected stopping reports failure/nonzero exit, not clean termination. Owner-approved
+32 NEW mocked server/ready cases PASS first run,1.278s, with blocked I/O and timer/env
+cleanup guards. No repair or closed-suite rerun. App/DB/listeners/provider/process are
+simulated; not unmocked boot, actual signal/crash, hosted/provider/native acceptance.
+Live gifting/expiry OFF, plans/credits unchanged, no release. Products, downloadable
+Offers, Orders and Billing/payouts remain distinct; see course-media for the full limits.
+
 Signed-out course discovery stays learner-facing and published-only. Anonymous visitors may browse the public catalogs and receive sign-in or registration actions, but they must not see authoring, owned-course, invite, analytics, publish, or unpublish controls.
+
+R09-05L separately accepts one full local application boot/restart/shutdown journey,
+PASS1/1,52.197s: two real development-mode processes, actual app/worker/routes and
+loopback HTTP/MongoDB, gift capabilities OFF, health available, actual handlers close
+HTTP/DB and exit0. Empty data remains empty; owned cleanup complete. Fixture-only
+corrections, no application changes or closed-suite reruns. Loopback/temp adapters and
+IPC handler dispatch do not certify production config, OS signals, enabled recovery,
+other user journeys, hosted/provider/native/policy release. No plan/credit changes;
+Products, downloadable Offers, Orders and Billing/payouts remain separate.
 
 Shared course details also withhold personal learner/payment requests and controls until authentication settles, while preserving public free previews and paid-content locks. Ordinary paid storefront-course Buy routes a signed-out shopper to sign-in before checkout or checkout-click analytics. The return is limited to an exact saved shared-course identity or persisted storefront slug and saved course identity; malformed identities fall back to plain login. Signing in never buys or enrolls automatically. Free Open, confirmed enrollment, pending/canceled recovery, existing signed-in checkout and server eligibility rules remain unchanged. Account/session and course changes invalidate old detail state and late responses rather than reusing another viewer's access hints or notes.
 

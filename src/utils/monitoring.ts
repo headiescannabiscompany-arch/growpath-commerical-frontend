@@ -1,4 +1,8 @@
 import { config } from "@/config/config";
+import {
+  filterCourseGiftDiagnostic,
+  suppressCourseGiftDiagnostic
+} from "./courseGiftDiagnosticPrivacy";
 
 let initialized = false;
 let sentryModule: typeof import("@sentry/react-native") | null = null;
@@ -16,12 +20,18 @@ export function initMonitoring() {
       dsn: config.sentryDsn,
       environment: config.env,
       enableAutoSessionTracking: true,
-      tracesSampleRate: 0
+      tracesSampleRate: 0,
+      beforeSend: filterCourseGiftDiagnostic,
+      beforeSendTransaction: filterCourseGiftDiagnostic,
+      // The breadcrumb is the outgoing payload. DOM/request hint objects aren't
+      // serialized and may contain getters; don't inspect unrelated live objects.
+      beforeBreadcrumb: (breadcrumb) => filterCourseGiftDiagnostic(breadcrumb),
+      beforeSendLog: filterCourseGiftDiagnostic
     });
   } catch (err) {
     sentryModule = null;
     if (process.env.NODE_ENV !== "production") {
-      console.warn("[monitoring] failed to initialize", err);
+      console.warn("[monitoring] failed to initialize");
     }
   }
 
@@ -29,7 +39,7 @@ export function initMonitoring() {
 }
 
 export function captureException(error: unknown, context: Record<string, unknown> = {}) {
-  if (!sentryModule) return false;
+  if (!sentryModule || suppressCourseGiftDiagnostic(error, context)) return false;
 
   try {
     sentryModule.withScope((scope) => {
@@ -41,7 +51,7 @@ export function captureException(error: unknown, context: Record<string, unknown
     return true;
   } catch (err) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("[monitoring] failed to capture exception", err);
+      console.warn("[monitoring] failed to capture exception");
     }
     return false;
   }

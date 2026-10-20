@@ -54,6 +54,8 @@ import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { resolveImageUri } from "../utils/photoUploads";
 import { parsePublicCourseReturnPath, safeLoginPath } from "../utils/authReturnPath";
+import { coursePriceLabel } from "../utils/coursePriceLabel";
+import CourseGiftCourseEntry from "@/components/courseGifts/CourseGiftCourseEntry";
 
 function rowId(row) {
   return String(row?._id || row?.id || "");
@@ -90,13 +92,6 @@ function normalizeList(payload, key) {
   if (Array.isArray(payload?.data?.[key])) return payload.data[key];
   if (Array.isArray(payload?.data)) return payload.data;
   return [];
-}
-
-function coursePrice(course) {
-  const cents = Number(course?.priceCents || 0);
-  if (cents > 0) return `$${(cents / 100).toFixed(2)}`;
-  const price = Number(course?.price || 0);
-  return price > 0 ? `$${price.toFixed(2)}` : "Free";
 }
 
 function facilityVisibilityOf(course) {
@@ -1305,7 +1300,7 @@ function CourseDetailSession({
         />
       ) : null}
       <Text style={styles.meta}>
-        {coursePrice(course)} |{" "}
+        {coursePriceLabel(course, isPaidCourse)} |{" "}
         {course?.status || (course?.isPublished ? "published" : "draft")}
       </Text>
       {courseDetailImageSource(course, currentAuthorizedCoverUrl) ? (
@@ -1331,6 +1326,20 @@ function CourseDetailSession({
         />
       ) : null}
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+
+      <CourseGiftCourseEntry
+        courseId={rowId(course)}
+        requestedCourseId={courseId}
+        mode={ownsCourse ? "creator" : "buyer"}
+        eligible={Boolean(
+          signedIn &&
+          !facilityMode &&
+          !genericFacilityLearnerMode &&
+          !facilityManagedCourse &&
+          !courseFacilityId &&
+          (canManageNativeCourse || (!ownsCourse && course.isPublished && isPaidCourse))
+        )}
+      />
 
       {ownsCourse && commercialManagedCourse && loadedCourseId ? (
         <View style={styles.card}>

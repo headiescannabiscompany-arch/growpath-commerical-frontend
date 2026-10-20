@@ -2499,6 +2499,51 @@ describe("public commercial routes", () => {
     });
   });
 
+  it.each([
+    ["paid access with no amount", { access: "paid" }, "Paid — price unavailable", true],
+    ["legacy paid pricing", { pricingType: "paid" }, "Paid — price unavailable", true],
+    [
+      "legacy provider price",
+      { stripePriceId: "price_synthetic" },
+      "Paid — price unavailable",
+      true
+    ],
+    ["saved cents", { priceCents: 1250 }, "$12.50", true],
+    ["ordinary free", { access: "free" }, "Free", false]
+  ] as const)(
+    "R09-04P storefront detail label: %s",
+    async (_name, pricing, label, paid) => {
+      mockFetchPublicStorefront.mockResolvedValue({
+        ...publicPayload,
+        courses: [
+          {
+            ...publicPayload.courses[0],
+            access: "free",
+            pricingType: "free",
+            stripePriceId: "",
+            priceCents: 0,
+            price: 0,
+            ...pricing
+          }
+        ]
+      });
+      const screen = render(<PublicStorefrontCourseRoute />);
+      expect(await screen.findByText(String(label))).toBeTruthy();
+      expect(screen.getByText(paid ? "Paid course" : "Free course")).toBeTruthy();
+      expect(
+        screen.getByLabelText(paid ? "Buy storefront course" : "Open storefront course")
+      ).toBeTruthy();
+      if (paid) expect(screen.queryByText("Free")).toBeNull();
+      expect(mockStartCourseCheckout).not.toHaveBeenCalled();
+      expect(mockPollCourseAccessStatus).not.toHaveBeenCalled();
+      expect(
+        mockRecordCommercialAnalyticsEvent.mock.calls.some(
+          ([event]) => event.eventType === "course_checkout_click"
+        )
+      ).toBe(false);
+    }
+  );
+
   it("loads a public storefront course detail with checkout and connected context", async () => {
     const screen = render(<PublicStorefrontCourseRoute />);
 

@@ -1,6 +1,10 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { captureException } from "@/utils/monitoring";
+import {
+  suppressCourseGiftDiagnostic,
+  PRIVATE_PAGE_ERROR
+} from "@/utils/courseGiftDiagnosticPrivacy";
 import { useAppTheme } from "@/theme/appTheme";
 
 type BoundaryProps = { children: React.ReactNode; label?: string } & {
@@ -14,8 +18,9 @@ class ErrorBoundaryBase extends React.Component<
   state = { hasError: false as boolean, message: undefined as string | undefined };
 
   static getDerivedStateFromError(err: unknown) {
-    const message =
-      err instanceof Error
+    const message = suppressCourseGiftDiagnostic(err)
+      ? PRIVATE_PAGE_ERROR
+      : err instanceof Error
         ? err.message
         : typeof err === "string"
           ? err
@@ -24,6 +29,7 @@ class ErrorBoundaryBase extends React.Component<
   }
 
   componentDidCatch(err: unknown) {
+    if (suppressCourseGiftDiagnostic(err, this.props.label)) return;
     console.error("[ErrorBoundary]", this.props.label || "boundary", err);
     captureException(err, { boundary: this.props.label || "boundary" });
   }
@@ -38,7 +44,9 @@ class ErrorBoundaryBase extends React.Component<
             Screen crashed
           </Text>
           <Text style={{ marginTop: 8, color: palette.textMuted }}>
-            {this.state.message}
+            {suppressCourseGiftDiagnostic(this.state.message, this.props.label)
+              ? PRIVATE_PAGE_ERROR
+              : this.state.message}
           </Text>
         </View>
       );

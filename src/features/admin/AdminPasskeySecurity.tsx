@@ -22,7 +22,11 @@ import {
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
-export default function AdminPasskeySecurity() {
+export default function AdminPasskeySecurity({
+  verificationOnly = false
+}: {
+  verificationOnly?: boolean;
+} = {}) {
   const identityEpoch = useSyncExternalStore(
     subscribeAdminSecurity,
     getAdminSecurityIdentityEpoch,
@@ -138,9 +142,11 @@ export default function AdminPasskeySecurity() {
     } catch (error: any) {
       if (!isCurrentIdentity()) return;
       setMessage(
-        error?.name === "NotAllowedError" || error?.name === "AbortError"
-          ? "Passkey confirmation was canceled or timed out. No restricted action was performed."
-          : error?.data?.message ||
+        verificationOnly
+          ? "Passkey verification could not be confirmed. Check Admin security before continuing."
+          : error?.name === "NotAllowedError" || error?.name === "AbortError"
+            ? "Passkey confirmation was canceled or timed out. No restricted action was performed."
+            : error?.data?.message ||
               error?.message ||
               "The result could not be confirmed. Refresh Admin security before retrying."
       );
@@ -168,13 +174,22 @@ export default function AdminPasskeySecurity() {
       <Text style={styles.text}>
         {expiresAt
           ? `Verified until ${new Date(expiresAt).toLocaleTimeString()}. Existing role and review restrictions still apply.`
-          : "Set up and verify your own passkey here. Open this section to check whether passkey enforcement is enabled."}
+          : verificationOnly
+            ? "Verify your existing passkey. Enrollment and credential changes are not available in this review."
+            : "Set up and verify your own passkey here. Open this section to check whether passkey enforcement is enabled."}
       </Text>
-      {button(expanded ? "Hide Admin security" : "Set up or verify a passkey", () => {
-        setPassword("");
-        setConfirmation("");
-        setExpanded(!expanded);
-      })}
+      {button(
+        expanded
+          ? "Hide Admin security"
+          : verificationOnly
+            ? "Verify existing Admin passkey"
+            : "Set up or verify a passkey",
+        () => {
+          setPassword("");
+          setConfirmation("");
+          setExpanded(!expanded);
+        }
+      )}
       {expanded ? (
         <View style={{ gap: 8 }}>
           {!supported ? (
@@ -220,7 +235,7 @@ export default function AdminPasskeySecurity() {
               !expiresAt
             )}
           </View>
-          {status?.enrollmentEnabled && supported ? (
+          {!verificationOnly && status?.enrollmentEnabled && supported ? (
             <>
               <Text style={styles.text}>
                 Add your own device only. Keep a second passkey as backup. Adding another
@@ -272,22 +287,23 @@ export default function AdminPasskeySecurity() {
               )}
             </>
           ) : null}
-          {status?.passkeys.map((key) => (
-            <View key={key.id} style={{ gap: 4 }}>
-              <Text style={styles.text}>
-                {key.label} · added {new Date(key.createdAt).toLocaleDateString()}
-              </Text>
-              {button(
-                `Review removal of ${key.label}`,
-                () => {
-                  setRevokeId(key.id);
-                  setConfirmation("");
-                },
-                status.passkeys.length < 2 || !expiresAt
-              )}
-            </View>
-          ))}
-          {revokeId ? (
+          {!verificationOnly &&
+            status?.passkeys.map((key) => (
+              <View key={key.id} style={{ gap: 4 }}>
+                <Text style={styles.text}>
+                  {key.label} · added {new Date(key.createdAt).toLocaleDateString()}
+                </Text>
+                {button(
+                  `Review removal of ${key.label}`,
+                  () => {
+                    setRevokeId(key.id);
+                    setConfirmation("");
+                  },
+                  status.passkeys.length < 2 || !expiresAt
+                )}
+              </View>
+            ))}
+          {!verificationOnly && revokeId ? (
             <>
               <Text style={styles.text}>
                 Type REVOKE PASSKEY {revokeId}. This removes only that device credential,

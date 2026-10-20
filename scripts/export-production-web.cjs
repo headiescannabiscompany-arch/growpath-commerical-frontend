@@ -210,6 +210,8 @@ const fallbackRoutes = [
   "ai-cultivation-disclaimer",
   "accept-facility-invite",
   "claim-gift",
+  "claim-course-gift",
+  "course-gifts/checkout",
   "feedback",
   "courses",
   "courses/create",
@@ -801,28 +803,60 @@ function staticPublicMarkup(route, seo) {
   ].join("");
 }
 
-function applySeo(html, route) {
-  const seo = seoForRoute(route);
-  const canonical = canonicalUrl(route);
+function applySeo(
+  html,
+  route,
+  { dynamicStudyShell = false, privateAppShell = false } = {}
+) {
+  // Shared fallbacks cannot know the requested record, account or workspace.
+  // Keep the app bootstrap, but never inherit Home's indexable metadata or records.
+  const privateGiftShell =
+    route === "claim-course-gift" || route === "course-gifts/checkout";
+  const sharedShell = dynamicStudyShell || privateAppShell || privateGiftShell;
+  const seo = dynamicStudyShell
+    ? {
+        title: "Field Study | GrowPathAI",
+        description:
+          "Open a shared field study in GrowPathAI. Availability is checked when the app loads.",
+        index: false
+      }
+    : privateAppShell
+      ? {
+          title: "GrowPathAI App",
+          description:
+            "Sign in to open your GrowPathAI workspace. Account and workspace access are checked when the app loads.",
+          index: false
+        }
+      : seoForRoute(route);
+  const canonical = sharedShell ? null : canonicalUrl(route);
   const title = escapeHtml(seo.title);
   const description = escapeHtml(seo.description);
-  const robots = isStagingExport
-    ? "noindex,nofollow"
-    : seo.index
-      ? "index,follow"
-      : "noindex,follow";
+  const robots = privateGiftShell
+    ? "noindex,nofollow,noarchive"
+    : isStagingExport || sharedShell
+      ? "noindex,nofollow"
+      : seo.index
+        ? "index,follow"
+        : "noindex,follow";
   const routePath = route ? `/${route}` : "/";
   const tags = [
     `<meta name="description" content="${description}" />`,
     `<meta name="robots" content="${robots}" />`,
-    `<link rel="canonical" href="${escapeHtml(canonical)}" />`,
+    ...(privateGiftShell
+      ? [
+          '<meta name="referrer" content="no-referrer" data-course-gift-referrer="created" />'
+        ]
+      : []),
+    ...(canonical ? [`<link rel="canonical" href="${escapeHtml(canonical)}" />`] : []),
     `<link rel="manifest" href="/site.webmanifest" />`,
     `<meta name="theme-color" content="#0f5132" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="GrowPathAI" />`,
     `<meta property="og:title" content="${title}" />`,
     `<meta property="og:description" content="${description}" />`,
-    `<meta property="og:url" content="${escapeHtml(canonical)}" />`,
+    ...(canonical
+      ? [`<meta property="og:url" content="${escapeHtml(canonical)}" />`]
+      : []),
     `<meta property="og:image" content="${siteUrl}${escapeHtml(seo.image || "/favicon.ico")}" />`,
     `<meta property="og:image:alt" content="${escapeHtml(seo.imageAlt || "GrowPathAI")}" />`,
     `<meta name="twitter:image" content="${siteUrl}${escapeHtml(seo.image || "/favicon.ico")}" />`,
@@ -832,7 +866,9 @@ function applySeo(html, route) {
     `<meta name="twitter:description" content="${description}" />`
   ].join("\n    ");
   const staticIntro = escapeHtml(staticIntroForRoute(route, seo));
-  const structuredData = structuredDataForRoute(route, seo, canonical);
+  const structuredData = sharedShell
+    ? ""
+    : `<script type="application/ld+json">${structuredDataForRoute(route, seo, canonical)}</script>`;
   const staticMarkup = staticPublicMarkup(route, seo);
 
   return html
@@ -848,18 +884,35 @@ function applySeo(html, route) {
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`)
     .replace(
       "</head>",
-      `    ${tags}\n    <script type="application/ld+json">${structuredData}</script>\n    <style>${marketingCss}</style>\n  </head>`
+      `    ${tags}\n    ${structuredData}\n    <style>${marketingCss}</style>\n  </head>`
     )
     .replace(
       /<noscript>[\s\S]*?<\/noscript>/i,
-      `<noscript>${staticIntro} JavaScript is required for the interactive app at ${escapeHtml(
-        routePath
-      )}.</noscript>`
+      dynamicStudyShell
+        ? `<noscript>${staticIntro} JavaScript is required to check and display this study. <a href="/field-observations">Open the observation map</a>.</noscript>`
+        : privateAppShell
+          ? `<noscript>${staticIntro} JavaScript is required to sign in and open your workspace.</noscript>`
+          : `<noscript>${staticIntro} JavaScript is required for the interactive app at ${escapeHtml(
+              routePath
+            )}.</noscript>`
     )
     .replace('<div id="root"></div>', `<div id="root">${staticMarkup}</div>`);
 }
 
 fs.writeFileSync(indexHtml, applySeo(revisionedIndexHtml, ""));
+// The existing /field-observations/* rewrite points here, without changing its URL.
+// Keep this outside that prefix to avoid a rewrite loop; never fetch public records.
+fs.mkdirSync(path.join(absoluteOutputDir, "_shells"), { recursive: true });
+fs.writeFileSync(
+  path.join(absoluteOutputDir, "_shells", "field-study.html"),
+  applySeo(revisionedIndexHtml, "field-observations", { dynamicStudyShell: true })
+);
+// /home/* keeps its original route and existing runtime access checks. The generic
+// fallback lives outside that wildcard and contains no account or workspace data.
+fs.writeFileSync(
+  path.join(absoluteOutputDir, "_shells", "private-app.html"),
+  applySeo(revisionedIndexHtml, "home", { privateAppShell: true })
+);
 // Reuse the existing brand asset; this is not customer or outcome evidence.
 fs.mkdirSync(path.join(absoluteOutputDir, "images"), { recursive: true });
 fs.copyFileSync(
@@ -898,6 +951,8 @@ const robotsTxt = (
         "Disallow: /courses/add-lesson",
         "Disallow: /accept-facility-invite",
         "Disallow: /claim-gift",
+        "Disallow: /claim-course-gift",
+        "Disallow: /course-gifts/",
         "Disallow: /forgot-password",
         "Disallow: /reset-password",
         "Disallow: /verify-email",
