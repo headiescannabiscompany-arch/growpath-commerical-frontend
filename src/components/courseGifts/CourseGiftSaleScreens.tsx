@@ -284,7 +284,7 @@ function SaleScreen({
                               await session.revokeCreator(revoke);
                               current();
                               setMessage(
-                                "Consent revoked. This does not refund existing payments, cancel issued checkout links or remove learner access."
+                                "Consent revoked. Unpaid gift checkout links are queued to close. This does not refund existing payments or remove learner access."
                               );
                             })
                           }

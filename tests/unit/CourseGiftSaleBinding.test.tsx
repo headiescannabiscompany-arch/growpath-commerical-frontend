@@ -229,7 +229,12 @@ describe("R09-03E internal creator and buyer screens", () => {
       reference: "synthetic-consent",
       confirmed: true
     });
-    expect(view.getByText(/does not refund existing payments/)).toBeTruthy();
+    expect(
+      view.getByText(
+        "Consent revoked. Unpaid gift checkout links are queued to close. This does not refund existing payments or remove learner access."
+      )
+    ).toBeTruthy();
+    expect(view.queryByText(/cancel issued checkout links/)).toBeNull();
   });
   it("renders server recipient/price/all terms and separates reservation from checkout", async () => {
     const view = screen("buyer");
