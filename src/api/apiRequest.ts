@@ -16,6 +16,7 @@ export type ApiRequestOptions = {
   auth?: boolean; // default true
   silent?: boolean;
   notifyTransport?: boolean; // default true; optional recovery may opt out of global banners
+  notifyTokenBalance?: boolean; // default true; private non-AI flows can suppress balance events
   invalidateOn401?: boolean;
   retries?: number;
   retryDelay?: number;
@@ -429,9 +430,9 @@ export async function apiRequest<T = any>(
         result && typeof result === "object"
           ? ((result as any).aiCreditsUsed ?? (result as any).data?.aiCreditsUsed)
           : undefined;
-      if (reportedBalance !== undefined && reportedBalance !== null) {
+      if (opts.notifyTokenBalance !== false && reportedBalance !== undefined && reportedBalance !== null) {
         publishTokenBalanceChange(reportedBalance);
-      } else if (consumedCredits !== undefined && consumedCredits !== null) {
+      } else if (opts.notifyTokenBalance !== false && consumedCredits !== undefined && consumedCredits !== null) {
         publishTokenBalanceChange(0);
       }
       if (opts.notifyTransport !== false) emitTransportEvent({ type: "recovered" });

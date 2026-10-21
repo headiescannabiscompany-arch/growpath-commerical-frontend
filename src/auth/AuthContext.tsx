@@ -27,6 +27,7 @@ import { apiMe } from "../api/me";
 import { clearAdminStepUp, clearAdminSecurityForLogout } from "../api/adminPasskeys";
 import { PLAN_LIMITS } from "../config/planLimits";
 import { resetWorkspaceSessionState } from "./workspaceSessionReset";
+import { privateSafeConsole } from "@/utils/courseGiftDiagnosticPrivacy";
 
 const LOCAL_COMMERCIAL_PREVIEW_TOKEN = "local-preview-commercial-token";
 const LOCAL_COMMERCIAL_PREVIEW_EMAIL = "commercial-demo@growpathai.local";
@@ -479,7 +480,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setMeError(
         "Unable to verify session from /api/me. Check backend connectivity and retry."
       );
-      console.error("[AUTH] Failed to load /api/me:", e);
+      privateSafeConsole("error", "[AUTH] Failed to load /api/me:", e);
     }
   }
 

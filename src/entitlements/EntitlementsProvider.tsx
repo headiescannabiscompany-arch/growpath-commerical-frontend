@@ -12,6 +12,7 @@ import { buildCan } from "./can";
 import { CAPABILITY_KEYS, KNOWN_CAPS } from "./capabilityKeys";
 import { normalizeCapabilityKey, normalizeFacilityRole } from "./normalize";
 import { fallbackPlanLimits } from "@/config/planLimits";
+import { privateSafeConsole } from "@/utils/courseGiftDiagnosticPrivacy";
 import {
   getPreferredMode as loadPreferredMode,
   setPreferredMode as persistPreferredMode,
@@ -68,7 +69,7 @@ function warnUnknownCapsOnce(unknownKeys: string[]) {
   if (digest === lastUnknownCapsDigest) return;
   lastUnknownCapsDigest = digest;
 
-  console.warn("[ENT] Unknown capability keys (not canonical):", unknownKeys);
+  privateSafeConsole("warn", "[ENT] Unknown capability keys (not canonical):", unknownKeys);
 }
 
 function safeStringify(v: any) {

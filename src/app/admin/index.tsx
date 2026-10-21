@@ -27,6 +27,7 @@ import TestimonialReviewPanel from "@/components/admin/TestimonialReviewPanel";
 import ComplimentaryGrantsAdminCard from "@/features/admin/ComplimentaryGrantsAdminCard";
 import AdminAccountBillingVerification from "@/features/admin/AdminAccountBillingVerification";
 import AdminCommercePaymentReviewCard from "@/features/admin/AdminCommercePaymentReviewCard";
+import StagingCourseCheckoutSupportEntry from "@/features/admin/StagingCourseCheckoutSupportEntry";
 import AdminFacilityDocuments from "@/features/admin/AdminFacilityDocuments";
 import AdminEvidenceVaultCard, {
   type AdminEvidenceVaultUser
@@ -2714,6 +2715,7 @@ export default function PlatformAdminRoute() {
       {showComplimentaryAccess ? <ComplimentaryGrantsAdminCard /> : null}
 
       <AdminCommercePaymentReviewCard />
+      <StagingCourseCheckoutSupportEntry />
       <AdminFacilityDocuments />
 
       <TestimonialReviewPanel authorized={isAdmin} />

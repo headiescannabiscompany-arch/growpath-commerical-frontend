@@ -17,6 +17,9 @@ import { RouteAccessGuard } from "../navigation/RouteAccessGuard";
 import { initMonitoring, wrapWithMonitoring } from "@/utils/monitoring";
 import { useNotificationDeepLinks } from "@/notifications/useNotificationDeepLinks";
 import { applyPublicRouteMetadata } from "@/seo/publicRouteMetadata";
+// Production OFF candidate: do not select the accepted Sandbox transport here.
+// The existing private screen keeps unavailable copy and invitation scrubbing.
+import CourseGiftWebBoundary from "@/components/courseGifts/CourseGiftWebBoundary";
 
 enableScreens(true);
 initUnauthorizedHandler();
@@ -69,7 +72,9 @@ function RootShell() {
             <GlobalApiStatusBanner />
             <View style={{ flex: 1, backgroundColor: palette.page }}>
               <RouteAccessGuard>
-                <Slot />
+                <CourseGiftWebBoundary>
+                  <Slot />
+                </CourseGiftWebBoundary>
               </RouteAccessGuard>
             </View>
             <GlobalReportBugButton />

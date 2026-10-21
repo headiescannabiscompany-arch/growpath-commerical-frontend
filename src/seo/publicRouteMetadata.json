@@ -5,6 +5,16 @@
     "index": true
   },
   "routes": {
+    "claim-course-gift": {
+      "title": "Course gift | GrowPathAI",
+      "description": "Private course gift review. Availability and access require a separate check.",
+      "index": false
+    },
+    "course-gifts/checkout": {
+      "title": "Course gift status | GrowPathAI",
+      "description": "Private course gift payment status. Returning here does not confirm payment or course access.",
+      "index": false
+    },
     "products": {
       "title": "Products, Offers & Trials | GrowPathAI",
       "description": "Find published products and concept trials, and browse their full public store collections.",

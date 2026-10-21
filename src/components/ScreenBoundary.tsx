@@ -2,6 +2,10 @@ import React from "react";
 import { Text, ScrollView, View } from "react-native";
 import BackButton from "@/components/nav/BackButton";
 import { captureException } from "@/utils/monitoring";
+import {
+  suppressCourseGiftDiagnostic,
+  PRIVATE_PAGE_ERROR
+} from "@/utils/courseGiftDiagnosticPrivacy";
 import { useAppTheme } from "@/theme/appTheme";
 
 type Props = {
@@ -23,11 +27,14 @@ class ScreenBoundaryBase extends React.PureComponent<BoundaryProps, State> {
   state: State = {};
 
   static getDerivedStateFromError(error: Error) {
-    return { error };
+    return {
+      error: suppressCourseGiftDiagnostic(error) ? new Error(PRIVATE_PAGE_ERROR) : error
+    };
   }
 
   componentDidCatch(error: Error, info: any) {
     const label = this.props.name || this.props.title || "UnknownScreen";
+    if (suppressCourseGiftDiagnostic(error, label, info)) return;
     console.error(`[SCREEN_CRASH] ${label}`, error, info);
     captureException(error, { screen: label, componentStack: info?.componentStack });
   }

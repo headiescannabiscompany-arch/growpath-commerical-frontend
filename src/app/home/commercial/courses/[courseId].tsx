@@ -22,6 +22,7 @@ import LessonMediaCard from "@/components/learning/LessonMediaCard";
 import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
 import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
 import AppCard from "@/components/layout/AppCard";
+import CourseGiftCourseEntry from "@/components/courseGifts/CourseGiftCourseEntry";
 import AppPage from "@/components/layout/AppPage";
 import {
   emptyLessonMediaDraft,
@@ -685,6 +686,13 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
       {loading ? <Text style={styles.muted}>Loading commercial course...</Text> : null}
       {error ? <InlineError error={error} /> : null}
       {message ? <Text style={styles.success}>{message}</Text> : null}
+
+      <CourseGiftCourseEntry
+        courseId={course?.id || course?._id}
+        requestedCourseId={courseId}
+        mode="creator"
+        eligible={Boolean(course && !loading && !error && !courseBusy && !learnerPreview)}
+      />
 
       {learnerPreview && course ? (
         <AppCard>

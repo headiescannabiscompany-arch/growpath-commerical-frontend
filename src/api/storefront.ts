@@ -1,5 +1,22 @@
 import { apiRequest } from "./apiRequest";
 
+// Public metadata, not learner access. No identity, balance notification or
+// automatic retries are needed when opening a saved direct course link.
+export function fetchPublicStorefrontCourse(slug: string, courseId: string) {
+  return apiRequest(
+    `/api/commercial/storefront/public/${encodeURIComponent(slug)}/courses/${encodeURIComponent(courseId)}`,
+    {
+      method: "GET",
+      auth: false,
+      retries: 0,
+      timeoutMs: 15000,
+      notifyTokenBalance: false,
+      invalidateOn401: false,
+      cache: "no-store"
+    }
+  );
+}
+
 const STOREFRONT_BASE = "/api/commercial/storefront";
 
 export type Storefront = {

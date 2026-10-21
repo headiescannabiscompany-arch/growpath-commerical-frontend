@@ -210,6 +210,8 @@ const fallbackRoutes = [
   "ai-cultivation-disclaimer",
   "accept-facility-invite",
   "claim-gift",
+  "claim-course-gift",
+  "course-gifts/checkout",
   "feedback",
   "courses",
   "courses/create",
@@ -801,10 +803,16 @@ function staticPublicMarkup(route, seo) {
   ].join("");
 }
 
-function applySeo(html, route, { dynamicStudyShell = false, privateAppShell = false } = {}) {
+function applySeo(
+  html,
+  route,
+  { dynamicStudyShell = false, privateAppShell = false } = {}
+) {
   // Shared fallbacks cannot know the requested record, account or workspace.
   // Keep the app bootstrap, but never inherit Home's indexable metadata or records.
-  const sharedShell = dynamicStudyShell || privateAppShell;
+  const privateGiftShell =
+    route === "claim-course-gift" || route === "course-gifts/checkout";
+  const sharedShell = dynamicStudyShell || privateAppShell || privateGiftShell;
   const seo = dynamicStudyShell
     ? {
         title: "Field Study | GrowPathAI",
@@ -823,8 +831,9 @@ function applySeo(html, route, { dynamicStudyShell = false, privateAppShell = fa
   const canonical = sharedShell ? null : canonicalUrl(route);
   const title = escapeHtml(seo.title);
   const description = escapeHtml(seo.description);
-  const robots =
-    isStagingExport || sharedShell
+  const robots = privateGiftShell
+    ? "noindex,nofollow,noarchive"
+    : isStagingExport || sharedShell
       ? "noindex,nofollow"
       : seo.index
         ? "index,follow"
@@ -833,6 +842,11 @@ function applySeo(html, route, { dynamicStudyShell = false, privateAppShell = fa
   const tags = [
     `<meta name="description" content="${description}" />`,
     `<meta name="robots" content="${robots}" />`,
+    ...(privateGiftShell
+      ? [
+          '<meta name="referrer" content="no-referrer" data-course-gift-referrer="created" />'
+        ]
+      : []),
     ...(canonical ? [`<link rel="canonical" href="${escapeHtml(canonical)}" />`] : []),
     `<link rel="manifest" href="/site.webmanifest" />`,
     `<meta name="theme-color" content="#0f5132" />`,
@@ -937,6 +951,8 @@ const robotsTxt = (
         "Disallow: /courses/add-lesson",
         "Disallow: /accept-facility-invite",
         "Disallow: /claim-gift",
+        "Disallow: /claim-course-gift",
+        "Disallow: /course-gifts/",
         "Disallow: /forgot-password",
         "Disallow: /reset-password",
         "Disallow: /verify-email",

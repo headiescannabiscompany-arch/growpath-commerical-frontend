@@ -112,6 +112,56 @@ function runExport(tempRoot, env = {}, args = []) {
 }
 
 describe("production web export", () => {
+  it.each(["production", "staging"])(
+    "course gift private shells (%s) omit public identity and retain the app bootstrap",
+    (target) => {
+      const tempRoot = createExportRoot();
+      try {
+        const env =
+          target === "staging"
+            ? {
+                GROWPATH_WEB_EXPORT_TARGET: "staging",
+                EXPO_PUBLIC_API_URL: "https://synthetic-api.onrender.com",
+                GROWPATH_SITE_URL: "https://synthetic-web.onrender.com"
+              }
+            : {};
+        const result = runExport(tempRoot, env);
+        expect(result.status).toBe(0);
+        const out = path.join(tempRoot, "dist");
+        for (const route of ["claim-course-gift", "course-gifts/checkout"]) {
+          const html = fs.readFileSync(path.join(out, route, "index.html"), "utf8");
+          expect(html).toContain('content="noindex,nofollow,noarchive"');
+          expect(html).toContain('name="referrer" content="no-referrer"');
+          expect(html).not.toMatch(
+            /rel="canonical"|property="og:url"|application\/ld\+json/
+          );
+          expect(html).not.toContain("The grow journal that remembers");
+          expect(html).toContain("/_expo/static/js/web/index-stable.js?v=");
+          if (target === "production")
+            expect(fs.readFileSync(path.join(out, "sitemap.xml"), "utf8")).not.toContain(
+              `/${route}</loc>`
+            );
+          else expect(fs.existsSync(path.join(out, "sitemap.xml"))).toBe(false);
+        }
+        const robots = fs.readFileSync(path.join(out, "robots.txt"), "utf8");
+        if (target === "production") {
+          expect(robots).toContain("Disallow: /claim-course-gift");
+          expect(robots).toContain("Disallow: /course-gifts/");
+          const pricing = fs.readFileSync(path.join(out, "pricing/index.html"), "utf8");
+          expect(pricing).toContain('content="index,follow"');
+          expect(pricing).toContain('rel="canonical"');
+        } else expect(robots).toContain("Disallow: /");
+      } finally {
+        const resolved = path.resolve(tempRoot);
+        if (
+          path.dirname(resolved) !== path.resolve(os.tmpdir()) ||
+          !path.basename(resolved).startsWith("growpath-export-")
+        )
+          throw new Error("Unsafe test cleanup path");
+        fs.rmSync(resolved, { recursive: true, force: true });
+      }
+    }
+  );
   it("exports connected factual schema, the real logo and reviewed stable sitemap dates", () => {
     const tempRoot = createExportRoot();
     expect(runExport(tempRoot).status).toBe(0);

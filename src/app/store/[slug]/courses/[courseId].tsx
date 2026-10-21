@@ -17,7 +17,7 @@ import {
   type CommercialAnalyticsEvent
 } from "@/api/commercialAnalytics";
 import { pollCourseAccessStatus, startCourseCheckout } from "@/api/coursePayments";
-import { fetchPublicStorefront } from "@/api/storefront";
+import { fetchPublicStorefront, fetchPublicStorefrontCourse } from "@/api/storefront";
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
@@ -31,6 +31,7 @@ import {
 import { sharePublicLink } from "@/utils/publicLinks";
 import { parsePublicCourseReturnPath, safeLoginPath } from "@/utils/authReturnPath";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { coursePriceLabel } from "@/utils/coursePriceLabel";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
@@ -57,6 +58,15 @@ function courseKey(course: any) {
   return String(course?.id || course?._id || course?.courseId || course?.slug || "");
 }
 
+function courseRoutePart(value: unknown) {
+  if (typeof value !== "string") return "";
+  try {
+    return decodeURIComponent(value).trim();
+  } catch {
+    return "";
+  }
+}
+
 function campaignKey(campaign: any) {
   return String(
     campaign?.id ||
@@ -71,13 +81,6 @@ function campaignKey(campaign: any) {
 function campaignHref(campaign: any) {
   const id = campaignKey(campaign);
   return id ? `/feed?campaignId=${encodeURIComponent(id)}` : "/feed";
-}
-
-function money(course: any) {
-  const cents = Number(course?.priceCents || 0);
-  if (cents > 0) return `$${(cents / 100).toFixed(2)}`;
-  const price = Number(course?.price || 0);
-  return price > 0 ? `$${price.toFixed(2)}` : "Free";
 }
 
 function isPaidCourse(course: any) {
@@ -147,9 +150,9 @@ export default function PublicStorefrontCourseRoute() {
   }>();
   const auth = useAuth();
   const router = useRouter();
-  const slug = useMemo(() => String(params.slug || "").trim(), [params.slug]);
+  const slug = useMemo(() => normalize(courseRoutePart(params.slug)), [params.slug]);
   const requestedCourseId = useMemo(
-    () => String(params.courseId || params.course || "").trim(),
+    () => courseRoutePart(params.courseId ?? params.course),
     [params.course, params.courseId]
   );
   const checkoutResult = useMemo(
@@ -173,33 +176,85 @@ export default function PublicStorefrontCourseRoute() {
   const [feedback, setFeedback] = useState("");
   const checkoutHandledRef = useRef("");
   const checkoutStartRef = useRef(false);
+  const scope = JSON.stringify([slug, requestedCourseId]);
+  const currentScope = useRef(scope);
+  currentScope.current = scope;
+  const loadGeneration = useRef(0);
+  const activeLoadScope = useRef<string | null>(null);
+  const [loadedScope, setLoadedScope] = useState("");
 
   const load = useCallback(async () => {
-    if (!slug) return;
+    if (activeLoadScope.current === scope) return;
+    const generation = ++loadGeneration.current;
+    activeLoadScope.current = scope;
+    const isCurrent = () =>
+      currentScope.current === scope && loadGeneration.current === generation;
     setLoading(true);
     setError("");
+    setCourses([]);
+    setStorefront(null);
+    setProducts([]);
+    setLives([]);
+    setFeedPosts([]);
+    setForumThreads([]);
     try {
-      const res: any = await fetchPublicStorefront(slug);
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !requestedCourseId) {
+        throw new Error("Invalid course link.");
+      }
+      const exactId = /^[a-f0-9]{24}$/i.test(requestedCourseId);
+      const [res, direct]: any[] = await Promise.all([
+        fetchPublicStorefront(slug),
+        exactId ? fetchPublicStorefrontCourse(slug, requestedCourseId) : null
+      ]);
+      if (!isCurrent()) return;
       const payload = extractPublicCommercialPayload(res);
+      const preview = direct?.course;
+      if (exactId) {
+        const previewIds = [preview?.id, preview?._id].filter((value) => value != null);
+        if (
+          !previewIds.length ||
+          !previewIds.every(
+            (value) =>
+              typeof value === "string" &&
+              normalize(value) === normalize(requestedCourseId)
+          ) ||
+          normalize(preview?.storefrontSlug) !== slug ||
+          normalize(payload.storefront?.slug) !== slug ||
+          preview?.status !== "published" ||
+          !["public", "unlisted"].includes(preview?.visibility)
+        )
+          throw new Error("Course preview unavailable.");
+      }
       setStorefront(payload.storefront);
-      setCourses(payload.courses);
+      // Exact-ID reads are authoritative. A denied/stale direct response must
+      // never be replaced by a directory entry. Legacy aliases remain public-only.
+      setCourses(exactId ? [preview] : payload.courses);
       setProducts(payload.products);
       setLives((payload as any).lives || []);
       setFeedPosts(payload.feedPosts);
       setForumThreads(payload.forumThreads);
     } catch (err: any) {
-      setError(err?.message || "Unable to load course.");
+      if (isCurrent()) setError(err?.message || "Unable to load course.");
     } finally {
-      setLoading(false);
+      if (isCurrent()) {
+        setLoadedScope(scope);
+        setLoading(false);
+      }
+      if (loadGeneration.current === generation) activeLoadScope.current = null;
     }
-  }, [slug]);
+  }, [slug, requestedCourseId, scope]);
 
   useEffect(() => {
     void load();
+    return () => {
+      loadGeneration.current++;
+      activeLoadScope.current = null;
+    };
   }, [load]);
 
   const course = useMemo(() => {
-    const requested = normalize(decodeURIComponent(requestedCourseId));
+    if (loading || error || loadedScope !== scope) return undefined;
+    const requested = normalize(requestedCourseId);
     return courses.find((item) => {
       const candidates = [
         courseKey(item),
@@ -210,7 +265,7 @@ export default function PublicStorefrontCourseRoute() {
       ];
       return candidates.some((candidate) => normalize(String(candidate)) === requested);
     });
-  }, [courses, requestedCourseId]);
+  }, [courses, requestedCourseId, loading, error, loadedScope, scope]);
 
   const id = courseKey(course);
   const brandName = storefront?.businessName || storefront?.name || "Brand";
@@ -248,8 +303,8 @@ export default function PublicStorefrontCourseRoute() {
       ])
     ).values()
   ].slice(0, 4);
-  const priceLabel = money(course);
   const paid = isPaidCourse(course);
+  const priceLabel = coursePriceLabel(course, paid);
   const awaitingBuyAuth =
     paid && checkoutState !== "confirmed" && !checkoutPending && auth.isHydrating;
   const courseHeroImage = resolveImageUri(
@@ -435,15 +490,25 @@ export default function PublicStorefrontCourseRoute() {
         </View>
       }
     >
-      {loading ? (
+      {loading || loadedScope !== scope ? (
         <View style={styles.center}>
           <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading course...</Text>
         </View>
       ) : error ? (
-        <Text accessibilityRole="alert" style={styles.error}>
-          {error}
-        </Text>
+        <View>
+          <Text accessibilityRole="alert" style={styles.error}>
+            {error}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry course preview"
+            style={styles.secondaryButton}
+            onPress={() => void load()}
+          >
+            <Text style={styles.secondaryButtonText}>Retry</Text>
+          </Pressable>
+        </View>
       ) : !course ? (
         <AppCard>
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
