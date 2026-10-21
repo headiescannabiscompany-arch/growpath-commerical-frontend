@@ -147,6 +147,16 @@ Bluesky, Reddit, LinkedIn, email, and text. The canonical page preserves the vid
 creator identity, follow control, discussion, reports, and access rules; never replace it
 with an expiring object-store URL.
 
+Bluesky video handoffs opt into the existing versioned API share document with
+the exact `preview=bluesky` selector. This document returns video-specific metadata
+for any user agent without redirecting, and keeps both canonical and `og:url` on
+the server-rebuilt preview URL. A normal Watch link opens the clean video page;
+the existing generated image is unchanged. Recheck published public/unlisted,
+not-deleted eligibility and return no-store even on unavailable responses. This
+selector grants no private, follower-only, course-only or Facility access. Default
+browser redirects and other destinations retain their existing behavior. Local
+metadata checks do not prove a retained card in Bluesky or authorize posting.
+
 This is part of the shared content contract. Published Forum discussions, courses,
 storefront records, live sessions, premieres, replays, and opted-in Nature findings use
 their own canonical GrowPath pages. Private AI results, journal entries, grows, Facility

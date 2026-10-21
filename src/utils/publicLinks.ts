@@ -133,6 +133,92 @@ function xShareSummary(title: string, previewUrl: string, details: PublicShareDe
   return shortened;
 }
 
+function blueskyVideoPreviewUrl(previewUrl: string) {
+  // Opt in only the configured API's existing video preview. Other content and
+  // destinations keep their original URL and ordinary browser redirect behavior.
+  try {
+    const preview = new URL(previewUrl);
+    const api = new URL(process.env.EXPO_PUBLIC_API_URL || "https://api.growpathai.com");
+    if (
+      preview.origin === api.origin &&
+      preview.protocol === "https:" &&
+      !preview.username &&
+      !preview.password &&
+      !preview.hash &&
+      /^\/api\/videos\/[a-f0-9]{24}\/share$/.test(preview.pathname) &&
+      !preview.searchParams.has("preview")
+    ) {
+      return `${previewUrl}${previewUrl.includes("?") ? "&" : "?"}preview=bluesky`;
+    }
+  } catch {
+    // Keep the existing handoff when the URL cannot be classified safely.
+  }
+  return previewUrl;
+}
+
+function blueskyShareMessage(
+  title: string,
+  previewUrl: string,
+  details: PublicShareDetails
+) {
+  const Segmenter = (
+    Intl as typeof Intl & {
+      Segmenter?: new (
+        locale: undefined,
+        options: { granularity: "grapheme" }
+      ) => {
+        segment: (value: string) => Iterable<{ segment: string }>;
+      };
+    }
+  ).Segmenter;
+  const segmenter = Segmenter
+    ? new Segmenter(undefined, { granularity: "grapheme" })
+    : null;
+  // Bluesky's post lexicon caps text at 300 graphemes / 3000 UTF-8 bytes.
+  // Count the complete link conservatively, not X's weighted URL length.
+  const fits = (text: string) => {
+    const count = segmenter
+      ? Array.from(segmenter.segment(text)).length
+      : Array.from(text).length;
+    let bytes = 0;
+    for (const char of text) {
+      const point = char.codePointAt(0)!;
+      bytes += point <= 0x7f ? 1 : point <= 0x7ff ? 2 : point <= 0xffff ? 3 : 4;
+    }
+    return count <= 300 && bytes <= 3000;
+  };
+  const message = (heading: string) =>
+    heading ? `${heading}\n${previewUrl}` : previewUrl;
+  // Never damage an oversized URL to make it fit; Copy Link and other targets
+  // remain available instead of opening an impossible Bluesky prefill.
+  if (!fits(previewUrl)) return null;
+  const fields = [title, details.priceLabel, details.description]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+  const full = fields.join("\n");
+  if (fits(message(full))) return message(full);
+
+  let shortened = "";
+  // Reuse the existing grapheme/whole-URL iterator. Its older-engine fallback
+  // keeps whitespace-delimited units whole; count code points conservatively.
+  for (const unit of xSummaryUnits(full)) {
+    const next = shortened + unit;
+    if (!fits(message(`${next.trimEnd()}…`))) break;
+    shortened = next;
+  }
+  shortened = shortened.trimEnd();
+  const heading = [title, details.priceLabel]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join("\n");
+  const cleanTitle = title.trim();
+  if (fits(message(heading)) && !shortened.startsWith(heading)) return message(heading);
+  if (!fits(message(heading)) && fits(message(cleanTitle))) return message(cleanTitle);
+  if (fits(message(cleanTitle)) && !shortened.startsWith(cleanTitle))
+    return message(cleanTitle);
+  return shortened ? message(`${shortened}…`) : previewUrl;
+}
+
 export function buildPublicShareTargets(
   title: string,
   path: string,
@@ -148,6 +234,11 @@ export function buildPublicShareTargets(
     publicShareMessage(title, details.socialPreviewUrl || path, details)
   );
   const encodedSummary = encodeURIComponent(xShareSummary(title, previewUrl, details));
+  const blueskyMessage = blueskyShareMessage(
+    title,
+    blueskyVideoPreviewUrl(previewUrl),
+    details
+  );
 
   return [
     {
@@ -160,11 +251,15 @@ export function buildPublicShareTargets(
       label: "X",
       href: `https://twitter.com/intent/tweet?text=${encodedSummary}&url=${encodedPreviewUrl}`
     },
-    {
-      key: "bluesky",
-      label: "Bluesky",
-      href: `https://bsky.app/intent/compose?text=${encodedMessage}`
-    },
+    ...(blueskyMessage === null
+      ? []
+      : [
+          {
+            key: "bluesky" as const,
+            label: "Bluesky",
+            href: `https://bsky.app/intent/compose?text=${encodeURIComponent(blueskyMessage)}`
+          }
+        ]),
     {
       key: "reddit",
       label: "Reddit",

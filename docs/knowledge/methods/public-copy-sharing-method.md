@@ -75,6 +75,15 @@ them into another intent parameter does not create extra space. Keep the source,
 Copy Post, email/SMS, and other provider handoffs unchanged. Opening an eligible
 composer is not publication or proof of a retained external preview.
 
+Bluesky intents independently bound their prefilled text to 300 graphemes and
+3000 UTF-8 bytes, conservatively counting the complete preview URL. Preserve a
+fitting title and complete price before shortening the description; never emit a
+partial price or split a grapheme or embedded URL. Older engines keep whole
+whitespace-delimited chunks and count code points conservatively. If the URL alone
+cannot fit, omit only the Bluesky destination; Copy Link and other destinations
+remain available. Source text, Copy Post and other provider handoffs stay unchanged.
+The video-specific stable-preview option is documented in the video-sharing method.
+
 Discussion-detail post and comment reads recover independently. Do not read comments
 or mount comment/share actions before the exact requested post is readable. A failed
 comment read must not hide a readable post or claim an empty discussion. Retry is
