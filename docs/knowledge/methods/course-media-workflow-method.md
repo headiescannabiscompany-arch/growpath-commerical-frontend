@@ -1,13 +1,45 @@
 # Course Media Workflow
 
-## Course seller payment alignment — locally verified, October 21, 2026
+## Explicit course-payment setup — locally verified, October 21, 2026
 
-New ordinary-course and course-gift checkouts are locally prepared to retain the
+The existing seller-settings card now distinguishes bank payouts from course
+payment capability. Status reads and ordinary payout actions never request
+merchant capabilities. Free-course creators do not need this optional setup.
+Only an unchecked, explicit creator confirmation requests course payments on the
+same bound Stripe account; it is not publication, gifting activation, provider
+content approval or a plan/credit change.
+
+Reuse the existing authenticated onboarding route and Stripe-hosted requirement
+collection. For supported Accounts v2 configurations, request only merchant
+card payments; retain the existing Express dashboard, application fee/loss
+responsibilities, country and recipient settings. Pending/restricted setup resumes
+without another capability request. Unsupported configurations and uncertain or
+stale identity require review, never account replacement or automatic conversion.
+Legacy accounts remain unchanged; existing active capabilities can be recognized.
+
+Two private intent fields on the existing User record bind the same account and
+original request time. A stable provider idempotency key covers concurrent calls
+and lost replies; unresolved intent beyond the existing 29-day retry window stops
+for review. This retry window is not a retention or gift-expiry policy. Keep the
+fields excluded from public serialization. Recheck account removal/binding before
+returning a hosted link; discard late UI results after session/token changes.
+
+Local evidence: 38 new backend and 19 new UI/client checks, plus six directly
+affected existing checks, passed (63 total). Focused TypeScript reported zero
+diagnostics. Provider/database/network dependencies were mocked or blocked; no
+database, real Stripe call, browser journey, build, commit or deployment occurred.
+This setup extension is UNRELEASED. Real provider/account eligibility and hosted
+acceptance remain separate; use the existing R09 single checklist and finite
+payment-alignment receipt. Unrelated retention work stays untouched.
+
+## Course seller payment alignment — backend released, October 21, 2026
+
+New ordinary-course and course-gift checkout code retains the
 creator's payment role in the existing reservation and financial evidence. Keep
 the existing platform destination-charge flow and fee, adding `on_behalf_of` for
 that retained creator account. Require active merchant card-payment capability
 as well as recipient transfer readiness; Accounts v1 also requires charges enabled.
-Recipient-only onboarding is not merchant readiness. Never upgrade an account,
+Recipient-only onboarding is not merchant readiness. Never automatically upgrade an account,
 publish private verification fields, or infer payment authority from a profile name.
 
 Bind the role through gift review, receipt, reservation, provider metadata and paid
@@ -21,7 +53,9 @@ Storefront Products, downloadable Offers and subscriptions.
 Local verification accepted 48 new and two directly affected existing checks,
 including one cleaned-up loopback database with mocked provider responses.
 No real Stripe account, receipt/statement presentation, hosted checkout or payment
-was verified. This package remains unreleased; gifting/workers remain
+was verified. Backend f5f9586e was subsequently released on production deployment
+dep-dbcjn16i0phs73f20c70 with paired signed webhook acceptance and readiness;
+the knowledge-only frontend commit 142fed8e remains local. Gifting/workers remain
 OFF. Provider eligibility, actual legal seller disclosures, account capability
 changes and release authority remain separate R09 checklist gates. Destination
 charges still leave existing platform refund/dispute debit responsibilities in

@@ -9,6 +9,7 @@ const mockGetStatus = jest.fn();
 const mockStartOnboarding = jest.fn();
 const mockDashboardLink = jest.fn();
 const mockOpenExternalUrl = jest.fn();
+jest.mock("@/auth/AuthContext", () => ({ useOptionalAuth: () => null }));
 
 jest.mock("@/api/stripeConnect", () => ({
   getConnectPayoutStatus: (...args: any[]) => mockGetStatus(...args),

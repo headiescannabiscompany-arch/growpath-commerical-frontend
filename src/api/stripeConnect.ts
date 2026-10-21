@@ -18,6 +18,11 @@ export type StripeConnectPayoutStatus = {
   detailsSubmitted: boolean;
   requirements: StripeConnectRequirementSummary;
   payoutManagement: unknown;
+  coursePayments?: {
+    status: "unknown" | "payout_setup_required" | "not_requested" | "pending" | "restricted" | "unsupported" | "review_required" | "ready";
+    canStart: boolean;
+    canResume: boolean;
+  };
 };
 
 export type StripeConnectLinkResult = {
@@ -59,6 +64,9 @@ export function normalizeStripeConnectStatus(
   const envelope = unwrap(payload);
   const source = unwrap(envelope?.status ?? envelope);
   const requirements = source?.requirements || {};
+  const course = source?.coursePayments;
+  const courseState = ["payout_setup_required", "not_requested", "pending", "restricted", "unsupported", "review_required", "ready"].includes(course?.status)
+    ? course.status : "unknown";
 
   return {
     connected: source?.connected === true,
@@ -75,7 +83,12 @@ export function normalizeStripeConnectStatus(
       pastDueCount: safeCount(requirements?.pastDueCount),
       pendingVerificationCount: safeCount(requirements?.pendingVerificationCount)
     },
-    payoutManagement: envelope?.payoutManagement ?? source?.payoutManagement ?? null
+    payoutManagement: envelope?.payoutManagement ?? source?.payoutManagement ?? null,
+    coursePayments: {
+      status: courseState,
+      canStart: courseState === "not_requested" && course?.canStart === true,
+      canResume: ["pending", "restricted"].includes(courseState) && course?.canResume === true
+    }
   };
 }
 
@@ -111,6 +124,23 @@ export async function startConnectPayoutOnboarding(country?: string) {
 export async function createConnectPayoutDashboardLink() {
   const response = await apiRequest(apiRoutes.CREATOR.CONNECT_PAYOUT_DASHBOARD, {
     method: "POST"
+  });
+  return normalizeLinkResult(response);
+}
+
+export async function startConnectCoursePaymentOnboarding(token: string) {
+  if (!token?.trim()) throw new Error("Sign in again before setting up course payments.");
+  const response = await apiRequest(apiRoutes.USER.ONBOARD_CREATOR, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token.replace(/^Bearer\s+/i, "").trim()}` },
+    body: { purpose: "course_payments", confirmCoursePayments: true },
+    timeoutMs: 60000,
+    retries: 0,
+    cache: "no-store",
+    redirect: "error",
+    invalidateOn401: false,
+    notifyTokenBalance: false,
+    notifyTransport: false
   });
   return normalizeLinkResult(response);
 }

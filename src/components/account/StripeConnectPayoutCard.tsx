@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -6,6 +6,7 @@ import {
   createConnectPayoutDashboardLink,
   getConnectPayoutStatus,
   startConnectPayoutOnboarding,
+  startConnectCoursePaymentOnboarding,
   type StripeConnectPayoutStatus
 } from "@/api/stripeConnect";
 import AppCard from "@/components/layout/AppCard";
@@ -14,6 +15,7 @@ import { SELLER_COUNTRIES } from "@/constants/sellerCountries";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { openExternalUrl } from "@/utils/openExternalUrl";
+import { useOptionalAuth } from "@/auth/AuthContext";
 
 type StripeConnectPayoutCardProps = {
   enabled?: boolean;
@@ -77,6 +79,19 @@ function remainingRequirementCount(status: StripeConnectPayoutStatus | null) {
   );
 }
 
+function coursePaymentDetail(status: StripeConnectPayoutStatus | null) {
+  switch (status?.coursePayments?.status) {
+    case "ready": return "Course payments: Stripe capability ready.";
+    case "payout_setup_required": return "Course payments: Set up payouts first, then use that same account for course payments.";
+    case "not_requested": return "Course payments: Not set up. Payout readiness alone does not let you accept course payments.";
+    case "pending": return "Course payments: Setup or Stripe verification is still pending.";
+    case "restricted": return "Course payments: Stripe needs your attention. Resume setup to review its requirements.";
+    case "unsupported": return "Course payments: This account needs support review. Keep your existing Stripe account; do not create a replacement.";
+    case "review_required": return "Course payments: The earlier setup needs support review before another request.";
+    default: return "Course payments: Unable to verify. Refresh status; payout readiness is separate.";
+  }
+}
+
 export default function StripeConnectPayoutCard({
   enabled = true,
   title = "Stripe seller payouts",
@@ -90,26 +105,49 @@ export default function StripeConnectPayoutCard({
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
   const [country, setCountry] = useState("");
+  const [courseConfirmed, setCourseConfirmed] = useState(false);
+  const [courseUncertain, setCourseUncertain] = useState(false);
+  const auth = useOptionalAuth();
+  const identity = String(auth?.user?.id || auth?.user?._id || "");
+  const scope = useMemo(() => ({ active: true }), [enabled, identity, auth?.token, auth?.isHydrating]);
+  const currentScope = useRef(scope);
+  if (currentScope.current !== scope) {
+    currentScope.current.active = false;
+    currentScope.current = scope;
+  }
+  const inFlight = useRef<object | null>(null);
 
   const loadStatus = useCallback(async () => {
     if (!enabled) return;
     setLoading(true);
     setError("");
+    setCourseConfirmed(false);
     try {
-      setStatus(await getConnectPayoutStatus());
+      const nextStatus = await getConnectPayoutStatus();
+      if (!scope.active) return;
+      setStatus(nextStatus);
+      setCourseUncertain(false);
     } catch (nextError: any) {
+      if (!scope.active) return;
       setStatus(null);
       setError(
         nextError?.message ||
           "Stripe payout status could not be verified. No payout setting was changed."
       );
     } finally {
-      setLoading(false);
+      if (scope.active) setLoading(false);
     }
-  }, [enabled]);
+  }, [enabled, scope]);
 
   useEffect(() => {
     let active = true;
+    scope.active = true;
+    setStatus(null);
+    setBusy(false);
+    setFeedback("");
+    setCountry("");
+    setCourseConfirmed(false);
+    setCourseUncertain(false);
     if (!enabled) {
       setLoading(false);
       return () => {
@@ -120,10 +158,10 @@ export default function StripeConnectPayoutCard({
     setError("");
     void getConnectPayoutStatus()
       .then((nextStatus) => {
-        if (active) setStatus(nextStatus);
+        if (active && scope.active) setStatus(nextStatus);
       })
       .catch((nextError: any) => {
-        if (!active) return;
+        if (!active || !scope.active) return;
         setStatus(null);
         setError(
           nextError?.message ||
@@ -131,12 +169,13 @@ export default function StripeConnectPayoutCard({
         );
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (active && scope.active) setLoading(false);
       });
     return () => {
       active = false;
+      scope.active = false;
     };
-  }, [enabled]);
+  }, [enabled, scope]);
 
   if (!enabled) return null;
 
@@ -145,6 +184,8 @@ export default function StripeConnectPayoutCard({
   const needsCountry = status !== null && !status.connected;
   const countrySelected = SELLER_COUNTRIES.some((item) => item.code === country);
   const actionDisabled = busy || loading || !status || (needsCountry && !countrySelected);
+  const courseAction = status?.connected && (status.coursePayments?.canStart || status.coursePayments?.canResume);
+  const courseDisabled = busy || loading || !courseConfirmed || courseUncertain || !auth?.token || !identity || auth?.isHydrating === true;
 
   async function handleProviderAction() {
     if (actionDisabled) return;
@@ -155,6 +196,7 @@ export default function StripeConnectPayoutCard({
       const result = ready
         ? await createConnectPayoutDashboardLink()
         : await startConnectPayoutOnboarding(needsCountry ? country : undefined);
+      if (!scope.active) return;
       if (!trustedStripeConnectUrl(result.url)) {
         throw new Error("Stripe returned an invalid payout-management link.");
       }
@@ -166,6 +208,7 @@ export default function StripeConnectPayoutCard({
           : "Stripe setup opened. Refresh this status after returning to GrowPathAI."
       );
     } catch (nextError: any) {
+      if (!scope.active) return;
       setError(
         nextError?.message ||
           (ready
@@ -173,7 +216,36 @@ export default function StripeConnectPayoutCard({
             : "Stripe payout setup could not be opened.")
       );
     } finally {
-      setBusy(false);
+      if (scope.active) setBusy(false);
+    }
+  }
+
+  async function handleCourseSetup() {
+    if (!courseAction || courseDisabled || inFlight.current === scope) return;
+    inFlight.current = scope;
+    setBusy(true);
+    setError("");
+    setFeedback("");
+    setCourseConfirmed(false);
+    try {
+      const result = await startConnectCoursePaymentOnboarding(auth!.token!);
+      if (!scope.active) return;
+      setStatus(result.status);
+      if (result.status.coursePayments?.status === "ready" && !result.url) {
+        setFeedback("Stripe reports the course-payment capability ready. No course was published and gifting was not enabled.");
+        return;
+      }
+      if (!trustedStripeConnectUrl(result.url)) throw new Error("Course-payment setup link could not be verified.");
+      await openExternalUrl(result.url!);
+      if (!scope.active) return;
+      setFeedback("Course-payment setup opened on your existing Stripe account. Refresh status when you return.");
+    } catch {
+      if (!scope.active) return;
+      setCourseUncertain(true);
+      setError("Course-payment setup could not be confirmed. Refresh Stripe status before retrying the same account. Do not create another account.");
+    } finally {
+      if (inFlight.current === scope) inFlight.current = null;
+      if (scope.active) setBusy(false);
     }
   }
 
@@ -221,6 +293,31 @@ export default function StripeConnectPayoutCard({
             GrowPathAI records eligible seller earnings. Stripe is the source of truth for
             connected-account readiness, balances, and bank-payout status.
           </Text>
+          <View style={styles.countrySection}>
+            <Text style={styles.statusLabel}>Course payments</Text>
+            <Text style={styles.body}>{coursePaymentDetail(status)}</Text>
+            <Text style={styles.note}>
+              Payment setup is optional for free courses. It does not approve every course or market, publish content, enable gifting, or change your plan or credits.
+            </Text>
+            {courseAction ? (
+              <>
+                <Pressable accessibilityRole="checkbox"
+                  accessibilityLabel="I want to set up course payments on my existing Stripe account"
+                  accessibilityState={{ checked: courseConfirmed, disabled: busy || courseUncertain }}
+                  aria-checked={courseConfirmed}
+                  disabled={busy || courseUncertain}
+                  onPress={() => setCourseConfirmed((value) => !value)}>
+                  <Text style={styles.note}>{courseConfirmed ? "☑" : "☐"} I want to set up course payments on my existing Stripe account.</Text>
+                </Pressable>
+                <Pressable accessibilityRole="button" accessibilityLabel={status?.coursePayments?.canResume ? "Resume course-payment setup" : "Set up course payments"}
+                  accessibilityState={{ disabled: courseDisabled }} disabled={courseDisabled}
+                  onPress={() => void handleCourseSetup()}
+                  style={[styles.secondaryButton, courseDisabled && styles.disabled]}>
+                  <Text style={styles.secondaryButtonText}>{status?.coursePayments?.canResume ? "Resume course-payment setup" : "Set up course payments"}</Text>
+                </Pressable>
+              </>
+            ) : null}
+          </View>
           {needsCountry ? (
             <View style={styles.countrySection}>
               <Text style={styles.statusLabel}>Seller country</Text>

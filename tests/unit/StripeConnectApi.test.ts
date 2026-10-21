@@ -9,6 +9,28 @@ describe("Stripe Connect payout API adapter", () => {
     jest.resetAllMocks();
   });
 
+  it("course-payment request pins the current session, explicit intent and quiet no-retry transport", async () => {
+    mockApiRequest.mockResolvedValue({ coursePayments: { status: "pending", canResume: true }, url: "https://accounts.stripe.com/r/test" });
+    const { startConnectCoursePaymentOnboarding } = require("@/api/stripeConnect");
+    const response = await startConnectCoursePaymentOnboarding("synthetic-session");
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/user/creator/onboard", expect.objectContaining({
+      headers: { Authorization: "Bearer synthetic-session" },
+      body: { purpose: "course_payments", confirmCoursePayments: true },
+      retries: 0, notifyTokenBalance: false, invalidateOn401: false, cache: "no-store"
+    }));
+    expect(response.status.coursePayments).toEqual({ status: "pending", canStart: false, canResume: true });
+  });
+  it.each([undefined, { status: "unknown", canStart: true }, { status: "ready", canResume: true }])("course-payment projection fails closed for unexpected action flags: %p", async (coursePayments) => {
+    const { normalizeStripeConnectStatus } = require("@/api/stripeConnect");
+    const result = normalizeStripeConnectStatus({ coursePayments, chargesEnabled: true, transfersEnabled: true });
+    expect(result.coursePayments.canStart).toBe(false); expect(result.coursePayments.canResume).toBe(false);
+  });
+  it("course-payment requests require a current sign-in token", async () => {
+    const { startConnectCoursePaymentOnboarding } = require("@/api/stripeConnect");
+    await expect(startConnectCoursePaymentOnboarding("")).rejects.toThrow("Sign in again");
+    expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
   it("normalizes provider status without trusting a local payout marker", async () => {
     mockApiRequest.mockResolvedValue({
       success: true,
