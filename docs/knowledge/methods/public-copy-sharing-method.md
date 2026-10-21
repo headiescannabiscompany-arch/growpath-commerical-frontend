@@ -18,6 +18,11 @@ including in the owner's retained-campaign list.
 
 ## Explicit creator profile publication
 
+A course gift buyer review may reuse the published profile name under the same
+account/publication restrictions. It must not expose draft/account fields or
+present the name as verified legal seller identity. Course/payment authority is
+separate from profile publication; no new public profile is created by a review.
+
 Personal Profile's creator profile and links reuse the account's profile foundation,
 not Commercial link permissions or a new creator signup/plan. The owner may create
 a profile before publishing a video. Start with an empty private draft: never copy

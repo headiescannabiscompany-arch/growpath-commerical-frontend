@@ -167,6 +167,53 @@ async function reserve() {
   return session.reserveBuyer(request());
 }
 describe("R09-03E internal creator and buyer screens", () => {
+  it("seller disclosure survives the real client/session projection without entering storage or request bodies", async () => {
+    replies["buyer/review"].sellerDisclosure = {
+      source: "published_creator_profile",
+      displayName: "Synthetic teacher"
+    };
+    replies["buyer/review"].privateAccountName = "PRIVATE identity";
+    const result = await session.reviewBuyer(EMAIL);
+    expect(result.sellerDisclosure).toEqual({
+      source: "published_creator_profile",
+      displayName: "Synthetic teacher"
+    });
+    expect(JSON.stringify(result)).not.toContain("PRIVATE");
+    result.sellerDisclosure!.displayName = "Caller edit";
+    await session.reserveBuyer(request());
+    const body = calls("buyer/reserve")[0][1].body;
+    expect(body.reviewFingerprint).toBe(HASH);
+    expect(body).not.toHaveProperty("sellerDisclosure");
+    expect(JSON.stringify(storage.setItem.mock.calls)).not.toMatch(
+      /Synthetic teacher|Caller edit|PRIVATE|sellerDisclosure/
+    );
+  });
+  it("seller disclosure rejects expanded private identity from transport before showing a review", async () => {
+    replies["buyer/review"].sellerDisclosure = {
+      source: "published_creator_profile",
+      displayName: "Synthetic teacher",
+      email: "private@example.invalid"
+    };
+    await expect(session.reviewBuyer(EMAIL)).rejects.toBeTruthy();
+    expect(calls("buyer/reserve")).toHaveLength(0);
+    expect(storage.setItem).not.toHaveBeenCalled();
+  });
+  it("seller disclosure reaches the actual buyer screen without auto-consent or checkout", async () => {
+    replies["buyer/review"].sellerDisclosure = {
+      source: "published_creator_profile",
+      displayName: "Synthetic teacher"
+    };
+    const view = screen("buyer");
+    fireEvent.changeText(view.getByLabelText("Gift recipient email"), EMAIL);
+    await press(view, "Get current gift review");
+    expect(view.getByText("Course creator: Synthetic teacher")).toBeTruthy();
+    expect(
+      view.getByLabelText("I reviewed the recipient and gift terms").props
+        .accessibilityState.checked
+    ).toBe(false);
+    expect(calls("buyer/reserve")).toHaveLength(0);
+    expect(navigate).not.toHaveBeenCalled();
+  });
   it("hides a private form when the host rerenders after a session change", async () => {
     const view = screen("buyer");
     fireEvent.changeText(view.getByLabelText("Gift recipient email"), EMAIL);
@@ -261,7 +308,9 @@ describe("R09-03E internal creator and buyer screens", () => {
     expect(JSON.stringify(storage.setItem.mock.calls)).not.toContain(EMAIL);
     // R09-03F retains an opaque review fingerprint for same-attempt recovery,
     // never the reviewed recipient, terms, price, credentials or checkout URL.
-    expect(JSON.stringify(storage.setItem.mock.calls)).not.toContain("Synthetic refund terms");
+    expect(JSON.stringify(storage.setItem.mock.calls)).not.toContain(
+      "Synthetic refund terms"
+    );
     expect(JSON.stringify(storage.setItem.mock.calls)).not.toContain(URL);
   });
   it("requires a new server review after editing recipient", async () => {

@@ -1,5 +1,6 @@
 import {
   normalizedGiftEmail,
+  validGiftSellerDisclosure,
   type GiftQuote
 } from "@/components/courseGifts/courseGiftPresentation";
 
@@ -105,6 +106,7 @@ export function validGiftSaleQuote(
     Number.isSafeInteger(v.amountCents) &&
     v.amountCents > 0 &&
     v.currency === "usd" &&
+    validGiftSellerDisclosure(v.sellerDisclosure) &&
     ref(v.terms?.version) &&
     [
       v.terms?.expiry,

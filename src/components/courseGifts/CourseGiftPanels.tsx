@@ -155,6 +155,20 @@ function BuyerPanel({
         <Text style={{ color: palette.text }}>
           One course: USD {(quote.amountCents / 100).toFixed(2)}
         </Text>
+        <Text style={{ color: palette.text }}>
+          {quote.sellerDisclosure
+            ? `Course creator: ${quote.sellerDisclosure.displayName}`
+            : "Course creator: public profile name unavailable."}
+        </Text>
+        <Text style={{ color: palette.textMuted }}>
+          Independent creators sell their own courses through GrowPathAI. GrowPathAI hosts
+          the marketplace and sells its own courses and subscriptions.
+        </Text>
+        <Text style={{ color: palette.textMuted }}>
+          A public profile name is not verified legal seller information. Verified seller
+          details are not available in this review. For questions before paying, contact
+          support@growpathai.com.
+        </Text>
         <Text style={{ color: palette.textMuted }}>
           You’re buying this course for the email address shown. The recipient must sign
           in with that verified address and claim it. This does not enroll you or change

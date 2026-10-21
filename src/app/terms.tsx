@@ -19,6 +19,10 @@ export default function TermsPage() {
           body: `Payments are processed through the billing provider shown at checkout. For billing, cancellation or refund questions, contact ${SUPPORT_CONTACTS.billing}. These terms and any manual review do not limit your right to a refund, cancellation or other remedy required by applicable law. Facility and commercial features may require an active paid plan.`
         },
         {
+          title: "Who Sells Courses",
+          body: `Independent creators sell their own courses through GrowPathAI. GrowPathAI hosts the marketplace and sells its own courses and subscriptions. A creator's public profile name is not verified legal seller information. For seller, course-access or purchase questions, contact ${SUPPORT_CONTACTS.general}. This description does not limit any refund, cancellation or other remedy required by applicable law.`
+        },
+        {
           title: "User Content",
           body: "You retain ownership of the content you add to GrowPath. You grant GrowPath permission to store, process, display, and transmit that content as needed to provide the service."
         },

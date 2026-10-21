@@ -1,5 +1,31 @@
 # Course Media Workflow
 
+## Course seller disclosure — local preparation, October 21, 2026
+
+The owner confirmed that independent creators sell their own courses through
+GrowPathAI; GrowPathAI hosts the marketplace and sells its own courses and
+subscriptions. Terms and the dormant gift buyer review state that intended
+division without waiving mandatory customer remedies or claiming provider approval.
+
+The review may display only the existing explicitly published creator-profile
+name. Use the same account/publication restrictions as the public profile; never
+substitute account names, email, drafts, legal identity or payment-account IDs.
+Label it as a public profile name, not verified legal seller information. Missing
+public names and missing verified seller details must remain explicit, with the
+existing support contact. A display name cannot establish platform ownership or
+merchant-of-record classification.
+
+Bind the displayed name to the existing review fingerprint and reload it through
+the existing account/session reads. A changed or withdrawn name requires a new
+review; private draft edits do not. Strip only this presentation field before
+constructing the existing immutable financial receipt. Do not add public names
+to receipt storage or change retention, disposition, payment destination, fees,
+consent or entitlement rules. The browser projects only the two allowed public
+fields, stores neither, and resets unchecked consent when the quote changes.
+
+This package is local-only. Verified legal seller details, provider/policy
+authority, hosted release and activation remain separate checklist gates.
+
 ## Production OFF candidate — October 21, 2026
 
 R09-6.5 is locally prepared against the recorded production histories, not a

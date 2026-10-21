@@ -252,6 +252,12 @@ export function createInternalCourseGiftSaleSession({
           amountCents: result.amountCents,
           currency: result.currency,
           reviewFingerprint: result.reviewFingerprint,
+          sellerDisclosure: result.sellerDisclosure
+            ? {
+                source: result.sellerDisclosure.source,
+                displayName: result.sellerDisclosure.displayName
+              }
+            : null,
           terms: {
             version: result.terms.version,
             expiry: result.terms.expiry,

@@ -17,7 +17,30 @@ export type GiftQuote = {
   currency: "usd";
   checkoutAttemptId: string;
   terms: GiftTerms;
+  sellerDisclosure?: GiftSellerDisclosure | null;
 };
+
+// Self-published name only; not verified legal identity or payment authority.
+export type GiftSellerDisclosure = {
+  source: "published_creator_profile";
+  displayName: string;
+};
+export function validGiftSellerDisclosure(value: unknown): boolean {
+  if (value === undefined || value === null) return true;
+  if (typeof value !== "object" || Array.isArray(value)) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    Object.keys(v).length === 2 &&
+    Object.hasOwn(v, "source") &&
+    Object.hasOwn(v, "displayName") &&
+    v.source === "published_creator_profile" &&
+    typeof v.displayName === "string" &&
+    v.displayName.length > 0 &&
+    v.displayName.length <= 80 &&
+    v.displayName === v.displayName.trim() &&
+    !/[\u0000-\u001f\u007f-\u009f]/.test(v.displayName)
+  );
+}
 
 export type GiftCheckoutRequest = {
   courseId: string;
@@ -72,6 +95,7 @@ export function usableGiftQuote(quote: GiftQuote | null): quote is GiftQuote {
     Number.isSafeInteger(quote.amountCents) &&
     quote.amountCents > 0 &&
     quote.currency === "usd" &&
+    validGiftSellerDisclosure(quote.sellerDisclosure) &&
     quote.terms &&
     [
       quote.terms.version,
