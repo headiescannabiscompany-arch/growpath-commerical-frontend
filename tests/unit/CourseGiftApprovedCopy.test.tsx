@@ -110,6 +110,48 @@ test("approved buyer copy covers other features without replacing saved terms or
   view.unmount();
 });
 
+test.each([true, false])(
+  "customer rights clarification preserves saved terms and unchecked consent (refund text: %s)",
+  (hasRefundText) => {
+    const savedQuote: GiftQuote = { ...quote, terms: { ...quote.terms } };
+    if (!hasRefundText) delete savedQuote.terms.refund;
+    const before = JSON.stringify(savedQuote);
+    const onCheckout = jest.fn();
+    const onRefresh = jest.fn();
+    const view = render(
+      <CourseGiftBuyerPanel
+        scopeKey="synthetic-rights-copy"
+        availability="ready"
+        quote={savedQuote}
+        reviewedRecipient="recipient@example.invalid"
+        onCheckout={onCheckout}
+        onRefresh={onRefresh}
+      />
+    );
+
+    expect(
+      view.getByText(
+        "Manual review does not limit your right to a refund, cancellation or other remedy required by applicable law."
+      )
+    ).toBeTruthy();
+    expect(view.getByText(`Claim window: ${quote.terms.expiry}`)).toBeTruthy();
+    expect(view.getByText(`Existing access: ${quote.terms.duplicateAccess}`)).toBeTruthy();
+    expect(
+      view.getByText(`Course availability: ${quote.terms.courseUnavailable}`)
+    ).toBeTruthy();
+    expect(Boolean(view.queryByText(`Refunds: ${quote.terms.refund}`))).toBe(hasRefundText);
+    expect(
+      view.getByLabelText("I reviewed the recipient and gift terms").props
+        .accessibilityState.checked
+    ).toBe(false);
+    expect(view.getByRole("button", { name: "Continue to checkout" })).toBeDisabled();
+    expect(onCheckout).not.toHaveBeenCalled();
+    expect(onRefresh).not.toHaveBeenCalled();
+    expect(JSON.stringify(savedQuote)).toBe(before);
+    view.unmount();
+  }
+);
+
 function recipient() {
   const onClaim = jest.fn().mockResolvedValue({
     action: "claimed",

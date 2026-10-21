@@ -11,7 +11,7 @@ jest.mock("expo-router", () => ({
 describe("owner-confirmed policy contacts", () => {
   it.each([
     ["Privacy Policy", PrivacyPage, "October 4, 2026"],
-    ["Terms of Service", TermsPage, "September 21, 2026"]
+    ["Terms of Service", TermsPage, "October 21, 2026"]
   ] as const)("shows the monitored mailbox on %s", (title, Page, updated) => {
     const screen = render(<Page />);
     expect(screen.getByRole("header", { name: title })).toBeTruthy();
@@ -20,5 +20,28 @@ describe("owner-confirmed policy contacts", () => {
     expect(screen.queryByText(/legal@growpathai\.com/)).toBeNull();
     expect(screen.getByText(`Last updated: ${updated}`)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Back" })).toBeTruthy();
+  });
+
+  it("customer rights clarification separates payment processing from refund rights", () => {
+    const fetchGuard = jest.spyOn(global, "fetch").mockImplementation(() => {
+      throw new Error("Network forbidden in customer-rights copy checks");
+    });
+    const screen = render(<TermsPage />);
+    try {
+      expect(
+        screen.getByText(/Payments are processed through the billing provider shown at checkout\./)
+      ).toBeTruthy();
+      expect(
+        screen.getByText(/For billing, cancellation or refund questions, contact billing@growpathai\.com\./)
+      ).toBeTruthy();
+      expect(
+        screen.getByText(/These terms and any manual review do not limit your right to a refund, cancellation or other remedy required by applicable law\./)
+      ).toBeTruthy();
+      expect(screen.queryByText(/refunds are handled through the billing provider/)).toBeNull();
+      expect(fetchGuard).not.toHaveBeenCalled();
+    } finally {
+      screen.unmount();
+      fetchGuard.mockRestore();
+    }
   });
 });

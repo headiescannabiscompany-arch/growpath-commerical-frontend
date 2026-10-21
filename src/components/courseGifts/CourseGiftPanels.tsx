@@ -209,6 +209,10 @@ function BuyerPanel({
             {quote.terms.refund && (
               <Text style={{ color: palette.text }}>Refunds: {quote.terms.refund}</Text>
             )}
+            <Text style={{ color: palette.text }}>
+              Manual review does not limit your right to a refund, cancellation or other
+              remedy required by applicable law.
+            </Text>
             <Pressable
               accessibilityRole="checkbox"
               accessibilityLabel="I reviewed the recipient and gift terms"

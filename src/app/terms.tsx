@@ -7,7 +7,7 @@ export default function TermsPage() {
   return (
     <PublicInfoPage
       title="Terms of Service"
-      updated="September 21, 2026"
+      updated="October 21, 2026"
       intro="These terms govern access to GrowPath apps, websites, APIs, subscriptions, AI tools, and facility workflows."
       sections={[
         {
@@ -16,7 +16,7 @@ export default function TermsPage() {
         },
         {
           title: "Subscriptions and Billing",
-          body: "Paid plans, trials, renewals, cancellations, and refunds are handled through the billing provider shown at checkout. Facility and commercial features may require an active paid plan."
+          body: `Payments are processed through the billing provider shown at checkout. For billing, cancellation or refund questions, contact ${SUPPORT_CONTACTS.billing}. These terms and any manual review do not limit your right to a refund, cancellation or other remedy required by applicable law. Facility and commercial features may require an active paid plan.`
         },
         {
           title: "User Content",
