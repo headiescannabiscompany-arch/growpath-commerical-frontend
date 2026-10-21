@@ -11,6 +11,7 @@ import {
 
 import {
   getPublicCreatorProfile,
+  creatorProfilePreviewUrl,
   isSafeCreatorLink,
   type CreatorPublishedProfile
 } from "@/api/creatorProfile";
@@ -247,6 +248,8 @@ function ReadyCreatorProfile({
           <PublicShareActions
             key={`${ownerId}:${profile.publishedAt}`}
             title={profile.displayName}
+            description={profile.bio}
+            socialPreviewUrl={creatorProfilePreviewUrl(profile)}
             path={`/creators/${encodeURIComponent(ownerId)}`}
             heading="Share creator profile"
           />

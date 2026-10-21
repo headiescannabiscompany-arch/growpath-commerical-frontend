@@ -1,4 +1,4 @@
-import { apiRequest } from "@/api/apiRequest";
+import { apiRequest, API_URL } from "@/api/apiRequest";
 
 export type CreatorProfileDraft = {
   displayName: string;
@@ -15,6 +15,11 @@ export type CreatorProfileState = {
 };
 
 const path = "/api/user/creator-profile";
+export function creatorProfilePreviewUrl(profile: CreatorPublishedProfile): string {
+  const version = Date.parse(profile.publishedAt);
+  if (!Number.isFinite(version) || !profile.ownerId) throw unavailable();
+  return `${new URL(API_URL).origin}${path}/${encodeURIComponent(profile.ownerId)}/share?v=${version}`;
+}
 const unavailable = () => new Error("Creator profile response could not be verified.");
 const object = (value: unknown): value is Record<string, any> =>
   Boolean(value && typeof value === "object" && !Array.isArray(value));

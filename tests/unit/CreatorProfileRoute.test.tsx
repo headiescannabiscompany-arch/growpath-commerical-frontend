@@ -62,9 +62,12 @@ jest.mock("@/components/videos/VideoCard", () => {
   return ({ video }: any) => <Text>{video.title}</Text>;
 });
 jest.mock("@/components/sharing/PublicShareActions", () => {
-  const { Text } = require("react-native");
-  return ({ title, path }: any) => (
-    <Text testID="public-share-path">{`${title}: ${path}`}</Text>
+  const { Text, View } = require("react-native");
+  return ({ title, path, description, socialPreviewUrl }: any) => (
+    <View>
+      <Text testID="public-share-path">{`${title}: ${path}`}</Text>
+      <Text testID="public-share-details">{JSON.stringify({ description, socialPreviewUrl })}</Text>
+    </View>
   );
 });
 
@@ -206,6 +209,20 @@ describe("CreatorProfileRoute", () => {
     expect(Linking.openURL).not.toHaveBeenCalled();
     fireEvent.press(screen.getByLabelText("My channel (external website)"));
     expect(Linking.openURL).toHaveBeenCalledWith("https://example.com/channel");
+  });
+
+  it("creator preview uses only the published snapshot and a rebuilt versioned API URL", async () => {
+    mockParams = { ...mockParams, from: "creator-profile-editor", title: "PRIVATE QUERY" };
+    mockGetPublicCreatorProfile.mockResolvedValue(published({ draft: { bio: "PRIVATE DRAFT" }, email: "private@example.invalid" }));
+    render(<CreatorProfileRoute />);
+    const details = JSON.parse((await screen.findByTestId("public-share-details")).props.children);
+    expect(details.description).toBe("Learning one plant at a time.");
+    const url = new URL(details.socialPreviewUrl);
+    expect(url.pathname).toBe("/api/user/creator-profile/owner-1/share");
+    expect(url.search).toBe(`?v=${Date.parse(published().publishedAt)}`);
+    expect(JSON.stringify(details)).not.toMatch(/PRIVATE|private@example|from=|token/);
+    expect(screen.getByTestId("public-share-path").props.children).toBe("The Basil Journal: /creators/owner-1");
+    expect(Linking.openURL).not.toHaveBeenCalled();
   });
 
   it("does not follow self and renders only the public snapshot, never extra draft/account fields", async () => {

@@ -41,6 +41,16 @@ export includes the private draft; account deletion clears it. Commercial links
 and entitlement gates remain separate and unchanged. Public links and canonical
 creator-page sharing are deliberate visitor actions, not automatic publication.
 
+Creator social handoffs use a versioned first-party preview document derived only
+from that published snapshot. Keep its canonical/og:url on the preview itself,
+with a normal link to the clean creator page; no automatic redirect or homepage
+fallback. Render the public name and bounded bio, never a draft, account identity,
+private avatar or fetched external link. HTML and generated images recheck public
+availability and use no-store; stale publication versions, withdrawal and account
+restrictions return unavailable even with conditional requests. Recheck publication
+after asynchronous image rendering. Private edits do not alter the preview version.
+These controls cannot recall copies cached independently by a social provider.
+
 Opening the published creator page from its private editor carries only the fixed
 `from=creator-profile-editor` marker. Only its exact first value makes Back return
 to `/home/personal/more/links`, including reload or unresolved access. Other entries
