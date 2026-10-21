@@ -291,6 +291,42 @@ describe("R09-04V direct course landing", () => {
       cache: "no-store"
     });
   });
+  test("paused dispensary offers a separate validated course continuation without store or payment actions", async () => {
+    store.storefront.storefrontType = "dispensary";
+    const screen = render(<Page />);
+    await loaded(screen);
+    expect(screen.getByText("Open this course in Courses")).toBeTruthy();
+    noActions(screen);
+    fireEvent.press(screen.getByLabelText("Continue to course learning page"));
+    expect(mockPush).toHaveBeenCalledWith(`/courses?courseId=${ID}`);
+    expect(mockAnalytics).not.toHaveBeenCalled();
+    expect(openUrl).not.toHaveBeenCalled();
+  });
+  test("server-paused dispensary offers the same separate course continuation", async () => {
+    mockApiRequest.mockImplementation((path) =>
+      path.includes("/courses/")
+        ? Promise.resolve({ course: preview })
+        : Promise.reject({ code: "DISPENSARY_DISCOVERY_UNAVAILABLE" })
+    );
+    const screen = render(<Page />);
+    await loaded(screen);
+    expect(screen.getByLabelText("Continue to course learning page")).toBeTruthy();
+    noActions(screen);
+  });
+  test.each([
+    { id: NEXT_ID, _id: NEXT_ID },
+    { storefrontSlug: "other-store" },
+    { visibility: "private" },
+    { status: "draft" }
+  ])("paused store does not bypass exact course checks: %j", async (changes) => {
+    store.storefront.storefrontType = "dispensary";
+    Object.assign(preview, changes);
+    const screen = render(<Page />);
+    await loaded(screen);
+    expect(screen.queryByLabelText("Continue to course learning page")).toBeNull();
+    expect(screen.getByText("Course preview unavailable.")).toBeTruthy();
+    noActions(screen);
+  });
   test("failed storefront context cannot render an actionable direct preview", async () => {
     mockApiRequest.mockImplementation((path) =>
       path.includes("/courses/")

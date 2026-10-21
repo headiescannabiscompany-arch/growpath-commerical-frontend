@@ -1,4 +1,10 @@
 import { apiRequest } from "./apiRequest";
+import {
+  dispensaryDiscoveryUnavailableError,
+  isDispensaryDiscoveryAvailable,
+  isPublicStorefrontAvailable
+} from "@/utils/dispensaryAvailability";
+import { extractPublicCommercialPayload } from "@/utils/publicCommerce";
 
 // Public metadata, not learner access. No identity, balance notification or
 // automatic retries are needed when opening a saved direct course link.
@@ -68,9 +74,20 @@ export async function updateStorefront(data: Partial<Storefront>) {
 }
 
 export async function fetchPublicStorefront(slug: string) {
-  return apiRequest(`${STOREFRONT_BASE}/public/${encodeURIComponent(slug)}`, {
-    method: "GET"
+  const response = await apiRequest(
+    `${STOREFRONT_BASE}/public/${encodeURIComponent(slug)}`,
+    { method: "GET", cache: "no-store" }
+  ).catch((error) => {
+    if (error?.code === "DISPENSARY_DISCOVERY_UNAVAILABLE") {
+      throw dispensaryDiscoveryUnavailableError();
+    }
+    throw error;
   });
+  // Also withhold an older server/cached response during a rolling release.
+  if (!isPublicStorefrontAvailable(extractPublicCommercialPayload(response).storefront)) {
+    throw dispensaryDiscoveryUnavailableError();
+  }
+  return response;
 }
 
 export async function checkPublicProductAccess(
@@ -100,6 +117,14 @@ export async function searchPublicStorefronts(
     limit?: number;
   } = {}
 ) {
+  if (
+    !isDispensaryDiscoveryAvailable() &&
+    String(options.storefrontType || "")
+      .trim()
+      .toLowerCase() === "dispensary"
+  ) {
+    throw dispensaryDiscoveryUnavailableError();
+  }
   const params = new URLSearchParams();
   if (options.q) params.set("q", options.q);
   if (options.similarTo) params.set("similarTo", options.similarTo);

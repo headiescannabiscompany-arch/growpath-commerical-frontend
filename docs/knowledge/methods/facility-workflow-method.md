@@ -1,5 +1,14 @@
 # Facility Workflow
 
+Public Facility positioning leads with horticulture team operations: rooms, tasks,
+assignments, SOPs, environmental context and recorded handoffs. General Facility
+workflows do not require METRC. Explain the separate regulated-cannabis connection
+below the operational story, with its current F03 limitations: integration is
+planned/not live, provider access/jurisdiction/runtime verification remain open,
+and the currently accepted JSON report export is not a METRC submission. Neither
+marketing nor operational records may claim to replace required compliance or
+certify it. This wording change does not enable integration or change permissions.
+
 Facility More exposes the existing shared Schedule / Agenda beside Tasks. The exact
 `from=facility-more` navigation marker returns the page's Back control to Facility
 More, including after reload. It is not an arbitrary redirect, workspace selection,

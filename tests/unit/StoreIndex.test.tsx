@@ -10,6 +10,16 @@ const mockRequestCurrentCoordinates = jest.fn();
 const mockLinkHrefs: string[] = [];
 let mockParams: Record<string, string> = {};
 let mockMode = "personal";
+let mockDispensaryDiscoveryAvailable = false;
+
+jest.mock("@/utils/dispensaryAvailability", () => {
+  const { isDispensaryStorefront } = jest.requireActual("@/utils/regulatedCommerce");
+  return {
+    isDispensaryDiscoveryAvailable: () => mockDispensaryDiscoveryAvailable,
+    isPublicStorefrontAvailable: (storefront: any) =>
+      mockDispensaryDiscoveryAvailable || !isDispensaryStorefront(storefront)
+  };
+});
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -65,6 +75,7 @@ describe("StoreIndex", () => {
     });
     mockParams = {};
     mockMode = "personal";
+    mockDispensaryDiscoveryAvailable = false;
     mockRequestCurrentCoordinates.mockResolvedValue({
       latitude: 42.3601,
       longitude: -71.0589
@@ -149,6 +160,8 @@ describe("StoreIndex", () => {
   });
 
   it("searches dispensaries by state without offering GrowPath checkout", async () => {
+    // Retained dormant behavior, not evidence that the release switch is ON.
+    mockDispensaryDiscoveryAvailable = true;
     mockSearchPublicStorefronts.mockResolvedValueOnce({ storefronts: [] });
     mockSearchPublicStorefronts.mockResolvedValueOnce({
       storefronts: [
@@ -186,6 +199,7 @@ describe("StoreIndex", () => {
   });
 
   it("uses current location for distance-ranked dispensary discovery", async () => {
+    mockDispensaryDiscoveryAvailable = true;
     mockSearchPublicStorefronts.mockResolvedValueOnce({ storefronts: [] });
     mockSearchPublicStorefronts.mockResolvedValueOnce({
       storefronts: [
@@ -212,6 +226,44 @@ describe("StoreIndex", () => {
       })
     );
     expect(screen.getByText("4.3 miles away")).toBeTruthy();
+  });
+
+  it.each(["personal", "commercial", "facility"])(
+    "keeps paused dispensary discovery hidden in %s",
+    async (mode) => {
+      mockMode = mode;
+      mockParams = {
+        storefrontType: "dispensary",
+        state: "MA",
+        latitude: "42",
+        q: "soil"
+      };
+      const screen = render(<StoreIndex />);
+      await screen.findByText("Living Soil Labs");
+      expect(screen.queryByText("Find Dispensaries")).toBeNull();
+      expect(screen.queryByLabelText("Dispensary state")).toBeNull();
+      expect(screen.queryByLabelText("Use my location to find dispensaries")).toBeNull();
+      expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
+      expect(mockSearchPublicStorefronts).toHaveBeenCalledTimes(1);
+      expect(mockSearchPublicStorefronts).toHaveBeenCalledWith({
+        q: "soil",
+        similarTo: undefined,
+        limit: 12
+      });
+    }
+  );
+
+  it("filters paused dispensaries from legacy directory responses without hiding ordinary stores", async () => {
+    mockSearchPublicStorefronts.mockResolvedValueOnce({
+      storefronts: [
+        { name: "Garden store", slug: "garden", storefrontType: "general" },
+        { name: "Paused inventory", slug: "paused", storefrontType: "dispensary" }
+      ]
+    });
+    const screen = render(<StoreIndex />);
+    await screen.findByText("Garden store");
+    expect(screen.queryByText("Paused inventory")).toBeNull();
+    expect(mockLinkHrefs).not.toContain("/store/paused");
   });
 
   it("links commercial storefront management to the canonical commercial workspace", async () => {

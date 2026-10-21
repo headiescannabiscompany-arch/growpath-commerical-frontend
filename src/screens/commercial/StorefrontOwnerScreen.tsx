@@ -34,6 +34,10 @@ import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { requestCurrentCoordinates } from "@/utils/locationSearch";
 import { hasSavedStorefrontCheckoutAmount } from "@/utils/regulatedCommerce";
+import {
+  isDispensaryDiscoveryAvailable,
+  isPublicStorefrontAvailable
+} from "@/utils/dispensaryAvailability";
 
 type AnyRec = Record<string, any>;
 type SetupChecklistItem = {
@@ -283,21 +287,31 @@ function storefrontPublishBlockers(args: {
   return blockers;
 }
 
-function PublicPreviewLink({ href, label }: { href?: string; label: string }) {
+function PublicPreviewLink({
+  href,
+  label,
+  unavailableReason
+}: {
+  href?: string;
+  label: string;
+  unavailableReason?: string;
+}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStorefrontOwnerStyles(palette), [palette]);
 
-  if (!href) {
+  if (!href || unavailableReason) {
     return (
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel={`${label} unavailable. Save a public slug first.`}
+        accessibilityLabel={`${label} unavailable. ${unavailableReason || "Save a public slug first."}`}
         accessibilityState={{ disabled: true }}
         disabled
         style={[styles.previewButton, styles.disabled]}
       >
         <Text style={styles.previewButtonText}>{label}</Text>
-        <Text style={styles.previewDisabledText}>Save public slug first</Text>
+        <Text style={styles.previewDisabledText}>
+          {unavailableReason || "Save public slug first"}
+        </Text>
       </Pressable>
     );
   }
@@ -580,6 +594,13 @@ export default function Storefront({
 
   const publicSlug = String(storefront?.slug ?? "").trim();
   const isDispensary = storeDraft.storefrontType === "dispensary";
+  const dispensaryDiscoveryAvailable = isDispensaryDiscoveryAvailable();
+  const savedDispensaryPaused = !isPublicStorefrontAvailable(storefront);
+  const dispensaryPaused =
+    !dispensaryDiscoveryAvailable && (isDispensary || savedDispensaryPaused);
+  const publicPreviewUnavailableReason = savedDispensaryPaused
+    ? "Dispensary discovery is unavailable."
+    : undefined;
   const publicStorePath = publicSlug ? `/store/${encodeURIComponent(publicSlug)}` : "";
   const publishedProducts = useMemo(
     () => products.filter((product) => productIsPublished(product)),
@@ -610,7 +631,9 @@ export default function Storefront({
       {
         label: "Public slug",
         complete: hasText(storeDraft.slug),
-        helper: "Public URLs are stable for View as User."
+        helper: dispensaryPaused
+          ? "The saved slug is retained; public dispensary previews are unavailable."
+          : "Public URLs are stable for View as User."
       },
       {
         label: "Logo",
@@ -642,39 +665,49 @@ export default function Storefront({
                 hasText(storeDraft.stateCode) &&
                 hasText(storeDraft.latitude) &&
                 hasText(storeDraft.longitude),
-              helper:
-                "City, state, and map coordinates allow state and distance discovery."
+              helper: dispensaryPaused
+                ? "Location settings are retained while dispensary discovery is unavailable."
+                : "City, state, and map coordinates allow state and distance discovery."
             },
             {
               label: "Dispensary handoff",
               complete:
                 hasText(storeDraft.websiteUrl) || storeDraft.pickupAvailable === true,
-              helper:
-                "Customers have a dispensary website or truthful in-store pickup path without GrowPath checkout."
+              helper: dispensaryPaused
+                ? "Website and pickup settings are retained; public dispensary handoffs are unavailable."
+                : "Customers have a dispensary website or truthful in-store pickup path without GrowPath checkout."
             }
           ]
         : []),
       {
         label: "Published storefront",
         complete: storeDraft.isPublished,
-        helper: "Owner has intentionally made the storefront visible."
+        helper: dispensaryPaused
+          ? "Saved publication state is retained; the public dispensary profile and inventory are unavailable."
+          : "Owner has intentionally made the storefront visible."
       },
       {
         label: "First product",
         complete: products.length > 0,
-        helper: "Storefront has at least one product card to show."
+        helper: dispensaryPaused
+          ? "Saved product cards remain available in the owner's workspace."
+          : "Storefront has at least one product card to show."
       },
       {
         label: "Published product",
         complete: publishedProducts.length > 0,
-        helper: "At least one product is ready for public display."
+        helper: dispensaryPaused
+          ? "Saved product publication state does not enable public dispensary display."
+          : "At least one product is ready for public display."
       },
       {
         label: isDispensary ? "Product handoff path" : "Product checkout path",
         complete: products.some((product) => productCheckoutReady(product, isDispensary)),
-        helper: isDispensary
-          ? "At least one inventory listing links to the dispensary website or offers in-store pickup."
-          : "At least one product has an external checkout or a saved price for GrowPath checkout. Seller and payment readiness are verified before payment."
+        helper: dispensaryPaused
+          ? "Saved inventory handoff details do not enable public dispensary discovery or transactions."
+          : isDispensary
+            ? "At least one inventory listing links to the dispensary website or offers in-store pickup."
+            : "At least one product has an external checkout or a saved price for GrowPath checkout. Seller and payment readiness are verified before payment."
       },
       ...(!isDispensary
         ? [
@@ -700,12 +733,16 @@ export default function Storefront({
       {
         label: "Published course",
         complete: storefrontCourses.length > 0,
-        helper: "Storefront can show course cards for learning and product education."
+        helper: dispensaryPaused
+          ? "Course records and course access remain separate from paused dispensary discovery."
+          : "Storefront can show course cards for learning and product education."
       },
       {
         label: "Upcoming live or replay",
         complete: storefrontLives.length > 0,
-        helper: "Storefront can show RSVP, replay, or product-demo live content."
+        helper: dispensaryPaused
+          ? "Saved live records remain available in the owner's workspace."
+          : "Storefront can show RSVP, replay, or product-demo live content."
       },
       {
         label: "Active feed campaign",
@@ -717,6 +754,7 @@ export default function Storefront({
       products,
       publishedProducts.length,
       isDispensary,
+      dispensaryPaused,
       stripeReady,
       stripeChecking,
       stripeUnverified,
@@ -1371,7 +1409,11 @@ export default function Storefront({
             <ObjectActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
             <ObjectActionLink href="/home/commercial/orders" label="Orders" />
             <ObjectActionLink href="/home/commercial/analytics" label="Analytics" />
-            <PublicPreviewLink href={publicStorePath} label="View as User" />
+            <PublicPreviewLink
+              href={publicStorePath}
+              label="View as User"
+              unavailableReason={publicPreviewUnavailableReason}
+            />
           </View>
         </AppCard>
 
@@ -1383,9 +1425,9 @@ export default function Storefront({
             <Text style={styles.statusPill}>Storefront section</Text>
           </View>
           <Text style={styles.helperText}>
-            Product lines organize storefront products into public families. Keep them
-            tagged with grow interests so users can browse by category, use case, and
-            campaign context.
+            {dispensaryPaused
+              ? "Product lines remain saved and editable. Public dispensary inventory previews are unavailable."
+              : "Product lines organize storefront products into public families. Keep them tagged with grow interests so users can browse by category, use case, and campaign context."}
           </Text>
           {productLines.length ? (
             <View style={styles.eventList}>
@@ -1426,6 +1468,7 @@ export default function Storefront({
                           : undefined
                       }
                       label="View as User"
+                      unavailableReason={publicPreviewUnavailableReason}
                     />
                   </View>
                 </View>
@@ -1586,9 +1629,9 @@ export default function Storefront({
             <View style={styles.dispensaryPanel}>
               <Text style={styles.warningTitle}>Dispensary discovery and handoff</Text>
               <Text style={styles.muted}>
-                Published dispensaries can show linked inventory and be found by state or
-                distance. A regulated handoff requires an exact reviewed decision that
-                matches product, origin, destination, buyer eligibility, and fulfillment.
+                {dispensaryPaused
+                  ? "Dispensary discovery is unavailable. Your settings and inventory records are retained, but saving or publishing does not make the dispensary publicly discoverable. This does not change separate course access or enable transactions."
+                  : "Published dispensaries can show linked inventory and be found by state or distance. A regulated handoff requires an exact reviewed decision that matches product, origin, destination, buyer eligibility, and fulfillment."}
               </Text>
               <View style={styles.linkGrid}>
                 <TextInput
@@ -1907,13 +1950,16 @@ export default function Storefront({
             Public Discovery
           </Text>
           <Text style={styles.helperText}>
-            Free, Pro, commercial, and facility users can reach this brand from feed
-            campaigns, forum replies, course pages, product cards, and public search
-            surfaces. Use the store page as the single public home for the brand,
-            products, courses, live sessions, and support links.
+            {savedDispensaryPaused
+              ? "Dispensary discovery is unavailable. The public store, profile, and inventory previews are paused. Your saved slug, publication state, products, and owner tools are retained. Course access follows its separate rules."
+              : "Free, Pro, commercial, and facility users can reach this brand from feed campaigns, forum replies, course pages, product cards, and public search surfaces. Use the store page as the single public home for the brand, products, courses, live sessions, and support links."}
           </Text>
           <View style={styles.publicLinkBox}>
-            <Text style={styles.publicLinkLabel}>Public store</Text>
+            <Text style={styles.publicLinkLabel}>
+              {savedDispensaryPaused
+                ? "Saved store address — unavailable publicly"
+                : "Public store"}
+            </Text>
             <Text selectable style={styles.publicLinkText}>
               {publicStorePath
                 ? currentPublicUrl(publicStorePath)
@@ -1921,7 +1967,11 @@ export default function Storefront({
             </Text>
           </View>
           <View style={styles.previewActions}>
-            <PublicPreviewLink href={publicStorePath} label="View Public Store" />
+            <PublicPreviewLink
+              href={publicStorePath}
+              label="View Public Store"
+              unavailableReason={publicPreviewUnavailableReason}
+            />
           </View>
         </AppCard>
 
@@ -2048,6 +2098,7 @@ export default function Storefront({
                                 : undefined
                             }
                             label="Browse Line"
+                            unavailableReason={publicPreviewUnavailableReason}
                           />
                         ) : null}
                         {campaign.linkedForumThreadId ? (
@@ -2722,7 +2773,11 @@ export default function Storefront({
                           ))}
                         </View>
                       ) : (
-                        <Text style={styles.readyText}>Storefront card ready</Text>
+                        <Text style={styles.readyText}>
+                          {dispensaryPaused
+                            ? "Card setup saved; dispensary discovery is unavailable"
+                            : "Storefront card ready"}
+                        </Text>
                       )}
                       <View style={styles.objectActions}>
                         <ObjectActionLink

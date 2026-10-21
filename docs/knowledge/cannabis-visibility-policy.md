@@ -1,5 +1,23 @@
 # Cannabis Visibility Policy
 
+## Owner-directed dispensary discovery pause — October 21, 2026
+
+Dispensary discovery is unavailable pending a separate reviewed release and the
+existing legal/provider readiness gates. Hide Find Dispensaries and its location
+controls; reject explicit public dispensary search and withhold dispensary public
+store/profile, inventory/product, share and handoff surfaces. A saved link, account
+role, visibility preference or query parameter cannot reopen discovery. Preserve
+records and owner authoring; do not rewrite a dispensary as a general store.
+Keep ordinary horticulture storefronts and separate course metadata, learning,
+existing purchases/refunds and private records under their existing boundaries.
+An exact, valid course link may offer the canonical Courses learning destination
+without rendering the paused storefront or bypassing course access checks. This
+pause is a release-level availability rule, not a change to cannabis grow visibility
+or evidence handling, and it does not establish payment-provider approval.
+
+The regulated-discovery capabilities below describe preserved design requirements,
+not current permission to reopen the paused dispensary surfaces.
+
 Show cannabis-specific content only when grow context, interests or account purpose includes cannabis/hemp. Do not expose it by default to unrelated horticulture viewers.
 
 Cannabis-specific AI shortcuts must use structured crop types, grow interests/tags, explicit cannabis flags, or a reviewed/user-confirmed plant identity. Free-text notes, exclusions, negative statements such as "not cannabis," and rejected or unconfirmed AI candidates do not establish cannabis context.

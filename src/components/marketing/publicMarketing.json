@@ -19,7 +19,7 @@
         },
         {
           "title": "Facilities",
-          "body": "Compliance records in METRC, but daily room notes scattered across messages and spreadsheets? Keep readings, tasks, SOP checklists, and handoffs together for each room in GrowPathAI. This does not replace your required compliance system.",
+          "body": "Give the next shift a clear record of each room's work. Keep readings, tasks, SOP checklists, and handoffs together, whether your team grows vegetables, flowers, or other crops.",
           "href": "/facility-management",
           "linkLabel": "Explore Facility"
         }
@@ -140,9 +140,9 @@
       ]
     },
     "facility-management": {
-      "eyebrow": "For cultivation facilities",
+      "eyebrow": "For horticulture teams",
       "title": "Facility → Room → Grow → Plant",
-      "intro": "Compliance records in METRC, daily operations in scattered messages? See what needs doing in each room, assign it to the right person, and review the recorded result in GrowPathAI. It does not replace your required compliance system or certify compliance.",
+      "intro": "See what needs doing in each room, assign it to the right person, and review the recorded result. Keep daily growing work connected across shifts — for vegetable, flower, nursery, and other horticulture teams.",
       "primaryAction": {
         "href": "/pricing",
         "label": "See Facility pricing"
@@ -163,6 +163,10 @@
         {
           "title": "Environmental context",
           "body": "Review imported controller history alongside the room and grow it belongs to. AC Infinity and Bluelab CSV history are import workflows, not a promise of live device control. Check supported provider setup before connecting equipment."
+        },
+        {
+          "title": "Where METRC fits",
+          "body": "Licensed cannabis facilities may also need METRC for regulated tracking and reporting. GrowPathAI keeps daily room work, tasks, and evidence alongside that separate responsibility; general Facility workflows do not require a METRC connection. METRC integration is planned, not live: provider access, jurisdiction review, and runtime verification remain outstanding. Current Facility report exports are JSON, not METRC submissions. GrowPathAI does not replace your required compliance system or certify compliance."
         },
         {
           "title": "What does the team need to start?",

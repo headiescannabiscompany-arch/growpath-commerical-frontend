@@ -9,6 +9,10 @@ import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { PublicCoordinates, requestCurrentCoordinates } from "@/utils/locationSearch";
+import {
+  isDispensaryDiscoveryAvailable,
+  isPublicStorefrontAvailable
+} from "@/utils/dispensaryAvailability";
 
 function asArray(payload: any) {
   if (Array.isArray(payload)) return payload;
@@ -84,7 +88,7 @@ export default function StoreIndex() {
     })
       .then((payload) => {
         if (!current) return;
-        const rows = asArray(payload);
+        const rows = asArray(payload).filter(isPublicStorefrontAvailable);
         setBrands(rows);
         if (!rows.length) setDirectoryMessage("No matching public stores found yet.");
       })
@@ -124,6 +128,7 @@ export default function StoreIndex() {
 
   const loadDispensaries = useCallback(
     async (nextCoordinates: PublicCoordinates | null = coordinates) => {
+      if (!isDispensaryDiscoveryAvailable()) return;
       const stateCode = dispensaryState.trim().toUpperCase();
       if (!stateCode && !nextCoordinates) {
         setDispensaryMessage(
@@ -159,6 +164,7 @@ export default function StoreIndex() {
   );
 
   async function searchFromCurrentLocation() {
+    if (!isDispensaryDiscoveryAvailable()) return;
     setSearchingDispensaries(true);
     setDispensaryMessage("Requesting your current location...");
     try {
@@ -318,122 +324,132 @@ export default function StoreIndex() {
         })}
       </AppCard>
 
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Find Dispensaries
-        </Text>
-        <Text style={styles.cardText}>
-          Search dispensary inventory by state or distance from your current location.
-          GrowPath does not sell cannabis or take payment. A dispensary can direct you to
-          its own website or provide in-store pickup information.
-        </Text>
-        <Text style={styles.privacyNote}>
-          Current location is used for this search and is not saved to your profile.
-        </Text>
-        <TextInput
-          accessibilityLabel="Dispensary state"
-          autoCapitalize="characters"
-          autoCorrect={false}
-          maxLength={2}
-          onChangeText={(value) => setDispensaryState(value.toUpperCase())}
-          placeholder="State code, e.g. MA"
-          placeholderTextColor={palette.textMuted}
-          style={styles.input}
-          value={dispensaryState}
-        />
-        <Text style={styles.fieldLabel}>Distance from current location</Text>
-        <View style={styles.buttonRow}>
-          {[10, 25, 50, 100].map((miles) => (
-            <Pressable
-              key={miles}
-              accessibilityRole="button"
-              accessibilityLabel={`Search within ${miles} miles`}
-              onPress={() => setRadiusMiles(miles)}
-              style={[
-                styles.radiusButton,
-                radiusMiles === miles && styles.radiusButtonSelected
-              ]}
-            >
-              <Text
+      {isDispensaryDiscoveryAvailable() ? (
+        <AppCard>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Find Dispensaries
+          </Text>
+          <Text style={styles.cardText}>
+            Search dispensary inventory by state or distance from your current location.
+            GrowPath does not sell cannabis or take payment. A dispensary can direct you
+            to its own website or provide in-store pickup information.
+          </Text>
+          <Text style={styles.privacyNote}>
+            Current location is used for this search and is not saved to your profile.
+          </Text>
+          <TextInput
+            accessibilityLabel="Dispensary state"
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={2}
+            onChangeText={(value) => setDispensaryState(value.toUpperCase())}
+            placeholder="State code, e.g. MA"
+            placeholderTextColor={palette.textMuted}
+            style={styles.input}
+            value={dispensaryState}
+          />
+          <Text style={styles.fieldLabel}>Distance from current location</Text>
+          <View style={styles.buttonRow}>
+            {[10, 25, 50, 100].map((miles) => (
+              <Pressable
+                key={miles}
+                accessibilityRole="button"
+                accessibilityLabel={`Search within ${miles} miles`}
+                onPress={() => setRadiusMiles(miles)}
                 style={[
-                  styles.radiusButtonText,
-                  radiusMiles === miles && styles.radiusButtonTextSelected
+                  styles.radiusButton,
+                  radiusMiles === miles && styles.radiusButtonSelected
                 ]}
               >
-                {miles} mi
+                <Text
+                  style={[
+                    styles.radiusButtonText,
+                    radiusMiles === miles && styles.radiusButtonTextSelected
+                  ]}
+                >
+                  {miles} mi
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <View style={styles.buttonRow}>
+            <Pressable
+              accessibilityRole="button"
+              disabled={!dispensaryState.trim() || searchingDispensaries}
+              onPress={() => void loadDispensaries(null)}
+              style={[
+                styles.primaryButton,
+                (!dispensaryState.trim() || searchingDispensaries) && styles.disabled
+              ]}
+            >
+              <Text style={styles.primaryButtonText}>
+                {searchingDispensaries ? "Searching..." : "Search by State"}
               </Text>
             </Pressable>
-          ))}
-        </View>
-        <View style={styles.buttonRow}>
-          <Pressable
-            accessibilityRole="button"
-            disabled={!dispensaryState.trim() || searchingDispensaries}
-            onPress={() => void loadDispensaries(null)}
-            style={[
-              styles.primaryButton,
-              (!dispensaryState.trim() || searchingDispensaries) && styles.disabled
-            ]}
-          >
-            <Text style={styles.primaryButtonText}>
-              {searchingDispensaries ? "Searching..." : "Search by State"}
-            </Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Use my location to find dispensaries"
-            disabled={searchingDispensaries}
-            onPress={() => void searchFromCurrentLocation()}
-            style={[styles.secondaryButton, searchingDispensaries && styles.disabled]}
-          >
-            <Text style={styles.secondaryButtonText}>Use My Location</Text>
-          </Pressable>
-        </View>
-        {coordinates ? (
-          <Text style={styles.meta}>
-            Searching within {radiusMiles} miles of your current location
-            {dispensaryState.trim()
-              ? ` and in ${dispensaryState.trim().toUpperCase()}`
-              : ""}
-            .
-          </Text>
-        ) : null}
-        {dispensaryMessage ? <Text style={styles.meta}>{dispensaryMessage}</Text> : null}
-        {dispensaries.map((dispensary) => {
-          const publicSlug = rowSlug(dispensary);
-          const location = dispensaryLocation(dispensary);
-          const distance = Number(dispensary?.distanceMiles);
-          return (
-            <View
-              key={publicSlug || dispensary?.id || dispensary?.name}
-              style={styles.brandRow}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Use my location to find dispensaries"
+              disabled={searchingDispensaries}
+              onPress={() => void searchFromCurrentLocation()}
+              style={[styles.secondaryButton, searchingDispensaries && styles.disabled]}
             >
-              <View style={styles.brandBody}>
-                <Text accessibilityRole="header" aria-level={3} style={styles.brandName}>
-                  {dispensary?.businessName || dispensary?.name || "Licensed dispensary"}
-                </Text>
-                {location ? <Text style={styles.meta}>{location}</Text> : null}
-                {Number.isFinite(distance) ? (
-                  <Text style={styles.distance}>{distance.toFixed(1)} miles away</Text>
+              <Text style={styles.secondaryButtonText}>Use My Location</Text>
+            </Pressable>
+          </View>
+          {coordinates ? (
+            <Text style={styles.meta}>
+              Searching within {radiusMiles} miles of your current location
+              {dispensaryState.trim()
+                ? ` and in ${dispensaryState.trim().toUpperCase()}`
+                : ""}
+              .
+            </Text>
+          ) : null}
+          {dispensaryMessage ? (
+            <Text style={styles.meta}>{dispensaryMessage}</Text>
+          ) : null}
+          {dispensaries.map((dispensary) => {
+            const publicSlug = rowSlug(dispensary);
+            const location = dispensaryLocation(dispensary);
+            const distance = Number(dispensary?.distanceMiles);
+            return (
+              <View
+                key={publicSlug || dispensary?.id || dispensary?.name}
+                style={styles.brandRow}
+              >
+                <View style={styles.brandBody}>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={3}
+                    style={styles.brandName}
+                  >
+                    {dispensary?.businessName ||
+                      dispensary?.name ||
+                      "Licensed dispensary"}
+                  </Text>
+                  {location ? <Text style={styles.meta}>{location}</Text> : null}
+                  {Number.isFinite(distance) ? (
+                    <Text style={styles.distance}>{distance.toFixed(1)} miles away</Text>
+                  ) : null}
+                  {dispensary?.description ? (
+                    <Text style={styles.meta}>{dispensary.description}</Text>
+                  ) : null}
+                  <Text style={styles.handoff}>
+                    Inventory only · dispensary website or in-store pickup
+                  </Text>
+                </View>
+                {publicSlug ? (
+                  <Link href={`/store/${encodeURIComponent(publicSlug)}` as any} asChild>
+                    <Pressable style={styles.primaryButton}>
+                      <Text style={styles.primaryButtonText}>View Inventory</Text>
+                    </Pressable>
+                  </Link>
                 ) : null}
-                {dispensary?.description ? (
-                  <Text style={styles.meta}>{dispensary.description}</Text>
-                ) : null}
-                <Text style={styles.handoff}>
-                  Inventory only · dispensary website or in-store pickup
-                </Text>
               </View>
-              {publicSlug ? (
-                <Link href={`/store/${encodeURIComponent(publicSlug)}` as any} asChild>
-                  <Pressable style={styles.primaryButton}>
-                    <Text style={styles.primaryButtonText}>View Inventory</Text>
-                  </Pressable>
-                </Link>
-              ) : null}
-            </View>
-          );
-        })}
-      </AppCard>
+            );
+          })}
+        </AppCard>
+      ) : null}
 
       {entitlements.mode === "commercial" ? (
         <AppCard>

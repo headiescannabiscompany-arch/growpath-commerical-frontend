@@ -173,6 +173,7 @@ export default function PublicStorefrontCourseRoute() {
   const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [forumThreads, setForumThreads] = useState<any[]>([]);
   const [error, setError] = useState("");
+  const [courseContinuation, setCourseContinuation] = useState("");
   const [feedback, setFeedback] = useState("");
   const checkoutHandledRef = useRef("");
   const checkoutStartRef = useRef(false);
@@ -191,6 +192,7 @@ export default function PublicStorefrontCourseRoute() {
       currentScope.current === scope && loadGeneration.current === generation;
     setLoading(true);
     setError("");
+    setCourseContinuation("");
     setCourses([]);
     setStorefront(null);
     setProducts([]);
@@ -202,8 +204,15 @@ export default function PublicStorefrontCourseRoute() {
         throw new Error("Invalid course link.");
       }
       const exactId = /^[a-f0-9]{24}$/i.test(requestedCourseId);
+      let dispensaryPaused = false;
       const [res, direct]: any[] = await Promise.all([
-        fetchPublicStorefront(slug),
+        fetchPublicStorefront(slug).catch((err) => {
+          if (exactId && err?.code === "DISPENSARY_DISCOVERY_UNAVAILABLE") {
+            dispensaryPaused = true;
+            return null;
+          }
+          throw err;
+        }),
         exactId ? fetchPublicStorefrontCourse(slug, requestedCourseId) : null
       ]);
       if (!isCurrent()) return;
@@ -219,11 +228,20 @@ export default function PublicStorefrontCourseRoute() {
               normalize(value) === normalize(requestedCourseId)
           ) ||
           normalize(preview?.storefrontSlug) !== slug ||
-          normalize(payload.storefront?.slug) !== slug ||
+          (!dispensaryPaused && normalize(payload.storefront?.slug) !== slug) ||
           preview?.status !== "published" ||
           !["public", "unlisted"].includes(preview?.visibility)
         )
           throw new Error("Course preview unavailable.");
+      }
+      if (dispensaryPaused) {
+        // The exact published course reader still verifies source/store ownership.
+        // Keep learning separate from the paused store, with no catalog, payment,
+        // share, or enrollment action performed from this continuation.
+        setCourseContinuation(
+          `/courses?courseId=${encodeURIComponent(requestedCourseId)}`
+        );
+        return;
       }
       setStorefront(payload.storefront);
       // Exact-ID reads are authoritative. A denied/stale direct response must
@@ -480,7 +498,9 @@ export default function PublicStorefrontCourseRoute() {
   return (
     <AppPage
       routeKey="public-storefront-course"
-      backFallbackHref={`/store/${encodeURIComponent(slug)}`}
+      backFallbackHref={
+        courseContinuation ? "/courses" : `/store/${encodeURIComponent(slug)}`
+      }
       header={
         <View>
           <Text accessibilityRole="header" aria-level={1} style={styles.title}>
@@ -495,6 +515,24 @@ export default function PublicStorefrontCourseRoute() {
           <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading course...</Text>
         </View>
+      ) : courseContinuation ? (
+        <AppCard>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Open this course in Courses
+          </Text>
+          <Text style={styles.bodyText}>
+            Dispensary discovery is unavailable. This course has a separate learning page
+            where your sign-in and course access will be checked.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Continue to course learning page"
+            style={styles.primaryButton}
+            onPress={() => router.push(courseContinuation as any)}
+          >
+            <Text style={styles.primaryButtonText}>Open course</Text>
+          </Pressable>
+        </AppCard>
       ) : error ? (
         <View>
           <Text accessibilityRole="alert" style={styles.error}>

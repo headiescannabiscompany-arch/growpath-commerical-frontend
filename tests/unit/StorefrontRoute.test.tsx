@@ -863,6 +863,98 @@ describe("Storefront route", () => {
     ).toBeGreaterThan(0);
   });
 
+  it.each([
+    ["current storefront type", { storefrontType: "dispensary" }],
+    ["legacy business type", { businessType: "dispensary" }],
+    ["legacy dispensary flag", { isDispensary: true }],
+    [
+      "conflicting current and legacy types",
+      { storefrontType: "general", businessType: "dispensary" }
+    ]
+  ] as const)(
+    "withholds saved dispensary previews for %s without changing records or course tools",
+    async (_label, classification) => {
+      mockApiRequest.mockImplementation(async (path: string, options?: any) => {
+        const result: any = await apiResponseFor(path, options);
+        return path === "/api/commercial/storefront" && !options
+          ? {
+              storefront: {
+                ...result.storefront,
+                ...classification,
+                isPublished: true
+              }
+            }
+          : result;
+      });
+      const screen = render(<Storefront />);
+      await screen.findByDisplayValue("Grow Shop");
+
+      expect(screen.getByDisplayValue("grow-shop")).toBeTruthy();
+      expect(screen.getByLabelText("Set storefront draft")).toBeTruthy();
+      expect(screen.getByText("Saved store address — unavailable publicly")).toBeTruthy();
+      expect(screen.queryAllByTestId(/^link-\/store\//)).toHaveLength(0);
+      const unavailable = screen.getAllByLabelText(
+        /unavailable\. Dispensary discovery is unavailable\./
+      );
+      expect(unavailable).toHaveLength(4);
+      for (const preview of unavailable) {
+        expect(preview.props.accessibilityState?.disabled).toBe(true);
+        fireEvent.press(preview);
+      }
+      expect(
+        screen.queryByText(/Published dispensaries can show linked inventory/)
+      ).toBeNull();
+      expect(
+        screen.queryByText(/Owner has intentionally made the storefront visible/)
+      ).toBeNull();
+      expect(screen.getByTestId("link-/home/commercial/products/product-1")).toBeTruthy();
+      expect(screen.getByTestId("link-/home/commercial/courses/course-1")).toBeTruthy();
+      expect(
+        screen.getByTestId("link-/courses/create?from=%2Fhome%2Fcommercial%2Fstorefront")
+      ).toBeTruthy();
+      expect(mockApiRequest.mock.calls.some(([, options]) => options?.method)).toBe(
+        false
+      );
+    }
+  );
+
+  it("does not reopen a saved dispensary preview through an unsaved General selection", async () => {
+    mockApiRequest.mockImplementation(async (path: string, options?: any) => {
+      const result: any = await apiResponseFor(path, options);
+      return path === "/api/commercial/storefront" && !options
+        ? { storefront: { ...result.storefront, storefrontType: "dispensary" } }
+        : result;
+    });
+    const screen = render(<Storefront />);
+    await screen.findByDisplayValue("Grow Shop");
+    fireEvent.press(
+      screen.getByLabelText("Storefront type General Commercial Storefront")
+    );
+    fireEvent.changeText(screen.getByLabelText("Storefront slug"), "unfinished-store");
+
+    expect(screen.queryAllByTestId(/^link-\/store\//)).toHaveLength(0);
+    expect(
+      screen.getByLabelText(
+        "View Public Store unavailable. Dispensary discovery is unavailable."
+      ).props.accessibilityState?.disabled
+    ).toBe(true);
+    expect(screen.getByTestId("link-/home/commercial/courses/course-1")).toBeTruthy();
+    expect(mockApiRequest.mock.calls.some(([, options]) => options?.method)).toBe(false);
+  });
+
+  it("keeps ordinary saved storefront previews and course tools available during the dispensary pause", async () => {
+    const screen = render(<Storefront />);
+    await screen.findByDisplayValue("Grow Shop");
+
+    expect(screen.getAllByTestId("link-/store/grow-shop")).toHaveLength(2);
+    expect(screen.getAllByTestId("link-/store/grow-shop?line=line-1")).toHaveLength(2);
+    expect(
+      screen.queryAllByLabelText(/Dispensary discovery is unavailable/)
+    ).toHaveLength(0);
+    expect(screen.getByTestId("link-/home/commercial/courses/course-1")).toBeTruthy();
+    expect(mockApiRequest.mock.calls.some(([, options]) => options?.method)).toBe(false);
+  });
+
   it("redirects the legacy root storefront route to the commercial workspace", () => {
     const screen = render(<LegacyStorefrontRoute />);
 

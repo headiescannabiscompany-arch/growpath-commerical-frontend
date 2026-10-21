@@ -1,5 +1,19 @@
 # Commercial Workflow
 
+## Dispensary discovery availability
+
+The October 21 owner direction pauses public dispensary discovery. Its UI and
+direct public search/store/profile/inventory/share/handoff paths stay unavailable
+under the fixed release-level guard; account roles, URLs and environment flags do
+not reopen them. Preserve saved storefronts, products and owner authoring, but
+label public previews unavailable rather than claiming saved publication is live
+discovery. Never silently reclassify an existing dispensary as a general store.
+Ordinary horticulture commerce, separate course discovery/learning and existing
+purchase/refund access remain independent. Exact course links may continue to
+Courses only after the existing identity/publication/visibility checks; a failed
+ordinary storefront read is still an error, not permission for a fallback.
+See the cannabis-visibility policy for the paused-versus-preserved boundary.
+
 ## Business plan and sales navigation
 
 Commercial More must expose Storefront, Products, My Storefront Offers, Orders,
@@ -156,7 +170,7 @@ The Commercial dashboard's publication summary uses the saved boolean `isPublish
 - The account-owned continuation extension stores that optional navigation intent only on successful verification-required signup. Keep it hidden from ordinary user/administrative projections and email URLs; verification emails remain token-only. Bind the strict path, original signup plan/mode, one-hour expiry and revision to that exact account and authentication lifecycle. Resend cannot replace or extend it. New clients create no second local copy when server storage is confirmed; retire only a captured matching older local revision. After this successful signup, the Sign in link carries email only, allowing deliberate matching login to recover and consume the server intent instead of bypassing it with a new explicit destination.
 - Recover account-owned navigation only after deliberate successful sign-in and a matching settled authenticated session, using an uncached token-bound self read. A Free intent consumes only the captured unexpired revision before returning; a paid intent retains guild-to-walkthrough setup and its existing checkout/workspace action. The walkthrough offers a separate explicit Return to product/course control and consumes only on that choice. Immediate-session paid signup carries only a strict browsing path through guild/walkthrough navigation; immediate-session Free signup retains its existing guild flow. Explicit validated next/claim destinations take precedence and do not consume unrelated saved state. Failed optional recovery cannot block ordinary login or checkout; uncertain consumption is not replayed automatically. Account/session/route changes and unmount discard late responses, including A-to-B-to-A changes. Re-fetch ordinary destination access; no automatic buy, enrollment, paid unlock, interest submission or return-after-payment guarantee. Account cleanup/export follows private-state policy; expiry never uses a TTL index on the whole User document. Local implementation is distinct from hosted mail/cross-device acceptance and release evidence.
 - Preserve purchase-interest disclosures, sale/regulated-product checks, and checkout rules. Navigation cannot place an order, submit interest, or expose seller management to shoppers.
-- The public store directory loads its existing published, non-dispensary browse results on entry without requiring a known name or technical slug. Keep the bounded result limit explicit, preserve submitted searches in the URL, provide Clear and Retry, distinguish no matches from load failure, and ignore superseded responses. Dispensary/location search remains a separate deliberate action; default browsing never requests location or enables transactions.
+- The public store directory loads its existing published, non-dispensary browse results on entry without requiring a known name or technical slug. Keep the bounded result limit explicit, preserve submitted searches in the URL, provide Clear and Retry, distinguish no matches from load failure, and ignore superseded responses. Dispensary/location search is paused under the October 21 availability rule; default browsing never requests location or enables transactions.
 - Storefront owner mutations require a successful storefront load. A failed initial lookup or related load must not expose a savable blank create form. Public previews use only the persisted storefront slug; typing an unsaved slug never changes a public destination. Retry restores the verified saved record before enabling writes.
 
 Feed campaign performance comes from recorded impressions, destination clicks, explicit downstream conversions, hides, and reports. Aggregate performance by campaign, eligible placement, and matched grow interest; never infer a conversion from an impression or claim causation from audience overlap.

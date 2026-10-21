@@ -113,15 +113,51 @@ describe("HeyCatch audit corrections", () => {
       "we do not promise an unconditional money-back guarantee"
     );
   });
-  it("names Facility fragmentation without promising a compliance replacement", () => {
-    for (const page of ["home", "facility-management"] as const) {
-      const screen = render(<PublicLandingPage page={page} />);
-      expect(screen.getByText(/Compliance records.*METRC/)).toBeTruthy();
-      expect(JSON.stringify(screen.toJSON())).toContain(
-        "does not replace your required compliance system"
-      );
-      screen.unmount();
-    }
+  it("introduces Facility from the homepage through crop-neutral daily work", () => {
+    const screen = render(<PublicLandingPage page="home" />);
+    const facility = marketing.pages.home.sections.find(
+      (section) => section.title === "Facilities"
+    )!;
+    expect(screen.getByText(facility.body)).toBeTruthy();
+    expect(facility.body).toContain("tasks, SOP checklists, and handoffs");
+    expect(facility.body).toContain("vegetables, flowers, or other crops");
+    expect(facility.body).not.toMatch(/METRC|cannabis/i);
+    expect(facility.href).toBe("/facility-management");
+  });
+  it("leads the Facility page with horticulture team operations rather than METRC", () => {
+    const screen = render(<PublicLandingPage page="facility-management" />);
+    const facility = marketing.pages["facility-management"];
+    expect(screen.getByText("For horticulture teams")).toBeTruthy();
+    expect(screen.getByText(facility.intro)).toBeTruthy();
+    expect(facility.intro).toContain("assign it to the right person");
+    expect(facility.intro).toContain("vegetable, flower, nursery");
+    expect([facility.eyebrow, facility.title, facility.intro].join(" ")).not.toMatch(
+      /METRC|cannabis/i
+    );
+  });
+  it("explains the separate METRC connection and its current limits after daily operations", () => {
+    const screen = render(<PublicLandingPage page="facility-management" />);
+    const sections = marketing.pages["facility-management"].sections;
+    const metrcIndex = sections.findIndex(
+      (section) => section.title === "Where METRC fits"
+    );
+    expect(metrcIndex).toBeGreaterThan(
+      sections.findIndex((section) => section.title === "Environmental context")
+    );
+    expect(screen.getByRole("header", { name: "Where METRC fits" })).toBeTruthy();
+    expect(screen.getByText(sections[metrcIndex].body)).toBeTruthy();
+    expect(sections[metrcIndex].body).toContain("Licensed cannabis facilities");
+    expect(sections[metrcIndex].body).toContain(
+      "general Facility workflows do not require a METRC connection"
+    );
+    expect(sections[metrcIndex].body).toContain("planned, not live");
+    expect(sections[metrcIndex].body).toContain(
+      "provider access, jurisdiction review, and runtime verification remain outstanding"
+    );
+    expect(sections[metrcIndex].body).toContain("JSON, not METRC submissions");
+    expect(sections[metrcIndex].body).toContain(
+      "does not replace your required compliance system or certify compliance"
+    );
   });
   it.each(["home", "personal-grower", "pricing", "about"] as const)(
     "reuses one dynamic, empty-by-default feedback surface on %s",
