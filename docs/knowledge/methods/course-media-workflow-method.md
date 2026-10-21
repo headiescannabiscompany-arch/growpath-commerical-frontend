@@ -1,5 +1,33 @@
 # Course Media Workflow
 
+## Course seller payment alignment — locally verified, October 21, 2026
+
+New ordinary-course and course-gift checkouts are locally prepared to retain the
+creator's payment role in the existing reservation and financial evidence. Keep
+the existing platform destination-charge flow and fee, adding `on_behalf_of` for
+that retained creator account. Require active merchant card-payment capability
+as well as recipient transfer readiness; Accounts v1 also requires charges enabled.
+Recipient-only onboarding is not merchant readiness. Never upgrade an account,
+publish private verification fields, or infer payment authority from a profile name.
+
+Bind the role through gift review, receipt, reservation, provider metadata and paid
+intent/charge evidence. Use immutable generic course presentation so retries keep
+the same provider parameters. Legacy attempts have no new default: retain their
+fingerprints, payment instructions and idempotency. A lost legacy reservation
+cannot authorize a replacement legacy payment. Already-paid servicing does not
+require renewed sale consent or current merchant capability. Preserve separate
+Storefront Products, downloadable Offers and subscriptions.
+
+Local verification accepted 48 new and two directly affected existing checks,
+including one cleaned-up loopback database with mocked provider responses.
+No real Stripe account, receipt/statement presentation, hosted checkout or payment
+was verified. This package remains unreleased; gifting/workers remain
+OFF. Provider eligibility, actual legal seller disclosures, account capability
+changes and release authority remain separate R09 checklist gates. Destination
+charges still leave existing platform refund/dispute debit responsibilities in
+place; `on_behalf_of` alone is not legal or provider approval. Plan/credit and
+retention/deletion/archive behavior stays unchanged.
+
 ## Course seller disclosure — local preparation, October 21, 2026
 
 The owner confirmed that independent creators sell their own courses through
