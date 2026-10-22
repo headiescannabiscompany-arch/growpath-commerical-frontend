@@ -194,9 +194,11 @@ export default function MarketingDetails({ page }: { page: string }) {
           <Text style={text}>{marketing.founder.homeMention}</Text>
           <Text style={text}>{marketing.founder.homeStory}</Text>
           <Text style={text}>{marketing.founder.businessLine}</Text>
-          <Link href={marketing.founder.showUrl as never} style={{ color: palette.link }}>
-            Watch the show on YouTube
-          </Link>
+          {marketing.founder.showUrl && (
+            <Link href={marketing.founder.showUrl as never} style={{ color: palette.link }}>
+              Watch the show on YouTube
+            </Link>
+          )}
           <Link href="/about" style={{ color: palette.link }}>
             Read Jay&apos;s founder story
           </Link>

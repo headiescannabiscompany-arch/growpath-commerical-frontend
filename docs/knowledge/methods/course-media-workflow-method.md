@@ -1,5 +1,39 @@
 # Course Media Workflow
 
+## Owner-directed course-content restriction — locally verified, October 22, 2026
+
+The owner now excludes cannabis-related text/images from courses, including existing
+learner access, and permits identified courses to be taken down. This supersedes
+earlier course-only permission; it does not ban growers, change private grow tools,
+or change non-course community visibility. Ordinary gardening courses do not enter
+a blanket unreviewed-media hold. No new image-analysis service or credit use is authorized.
+
+Reuse existing labels and Admin moderation. Explicit cannabis classification of a
+course also hides/unpublishes it; clearing a label alone does not restore it. Preserve
+drafts, purchase/enrollment/history and refund/support servicing. A course's retained
+Commercial source must not bypass the canonical Course takedown through catalog,
+direct preview or social metadata. Publication and new acquisition reject explicit
+restricted course text/labels; learner/catalog/media reads apply the same rule
+regardless of interest preference, including already-enrolled learners. Do not strip
+labels or disguise material as ordinary gardening. Do not automatically refund/delete.
+
+The local word guard covers explicit terms and stored authoring metadata, not image
+pixels, video speech, document contents, obfuscation or mutable external URLs. An
+identified image violation uses the existing report/Admin takedown path. Private
+signed media is rechecked before new access; already-issued external signed URLs,
+third-party caches and downloaded files cannot be recalled by hiding a course.
+Do not claim that this is comprehensive image screening or Stripe approval.
+
+Status: the bounded October 22 package passed 52 selected checks: 26 policy/Admin,
+12 connected route/database, and 14 UI/crawler-copy cases. The local database needed
+an outside-sandbox retry after an initial startup failure; no hosted database was used.
+This is focused local evidence, not a full-app, hosted-content or provider approval.
+Implementation remains uncommitted/unreleased; image violations require identified
+content review and the existing Admin takedown path, not automatic pixel screening.
+Only new/directly affected verification belongs in this scope. The existing R09
+checklist/finite receipt retain hosted, provider and remaining support/retention gates.
+No plan, credits, retention or live gifting activation changes are included.
+
 ## Explicit course-payment setup — locally verified, October 21, 2026
 
 The existing seller-settings card now distinguishes bank payouts from course

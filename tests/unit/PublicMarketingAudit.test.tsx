@@ -15,6 +15,26 @@ jest.mock("@/api/testimonials", () => ({
 }));
 
 describe("HeyCatch audit corrections", () => {
+  it.each(["home", "about"] as const)(
+    "operator correction renders the current sole proprietor on %s",
+    (page) => {
+      const screen = render(<PublicLandingPage page={page} />);
+      const rendered = JSON.stringify(screen.toJSON());
+      expect(rendered).toContain(
+        "GrowPathAI is currently operated by John Collins, a sole proprietor in Maryland. Interactive Framework Builders LLC is the planned company and has not yet been formed."
+      );
+      expect(rendered).not.toMatch(
+        /Triplebag Genetics|registered in Maryland/i
+      );
+      expect(screen.getByLabelText("Jay, founder of GrowPathAI")).toBeTruthy();
+      expect(rendered).not.toContain("Exploring the Growing Universe");
+      expect(
+        screen
+          .UNSAFE_getAllByType(Link)
+          .some((link) => link.props.href === "https://youtube.com/@etgujay")
+      ).toBe(false);
+    }
+  );
   it.each(["home", "pricing"] as const)(
     "keeps factual reassurance with the primary signup action on %s",
     (page) => {
@@ -180,7 +200,7 @@ describe("HeyCatch audit corrections", () => {
       .mockImplementation(() => ({ remove: jest.fn() }));
   });
 
-  it("preserves the founder's book-first origin and distinguishes inspiration from implementation", () => {
+  it("preserves the founder's book-first origin with crop-neutral wording", () => {
     const screen = render(<PublicLandingPage page="about" />);
     expect(screen.getByText(marketing.founder.historyNote)).toBeTruthy();
     for (const section of marketing.founder.historySections) {
@@ -190,9 +210,20 @@ describe("HeyCatch audit corrections", () => {
     const copy = JSON.stringify(screen.toJSON());
     expect(copy).toContain("idea of a choose-your-own-adventure book");
     expect(copy).toContain("I may have had the original concept earlier");
-    expect(copy).toContain("Jorge Cervantes");
-    expect(copy).toContain("it does not use his framework");
+    expect(copy).not.toMatch(/Jorge Cervantes|LAWNS framework|\bcannabis\b|bud shots/i);
+    expect(copy).toContain("photos, observations, watering, feeding and environmental records");
   });
+  it.each(["about", "creators-educators"] as const)(
+    "crop-neutral public copy omits cannabis references on %s",
+    (page) => {
+      const screen = render(<PublicLandingPage page={page} />);
+      expect(JSON.stringify(screen.toJSON())).not.toMatch(
+        /\b(?:cannabis|marijuana|hemp|thc|cbd)\b|bud shots|Jorge Cervantes|LAWNS framework|Exploring the Growing Universe/i
+      );
+      // These are not grower landing pages; assert their own rendered heading.
+      expect(screen.getByText(marketing.pages[page].title)).toBeTruthy();
+    }
+  );
 
   it("uses a personal-grower hero and scope limits without outcome promises", () => {
     const screen = render(<PublicLandingPage page="home" />);
@@ -223,12 +254,16 @@ describe("HeyCatch audit corrections", () => {
     expect(screen.queryByText("Most popular")).toBeNull();
     expect(JSON.stringify(screen.toJSON())).not.toContain("unlimited AI");
   });
-  it("links only the owner-provided founder channel and withholds missing proof", () => {
+  it("keeps the founder identity without the cited show promotion or invented proof", () => {
     const screen = render(<PublicLandingPage page="about" />);
-    expect(JSON.stringify(screen.toJSON())).toContain(
+    expect(JSON.stringify(screen.toJSON())).not.toContain(
       "Watch Exploring the Growing Universe on YouTube"
     );
-    expect(marketing.founder.showUrl).toBe("https://youtube.com/@etgujay");
+    expect(marketing.founder.showUrl).toBe("");
+    const links = screen.UNSAFE_getAllByType(Link);
+    expect(links.some((link) => link.props.href === "https://youtube.com/@etgujay")).toBe(false);
+    expect(links.some((link) => link.props.href === "/contact")).toBe(true);
+    expect(links.every((link) => typeof link.props.href !== "string" || link.props.href.length > 0)).toBe(true);
     expect(marketing.founder.photo).toBe("/images/founder-jay.jpg");
     expect(marketing.founder.photoAlt).toBe("Jay, founder of GrowPathAI");
     expect(screen.getByText(marketing.founder.story)).toBeTruthy();

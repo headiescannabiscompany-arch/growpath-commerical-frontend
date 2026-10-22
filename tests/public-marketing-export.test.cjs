@@ -13,6 +13,22 @@ const {
   marketingCss,
   marketing
 } = require("../scripts/public-marketing.cjs");
+for (const page of ["", "about"]) {
+  test(`operator correction exports the current sole proprietor on ${page || "home"}`, () => {
+    const html = publicMarketingMarkup(page);
+    const operator =
+      "GrowPathAI is currently operated by John Collins, a sole proprietor in Maryland. Interactive Framework Builders LLC is the planned company and has not yet been formed.";
+    assert.equal(marketing.founder.businessLine, operator);
+    assert.ok(html.includes(operator));
+    assert.doesNotMatch(html, /Triplebag Genetics|registered in Maryland/i);
+    assert.ok(html.includes("Meet Jay"));
+    assert.ok(!html.includes("Exploring the Growing Universe"));
+    assert.ok(!html.includes("https://youtube.com/@etgujay"));
+    assert.ok(!html.includes('href=""'));
+    assert.ok(html.includes("/images/founder-jay.jpg"));
+  });
+}
+
 test("W10 puts truthful payment reassurance directly after the home/pricing signup CTA", () => {
   for (const page of ["", "pricing"]) {
     const html = publicMarketingMarkup(page);
@@ -489,14 +505,13 @@ test("About exports the supplied accessible portrait using its actual public ass
   assert.ok(publicMarketingMarkup("").includes("/images/founder-jay.jpg"));
 });
 
-test("homepage founder mention uses the supplied channel in the footer area", () => {
+test("homepage founder mention retains identity without the cited show promotion", () => {
   const html = publicMarketingMarkup("");
-  const mention = "Built by Jay, host of Exploring the Growing Universe.";
+  const mention = "Built by Jay, founder of GrowPathAI.";
   assert.equal(marketing.founder.homeMention, mention);
   assert.equal(html.split(mention).length - 1, 1);
-  assert.ok(
-    html.includes('<a href="https://youtube.com/@etgujay">Watch the show on YouTube</a>')
-  );
+  assert.doesNotMatch(html, /youtube\.com\/@etgujay|Watch the show on YouTube|href=""/);
+  assert.ok(html.includes('href="/about"'));
   assert.ok(html.indexOf(mention) > html.indexOf("Your records, your decisions"));
   assert.ok(html.indexOf(mention) < html.indexOf("See what has actually shipped"));
   assert.ok(!html.slice(0, html.indexOf("</header>")).includes(mention));
@@ -543,11 +558,11 @@ test("Pro value anchor follows annual savings only in its pricing card", () => {
   assert.ok(!/cost of nutrients|nutrient cost/i.test(html));
 });
 
-test("crawler copy matches the explicit shared-team pricing and photo-feed scope", () => {
+test("crawler copy matches the explicit shared-team pricing and crop-neutral scope", () => {
   const pricing =
     "Priced by what you do, not per seat: one Facility subscription covers its team workspace, with shared plan limits.";
   const scope =
-    "If you only want a photo feed for bud shots, this is probably more structure than you need.";
+    "Storefront sales depend on seller, product and buyer eligibility.";
   assert.ok(marketing.pages.pricing.intro.includes(pricing));
   assert.ok(publicMarketingMarkup("pricing").includes(pricing));
   assert.ok(marketing.scope.includes(scope));
@@ -617,16 +632,26 @@ test("founder history preserves owner-supplied dates without asserting a launch 
   assert.ok(html.includes("I later turned that idea into GrowPathAI"));
   assert.ok(!html.includes("On August 4, 2025, the idea"));
   assert.ok(html.includes("Future ambitions below are not a list of shipped features"));
-  assert.ok(html.includes("Jorge Cervantes"));
-  assert.ok(html.includes("was one inspiration for GrowPathAI"));
-  assert.ok(html.includes("it does not use his framework"));
-  assert.ok(!html.includes("became the LAWNS framework"));
+  assert.doesNotMatch(html, /Jorge Cervantes|LAWNS framework|\bcannabis\b|bud shots/i);
+  assert.ok(html.includes("photos, observations, watering, feeding and environmental records"));
   for (const section of marketing.founder.historySections) {
     assert.ok(html.includes(section.title));
   }
   assert.ok(!publicMarketingMarkup("").includes(marketing.founder.historyTitle));
   assert.deepEqual(marketingSchema("about"), []);
 });
+
+for (const page of ["about", "creators-educators"]) {
+  test(`crop-neutral public copy exports no cannabis references on ${page}`, () => {
+    const html = publicMarketingMarkup(page);
+    assert.doesNotMatch(
+      html,
+      /\b(?:cannabis|marijuana|hemp|thc|cbd)\b|bud shots|Jorge Cervantes|LAWNS framework|Exploring the Growing Universe/i
+    );
+    // About/creator pages have their own sections, not the grower-only scope card.
+    assert.match(html, /<h1>[^<]+<\/h1>/);
+  });
+}
 
 test("every public footer links the new comparison and grow-journal pages", () => {
   for (const key of Object.keys(marketing.pages)) {

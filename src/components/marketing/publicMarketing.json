@@ -312,9 +312,9 @@
         },
         {
           "title": "Meet Jay",
-          "body": "Jay is the founder behind GrowPathAI and hosts Exploring the Growing Universe, a grow show. GrowPathAI is a brand of Triplebag Genetics, LLC, registered in Maryland.",
-          "href": "https://youtube.com/@etgujay",
-          "linkLabel": "Watch Exploring the Growing Universe on YouTube"
+          "body": "Jay is the founder behind GrowPathAI. GrowPathAI is currently operated by John Collins, a sole proprietor in Maryland. Interactive Framework Builders LLC is the planned company and has not yet been formed.",
+          "href": "/contact",
+          "linkLabel": "Contact GrowPathAI"
         }
       ]
     },
@@ -518,9 +518,9 @@
   "founder": {
     "photo": "/images/founder-jay.jpg",
     "photoAlt": "Jay, founder of GrowPathAI",
-    "homeMention": "Built by Jay, host of Exploring the Growing Universe.",
+    "homeMention": "Built by Jay, founder of GrowPathAI.",
     "homeStory": "I wanted practical tools, grow records, education and community in one place, instead of scattering a grow's history across ten apps.",
-    "businessLine": "GrowPathAI is a brand of Triplebag Genetics, LLC, registered in Maryland.",
+    "businessLine": "GrowPathAI is currently operated by John Collins, a sole proprietor in Maryland. Interactive Framework Builders LLC is the planned company and has not yet been formed.",
     "story": "I built GrowPathAI because I wanted social software and AI to empower the people using them, not feed arguments or turn their interests into someone else's product. I wanted a place for growers: community alongside practical tools of the trade. My longer-term goal is to bring that same approach to other industries. GrowPathAI is where I'm starting.",
     "historyTitle": "The GrowPathAI founder story",
     "historyNote": "In Jay's words, adapted from his founder story and clarifications supplied October 4, 2026. The dates describe remembered milestones, not a confirmed first-concept date or a public product launch. Future ambitions below are not a list of shipped features.",
@@ -535,7 +535,7 @@
       },
       {
         "title": "The original idea: follow the plant",
-        "body": "My starting point was the idea of a choose-your-own-adventure book. I later turned that idea into GrowPathAI: a growing system where the next step depends on the plant and what has happened so far. Jorge Cervantes' LAWNS framework — Light, Air, Water, Nutrients and Substrate — was one inspiration for GrowPathAI. GrowPathAI takes its own approach; it does not use his framework. I wanted growers to bring photos, observations, watering, feeding and environmental records together over time, so AI could help explain patterns in that particular grow. The aim was to help people understand their own information and decide what to do next."
+        "body": "My starting point was the idea of a choose-your-own-adventure book. I later turned that idea into GrowPathAI: a growing system where the next step depends on the plant and what has happened so far. I wanted growers to bring photos, observations, watering, feeding and environmental records together over time, so AI could help explain patterns in that particular grow. The aim was to help people understand their own information and decide what to do next."
       },
       {
         "title": "Tools need people, too",
@@ -550,7 +550,7 @@
         "body": "I'd like to bring this approach to other industries: tools, education, community and AI built around the work people actually do. That's a future ambition, not something GrowPathAI already delivers outside growing. GrowPathAI is where I'm starting. Give people better tools, better information and a way to connect with each other. Use AI to empower the person holding the tool."
       }
     ],
-    "showUrl": "https://youtube.com/@etgujay",
+    "showUrl": "",
     "socialUrl": "https://www.linkedin.com/in/johnabrahamcollins1979"
   },
   "ctaReassurance": "Free plan needs no card. Eligible paid checkout is handled by Stripe; GrowPathAI does not store full card numbers.",
@@ -652,5 +652,5 @@
   ],
   "pricingValueAnchor": "At the 10-grow plan limit, $10/month works out to $1 per tracked grow per month.",
   "pricingAlternativeAnchor": "Compare $10/month with what you spend on separate notebooks and journal apps: keep up to 10 grows' notes, feeds and photos together. Your savings depend on the tools you replace.",
-  "scope": "GrowPathAI keeps records and helps you review them. It is not an automatic grow controller, a guarantee of plant health or yield, or a substitute for professional advice. Ordinary public storefronts do not process cannabis sales. If you only want a photo feed for bud shots, this is probably more structure than you need."
+  "scope": "GrowPathAI keeps records and helps you review them. It is not an automatic grow controller, a guarantee of plant health or yield, or a substitute for professional advice. Storefront sales depend on seller, product and buyer eligibility."
 }

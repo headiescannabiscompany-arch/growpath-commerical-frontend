@@ -212,7 +212,9 @@ function publicMarketingMarkup(route) {
         "</p><p>" +
         escape(marketing.founder.businessLine) +
         "</p>" +
-        anchor(["Watch the show on YouTube", marketing.founder.showUrl]) +
+        (marketing.founder.showUrl
+          ? anchor(["Watch the show on YouTube", marketing.founder.showUrl])
+          : "") +
         "<p>" +
         anchor(["Read Jay's founder story", "/about"]) +
         "</p>" +

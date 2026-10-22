@@ -26,6 +26,7 @@ import {
 import { deleteCourseMediaAsset, uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import GrowInterestPicker from "@/components/GrowInterestPicker";
+import CourseContentPolicyNotice from "@/components/learning/CourseContentPolicyNotice";
 import LessonMediaSourceEditor from "@/components/learning/LessonMediaSourceEditor";
 import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
 import FacilityLessonDocument from "@/components/learning/FacilityLessonDocument";
@@ -849,6 +850,7 @@ export default function CreateCourseScreen({
         ) : null}
         <View style={themeStyles.workflowCard}>
           <Text style={themeStyles.workflowTitle}>Course builder workflow</Text>
+          <CourseContentPolicyNotice style={themeStyles.helpText} />
           <Text style={themeStyles.helpText}>
             1. Course basics 2. Curriculum / lessons 3. Documents / media 4. Live sessions
             5. Links 6. Pricing / access 7. Preview / publish

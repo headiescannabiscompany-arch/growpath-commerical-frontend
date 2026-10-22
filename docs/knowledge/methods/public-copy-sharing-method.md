@@ -1,5 +1,22 @@
 # Reviewed Public Copies
 
+## Founder marketing correction — October 22, 2026
+
+Keep the founder's identity, supplied portrait and remembered chronology accurate.
+Name John Collins as the current Maryland sole-proprietor operator; Interactive
+Framework Builders LLC is planned, not formed. The owner directed crop-neutral
+About/founder and course-marketing copy. Remove the cannabis-author reference and
+the EtGU show promotion cited in Stripe's October 22 account-review email from
+the About and homepage founder sections. An absent show URL renders no link in
+either the interactive page or crawler HTML; never emit an empty-href fallback.
+Keep the professional profile, internal founder story and support contact, without
+inventing replacement endorsements or altering the external accounts.
+
+This marketing correction does not screen course images or enforce course access,
+grant payment eligibility, change private grow interests, or establish approval.
+Stripe requested a reply after actual website/business-information updates for a
+new review; local edits are not evidence that those updates are publicly served.
+
 GrowPath shares an already-public record by its canonical URL. Private grows, timelines,
 journals, AI results and operational records do not become public when Share is pressed.
 They require a reviewed public copy whose data, media and lifecycle are separate from the

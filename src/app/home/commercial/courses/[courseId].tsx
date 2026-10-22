@@ -34,6 +34,7 @@ import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 import { flattenTierSelections } from "@/utils/growInterests";
+import CourseContentPolicyNotice from "@/components/learning/CourseContentPolicyNotice";
 
 function cleanId(value: unknown) {
   return String(Array.isArray(value) ? value[0] : value || "").trim();
@@ -754,6 +755,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         <Text style={styles.cardTitle}>
           {coursePublished ? "Published Commercial Course" : "Update Commercial Course"}
         </Text>
+        <CourseContentPolicyNotice style={styles.warningText} />
         {coursePublished ? (
           <View style={styles.warningBox}>
             <Text style={styles.warningTitle}>Published content is locked</Text>

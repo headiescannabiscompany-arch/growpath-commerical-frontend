@@ -1,5 +1,19 @@
 # Cannabis Visibility Policy
 
+## Course-specific restriction — owner direction, October 22, 2026
+
+Cannabis-related course text/images are no longer permitted, including existing
+learner content. Identified courses may be hidden/unpublished through the existing
+Admin workflow without deleting records, purchase history or refund/support access.
+This course availability rule overrides course interest-based visibility only; it
+does not change private grow tools, accounts, plans or other community content.
+The owner did not authorize a blanket hold on all unreviewed gardening media.
+Explicit text/labels can be guarded; image, audio and external-content review remains
+a separate evidence task. Never equate labels with pixel screening or provider approval.
+Local implementation passed the bounded October 22 verification package; it is not
+released or applied to hosted content. Follow the current R09 receipt for exact scope
+and image-review limits, not a claim of automatic image screening or provider approval.
+
 ## Owner-directed dispensary discovery pause — October 21, 2026
 
 Dispensary discovery is unavailable pending a separate reviewed release and the
