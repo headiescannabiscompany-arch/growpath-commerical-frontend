@@ -50,6 +50,7 @@ import {
   resolveToolWorkspaceType,
   toolWorkspaceIdentity
 } from "@/features/personal/tools/toolWorkspaceScope";
+import { plantIdRequestFailureMessage } from "@/features/personal/tools/plantIdRequestFailure";
 
 type ToolField = {
   key: string;
@@ -121,6 +122,8 @@ type BackendCalculatorToolScreenProps = {
         commercialAccountId: string;
         workspaceType: "personal" | "commercial" | "facility";
       }) => React.ReactNode);
+  formFooter?: BackendCalculatorToolScreenProps["formHeader"];
+  optionalForm?: { title: string; description: string };
   status?: string;
   runLabel?: string;
   runAccessibilityLabel?: string;
@@ -360,6 +363,8 @@ export default function BackendCalculatorToolScreen({
   executionBlockedMessage = "Finish the current action before running this tool.",
   onExecutionBusyChange,
   formHeader,
+  formFooter,
+  optionalForm,
   status = "CALCULATED",
   runLabel: runLabelOverride,
   runAccessibilityLabel,
@@ -505,6 +510,7 @@ export default function BackendCalculatorToolScreen({
   const [moduleRecord, setModuleRecord] = useState<GrowpathModuleRecord | null>(null);
   const [running, setRunning] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [optionalFormExpanded, setOptionalFormExpanded] = useState(false);
   const [assistantBriefText, setAssistantBriefText] = useState("");
   const [prefilling, setPrefilling] = useState(false);
   const [aiPrefillPayload, setAiPrefillPayload] = useState<Record<string, any>>({});
@@ -557,6 +563,7 @@ export default function BackendCalculatorToolScreen({
   const latestExternalInputKeyRef = React.useRef(executionInputKey);
   const inputRevisionRef = React.useRef(0);
   const executionLockRef = React.useRef<"prefill" | "calculate" | null>(null);
+  const executionWorkspaceRevisionRef = React.useRef(0);
   latestExternalInputKeyRef.current = executionInputKey;
   valuesRef.current = values;
   aiPrefillPayloadRef.current = aiPrefillPayload;
@@ -568,6 +575,8 @@ export default function BackendCalculatorToolScreen({
     workspaceIdentityRef.current = workspaceIdentityKey;
     inputRevisionRef.current += 1;
     if (workspaceChanged) {
+      executionWorkspaceRevisionRef.current += 1;
+      setOptionalFormExpanded(false);
       userValuesRef.current = initialValues;
       userEditedFieldKeysRef.current = new Set();
       externalAiDraftApplicationRef.current = {
@@ -955,6 +964,7 @@ export default function BackendCalculatorToolScreen({
       return;
     }
     executionLockRef.current = "prefill";
+    const requestWorkspaceRevision = executionWorkspaceRevisionRef.current;
     const requestInputRevision = inputRevisionRef.current;
     const requestExternalInputKey = latestExternalInputKeyRef.current;
     const activeExternalDraft = externalAiDraftApplicationRef.current;
@@ -1212,12 +1222,28 @@ export default function BackendCalculatorToolScreen({
         );
       }
     } catch (error: any) {
-      setFeedback(error?.message || "AI could not prefill this workflow.");
-    } finally {
-      if (executionLockRef.current === "prefill") {
-        executionLockRef.current = null;
+      // A delayed failure belongs to the evidence/workspace that made the request.
+      if (
+        !isCropIdentification ||
+        (inputRevisionRef.current === requestInputRevision &&
+          latestExternalInputKeyRef.current === requestExternalInputKey)
+      ) {
+        setFeedback(
+          isCropIdentification
+            ? plantIdRequestFailureMessage(error, "analysis")
+            : error?.message || "AI could not prefill this workflow."
+        );
       }
-      setPrefilling(false);
+    } finally {
+      if (
+        !isCropIdentification ||
+        executionWorkspaceRevisionRef.current === requestWorkspaceRevision
+      ) {
+        if (executionLockRef.current === "prefill") {
+          executionLockRef.current = null;
+        }
+        setPrefilling(false);
+      }
     }
   }
 
@@ -1272,6 +1298,7 @@ export default function BackendCalculatorToolScreen({
     }
     const usesExistingLock =
       existingLock === "prefill" && executionLockRef.current === "prefill";
+    const requestWorkspaceRevision = executionWorkspaceRevisionRef.current;
     if (!usesExistingLock) {
       if (running || prefilling || executionLockRef.current) return;
       executionLockRef.current = "calculate";
@@ -1357,12 +1384,24 @@ export default function BackendCalculatorToolScreen({
       }
     } catch (error: any) {
       if (requestIsCurrent()) {
-        setFeedback(error?.message || "Unable to calculate.");
+        setFeedback(
+          isCropIdentification
+            ? plantIdRequestFailureMessage(
+                error,
+                metadata.imageAnalysis?.aiUsageEventId ? "photo-save" : "manual-save"
+              )
+            : error?.message || "Unable to calculate."
+        );
       }
     } finally {
-      setRunning(false);
-      if (!usesExistingLock && executionLockRef.current === "calculate") {
-        executionLockRef.current = null;
+      if (
+        !isCropIdentification ||
+        executionWorkspaceRevisionRef.current === requestWorkspaceRevision
+      ) {
+        setRunning(false);
+        if (!usesExistingLock && executionLockRef.current === "calculate") {
+          executionLockRef.current = null;
+        }
       }
     }
   }
@@ -1735,7 +1774,7 @@ export default function BackendCalculatorToolScreen({
             </Text>
             <Text style={styles.guidanceText}>
               {isCropIdentification
-                ? "AI can inspect uploaded photos and use an attached grow or plant as optional context. Review and confirm every identification."
+                ? "Start with a photo. AI fills the visible details and returns a draft identification; you do not need to complete the questions below. Review the result before confirming it."
                 : growOptional
                   ? "AI can inspect uploaded photos and use an attached grow or plant as optional context. Review every filled observation before running the structured workflow."
                   : "AI will use saved grow and plant evidence to fill every supported field. You can add or correct anything before running the tool."}
@@ -1749,7 +1788,7 @@ export default function BackendCalculatorToolScreen({
                 !aiPrefillReady || (!growId && !growOptional) || prefilling || running
               }
               style={[
-                styles.secondaryButton,
+                isCropIdentification ? styles.button : styles.secondaryButton,
                 (!aiPrefillReady ||
                   (!growId && !growOptional) ||
                   prefilling ||
@@ -1758,7 +1797,11 @@ export default function BackendCalculatorToolScreen({
               ]}
               onPress={prefillWithAI}
             >
-              <Text style={styles.secondaryButtonText}>
+              <Text
+                style={
+                  isCropIdentification ? styles.buttonText : styles.secondaryButtonText
+                }
+              >
                 {prefilling
                   ? growOptional
                     ? "Analyzing photos..."
@@ -1791,6 +1834,26 @@ export default function BackendCalculatorToolScreen({
           </View>
         ) : null}
 
+        {isCropIdentification && !outputs && feedback ? (
+          <Text
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+            style={styles.feedback}
+          >
+            {feedback}
+          </Text>
+        ) : null}
+
+        {typeof formFooter === "function"
+          ? formFooter({
+              growId,
+              plantId: plantContext.plantId,
+              facilityId,
+              commercialAccountId,
+              workspaceType
+            })
+          : formFooter}
+
         {assistantBrief ? (
           <View style={styles.guidanceCard}>
             <Text style={styles.resultTitle}>{assistantBrief.title}</Text>
@@ -1818,113 +1881,140 @@ export default function BackendCalculatorToolScreen({
           </View>
         ) : null}
 
-        <View style={styles.form}>
-          {fields.map((field, index) => (
-            <React.Fragment key={field.key}>
-              {field.section &&
-              (index === 0 || fields[index - 1]?.section !== field.section) ? (
-                <Text style={styles.formSection}>{field.section}</Text>
-              ) : null}
-              <View style={styles.field}>
-                <View style={styles.fieldLabelRow}>
-                  <Text style={styles.label}>
-                    {field.label}
-                    {field.required ? " *" : ""}
-                  </Text>
-                  {aiPrefilledFieldKeys.has(field.key) ? (
-                    <Text
-                      accessibilityLabel={`${field.label} was filled by AI and needs review`}
-                      style={styles.aiDraftLabel}
-                    >
-                      AI draft - review
-                    </Text>
-                  ) : null}
-                </View>
-                {field.helpText ? (
-                  <Text style={styles.fieldHelp}>{field.helpText}</Text>
-                ) : null}
-                {field.options?.length ? (
-                  <View
-                    accessibilityRole="radiogroup"
-                    accessibilityLabel={`${title} ${field.label}`}
-                    style={styles.optionGrid}
-                  >
-                    {field.options.map((option) => {
-                      const selected = values[field.key] === option.value;
-                      return (
-                        <Pressable
-                          key={option.value}
-                          accessibilityRole="radio"
-                          accessibilityLabel={`${title} ${field.label}: ${option.label}`}
-                          accessibilityHint={option.description}
-                          accessibilityState={{ checked: selected }}
-                          onPress={() => updateValue(field.key, option.value)}
-                          style={[styles.optionCard, selected && styles.optionCardOn]}
-                        >
-                          <Text
-                            style={[
-                              styles.optionCardLabel,
-                              selected && styles.optionCardLabelOn
-                            ]}
-                          >
-                            {option.label}
-                          </Text>
-                          {option.description ? (
-                            <Text style={styles.optionCardDescription}>
-                              {option.description}
-                            </Text>
-                          ) : null}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                ) : field.inputType === "date" || field.inputType === "datetime" ? (
-                  <CalendarDateField
-                    accessibilityLabel={`${title} ${field.label}`}
-                    label={undefined}
-                    mode={field.inputType}
-                    onChange={(value) => updateValue(field.key, value)}
-                    optional={!field.required}
-                    placeholder={
-                      field.placeholder ||
-                      (field.inputType === "datetime"
-                        ? "Choose date and time"
-                        : "Choose date")
-                    }
-                    value={values[field.key] ?? ""}
-                  />
-                ) : (
-                  <TextInput
-                    accessibilityLabel={`${title} ${field.label}`}
-                    accessibilityHint={field.helpText}
-                    placeholder={field.placeholder}
-                    placeholderTextColor={palette.textMuted}
-                    selectionColor={palette.accent}
-                    style={[styles.input, field.multiline && styles.textArea]}
-                    value={values[field.key] ?? ""}
-                    onChangeText={(value) => updateValue(field.key, value)}
-                    keyboardType={field.keyboardType || "default"}
-                    multiline={field.multiline}
-                  />
-                )}
-              </View>
-            </React.Fragment>
-          ))}
-        </View>
+        {optionalForm ? (
+          <View style={styles.guidanceCard}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={optionalForm.title}
+              accessibilityState={{ expanded: optionalFormExpanded }}
+              onPress={() => setOptionalFormExpanded((expanded) => !expanded)}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>
+                {optionalFormExpanded ? "Hide optional details" : optionalForm.title}
+              </Text>
+            </Pressable>
+            <Text style={styles.guidanceText}>{optionalForm.description}</Text>
+            {aiPrefilledFieldKeys.size ? (
+              <Text accessibilityLiveRegion="polite" style={styles.guidanceText}>
+                {aiPrefilledFieldKeys.size} details filled from photos. Open optional
+                details to review or edit them; they remain unconfirmed AI drafts.
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={runAccessibilityLabel || `Run ${title}`}
-          accessibilityHint={runLabel}
-          disabled={running || prefilling || executionBlocked}
-          onPress={calculate}
-          style={[
-            styles.button,
-            (running || prefilling || executionBlocked) && styles.disabled
-          ]}
-        >
-          <Text style={styles.buttonText}>{running ? "Working..." : runLabel}</Text>
-        </Pressable>
+        {!optionalForm || optionalFormExpanded ? (
+          <>
+            <View style={styles.form}>
+              {fields.map((field, index) => (
+                <React.Fragment key={field.key}>
+                  {field.section &&
+                  (index === 0 || fields[index - 1]?.section !== field.section) ? (
+                    <Text style={styles.formSection}>{field.section}</Text>
+                  ) : null}
+                  <View style={styles.field}>
+                    <View style={styles.fieldLabelRow}>
+                      <Text style={styles.label}>
+                        {field.label}
+                        {field.required ? " *" : ""}
+                      </Text>
+                      {aiPrefilledFieldKeys.has(field.key) ? (
+                        <Text
+                          accessibilityLabel={`${field.label} was filled by AI and needs review`}
+                          style={styles.aiDraftLabel}
+                        >
+                          AI draft - review
+                        </Text>
+                      ) : null}
+                    </View>
+                    {field.helpText ? (
+                      <Text style={styles.fieldHelp}>{field.helpText}</Text>
+                    ) : null}
+                    {field.options?.length ? (
+                      <View
+                        accessibilityRole="radiogroup"
+                        accessibilityLabel={`${title} ${field.label}`}
+                        style={styles.optionGrid}
+                      >
+                        {field.options.map((option) => {
+                          const selected = values[field.key] === option.value;
+                          return (
+                            <Pressable
+                              key={option.value}
+                              accessibilityRole="radio"
+                              accessibilityLabel={`${title} ${field.label}: ${option.label}`}
+                              accessibilityHint={option.description}
+                              accessibilityState={{ checked: selected }}
+                              onPress={() => updateValue(field.key, option.value)}
+                              style={[styles.optionCard, selected && styles.optionCardOn]}
+                            >
+                              <Text
+                                style={[
+                                  styles.optionCardLabel,
+                                  selected && styles.optionCardLabelOn
+                                ]}
+                              >
+                                {option.label}
+                              </Text>
+                              {option.description ? (
+                                <Text style={styles.optionCardDescription}>
+                                  {option.description}
+                                </Text>
+                              ) : null}
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    ) : field.inputType === "date" || field.inputType === "datetime" ? (
+                      <CalendarDateField
+                        accessibilityLabel={`${title} ${field.label}`}
+                        label={undefined}
+                        mode={field.inputType}
+                        onChange={(value) => updateValue(field.key, value)}
+                        optional={!field.required}
+                        placeholder={
+                          field.placeholder ||
+                          (field.inputType === "datetime"
+                            ? "Choose date and time"
+                            : "Choose date")
+                        }
+                        value={values[field.key] ?? ""}
+                      />
+                    ) : (
+                      <TextInput
+                        accessibilityLabel={`${title} ${field.label}`}
+                        accessibilityHint={field.helpText}
+                        placeholder={field.placeholder}
+                        placeholderTextColor={palette.textMuted}
+                        selectionColor={palette.accent}
+                        style={[styles.input, field.multiline && styles.textArea]}
+                        value={values[field.key] ?? ""}
+                        onChangeText={(value) => updateValue(field.key, value)}
+                        keyboardType={field.keyboardType || "default"}
+                        multiline={field.multiline}
+                      />
+                    )}
+                  </View>
+                </React.Fragment>
+              ))}
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={runAccessibilityLabel || `Run ${title}`}
+              accessibilityHint={runLabel}
+              disabled={running || prefilling || executionBlocked}
+              onPress={calculate}
+              style={[
+                styles.button,
+                (running || prefilling || executionBlocked) && styles.disabled
+              ]}
+            >
+              <Text style={styles.buttonText}>{running ? "Working..." : runLabel}</Text>
+            </Pressable>
+          </>
+        ) : null}
 
         {bannerPolicy.middle ? (
           <FeedBanner
@@ -1984,7 +2074,7 @@ export default function BackendCalculatorToolScreen({
               moduleRecord?.id ? `Module record saved: ${moduleRecord.id}` : undefined
             }
           />
-        ) : feedback ? (
+        ) : feedback && !isCropIdentification ? (
           <Text style={styles.feedback}>{feedback}</Text>
         ) : null}
         {bannerPolicy.bottom ? (

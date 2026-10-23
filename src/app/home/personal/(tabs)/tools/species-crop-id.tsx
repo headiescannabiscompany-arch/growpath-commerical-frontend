@@ -2559,7 +2559,14 @@ export default function SpeciesCropIdToolRoute({
       }
       onExecutionBusyChange={setIdentificationBusy}
       title="Species / Crop Identification"
-      subtitle="Narrow an unknown plant by combining photos, morphology, habitat, geography, and season. A grow is optional."
+      subtitle="Add a photo to identify a plant. GrowPath fills the visible details for you; a grow and extra observations are optional."
+      experienceMessage="Add clear photos, choose Identify Plant from Photos, then review the candidate and any specific follow-up it needs. You do not have to fill in every field."
+      runLabel="Review entered details (no AI)"
+      optionalForm={{
+        title: "Optional details — add or review",
+        description:
+          "Skip these questions to identify from photos. Add only what you know, or review the details AI filled. Smell, exact size, date and location are never guessed from a photo."
+      }}
       growOptional
       noGrowContextMessage="This identification and your confirmation decision remain in Saved Runs. Attach a grow only to add the confirmed identity to grow or plant history."
       formHeader={({ growId, facilityId: activeFacilityId, workspaceType }) => (
@@ -2701,6 +2708,10 @@ export default function SpeciesCropIdToolRoute({
             onBusyChange={setEvidenceBusy}
             retainOnRemoveAssetIds={retryRetainedEvidenceIds}
           />
+        </View>
+      )}
+      formFooter={({ workspaceType }) => (
+        <View style={styles.evidenceSection}>
           <View style={styles.privateLocationPanel}>
             <Text style={styles.evidenceTitle}>Private plant location</Text>
             <Text style={styles.evidenceGuidance}>
@@ -3576,8 +3587,10 @@ export default function SpeciesCropIdToolRoute({
       validateValues={(values, validationContext) => {
         const useful = compactValues(values);
         if (
-          validationContext?.source === "prefill" &&
-          validationContext.metadata.imageAnalysis?.requested
+          validationContext?.metadata.imageAnalysis?.requested &&
+          (validationContext.source === "prefill" ||
+            (validationContext.metadata.imageAnalysis?.aiUsageEventId &&
+              validationContext.metadata.imageAnalysis?.normalizedPlantIdResultDigest))
         ) {
           // A weak but completed image review is itself a meaningful saved result:
           // preserve "unknown crop", low confidence, and exact retake guidance rather

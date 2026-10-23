@@ -1,5 +1,11 @@
 import React from "react";
-import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render as renderScreen,
+  waitFor
+} from "@testing-library/react-native";
+import BackendCalculatorToolScreen from "@/features/personal/tools/BackendCalculatorToolScreen";
 
 import SpeciesCropIdToolRoute, {
   isCannabisGenusIdentification,
@@ -40,6 +46,26 @@ let mockSearchParams: Record<string, string> = { growId: "grow-1" };
 let mockEvidenceAssets: any[] = [];
 let mockEntitlementMode: "personal" | "commercial" | "facility" = "personal";
 let mockEntitlementFacilityId = "";
+
+// Existing acceptance cases exercise the detailed editor. Opening it explicitly
+// preserves those cases' intent; the new photo-first cases use renderScreen directly.
+function render(element: React.ReactElement) {
+  const screen = renderScreen(element);
+  const openDetails = () => {
+    const toggle = screen.queryByRole("button", {
+      name: "Optional details — add or review"
+    });
+    if (toggle && !toggle.props.accessibilityState?.expanded) fireEvent.press(toggle);
+  };
+  openDetails();
+  return {
+    ...screen,
+    rerender(next: React.ReactElement) {
+      screen.rerender(next);
+      openDetails();
+    }
+  };
+}
 
 function openLocationAndSharing(screen: any) {
   const collapsedControl = screen.queryByText("Optional: add to a Field Study or Nature");
@@ -428,6 +454,182 @@ describe("SpeciesCropIdToolRoute", () => {
         providerLabel: "OpenAI image review"
       },
       limitations: ["Cultivar cannot be identified from appearance."]
+    });
+  });
+
+  describe("Plant ID photo-first recovery", () => {
+    const detailsLabel = "Optional details — add or review";
+    const nameLabel = "Species / Crop Identification Plant or crop name";
+    const networkError = (code = "NETWORK_ERROR") =>
+      Object.assign(new Error("Unable to reach the server."), { code });
+
+    it("starts with photos and keeps the questionnaire and manual action optional", async () => {
+      mockSearchParams = {};
+      const screen = renderScreen(<SpeciesCropIdToolRoute />);
+      expect(screen.queryByLabelText(nameLabel)).toBeNull();
+      expect(screen.queryByText("Review entered details (no AI)")).toBeNull();
+      expect(
+        screen.getByRole("button", { name: detailsLabel }).props.accessibilityState
+      ).toEqual({ expanded: false });
+      const tree = JSON.stringify(screen.toJSON());
+      expect(tree.indexOf("Identify Plant from Photos")).toBeLessThan(
+        tree.indexOf("Private plant location")
+      );
+      expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+      expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
+      fireEvent.press(screen.getByText("Identify Plant from Photos"));
+      await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+      expect(
+        await screen.findByText("Species / Crop Identification result")
+      ).toBeTruthy();
+      expect(screen.queryByLabelText(nameLabel)).toBeNull();
+      expect(screen.getByText(/details filled from photos/)).toBeTruthy();
+      fireEvent.press(screen.getByRole("button", { name: detailsLabel }));
+      expect(screen.getByLabelText(nameLabel).props.value).toBe("Cannabis");
+      expect(
+        screen.getByLabelText("Plant or crop name was filled by AI and needs review")
+      ).toBeTruthy();
+    });
+
+    it("retains manual edits when details are closed and AI fills other fields", async () => {
+      const screen = renderScreen(<SpeciesCropIdToolRoute />);
+      const toggle = () =>
+        fireEvent.press(screen.getByRole("button", { name: detailsLabel }));
+      toggle();
+      fireEvent.changeText(screen.getByLabelText(nameLabel), "My recorded plant");
+      toggle();
+      fireEvent.press(screen.getByText("Identify Plant from Photos"));
+      await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+      toggle();
+      expect(screen.getByLabelText(nameLabel).props.value).toBe("My recorded plant");
+      expect(
+        screen.getByLabelText(
+          "Species / Crop Identification Smell, sap, texture, or other direct observations"
+        ).props.value
+      ).toBe("");
+      expect(mockRunCalculator.mock.calls[0][1].identityInputProvenance).toEqual(
+        expect.objectContaining({ userEnteredName: "My recorded plant" })
+      );
+    });
+
+    it.each(["NETWORK_ERROR", "OFFLINE", "TIMEOUT"])(
+      "preserves manual inputs on %s without automatic retries",
+      async (code) => {
+        mockRunCalculator.mockRejectedValueOnce(networkError(code));
+        const screen = renderScreen(<SpeciesCropIdToolRoute />);
+        fireEvent.press(screen.getByRole("button", { name: detailsLabel }));
+        fireEvent.changeText(screen.getByLabelText(nameLabel), "Rose");
+        fireEvent.press(screen.getByLabelText("Run Species / Crop Identification"));
+        expect(
+          await screen.findByText(
+            /Check your connection and Saved Runs before trying again/
+          )
+        ).toBeTruthy();
+        expect(screen.getByLabelText(nameLabel).props.value).toBe("Rose");
+        expect(screen.getByTestId("media-evidence-picker")).toBeTruthy();
+        expect(mockRunCalculator).toHaveBeenCalledTimes(1);
+        expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+        expect(screen.queryByText("Species / Crop Identification result")).toBeNull();
+      }
+    );
+
+    it("reports uncertain AI completion without promising an unused credit or retrying", async () => {
+      mockAskPersonalAssistant.mockRejectedValueOnce(networkError());
+      const screen = renderScreen(<SpeciesCropIdToolRoute />);
+      fireEvent.press(screen.getByText("Identify Plant from Photos"));
+      expect(
+        await screen.findByText(
+          /cannot confirm whether the AI analysis completed or credits were used/
+        )
+      ).toBeTruthy();
+      expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+      expect(mockRunCalculator).not.toHaveBeenCalled();
+      expect(
+        screen.getByRole("button", { name: "Identify Plant from Photos" })
+      ).not.toBeDisabled();
+    });
+
+    it("can save an empty insufficient-evidence review after a lost save reply without another AI call", async () => {
+      mockAskPersonalAssistant.mockResolvedValueOnce({
+        success: true,
+        reply: JSON.stringify({
+          imageAnalysisPerformed: "true",
+          imageQuality: "unusable",
+          visualConfidence: "low"
+        }),
+        evidenceUsed: ["evidence-1"],
+        mediaAnalysis: { photosAnalyzed: 1 },
+        analysisReceipt: {
+          aiUsageEventId: "synthetic-receipt",
+          normalizedPlantIdResultDigest: "a".repeat(64),
+          evidenceFingerprint: "synthetic-fingerprint",
+          reviewPolicyVersion: "plant-id-night-light-detail-v2"
+        }
+      });
+      mockRunCalculator.mockRejectedValueOnce(networkError());
+      const screen = renderScreen(<SpeciesCropIdToolRoute />);
+      fireEvent.press(screen.getByText("Identify Plant from Photos"));
+      expect(
+        await screen.findByText(/photo review returned, but saving it was not confirmed/)
+      ).toBeTruthy();
+      const firstSave = mockRunCalculator.mock.calls[0][1];
+      fireEvent.press(screen.getByRole("button", { name: detailsLabel }));
+      expect(screen.getByLabelText(nameLabel).props.value).toBe("");
+      fireEvent.press(screen.getByText("Review entered details (no AI)"));
+      await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(2));
+      expect(mockRunCalculator.mock.calls[1][1]).toEqual(firstSave);
+      expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+      // This proves receipt reuse, not server-side idempotency or a recovered live save.
+    });
+
+    it("does not treat an empty manual review as analyzed evidence", async () => {
+      mockEvidenceAssets = [];
+      const screen = renderScreen(<SpeciesCropIdToolRoute />);
+      fireEvent.press(screen.getByRole("button", { name: detailsLabel }));
+      fireEvent.press(screen.getByText("Review entered details (no AI)"));
+      expect(await screen.findByText(/Enter at least one observed trait/)).toBeTruthy();
+      expect(mockRunCalculator).not.toHaveBeenCalled();
+      expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+    });
+
+    it("does not show a delayed analysis failure in a different workspace", async () => {
+      let rejectAnalysis!: (error: Error) => void;
+      mockAskPersonalAssistant.mockImplementationOnce(
+        () =>
+          new Promise((_resolve, reject) => {
+            rejectAnalysis = reject;
+          })
+      );
+      const screen = renderScreen(<SpeciesCropIdToolRoute />);
+      fireEvent.press(screen.getByText("Identify Plant from Photos"));
+      await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1));
+      mockEntitlementMode = "commercial";
+      mockEvidenceAssets = [];
+      screen.rerender(<SpeciesCropIdToolRoute />);
+      await screen.findByText(/current commercial workspace's Saved Runs/i);
+      await act(async () => {
+        rejectAnalysis(networkError());
+      });
+      expect(screen.queryByText(/could not receive a reply from the server/)).toBeNull();
+      expect(mockRunCalculator).not.toHaveBeenCalled();
+    });
+
+    it("leaves other calculators' fields and manual action visible", () => {
+      const screen = renderScreen(
+        <BackendCalculatorToolScreen
+          tool="ph-ec-check"
+          toolKey="ph-ec-check"
+          title="Test readings"
+          subtitle="Synthetic fixture"
+          growOptional
+          fields={[{ key: "reading", label: "Reading", defaultValue: "" }]}
+          buildPayload={(values) => values}
+          defaultLogTitle={() => "Synthetic reading"}
+        />
+      );
+      expect(screen.getByLabelText("Test readings Reading")).toBeTruthy();
+      expect(screen.getByLabelText("Run Test readings")).toBeTruthy();
+      expect(screen.queryByRole("button", { name: detailsLabel })).toBeNull();
     });
   });
 

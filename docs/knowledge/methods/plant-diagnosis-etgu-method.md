@@ -325,6 +325,25 @@ threshold or organism identification.
 
 ## Field-botany identification workflow
 
+Plant ID starts with the evidence picker followed immediately by the explicit photo-
+identification action. The existing paid image review fills supported visible traits
+and saves its result; it must not require the user to complete the morphology form.
+Identity, morphology and place questions are an optional collapsed editor with retained
+values and reviewable AI-draft labels. Opening or closing it never starts analysis,
+requests location, confirms identity or changes evidence. Manual review is labeled as
+not running AI. Existing grow/plant context remains optional; an attached record is not
+proof of the identity of a newly photographed plant.
+
+A missing network reply does not establish whether analysis, credit use or saving
+completed. Keep selected evidence and user entries in the current page, distinguish
+analysis failure from an unconfirmed save, advise checking connection and Saved Runs,
+and never automatically retry either POST. If a completed image review has a retained
+analysis receipt, permit explicit manual save of that review even when all editable
+fields are empty: insufficient evidence is a valid result, not a reason to invent a
+trait or pay for another analysis. The server must still validate the exact receipt.
+This is not an idempotency guarantee; an uncertain save must be checked in Saved Runs
+before another save attempt. Ignore late errors from superseded evidence/workspaces.
+
 Crop Identification uses a field-botany narrowing method informed by plant-systematics teaching, including the public Crime Pays But Botany Doesn't reading-list emphasis on synapomorphies, family/genus traits, habitat, and associated plant community. That channel remains Tier C method inspiration only; it is not taxonomic ground truth, and GrowPath does not copy or retain its videos, audio, frames, transcripts, or thumbnails without permission.
 
 Collect up to 12 role-diverse photos or extracted still frames: whole plant in habitat, leaf top, leaf underside, stem/node or bark, flower, fruit/seed, and diagnostic special structures. Optional structured context includes growth habit, plant size, leaf arrangement/type/margin/venation, stem traits, flower presence/symmetry/parts/inflorescence, fruit type, special structures, direct smell/sap/texture observations, wild versus cultivated status, indoor/outdoor/greenhouse setting, privacy-controlled region, observation date/season, habitat, substrate/geology, and associated plants. Never instruct a user to taste an unknown plant.
