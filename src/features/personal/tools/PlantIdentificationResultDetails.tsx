@@ -81,6 +81,12 @@ export default function PlantIdentificationResultDetails({
           <Text style={styles.line}>{selection.reason}</Text>
         </View>
       ) : null}
+      {(outputs.imageAnalysis?.retakeRequired || outputs.imageAnalysis?.quality === "unusable") && outputs.identificationNotes ? (
+        <View style={styles.verification}>
+          <Text style={styles.sectionTitle}>Why no identity was accepted</Text>
+          <Text style={styles.line}>{String(outputs.identificationNotes)}</Text>
+        </View>
+      ) : null}
       <View style={styles.group}>
         <Text style={styles.sectionTitle}>Botanical narrowing</Text>
         <Text style={styles.line}>Broad group: {display(outputs.broadGroup)}</Text>

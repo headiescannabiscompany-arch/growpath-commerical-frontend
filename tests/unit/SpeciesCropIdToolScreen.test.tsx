@@ -2503,6 +2503,32 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(mockListFieldStudies).not.toHaveBeenCalled();
   });
 
+  it("Plant ID absence recovery displays the saved rejection reason without inventing lighting or more questions", async () => {
+    mockSearchParams = {};
+    const reason = "Retake required. The review contains conflicting observations for flower presence; no taxon was assigned.";
+    mockAskPersonalAssistant.mockResolvedValueOnce({ success: true,
+      reply: JSON.stringify({ imageAnalysisPerformed: "true", imageQuality: "unusable", visualConfidence: "low",
+        retakeRequired: true, identificationNotes: reason, candidates: [], requiredNextPhotos: ["Show the conflicting structure"] }),
+      provider: "openai", evidenceUsed: ["evidence-1"], mediaAnalysis: { photosAnalyzed: 1 }, limitations: [] });
+    mockRunCalculator.mockResolvedValueOnce({ outputs: {
+      likelyCrop: "unknown crop", confirmationAvailable: false, candidates: [], identificationNotes: reason,
+      requiredNextPhotos: ["Show the conflicting structure"], requiredNextQuestions: [],
+      imageAnalysis: { requested: true, performed: true, quality: "unusable", retakeRequired: true, photosAnalyzed: 1 }
+    }, toolRun: { id: "absence-recovery", _id: "absence-recovery" } });
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    expect((await screen.findAllByText(reason)).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/diagnostic plant detail was hidden/i)).toBeNull();
+    expect(screen.getByRole("button", { name: "Confirm in Saved Run" })).toBeDisabled();
+    expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+    expect(mockRunCalculator).toHaveBeenCalledTimes(1);
+    const submitted = mockRunCalculator.mock.calls[0][1];
+    expect(submitted.identificationDraft.requiredNextPhotos).toEqual(["Show the conflicting structure"]);
+    expect(submitted.imageAnalysis.limitations.join(" ")).not.toMatch(/deep shadow|glare|diffuse light/i);
+    expect(mockSavePersonalGrowCropIdentity).not.toHaveBeenCalled();
+    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
+  });
+
   it("withholds a crop name and forces low confidence when the submitted views are limited", async () => {
     mockSearchParams = {};
     mockAskPersonalAssistant.mockResolvedValueOnce({
@@ -3317,7 +3343,7 @@ describe("SpeciesCropIdToolRoute", () => {
           quality: "usable",
           confidence: "high",
           photosAnalyzed: 1,
-          reviewPolicyVersion: "plant-id-reviewed-knowledge-v3",
+          reviewPolicyVersion: "plant-id-best-match-v5",
           previousReviewPolicyVersion: "legacy",
           reassessedUnderUpdatedPolicy: true,
           limitations: [
@@ -3340,7 +3366,7 @@ describe("SpeciesCropIdToolRoute", () => {
           imageAnalysis: expect.objectContaining({
             quality: "usable",
             confidence: "high",
-            reviewPolicyVersion: "plant-id-reviewed-knowledge-v3",
+            reviewPolicyVersion: "plant-id-best-match-v5",
             limitations: expect.not.arrayContaining([
               expect.stringMatching(/same unchanged evidence/i)
             ])

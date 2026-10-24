@@ -486,7 +486,7 @@ fields must not turn that candidate into an "unknown crop" headline. Reference
 coverage and real-image accuracy require separate evidence; mocked checks do not
 establish either.
 
-Under `plant-id-best-match-v4`, assess each proposal independently: an unsupported
+Under `plant-id-best-match-v5`, assess each proposal independently: an unsupported
 alternative must not erase a supported candidate. Preserve bounded rejection reasons.
 Compare independent organ-character combinations and account for typical trait
 variation with maturity and growing conditions. Repeated photos are not independent
@@ -503,6 +503,18 @@ alternatives, or the unresolved leading pair. Historical results without selecti
 evidence remain previous candidates, not newly ranked results. Never invent percentages.
 Reuse observed fruit/flower presence and do not append a generic context questionnaire
 after a usable review. Safety-required retakes for unusable evidence remain distinct.
+
+An observation of no visible flowers or fruit agrees with the corresponding `no`
+presence field; absence is neither a contradictory positive observation nor a reason
+to erase usable leaf, stem or other organ evidence. Absence alone is not positive
+diagnostic support. Conflicting affirmative observations still block identity, as do
+genuine obscuration, missing diagnostic observations and unsupported candidates.
+Record the actual failing reason in the signed result, preserve it through saving and
+show it in current and saved results. Do not substitute a lighting diagnosis for a
+response conflict or insufficient taxon evidence, or append a redundant questionnaire.
+The changed policy distinguishes new reviews from historical receipts; it never reruns
+AI automatically, rewrites a saved rejection, or establishes real-photo accuracy from
+synthetic checks.
 
 Catalog reads prioritize eligible exact names/synonyms before remaining related-genus
 rows, retaining the combined 12-record per-catalog cap and timeout. Preserve completed

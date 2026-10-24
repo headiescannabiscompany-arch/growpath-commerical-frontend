@@ -13,6 +13,16 @@ const outputs = {
 };
 
 describe("Plant ID best-match display", () => {
+  test("Plant ID absence recovery exposes the saved reason without promoting a stale candidate", () => {
+    const reason = "Retake required. The review did not record sufficient diagnostic character observations.";
+    const rejected = { ...outputs, identificationNotes: reason, imageAnalysis: { performed: true, quality: "unusable", retakeRequired: true } };
+    const prior = JSON.stringify(rejected);
+    const view = render(<PlantIdentificationResultDetails outputs={rejected} />);
+    expect(view.getByText("Why no identity was accepted")).toBeTruthy();
+    expect(view.getByText(reason)).toBeTruthy();
+    expect(view.queryByText("Meyer lemon")).toBeNull();
+    expect(JSON.stringify(rejected)).toBe(prior);
+  });
   test("explicit selected candidate wins over array position without changing output", () => {
     const before = JSON.stringify(outputs);
     expect(plantIdentificationHeadline(outputs)).toEqual({ name: "Meyer lemon", label: "Best candidate · tentative" });

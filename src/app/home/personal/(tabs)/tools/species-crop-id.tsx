@@ -67,7 +67,7 @@ import {
   type ToolWorkspaceType
 } from "@/features/personal/tools/toolWorkspaceScope";
 
-const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-best-match-v4";
+const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-best-match-v5";
 const FRAME_EXTRACTION_POLL_DELAYS_MS = [1500, 3000, 5000, 8000, 12000, 20000, 30000];
 const FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS = 20;
 const DIRECT_NATURE_COLLECTION_TITLE = "My Nature Finds";
@@ -701,11 +701,13 @@ function assessPlantIdVisionReply({
   const withholdIdentity = !performed || quality !== "usable" || confidence !== "high";
   const downgradeCandidates =
     !performed || quality !== "usable" || confidence === "low" || sameEvidenceConflict;
+  const reviewRejectionReason = performed && parsed.retakeRequired === true
+    ? String(parsed.identificationNotes || "").trim() : "";
   const limitations = [
     ...responseLimitations,
     ...(reportedQuality !== "usable"
       ? [
-          "The submitted views did not provide consistently usable diagnostic detail. Retake the whole plant and diagnostic structures in even daylight or diffuse light without direct-flash glare or deep shadow."
+          reviewRejectionReason || "The image review did not establish a reliable identity. Review the requested diagnostic evidence; a quality label alone does not establish a lighting defect."
         ]
       : []),
     ...(performed && quality === "usable" && confidence !== "high"
@@ -808,7 +810,8 @@ function buildIdentificationDraft(
     missingEvidence: stringList(parsed.missingEvidence),
     requiredNextPhotos: [
       ...stringList(parsed.requiredNextPhotos),
-      ...(assessment && (assessment.quality !== "usable" || assessment.sameEvidenceConflict)
+      ...(assessment && (assessment.quality !== "usable" || assessment.sameEvidenceConflict) &&
+          !(parsed.retakeRequired === true && stringList(parsed.requiredNextPhotos).length)
         ? [
             "Retake the whole plant and diagnostic leaf, stem, flower, or fruit views in even daylight or diffuse light without direct-flash glare or deep shadow."
           ]
@@ -896,8 +899,8 @@ function plantIdImmediateResult(rawOutputs: Record<string, any>): {
     return {
       tone: "warning",
       title: "Analysis finished — retake required",
-      description:
-        "The image pixels were inspected, but the diagnostic plant detail was hidden or unreliable. No plant name was accepted from this evidence.",
+      description: String(outputs.identificationNotes || "").trim() ||
+        "The image pixels were inspected, but the review did not establish a reliable identity. No plant name was accepted from this evidence.",
       details: (nextPhotos.length || reassessmentNote
         ? [reassessmentNote, ...nextPhotos].filter(Boolean)
         : [
