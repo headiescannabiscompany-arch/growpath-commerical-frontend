@@ -397,6 +397,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "one optional private source video up to 9 minutes 59 seconds with up to 12 timestamped candidate still frames spanning the timeline",
       "structured crop-identification morphology and optional private place/context",
       "photo-first Plant ID with the existing explicit AI action immediately after evidence, optional collapsed details, retained manual entries and reviewable visible-trait autofill",
+      "Plant ID preserves high-detail original bytes through bounded streamed image transport; optional crop memory and process admission are bounded before provider work",
+      "exact Plant ID requests reuse durable usage reservations and one dispatch fence; completed receipts recover without another debit, while ambiguous dispatches stay unconfirmed without automatic retry or claimed refund; historical attempts and ToolRun save idempotency remain separate",
       "optional separately authorized exact device location stored privately with the saved Plant ID ToolRun without requiring a Field Study",
       "optional owner-requested GPS and capture date read from retained original photo EXIF, privately retained picker EXIF before image normalization, or MP4/QuickTime source-video metadata, previewed privately before a separate apply action",
       "explicit user-entered crop-identification context preserved separately from AI visible-trait prefill",

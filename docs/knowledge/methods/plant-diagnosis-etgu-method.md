@@ -344,6 +344,26 @@ trait or pay for another analysis. The server must still validate the exact rece
 This is not an idempotency guarantee; an uncertain save must be checked in Saved Runs
 before another save attempt. Ignore late errors from superseded evidence/workspaces.
 
+Plant ID image transport must preserve each original's exact bytes at high detail
+without assembling another request-sized base64/JSON copy. Bound supplemental crop
+bytes and skip only supplemental crops when the decoded-memory allowance is exhausted;
+the original remains provider input. Admit only one Plant ID image request per API
+process, before loading evidence, and refuse admission without charging when memory
+headroom is insufficient. These are resource safeguards, not proof of botanical accuracy.
+
+Bind an exact Plant ID request (actor, workspace, ordered original-byte digests,
+submitted context, model and review policy) to the existing durable AI-usage ledger.
+Fence provider dispatch once, disable automatic provider retries, and recover a completed
+normalized result and its original receipt without another provider call or debit.
+A reservation known to precede dispatch may resume under the same fence; an interrupted
+or ambiguously acknowledged dispatch must remain explicitly unconfirmed for reconciliation,
+not be resent or described as refunded. Refund only through the existing transactional
+reservation controls when failure is established; a failed refund must not be called
+successful. Deleted/scrubbed or mismatched receipts cannot be replayed. A changed request
+is a different review. Historical non-durable attempts are not retroactively reconciled
+from a matching photo set. This does not make ToolRun saves idempotent, and it does not
+authorize any actual account adjustment.
+
 Crop Identification uses a field-botany narrowing method informed by plant-systematics teaching, including the public Crime Pays But Botany Doesn't reading-list emphasis on synapomorphies, family/genus traits, habitat, and associated plant community. That channel remains Tier C method inspiration only; it is not taxonomic ground truth, and GrowPath does not copy or retain its videos, audio, frames, transcripts, or thumbnails without permission.
 
 Collect up to 12 role-diverse photos or extracted still frames: whole plant in habitat, leaf top, leaf underside, stem/node or bark, flower, fruit/seed, and diagnostic special structures. Optional structured context includes growth habit, plant size, leaf arrangement/type/margin/venation, stem traits, flower presence/symmetry/parts/inflorescence, fruit type, special structures, direct smell/sap/texture observations, wild versus cultivated status, indoor/outdoor/greenhouse setting, privacy-controlled region, observation date/season, habitat, substrate/geology, and associated plants. Never instruct a user to taste an unknown plant.
