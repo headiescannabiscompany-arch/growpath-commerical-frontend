@@ -1,5 +1,6 @@
-import React, { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { plantIdentificationCandidates, plantIdentificationSelection, safePlantIdentificationOutputs } from "./plantIdentificationCandidates";
 
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
@@ -44,19 +45,42 @@ function EvidenceList({
 }
 
 export default function PlantIdentificationResultDetails({
-  outputs
+  outputs: rawOutputs
 }: {
   outputs: Record<string, any>;
 }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createPlantIdentificationResultStyles(palette), [palette]);
-  const candidates = Array.isArray(outputs.candidates) ? outputs.candidates : [];
+  const outputs = safePlantIdentificationOutputs(rawOutputs);
+  const candidates = plantIdentificationCandidates(outputs);
+  const selection = plantIdentificationSelection(outputs);
+  const correction = outputs.userCorrection?.source === "user_entry" ? outputs.userCorrection : null;
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => setExpanded(false), [rawOutputs]);
+  const selectedIndexes = selection?.candidateIndexes || [];
+  const order = [...selectedIndexes, ...candidates.map((_: any, index: number) => index)
+    .filter((index: number) => !selectedIndexes.includes(index))].slice(0, 3);
+  const visibleCount = correction ? (expanded ? 3 : 0) : expanded ? 3 : selection?.status === "close_alternatives" ? selectedIndexes.length : 1;
+  const visible = order.slice(0, visibleCount);
   const sourceVerification = outputs.sourceVerification || {};
   const referenceLookup = outputs.referenceLookup;
   const possibleGenera = textList(outputs.possibleGenera);
 
   return (
     <View style={styles.container}>
+      {correction ? (
+        <View style={styles.verification}>
+          <Text style={styles.sectionTitle}>{correction.commonName} — identified by you</Text>
+          <Text style={styles.line}>Your identification is saved separately. The original AI result remains unchanged; this is not independent species verification.</Text>
+          <Text style={styles.meta}>No new photos are required to keep your correction.</Text>
+        </View>
+      ) : selection ? (
+        <View style={styles.verification}>
+          <Text style={styles.sectionTitle}>{selection.status === "leading_candidate" ? "Best candidate · tentative"
+            : selection.status === "close_alternatives" ? "Close alternatives — no clear winner yet" : "No reliable species match yet"}</Text>
+          <Text style={styles.line}>{selection.reason}</Text>
+        </View>
+      ) : null}
       <View style={styles.group}>
         <Text style={styles.sectionTitle}>Botanical narrowing</Text>
         <Text style={styles.line}>Broad group: {display(outputs.broadGroup)}</Text>
@@ -69,16 +93,16 @@ export default function PlantIdentificationResultDetails({
 
       {candidates.length ? (
         <View style={styles.group}>
-          <Text style={styles.sectionTitle}>Candidate comparison</Text>
-          {candidates.map((candidate: any, index: number) => (
+          <Text style={styles.sectionTitle}>{correction ? "Original AI candidates" : selection ? "Candidate comparison" : "Previous candidates — ranking evidence unavailable"}</Text>
+          {visible.map((index: number) => { const candidate = candidates[index]; return (
             <View
               key={`${candidate?.scientificName || candidate?.commonNames?.[0] || "candidate"}-${index}`}
               style={styles.candidate}
             >
               <Text style={styles.candidateTitle}>
-                {index + 1}.{" "}
+                {selection ? "" : `${index + 1}. `}
                 {display(
-                  textList(candidate?.commonNames)[0],
+                  candidate.rank === "horticultural_type" ? candidate.horticulturalName : textList(candidate?.commonNames)[0],
                   candidate?.scientificName || "Unresolved candidate"
                 )}
               </Text>
@@ -89,33 +113,40 @@ export default function PlantIdentificationResultDetails({
                 <Text style={styles.meta}>Common name from a stored reference, not independent photo verification.</Text>
               ) : null}
               <Text style={styles.meta}>
-                {display(candidate?.rank, "working candidate")} ·{" "}
+                {candidate?.rank === "horticultural_type" ? "Named-type suggestion, not a verified cultivar" : display(candidate?.rank, "working candidate")} ·{" "}
                 {display(candidate?.confidence, "low")} confidence ·{" "}
                 {candidate?.verificationStatus === "verified"
                   ? "source verified"
                   : "not source verified"}
               </Text>
               <EvidenceList
-                title="Supports"
+                title="Why it fits"
                 values={candidate?.evidence}
                 styles={styles}
               />
               <EvidenceList
-                title="Conflicts / lookalikes"
+                title="What remains uncertain"
                 values={candidate?.counterEvidence}
                 styles={styles}
               />
               <EvidenceList
-                title="Still needed"
+                title="What would distinguish it"
                 values={candidate?.missingEvidence}
                 styles={styles}
               />
             </View>
-          ))}
+          ); })}
+          {(correction || order.length > (selection?.status === "close_alternatives" ? selectedIndexes.length : 1)) ? (
+            <Pressable accessibilityRole="button" accessibilityState={{ expanded }} onPress={() => setExpanded(!expanded)} style={styles.candidate}>
+              <Text style={styles.candidateTitle}>{expanded ? "Hide comparison" : correction ? "View original AI candidates" : "Compare other candidates"}</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
 
       <EvidenceList title="Evidence used" values={outputs.evidence} styles={styles} />
+      <EvidenceList title="Why some proposals were withheld" values={Array.isArray(outputs.candidateAssessment)
+        ? Array.from(new Set(outputs.candidateAssessment.filter((item: any) => item.outcome === "withheld").map((item: any) => item.reason))) : []} styles={styles} />
       <EvidenceList
         title="Counter-evidence"
         values={outputs.counterEvidence}
@@ -127,13 +158,13 @@ export default function PlantIdentificationResultDetails({
         styles={styles}
       />
       <EvidenceList
-        title="Next photos to add"
-        values={outputs.requiredNextPhotos}
+        title={outputs.imageAnalysis?.retakeRequired || outputs.imageAnalysis?.quality === "unusable" ? "Photo needed for another identification" : "Optional next photo"}
+        values={correction ? [] : textList(outputs.requiredNextPhotos).slice(0, 1)}
         styles={styles}
       />
       <EvidenceList
-        title="Questions that would narrow the ID"
-        values={outputs.requiredNextQuestions}
+        title="One optional way to narrow it down"
+        values={correction ? [] : (selection?.discriminator ? [selection.discriminator] : textList(outputs.requiredNextQuestions).slice(0, 1))}
         styles={styles}
       />
 
@@ -148,6 +179,9 @@ export default function PlantIdentificationResultDetails({
                 ? "Stored plant knowledge was unavailable. Your photo result was preserved without retrying AI."
                 : "No stored-reference lookup was recorded for this result."}
         </Text>
+        {referenceLookup?.partial === true ? (
+          <Text style={styles.meta}>Some reference checks were unavailable. Any matches shown were retained from the checks that completed.</Text>
+        ) : null}
         {referenceLookup?.recordsOmitted > 0 ? (
           <Text style={styles.meta}>Some reference details were omitted to keep this result within its size limit.</Text>
         ) : null}

@@ -67,7 +67,7 @@ import {
   type ToolWorkspaceType
 } from "@/features/personal/tools/toolWorkspaceScope";
 
-const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-reviewed-knowledge-v3";
+const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-best-match-v4";
 const FRAME_EXTRACTION_POLL_DELAYS_MS = [1500, 3000, 5000, 8000, 12000, 20000, 30000];
 const FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS = 20;
 const DIRECT_NATURE_COLLECTION_TITLE = "My Nature Finds";
@@ -135,6 +135,8 @@ Only populate growing setting, habitat, visible surface substrate, or nearby ass
 
 Return useful broader candidates when exact species is unresolved. Cannabis is an allowed crop candidate from deliberately submitted evidence. A clear cannabis flower or harvested bud may support a crop-level Cannabis draft from visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure. Never infer cultivar or strain from appearance.
 
+For non-Cannabis plants, a supported named horticultural type may appear only as an explicitly tentative candidate with rank horticultural_type and a separate horticulturalName; never fill the confirmed cultivar or user identity fields. Compare independent characters across organs, not repeated photos or one dramatic fruit size. Typical size and color vary with maturity and growing conditions. Do not infer those conditions or treat an owner-supplied name as photo recognition. Select one leading candidate only with a trait-based comparison reason; otherwise identify close alternatives or insufficient evidence. Equal confidence words alone do not establish a tie. Ask at most one optional useful discriminator and reuse existing observations, including visible fruit and flowers.
+
 Do not claim that GBIF, USDA PLANTS, Kew POWO, iNaturalist, a flora, herbarium, or extension source was checked; this image step has no botanical-database lookup. Do not invent source records, range matches, or expert confirmation. If the evidence supports a genus but not an exact species, use a genus-level scientific draft such as "Mandevilla spp." and keep nursery or common synonyms such as "Dipladenia" in commonNames. Never put an English common-name phrase such as "rose plant" in scientificName. If names conflict, a proposed name is unusable, or the current views cannot separate lookalikes, set visualConfidence and candidate confidence to low and request a new whole-plant view, full leaf and underside with stem node, open flower, and any fruit or seed structure present. If pixels are unavailable, set imageAnalysisPerformed to "false". Every result remains a draft until the user confirms it.
 
 Return JSON only with exactly these keys:
@@ -173,13 +175,20 @@ Return JSON only with exactly these keys:
     {
       "scientificName": "string",
       "commonNames": ["string"],
-      "rank": "family, genus, species, or working_candidate",
+      "rank": "family, genus, species, horticultural_type, or working_candidate",
+      "horticulturalName": "named-type suggestion only, otherwise blank",
       "confidence": "high, medium, or low",
       "evidence": ["visible or user-provided evidence"],
       "counterEvidence": ["conflicts or unresolved lookalikes"],
       "missingEvidence": ["evidence needed to narrow further"]
     }
   ],
+  "candidateSelection": {
+    "status": "leading_candidate, close_alternatives, or insufficient_evidence",
+    "candidateIndexes": [0],
+    "reason": "trait-based comparison; no invented probability or source verification",
+    "discriminator": "one optional useful follow-up, or blank"
+  },
   "evidence": ["observations that support the draft"],
   "counterEvidence": ["observations that conflict or preserve lookalikes"],
   "missingEvidence": ["missing information"],
@@ -747,6 +756,7 @@ function buildIdentificationDraft(
         return {
           scientificName,
           commonNames: stringList(candidate?.commonNames),
+          ...(suppliedRank === "horticultural_type" ? { horticulturalName: String(candidate.horticulturalName || "").trim() } : {}),
           rank:
             suppliedRank === "species" && !scientificName
               ? "working_candidate"
@@ -788,6 +798,8 @@ function buildIdentificationDraft(
     likelyFamily: String(parsed.likelyFamily || "").trim(),
     possibleGenera: stringList(parsed.possibleGenera),
     candidates,
+    ...(parsed.candidateSelection ? { candidateSelection: parsed.candidateSelection } : {}),
+    ...(parsed.candidateAssessment ? { candidateAssessment: parsed.candidateAssessment } : {}),
     evidence: stringList(parsed.evidence),
     counterEvidence: [
       ...stringList(parsed.counterEvidence),
@@ -895,11 +907,12 @@ function plantIdImmediateResult(rawOutputs: Record<string, any>): {
     };
   }
   if (performed && candidate) {
+    const headline = plantIdentificationHeadline(outputs);
     return {
       tone: quality === "usable" ? "success" : "warning",
       title:
         quality === "usable"
-          ? `Candidate found: ${candidate}`
+          ? outputs.candidateSelection?.status === "close_alternatives" ? "Close alternatives — no clear winner yet" : `Candidate found: ${headline.name}`
           : `Candidate found: ${candidate} — more evidence needed`,
       description:
         quality === "usable"

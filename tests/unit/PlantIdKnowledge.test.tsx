@@ -12,7 +12,7 @@ const outputs = {
 describe("Plant ID knowledge correction", () => {
   test("headlines the best common candidate without changing saved identity or confirmation", () => {
     const prior = JSON.stringify(outputs);
-    expect(plantIdentificationHeadline(outputs)).toEqual({ name: "Lemon", label: "Best match (unconfirmed)" });
+    expect(plantIdentificationHeadline(outputs)).toEqual({ name: "Lemon", label: "Previous candidate · unconfirmed" });
     expect(JSON.stringify(outputs)).toBe(prior);
   });
   test("uses the saved candidate order, not a preferred lemon answer", () => {

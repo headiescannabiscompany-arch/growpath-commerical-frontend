@@ -475,12 +475,46 @@ instead of truncating JSON or silently discarding visual evidence.
 
 Usable role-diverse morphology may retain supported non-Cannabis species hypotheses
 at no more than medium confidence, without confirmation or crop-profile activation.
-Limited/obscured imagery, unsupported characters, cultivar inference and the existing
-private Cannabis crop/genus ceiling retain their safeguards. Present the best
+An explicitly separate `horticultural_type` candidate may carry a bounded
+`horticulturalName` suggestion with a defensible botanical base. It remains a
+tentative named-type hypothesis, never an inferred confirmed cultivar or a user
+identity field. This exception does not apply to Cannabis or limited/obscured
+imagery. Unsupported characters and the existing private Cannabis crop/genus ceiling
+retain their safeguards. Present the best
 supported common candidate prominently as unconfirmed; missing confirmed-identity
 fields must not turn that candidate into an "unknown crop" headline. Reference
 coverage and real-image accuracy require separate evidence; mocked checks do not
 establish either.
+
+Under `plant-id-best-match-v4`, assess each proposal independently: an unsupported
+alternative must not erase a supported candidate. Preserve bounded rejection reasons.
+Compare independent organ-character combinations and account for typical trait
+variation with maturity and growing conditions. Repeated photos are not independent
+identity votes; a dramatic size does not establish or exclude a named type alone.
+Owner descriptions (including hardiness) and owner identities are context, not visual
+observations or retrospective AI successes. No cultivar or provider is hardcoded.
+
+The provider proposes an explicit leader, close alternatives or insufficient evidence,
+with a comparison reason and at most one optional discriminator. Server validation
+binds the selection to retained candidates through the signed snapshot and trusted
+save reconstruction. Invalid/removed selections are not reinterpreted as winners;
+equal confidence words do not establish a tie. Show one leader with up to two collapsed
+alternatives, or the unresolved leading pair. Historical results without selection
+evidence remain previous candidates, not newly ranked results. Never invent percentages.
+Reuse observed fruit/flower presence and do not append a generic context questionnaire
+after a usable review. Safety-required retakes for unusable evidence remain distinct.
+
+Catalog reads prioritize eligible exact names/synonyms before remaining related-genus
+rows, retaining the combined 12-record per-catalog cap and timeout. Preserve completed
+matches if a later optional query or the other catalog fails; mark incomplete lookup
+coverage explicitly and bind it into the signed receipt. Ignore late replies and do
+not start another query after the deadline. An incomplete empty lookup is unavailable,
+not a completed no-match. Final candidate lists never inherit a stale draft selection.
+Named-type labels must also be removed from downgraded evidence, not only name fields.
+This existing
+catalog is name corroboration, not a trait-based botanical key or visual reranker;
+reference coverage and independently labeled real-photo improvement remain unverified.
+No second model call or additional charge is introduced.
 
 Plant ID evaluation media follows an additional candidate-to-fixture boundary. An
 iNaturalist Research Grade wild observation, an iNaturalist captive/cultivated casual
@@ -499,7 +533,7 @@ model-training data under the current policy.
 
 ## Crop identity confirmation
 
-Species/crop identification suggestions remain drafts until the user presses an explicit confirmation action. Confirmation must write the common name, scientific name when known, cultivar separately, aliases, confirmation provenance, timestamp, and source tool run to the selected grow or plant. A user correction must preserve the rejected AI draft as provenance, present the corrected common identity first, keep exact scientific species unverified when unknown, and request a new whole-plant view, full leaf and underside with node, open flower, and fruit or seed structure for another AI review. A grow-level confirmation also updates crop tags and interests so downstream diagnosis and crop-specific tool visibility can use the same identity. Never infer or persist a cultivar from appearance alone.
+Species/crop identification suggestions remain drafts until the user presses an explicit confirmation action. Confirmation must write the common name, scientific name when known, cultivar separately, aliases, confirmation provenance, timestamp, and source tool run to the selected grow or plant. A user correction must preserve the rejected AI draft and correction history as provenance, present the corrected common identity first as identified by the user, and keep exact scientific species unverified when unknown. No new photos are required to retain a correction. A nursery label or one useful distinguishing view may be offered optionally for a separate review; do not append compulsory whole-plant/leaf/flower retakes. A grow-level confirmation also updates crop tags and interests so downstream diagnosis and crop-specific tool visibility can use the same identity. Never infer or persist a confirmed cultivar from appearance alone; a separate named-type candidate does not authorize confirmation or grow creation.
 
 When no grow is attached, a confirmed Plant ID must offer a direct **Confirm & Start a
 Grow** path. The grow draft carries the confirmed common name, scientific name when

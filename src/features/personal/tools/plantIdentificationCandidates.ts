@@ -20,16 +20,10 @@ export function unresolvedPlantCandidateName(value: unknown) {
 }
 
 function candidateKey(candidate: PlantCandidate) {
-  return JSON.stringify({
-    scientificName: String(candidate?.scientificName || "")
-      .trim()
-      .toLowerCase(),
-    commonNames: stringList(candidate?.commonNames)
-      .map((name) => name.toLowerCase())
-      .sort(),
-    rank: String(candidate?.rank || "")
-      .trim()
-      .toLowerCase()
+  const scientificName = String(candidate?.scientificName || "").trim().toLowerCase();
+  return JSON.stringify({ scientificName,
+    commonNames: scientificName ? [] : stringList(candidate?.commonNames).map((name) => name.toLowerCase()).sort(),
+    horticulturalName: candidate?.rank === "horticultural_type" ? String(candidate.horticulturalName || "").trim().toLowerCase() : ""
   });
 }
 
@@ -99,9 +93,10 @@ export function safePlantIdentificationOutputs(outputs: Record<string, any>) {
               possibleGenera.map((value) => genusName(value)).find(Boolean) ||
               "";
             const mustGeneralize =
-              suppliedRank === "species" || exactSpeciesName(suppliedScientificName);
+              suppliedRank === "species" || suppliedRank === "horticultural_type" || exactSpeciesName(suppliedScientificName);
             return {
               ...candidate,
+              ...(mustGeneralize ? { commonNames: genus ? [genus] : [], horticulturalName: "" } : {}),
               scientificName: mustGeneralize
                 ? genus
                   ? `${genus} spp.`
@@ -144,11 +139,13 @@ export function safePlantIdentificationOutputs(outputs: Record<string, any>) {
     possibleGenera: safeGenera,
     possibleSpecies: [],
     candidates,
+    candidateSelection: undefined,
     identificationDraft: {
       ...draft,
       likelyFamily: likelyFamily || "",
       possibleGenera: safeGenera,
-      candidates
+      candidates,
+      candidateSelection: undefined
     },
     confidence: "low",
     identityEvidenceStatus: supported ? "candidate_only" : "retake_required",
@@ -166,12 +163,12 @@ export function plantIdentificationCandidates(outputs: Record<string, any>) {
     outputs?.identificationDraft && typeof outputs.identificationDraft === "object"
       ? outputs.identificationDraft
       : {};
-  const combined = [
-    ...(Array.isArray(outputs?.candidates) ? outputs.candidates : []),
-    ...(Array.isArray(draft.candidates) ? draft.candidates : [])
-  ].filter((candidate) => candidate && typeof candidate === "object");
+  // An explicit final list (including empty) supersedes its pre-save draft.
+  const combined: PlantCandidate[] = (Array.isArray(outputs?.candidates) ? outputs.candidates
+    : Array.isArray(draft.candidates) ? draft.candidates : [])
+    .filter((candidate: any) => candidate && typeof candidate === "object");
   const seen = new Set<string>();
-  return combined.filter((candidate) => {
+  return combined.filter((candidate: any) => {
     const key = candidateKey(candidate);
     if (seen.has(key)) return false;
     seen.add(key);
@@ -184,7 +181,10 @@ export function bestStructuredPlantCandidateName(outputs: Record<string, any>) {
     outputs?.identificationDraft && typeof outputs.identificationDraft === "object"
       ? outputs.identificationDraft
       : {};
-  const candidate = plantIdentificationCandidates(outputs).find((item) => {
+  const selection = plantIdentificationSelection(outputs);
+  const ordered = plantIdentificationCandidates(outputs);
+  const candidate = (selection?.status === "leading_candidate"
+    ? [ordered[selection.candidateIndexes[0]]] : ordered).find((item) => {
     const commonName = stringList(item?.commonNames).find(
       (name) => !unresolvedPlantCandidateName(name)
     );
@@ -193,6 +193,7 @@ export function bestStructuredPlantCandidateName(outputs: Record<string, any>) {
       commonName || (scientificName && !unresolvedPlantCandidateName(scientificName))
     );
   });
+  if (candidate?.rank === "horticultural_type" && candidate.horticulturalName) return String(candidate.horticulturalName);
   const candidateCommonName = stringList(candidate?.commonNames).find(
     (name) => !unresolvedPlantCandidateName(name)
   );
@@ -213,16 +214,47 @@ export function bestStructuredPlantCandidateName(outputs: Record<string, any>) {
 // Display only: never write a tentative name back into confirmed identity fields.
 export function plantIdentificationHeadline(rawOutputs: Record<string, any>) {
   const outputs = safePlantIdentificationOutputs(rawOutputs);
+  if (outputs.userCorrection?.source === "user_entry" && outputs.userCorrection.commonName) {
+    return { name: String(outputs.userCorrection.commonName), label: "Identified by you" };
+  }
+  const selection = plantIdentificationSelection(outputs);
   const direct = String(outputs.likelyCrop || "").trim();
   const name = direct && !unresolvedPlantCandidateName(direct)
     ? direct : bestStructuredPlantCandidateName(outputs);
   return {
-    name: name || "No supported match yet",
+    name: selection?.status === "close_alternatives" && !["user_entered", "user_confirmed"].includes(outputs.identityEvidenceStatus)
+      ? "Close alternatives" : name || "No supported match yet",
     label: outputs.identityEvidenceStatus === "user_confirmed"
       ? "Your confirmed identity"
       : outputs.identityEvidenceStatus === "user_entered"
-        ? "Your entered identity" : "Best match (unconfirmed)"
+        ? "Your entered identity" : selection?.status === "leading_candidate"
+          ? "Best candidate · tentative" : selection?.status === "close_alternatives"
+            ? "No clear winner yet" : selection?.status === "insufficient_evidence"
+              ? "No reliable species match yet" : "Previous candidate · unconfirmed"
   };
+}
+
+export function plantIdentificationSelection(outputs: Record<string, any>): {
+  status: "leading_candidate" | "close_alternatives" | "insufficient_evidence";
+  candidateIndexes: number[]; reason: string; discriminator: string;
+} | null {
+  if (["limited", "unusable"].includes(String(outputs.imageAnalysis?.quality || ""))) return null;
+  const hasFinalCandidates = Array.isArray(outputs.candidates);
+  const selection = hasFinalCandidates ? outputs.candidateSelection
+    : outputs.identificationDraft?.candidateSelection;
+  const candidates = plantIdentificationCandidates(outputs);
+  // The server indexes the exact result list. Never reinterpret indexes after a
+  // display-side dedupe or stale draft merge changes that list.
+  const raw = hasFinalCandidates ? outputs.candidates : outputs.identificationDraft?.candidates || [];
+  if (!selection || raw.length !== candidates.length || !Array.isArray(selection.candidateIndexes)) return null;
+  const indexes = selection.candidateIndexes;
+  if (indexes.length > 3 || new Set(indexes).size !== indexes.length ||
+      indexes.some((index: unknown) => !Number.isInteger(index) || Number(index) < 0 || Number(index) >= candidates.length)) return null;
+  if (!(selection.status === "leading_candidate" && indexes.length === 1 ||
+    selection.status === "close_alternatives" && indexes.length >= 2 ||
+    selection.status === "insufficient_evidence" && indexes.length === 0)) return null;
+  return { status: selection.status, candidateIndexes: indexes,
+    reason: String(selection.reason || ""), discriminator: String(selection.discriminator || "") };
 }
 
 export function isCannabisPlantIdentification(outputs: Record<string, any>) {

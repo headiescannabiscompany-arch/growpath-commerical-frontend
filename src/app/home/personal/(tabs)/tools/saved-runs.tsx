@@ -832,8 +832,8 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
     if (correction) {
       provenance.push({
         key: "crop-id-user-correction",
-        severity: "high",
-        message: `User correction: ${correction.commonName}. The original AI draft was rejected. Exact scientific species remains unverified; add a whole-plant photo, full leaf and underside with stem node, open flower, and any fruit or seed structure for a new AI review.`
+        severity: "info",
+        message: `Identified by you: ${correction.commonName}. The original AI draft is preserved separately. Exact scientific species remains unverified. Additional evidence is optional; no new photos are required to keep your correction.`
       });
     }
     if (unresolvedSavedCropName(outputs.likelyCrop) && candidate !== "-") {
