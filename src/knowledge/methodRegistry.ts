@@ -443,6 +443,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "explicit IPM AI-credit cost and charged/refunded result",
       "user likely/uncertain/rejected decision with timestamp",
       "grow-optional draft crop identity from uploaded media",
+      "bounded reviewed PlantTaxon/CropProfile name corroboration bound to the analysis receipt; exact name versus related genus, source dates, unavailable/no-match states, never specimen verification or a second AI charge",
+      "best supported unconfirmed common candidate visible independently of confirmed crop identity; usable role-diverse non-Cannabis species hypotheses capped at medium without cultivar inference or crop-profile activation",
       "standalone private Plant ID location that can be added, updated, or removed without creating a Field Study observation or publishing to Nature",
       "saved Plant ID manual map placement that stages a point for review and requires a separate private-save action before changing the ToolRun",
       "deliberately opted-in direct Plant ID publication to a privacy-safe approximate Discovery Nature photo pin without requiring the user to name or configure a Field Study",

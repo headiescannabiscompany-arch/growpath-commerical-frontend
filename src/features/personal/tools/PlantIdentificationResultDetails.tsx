@@ -52,6 +52,7 @@ export default function PlantIdentificationResultDetails({
   const styles = useMemo(() => createPlantIdentificationResultStyles(palette), [palette]);
   const candidates = Array.isArray(outputs.candidates) ? outputs.candidates : [];
   const sourceVerification = outputs.sourceVerification || {};
+  const referenceLookup = outputs.referenceLookup;
   const possibleGenera = textList(outputs.possibleGenera);
 
   return (
@@ -77,10 +78,16 @@ export default function PlantIdentificationResultDetails({
               <Text style={styles.candidateTitle}>
                 {index + 1}.{" "}
                 {display(
-                  candidate?.scientificName,
-                  textList(candidate?.commonNames)[0] || "Unresolved candidate"
+                  textList(candidate?.commonNames)[0],
+                  candidate?.scientificName || "Unresolved candidate"
                 )}
               </Text>
+              {candidate?.scientificName ? (
+                <Text style={styles.meta}>Scientific candidate: {candidate.scientificName}</Text>
+              ) : null}
+              {candidate?.commonNameSource === "stored_reference" ? (
+                <Text style={styles.meta}>Common name from a stored reference, not independent photo verification.</Text>
+              ) : null}
               <Text style={styles.meta}>
                 {display(candidate?.rank, "working candidate")} ·{" "}
                 {display(candidate?.confidence, "low")} confidence ·{" "}
@@ -129,6 +136,38 @@ export default function PlantIdentificationResultDetails({
         values={outputs.requiredNextQuestions}
         styles={styles}
       />
+
+      <View style={styles.verification}>
+        <Text style={styles.sectionTitle}>Stored plant knowledge</Text>
+        <Text style={styles.line}>
+          {referenceLookup?.status === "matched"
+            ? "Matched stored records marked reviewed. A name match does not confirm the photographed plant or its variety."
+            : referenceLookup?.status === "no_match"
+              ? "No eligible stored reference matched this candidate in the bounded search. This does not rule out the plant."
+              : referenceLookup?.status === "unavailable"
+                ? "Stored plant knowledge was unavailable. Your photo result was preserved without retrying AI."
+                : "No stored-reference lookup was recorded for this result."}
+        </Text>
+        {referenceLookup?.recordsOmitted > 0 ? (
+          <Text style={styles.meta}>Some reference details were omitted to keep this result within its size limit.</Text>
+        ) : null}
+        {(Array.isArray(referenceLookup?.records) ? referenceLookup.records : []).map((record: any, index: number) => (
+          <View key={`${record.recordType}-${record.recordId}-${index}`} style={styles.candidate}>
+            <Text style={styles.candidateTitle}>
+              {textList(record.commonNames)[0] || record.scientificName}
+            </Text>
+            <Text style={styles.meta}>
+              {record.scientificName} · {record.matchType === "name_match"
+                ? "Candidate name match" : "Related genus record — not a photo match"}
+            </Text>
+            {(Array.isArray(record.sourceRecords) ? record.sourceRecords : []).map((source: any, sourceIndex: number) => (
+              <Text key={sourceIndex} style={styles.meta}>
+                {source.sourceName} · {source.url} · Reviewed: {source.lastReviewedAt?.slice(0, 10)}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </View>
 
       <View style={styles.verification}>
         <Text style={styles.sectionTitle}>Source verification</Text>

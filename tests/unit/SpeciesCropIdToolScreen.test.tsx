@@ -272,6 +272,40 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
 }));
 
 describe("SpeciesCropIdToolRoute", () => {
+  it("Plant ID knowledge correction shows a useful saved match while confirmation and privacy remain protected", async () => {
+    mockSearchParams = {};
+    const candidate = {
+      scientificName: "Citrus limon", commonNames: ["Lemon"], rank: "species", confidence: "medium",
+      evidence: ["Alternate simple leaves and thorny woody stems", "Large fleshy fruit"],
+      counterEvidence: ["Other large-fruited citrus remains possible"], missingEvidence: ["Closer petiole detail"]
+    };
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true, reply: JSON.stringify({ scientificName: "Citrus limon", candidates: [candidate],
+        imageAnalysisPerformed: "true", imageQuality: "usable", visualConfidence: "medium", requiredNextPhotos: [] }),
+      evidenceUsed: ["evidence-1"], mediaAnalysis: { photosAnalyzed: 1 },
+      analysisReceipt: { aiUsageEventId: "test", normalizedPlantIdResultDigest: "a".repeat(64), reviewPolicyVersion: "plant-id-reviewed-knowledge-v3" }
+    });
+    mockRunCalculator.mockResolvedValueOnce({ outputs: {
+      likelyCrop: "unknown crop", scientificName: null, confidence: "medium", candidates: [candidate],
+      identityEvidenceStatus: "candidate_only", confirmationAvailable: false,
+      confirmationBlockedReason: "Tentative species needs verification.",
+      imageAnalysis: { requested: true, performed: true, quality: "usable", confidence: "medium", photosAnalyzed: 1 },
+      referenceLookup: { status: "matched", records: [], specimenVerified: false }
+    }, toolRun: { id: "synthetic-saved-result" } });
+    const screen = renderScreen(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    expect(await screen.findByText("Best match (unconfirmed)")).toBeTruthy();
+    expect(screen.getByText("Candidate found: Lemon")).toBeTruthy();
+    expect(screen.getByText(/tentative match, not a confirmed species or variety/)).toBeTruthy();
+    expect(screen.queryByText("Working identity")).toBeNull();
+    expect(screen.getByRole("button", { name: "Confirm in Saved Run" })).toBeDisabled();
+    expect(mockRunCalculator.mock.calls[0][1].identificationDraft.requiredNextPhotos).toEqual([]);
+    expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
+    expect(mockSavePersonalGrowCropIdentity).not.toHaveBeenCalled();
+    expect(mockSavePersonalPlantCropIdentity).not.toHaveBeenCalled();
+  });
+
   it("shows plant-sex questions only when cannabis context is established", () => {
     expect(
       plantIdResultFollowUpQuestions({
@@ -2761,7 +2795,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ).toBe("");
     expect(await screen.findByText("Candidate found: Cannabis")).toBeTruthy();
     expect(
-      screen.getByText(/Nighttime or phone-light evidence is accepted/i)
+      screen.getByText(/tentative match, not a confirmed species or variety/i)
     ).toBeTruthy();
     expect(screen.queryByText(/retake required/i)).toBeNull();
     expect(screen.getByRole("button", { name: "Confirm in Saved Run" })).toBeDisabled();
@@ -3283,7 +3317,7 @@ describe("SpeciesCropIdToolRoute", () => {
           quality: "usable",
           confidence: "high",
           photosAnalyzed: 1,
-          reviewPolicyVersion: "plant-id-night-light-detail-v2",
+          reviewPolicyVersion: "plant-id-reviewed-knowledge-v3",
           previousReviewPolicyVersion: "legacy",
           reassessedUnderUpdatedPolicy: true,
           limitations: [
@@ -3306,7 +3340,7 @@ describe("SpeciesCropIdToolRoute", () => {
           imageAnalysis: expect.objectContaining({
             quality: "usable",
             confidence: "high",
-            reviewPolicyVersion: "plant-id-night-light-detail-v2",
+            reviewPolicyVersion: "plant-id-reviewed-knowledge-v3",
             limitations: expect.not.arrayContaining([
               expect.stringMatching(/same unchanged evidence/i)
             ])
@@ -3316,7 +3350,7 @@ describe("SpeciesCropIdToolRoute", () => {
     );
     expect(
       await screen.findByText(
-        /same evidence was reevaluated under the corrected lighting policy/i
+        /same evidence was reevaluated under the updated identification policy/i
       )
     ).toBeTruthy();
   });

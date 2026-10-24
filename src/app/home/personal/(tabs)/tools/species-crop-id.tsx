@@ -8,6 +8,7 @@ import BackendCalculatorToolScreen, {
 import PlantIdentificationResultDetails from "@/features/personal/tools/PlantIdentificationResultDetails";
 import {
   bestStructuredPlantCandidateName,
+  plantIdentificationHeadline,
   isCannabisPlantIdentification,
   plantIdentificationCandidates,
   plantIdentificationEvidence,
@@ -66,7 +67,7 @@ import {
   type ToolWorkspaceType
 } from "@/features/personal/tools/toolWorkspaceScope";
 
-const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-night-light-detail-v2";
+const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-reviewed-knowledge-v3";
 const FRAME_EXTRACTION_POLL_DELAYS_MS = [1500, 3000, 5000, 8000, 12000, 20000, 30000];
 const FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS = 20;
 const DIRECT_NATURE_COLLECTION_TITLE = "My Nature Finds";
@@ -710,7 +711,7 @@ function assessPlantIdVisionReply({
       : []),
     ...(reassessedUnderUpdatedPolicy
       ? [
-          "This unchanged evidence was reassessed under an updated nighttime-lighting policy. Compare this result with the prior review and explicitly confirm or reject the new candidate."
+          "This unchanged evidence was reassessed under an updated identification policy. Compare this result with the prior review; a new candidate is not confirmation."
         ]
       : [])
   ].filter((item, index, items) => item && items.indexOf(item) === index);
@@ -795,7 +796,7 @@ function buildIdentificationDraft(
     missingEvidence: stringList(parsed.missingEvidence),
     requiredNextPhotos: [
       ...stringList(parsed.requiredNextPhotos),
-      ...(assessment?.withholdIdentity
+      ...(assessment && (assessment.quality !== "usable" || assessment.sameEvidenceConflict)
         ? [
             "Retake the whole plant and diagnostic leaf, stem, flower, or fruit views in even daylight or diffuse light without direct-flash glare or deep shadow."
           ]
@@ -860,9 +861,9 @@ function plantIdImmediateResult(rawOutputs: Record<string, any>): {
   const reassessmentNote =
     imageAnalysis.reassessedUnderUpdatedPolicy === true ||
     limitations.some((item) =>
-      /reassessed under an updated nighttime-lighting policy/i.test(item)
+      /reassessed under an updated (?:nighttime-lighting|identification) policy/i.test(item)
     )
-      ? "This same evidence was reevaluated under the corrected lighting policy. Compare it with the prior result and explicitly confirm or reject the candidate."
+      ? "This same evidence was reevaluated under the updated identification policy. Compare it with the prior result; a new candidate is not confirmation."
       : "";
 
   if (imageAnalysis.requested === true && !performed) {
@@ -902,7 +903,7 @@ function plantIdImmediateResult(rawOutputs: Record<string, any>): {
           : `Candidate found: ${candidate} — more evidence needed`,
       description:
         quality === "usable"
-          ? `Confidence: ${confidence}. Nighttime or phone-light evidence is accepted when the visible diagnostic structure remains usable. Review the detailed result below before confirming.`
+          ? `Confidence: ${confidence}. This is a tentative match, not a confirmed species or variety. Review the visible evidence and alternatives below.`
           : `Confidence: ${confidence}. The visible diagnostic structure supports this cautious crop or genus candidate, but the lighting limits exact certainty. Add the requested views before confirming.`,
       details: [reassessmentNote, ...nextPhotos].filter(Boolean).slice(0, 3)
     };
@@ -920,6 +921,7 @@ function plantIdImmediateResult(rawOutputs: Record<string, any>): {
 
 function plantIdMetrics(rawOutputs: Record<string, any>): ToolResultMetric[] {
   const outputs = safePlantIdentificationOutputs(rawOutputs);
+  const headline = plantIdentificationHeadline(outputs);
   const imageAnalysis = outputs.imageAnalysis || {};
   const stillImagesAnalyzed = Number(
     imageAnalysis.stillImagesAnalyzed ??
@@ -930,7 +932,7 @@ function plantIdMetrics(rawOutputs: Record<string, any>): ToolResultMetric[] {
   const videoFramesAnalyzed = Number(imageAnalysis.videoFramesAnalyzed || 0);
   const videosAttached = Number(imageAnalysis.videosAttached || 0);
   return [
-    { key: "crop", label: "Working identity", value: outputs.likelyCrop },
+    { key: "crop", label: headline.label, value: headline.name },
     { key: "family", label: "Likely family", value: outputs.likelyFamily || "-" },
     {
       key: "scientific",

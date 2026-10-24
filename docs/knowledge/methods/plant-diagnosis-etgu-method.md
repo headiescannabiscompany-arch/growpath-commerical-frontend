@@ -438,6 +438,30 @@ Keep common, nursery, and trade names separate from scientific names. When the e
 
 The calculator itself does not query a botanical database. When no lookup occurred, return `required_not_performed`, an empty source-record list, and recommended source IDs rather than invented citations or range matches. Verification may use USDA PLANTS and regional floras for jurisdictional distribution, Kew POWO/WCVP for accepted vascular-plant names and synonymy, GBIF for taxonomy and occurrence leads, and iNaturalist only as a Tier C observation/community-identification lead. A future live lookup must record the exact record URL or identifier, access time, scope, match result, conflicts, and source-specific limitations.
 
+After a usable photo review, the server performs a bounded read of the existing
+PlantTaxon and CropProfile catalogs for the proposed names and genera. Reuse only
+review-marked records with dated, commercially cleared source metadata; do not seed,
+write, browse external sources, run a second AI request, or add a credit charge.
+Record exact-name matches separately from related-genus alternatives. Neither is
+specimen verification. An exact scientific-name match may supply a missing common
+label, but related records must never promote a broad genus guess to a species.
+Bind this lookup snapshot into the existing analysis receipt and rebuild it from
+that receipt at save; ignore client-provided lookup claims. Old saved receipts stay
+unchanged. Missing, ineligible or unavailable references preserve the visual result
+and report that limitation instead of inventing a match or retrying analysis.
+Source review flags describe stored metadata, not independent editorial approval.
+Bound reference additions before signing/returning the result, recording omissions
+instead of truncating JSON or silently discarding visual evidence.
+
+Usable role-diverse morphology may retain supported non-Cannabis species hypotheses
+at no more than medium confidence, without confirmation or crop-profile activation.
+Limited/obscured imagery, unsupported characters, cultivar inference and the existing
+private Cannabis crop/genus ceiling retain their safeguards. Present the best
+supported common candidate prominently as unconfirmed; missing confirmed-identity
+fields must not turn that candidate into an "unknown crop" headline. Reference
+coverage and real-image accuracy require separate evidence; mocked checks do not
+establish either.
+
 Plant ID evaluation media follows an additional candidate-to-fixture boundary. An
 iNaturalist Research Grade wild observation, an iNaturalist captive/cultivated casual
 observation, a Wikimedia Commons file, a USDA ARS image, a

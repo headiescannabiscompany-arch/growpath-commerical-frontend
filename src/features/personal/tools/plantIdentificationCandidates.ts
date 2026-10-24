@@ -51,7 +51,7 @@ function genusName(value: unknown) {
 }
 
 function exactSpeciesName(value: unknown) {
-  return /^[A-Z][a-z-]+\s+(?!spp?\.?\b|hybrid\b)[a-z][a-z-]+\b/.test(
+  return /^[A-Z][a-z-]+\s+(?:×\s*)?(?!spp?\.?\b|hybrid\b)[a-z][a-z-]+\b/.test(
     String(value || "").trim()
   );
 }
@@ -208,6 +208,21 @@ export function bestStructuredPlantCandidateName(outputs: Record<string, any>) {
   if (possibleGenus) return possibleGenus;
   const family = String(outputs?.likelyFamily || draft.likelyFamily || "").trim();
   return family && !unresolvedPlantCandidateName(family) ? family : "";
+}
+
+// Display only: never write a tentative name back into confirmed identity fields.
+export function plantIdentificationHeadline(rawOutputs: Record<string, any>) {
+  const outputs = safePlantIdentificationOutputs(rawOutputs);
+  const direct = String(outputs.likelyCrop || "").trim();
+  const name = direct && !unresolvedPlantCandidateName(direct)
+    ? direct : bestStructuredPlantCandidateName(outputs);
+  return {
+    name: name || "No supported match yet",
+    label: outputs.identityEvidenceStatus === "user_confirmed"
+      ? "Your confirmed identity"
+      : outputs.identityEvidenceStatus === "user_entered"
+        ? "Your entered identity" : "Best match (unconfirmed)"
+  };
 }
 
 export function isCannabisPlantIdentification(outputs: Record<string, any>) {
