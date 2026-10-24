@@ -58,13 +58,23 @@ export default function PlantIdentificationResultDetails({
   const [expanded, setExpanded] = useState(false);
   useEffect(() => setExpanded(false), [rawOutputs]);
   const selectedIndexes = selection?.candidateIndexes || [];
+  const ranked = selection?.status === "leading_candidate" || selection?.status === "close_alternatives";
   const order = [...selectedIndexes, ...candidates.map((_: any, index: number) => index)
-    .filter((index: number) => !selectedIndexes.includes(index))].slice(0, 3);
-  const visibleCount = correction ? (expanded ? 3 : 0) : expanded ? 3 : selection?.status === "close_alternatives" ? selectedIndexes.length : 1;
+    .filter((index: number) => !selectedIndexes.includes(index))].slice(0, ranked ? 3 : 5);
+  const visibleCount = correction ? (expanded ? order.length : 0) : expanded ? order.length : selection?.status === "close_alternatives" ? selectedIndexes.length : 1;
   const visible = order.slice(0, visibleCount);
   const sourceVerification = outputs.sourceVerification || {};
   const referenceLookup = outputs.referenceLookup;
   const possibleGenera = textList(outputs.possibleGenera);
+  const followUpKey = (value: string) => value.replace(/^optional\s*:\s*/i, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const nextPhotos = textList(outputs.requiredNextPhotos).slice(0, 1);
+  const nextQuestions = (selection?.discriminator ? [selection.discriminator] : textList(outputs.requiredNextQuestions).slice(0, 1))
+    .filter((value) => !nextPhotos.some((photo) => followUpKey(photo) === followUpKey(value)));
+  // Saved missingInformation also contains the next-photo/question lists. Show
+  // each actionable request in its own slot once, without mutating the receipt.
+  const missingEvidence = textList(outputs.missingInformation).filter((value) =>
+    ![...nextPhotos, ...nextQuestions].some((request) => followUpKey(request) === followUpKey(value)));
 
   return (
     <View style={styles.container}>
@@ -99,14 +109,13 @@ export default function PlantIdentificationResultDetails({
 
       {candidates.length ? (
         <View style={styles.group}>
-          <Text style={styles.sectionTitle}>{correction ? "Original AI candidates" : selection ? "Candidate comparison" : "Previous candidates — ranking evidence unavailable"}</Text>
+          <Text style={styles.sectionTitle}>{correction ? "Original AI candidates" : selection ? "Candidate comparison" : "Candidates — ranking evidence unavailable"}</Text>
           {visible.map((index: number) => { const candidate = candidates[index]; return (
             <View
               key={`${candidate?.scientificName || candidate?.commonNames?.[0] || "candidate"}-${index}`}
               style={styles.candidate}
             >
               <Text style={styles.candidateTitle}>
-                {selection ? "" : `${index + 1}. `}
                 {display(
                   candidate.rank === "horticultural_type" ? candidate.horticulturalName : textList(candidate?.commonNames)[0],
                   candidate?.scientificName || "Unresolved candidate"
@@ -119,7 +128,7 @@ export default function PlantIdentificationResultDetails({
                 <Text style={styles.meta}>Common name from a stored reference, not independent photo verification.</Text>
               ) : null}
               <Text style={styles.meta}>
-                {candidate?.rank === "horticultural_type" ? "Named-type suggestion, not a verified cultivar" : display(candidate?.rank, "working candidate")} ·{" "}
+                {candidate?.rank === "horticultural_type" ? "Named-type suggestion, not a verified cultivar" : candidate?.rank === "hybrid" ? "Hybrid hypothesis, not verified" : display(candidate?.rank, "working candidate")} ·{" "}
                 {display(candidate?.confidence, "low")} confidence ·{" "}
                 {candidate?.verificationStatus === "verified"
                   ? "source verified"
@@ -151,8 +160,11 @@ export default function PlantIdentificationResultDetails({
       ) : null}
 
       <EvidenceList title="Evidence used" values={outputs.evidence} styles={styles} />
-      <EvidenceList title="Why some proposals were withheld" values={Array.isArray(outputs.candidateAssessment)
-        ? Array.from(new Set(outputs.candidateAssessment.filter((item: any) => item.outcome === "withheld").map((item: any) => item.reason))) : []} styles={styles} />
+      <EvidenceList title="How the proposals were handled" values={Array.isArray(outputs.candidateAssessment)
+        ? outputs.candidateAssessment.slice(0, 5).filter((item: any) =>
+          Number.isInteger(item.proposedIndex) && item.proposedIndex >= 0 && item.proposedIndex < 5 &&
+          ["retained", "downgraded", "withheld"].includes(item.outcome) && typeof item.reason === "string")
+          .map((item: any) => `Proposal ${item.proposedIndex + 1} — ${item.outcome === "downgraded" ? "broadened" : item.outcome}: ${item.reason}`) : []} styles={styles} />
       <EvidenceList
         title="Counter-evidence"
         values={outputs.counterEvidence}
@@ -160,17 +172,17 @@ export default function PlantIdentificationResultDetails({
       />
       <EvidenceList
         title="Missing evidence"
-        values={outputs.missingInformation}
+        values={missingEvidence}
         styles={styles}
       />
       <EvidenceList
         title={outputs.imageAnalysis?.retakeRequired || outputs.imageAnalysis?.quality === "unusable" ? "Photo needed for another identification" : "Optional next photo"}
-        values={correction ? [] : textList(outputs.requiredNextPhotos).slice(0, 1)}
+        values={correction ? [] : nextPhotos}
         styles={styles}
       />
       <EvidenceList
         title="One optional way to narrow it down"
-        values={correction ? [] : (selection?.discriminator ? [selection.discriminator] : textList(outputs.requiredNextQuestions).slice(0, 1))}
+        values={correction ? [] : nextQuestions}
         styles={styles}
       />
 

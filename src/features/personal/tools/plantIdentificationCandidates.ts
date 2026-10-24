@@ -93,7 +93,7 @@ export function safePlantIdentificationOutputs(outputs: Record<string, any>) {
               possibleGenera.map((value) => genusName(value)).find(Boolean) ||
               "";
             const mustGeneralize =
-              suppliedRank === "species" || suppliedRank === "horticultural_type" || exactSpeciesName(suppliedScientificName);
+              suppliedRank === "species" || suppliedRank === "hybrid" || suppliedRank === "horticultural_type" || exactSpeciesName(suppliedScientificName);
             return {
               ...candidate,
               ...(mustGeneralize ? { commonNames: genus ? [genus] : [], horticulturalName: "" } : {}),
@@ -230,7 +230,7 @@ export function plantIdentificationHeadline(rawOutputs: Record<string, any>) {
         ? "Your entered identity" : selection?.status === "leading_candidate"
           ? "Best candidate · tentative" : selection?.status === "close_alternatives"
             ? "No clear winner yet" : selection?.status === "insufficient_evidence"
-              ? "No reliable species match yet" : "Previous candidate · unconfirmed"
+              ? "No reliable species match yet" : "Unranked candidate · unconfirmed"
   };
 }
 

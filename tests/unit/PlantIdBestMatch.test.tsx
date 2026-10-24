@@ -49,7 +49,7 @@ describe("Plant ID best-match display", () => {
   });
   test("insufficient evidence and historical candidates do not become best matches", () => {
     expect(plantIdentificationHeadline({ ...outputs, candidateSelection: { status: "insufficient_evidence", candidateIndexes: [], reason: "Missing detail" } }).label).toBe("No reliable species match yet");
-    expect(plantIdentificationHeadline({ ...outputs, candidateSelection: undefined }).label).toBe("Previous candidate · unconfirmed");
+    expect(plantIdentificationHeadline({ ...outputs, candidateSelection: undefined }).label).toBe("Unranked candidate · unconfirmed");
   });
   test.each([{ indexes: [-1] }, { indexes: [9] }, { indexes: [0.5] }, { indexes: ["1"] }, { indexes: [1, 1] }])("malformed selection $indexes is not used", ({ indexes }) => {
     expect(plantIdentificationSelection({ ...outputs, candidateSelection: { ...outputs.candidateSelection, candidateIndexes: indexes } })).toBeNull();
@@ -91,7 +91,7 @@ describe("Plant ID best-match display", () => {
     const draft = { candidates: [named("Meyer lemon")], candidateSelection: { ...outputs.candidateSelection, candidateIndexes: [0] } };
     const current = { candidates: [{ scientificName: "Rosa canina", commonNames: ["Dog rose"], rank: "species" }], identificationDraft: draft };
     expect(plantIdentificationSelection(current)).toBeNull();
-    expect(plantIdentificationHeadline(current)).toEqual({ name: "Dog rose", label: "Previous candidate · unconfirmed" });
+    expect(plantIdentificationHeadline(current)).toEqual({ name: "Dog rose", label: "Unranked candidate · unconfirmed" });
     expect(plantIdentificationSelection({ identificationDraft: draft })?.candidateIndexes).toEqual([0]);
   });
   test("partial reference checks disclose the gap without denying retained matches", () => {
@@ -99,5 +99,65 @@ describe("Plant ID best-match display", () => {
       referenceLookup: { status: "matched", partial: true, records: [] } }} />);
     expect(view.getByText(/Matched stored records marked reviewed/)).toBeTruthy();
     expect(view.getByText(/Some reference checks were unavailable/)).toBeTruthy();
+  });
+});
+
+describe("Plant ID candidate trace display", () => {
+  const broader = ["Carica", "Citrus", "Rosa", "Malus", "Pyrus"].map((genus) => ({
+    scientificName: `${genus} spp.`, rank: "genus", commonNames: [genus], confidence: "medium",
+    evidence: ["Alternate leaves and round fruit are visible"]
+  }));
+  const result = { ...outputs, candidates: broader,
+    candidateSelection: { status: "insufficient_evidence", candidateIndexes: [], reason: "Only broader candidates were retained." },
+    candidateAssessment: [
+      { proposedIndex: 0, candidateIndex: 0, outcome: "downgraded", reason: "Species evidence was insufficient; broader evidence retained." },
+      { proposedIndex: 1, candidateIndex: 1, outcome: "retained", reason: "Independent broader proposal." },
+      { proposedIndex: 2, outcome: "withheld", reason: "No supported diagnostic evidence." }
+    ] };
+  test("fresh broad results show no species winner and all five alternatives remain reachable", () => {
+    const before = JSON.stringify(result);
+    const view = render(<PlantIdentificationResultDetails outputs={result} />);
+    expect(view.getByText("No reliable species match yet")).toBeTruthy();
+    expect(view.queryByText(/Previous|Best candidate/)).toBeNull();
+    expect(view.getByText("Carica")).toBeTruthy();
+    expect(view.queryByText("Pyrus")).toBeNull();
+    fireEvent.press(view.getByRole("button", { name: "Compare other candidates" }));
+    for (const item of broader) expect(view.getByText(item.commonNames[0])).toBeTruthy();
+    expect(JSON.stringify(result)).toBe(before);
+    expect(result.confirmationAvailable).toBe(false);
+  });
+  test("each decision is visible without publishing withheld names or treating a merge as agreement", () => {
+    const view = render(<PlantIdentificationResultDetails outputs={result} />);
+    expect(view.getByText("How the proposals were handled")).toBeTruthy();
+    expect(view.getByText("• Proposal 1 — broadened: Species evidence was insufficient; broader evidence retained.")).toBeTruthy();
+    expect(view.getByText("• Proposal 2 — retained: Independent broader proposal.")).toBeTruthy();
+    expect(view.getByText("• Proposal 3 — withheld: No supported diagnostic evidence.")).toBeTruthy();
+  });
+  test("missing ranking is unranked, not evidence the review is previous", () => {
+    const fresh = { ...result, candidateSelection: undefined };
+    expect(plantIdentificationHeadline(fresh)).toEqual({ name: "Carica", label: "Unranked candidate · unconfirmed" });
+    const view = render(<PlantIdentificationResultDetails outputs={fresh} />);
+    expect(view.getByText("Candidates — ranking evidence unavailable")).toBeTruthy();
+    expect(view.queryByText(/Previous|Best candidate/)).toBeNull();
+  });
+  test("limited current and saved-shaped outputs keep low broader labels and no false selected winner", () => {
+    const limited = { ...result, imageAnalysis: { performed: true, quality: "limited" } };
+    const prior = JSON.stringify(limited);
+    const safe = safePlantIdentificationOutputs(limited);
+    expect(safe.candidates.every((item: any) => item.rank === "genus" && item.confidence === "low")).toBe(true);
+    expect(plantIdentificationSelection(safe)).toBeNull();
+    const view = render(<PlantIdentificationResultDetails outputs={limited} />);
+    expect(view.getByText("Candidates — ranking evidence unavailable")).toBeTruthy();
+    expect(view.queryByText(/Previous|Best candidate/)).toBeNull();
+    expect(JSON.stringify(limited)).toBe(prior);
+  });
+  test("malformed decision rows are not rendered and owner corrections keep their separate identity", () => {
+    const view = render(<PlantIdentificationResultDetails outputs={{ ...result,
+      userCorrection: { source: "user_entry", commonName: "Owner label" },
+      candidateAssessment: [{ proposedIndex: 99, outcome: "retained", reason: "Invalid row" },
+        { proposedIndex: 0, outcome: "verified", reason: "Invalid authority" }] }} />);
+    expect(view.getByText("Owner label — identified by you")).toBeTruthy();
+    expect(view.queryByText(/Invalid row|Invalid authority/)).toBeNull();
+    expect(view.queryByText("Carica")).toBeNull();
   });
 });

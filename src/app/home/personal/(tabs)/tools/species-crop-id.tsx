@@ -67,7 +67,7 @@ import {
   type ToolWorkspaceType
 } from "@/features/personal/tools/toolWorkspaceScope";
 
-const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-best-match-v5";
+const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-best-match-v7";
 const FRAME_EXTRACTION_POLL_DELAYS_MS = [1500, 3000, 5000, 8000, 12000, 20000, 30000];
 const FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS = 20;
 const DIRECT_NATURE_COLLECTION_TITLE = "My Nature Finds";

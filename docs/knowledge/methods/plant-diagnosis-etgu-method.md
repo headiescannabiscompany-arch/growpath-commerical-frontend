@@ -486,13 +486,44 @@ fields must not turn that candidate into an "unknown crop" headline. Reference
 coverage and real-image accuracy require separate evidence; mocked checks do not
 establish either.
 
-Under `plant-id-best-match-v5`, assess each proposal independently: an unsupported
+Under `plant-id-best-match-v7`, assess each proposal independently: an unsupported
 alternative must not erase a supported candidate. Preserve bounded rejection reasons.
 Compare independent organ-character combinations and account for typical trait
 variation with maturity and growing conditions. Repeated photos are not independent
 identity votes; a dramatic size does not establish or exclude a named type alone.
 Owner descriptions (including hardiness) and owner identities are context, not visual
 observations or retrospective AI successes. No cultivar or provider is hardcoded.
+
+Recognize described shoots, branches, trunks and nodal thorns as stem-character
+vocabulary; a bare organ name, hypothetical trait or explicitly unavailable structure
+still supplies no affirmative evidence. Described narrow/broad/winged petioles can
+support a tentative comparison alongside another observed organ, but are not a third
+organ or an independent image. Named hybrids with a valid botanical hybrid marker may
+remain `hybrid` hypotheses under the same usable-quality, non-Cannabis, medium-or-lower
+ceiling. Preserve that rank and its uncertainty through receipts, saving and display.
+This is evidence-shape validation, not a botanical key or specimen verification.
+Do not authenticate a nursery label, override an owner identity, or infer a cultivar.
+Retain a photo discriminator in the optional-photo slot instead of duplicating it as
+a question. A saved species relabeled as a working candidate retains its assessment
+only for the same exact name; no trace may be redirected to another taxon.
+
+When species evidence must be broadened, assess all bounded proposals independently
+instead of retaining only the primary genus. Keep supported genus/family alternatives;
+merge duplicate broader names without counting them as additional votes. Do not transfer
+one taxon's stated characters to another. A rejected primary must not supply the summary
+genus or family. Record each proposal number, retained/broadened/withheld outcome,
+server-owned reason and final-candidate index when applicable in the existing signed
+snapshot. Save-time filtering must remap or withhold that reference, never redirect it
+to a different candidate. Do not retain raw provider text or rejected cultivar labels
+in this decision trace. These are evidence-boundary decisions, not botanical validation.
+
+A fresh fallback, invalid selection or missing comparison returns an explicit
+insufficient-ranking result; it must not become a selected species winner or a historical
+review merely because its original selection no longer applies. Older snapshots remain
+unchanged and are displayed as unranked when ranking evidence is absent. All five retained
+unranked broader candidates remain available through the shared comparison control.
+Show why each proposal was kept, broadened or withheld, with no confirmation upgrade,
+new inference, credit use or claim of real-photo accuracy from synthetic verification.
 
 The provider proposes an explicit leader, close alternatives or insufficient evidence,
 with a comparison reason and at most one optional discriminator. Server validation
