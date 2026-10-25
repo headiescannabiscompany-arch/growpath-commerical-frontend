@@ -491,6 +491,62 @@ describe("SpeciesCropIdToolRoute", () => {
     });
   });
 
+  describe("Plant ID longer wait", () => {
+    afterEach(() => jest.useRealTimers());
+
+    it("keeps one analysis busy through a long wait and removes waiting copy on success", async () => {
+      const savedReply = await mockAskPersonalAssistant();
+      mockAskPersonalAssistant.mockClear();
+      let finish!: (value: any) => void;
+      mockAskPersonalAssistant.mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+      const screen = renderScreen(<SpeciesCropIdToolRoute />);
+      fireEvent.press(screen.getByText("Identify Plant from Photos"));
+      await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1));
+      jest.useFakeTimers();
+      await act(async () => { await jest.advanceTimersByTimeAsync(120000); });
+      expect(screen.getByText(/Photo identification can take a few minutes/)).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Analyzing photos..." })).toBeDisabled();
+      expect(screen.getByText("Evidence picker disabled: yes")).toBeTruthy();
+      fireEvent.press(screen.getByText("Analyzing photos..."));
+      expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+      await act(async () => { finish(savedReply); });
+      expect(screen.queryByText(/Photo identification can take a few minutes/)).toBeNull();
+      expect(mockRunCalculator).toHaveBeenCalledTimes(1);
+      expect(screen.getByText("Species / Crop Identification result")).toBeTruthy();
+    });
+
+    it("ends a timed-out wait with retained evidence and explicit unconfirmed outcome", async () => {
+      let fail!: (error: Error) => void;
+      mockAskPersonalAssistant.mockReturnValueOnce(new Promise((_resolve, reject) => { fail = reject; }));
+      const screen = renderScreen(<SpeciesCropIdToolRoute />);
+      fireEvent.press(screen.getByText("Identify Plant from Photos"));
+      await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1));
+      await act(async () => { fail(Object.assign(new Error("Synthetic timeout"), { code: "TIMEOUT" })); });
+      expect(screen.queryByText(/Photo identification can take a few minutes/)).toBeNull();
+      expect(screen.getByText(/cannot confirm whether the AI analysis completed or credits were used/)).toBeTruthy();
+      expect(screen.getByText("Evidence picker disabled: no")).toBeTruthy();
+      expect(mockRunCalculator).not.toHaveBeenCalled();
+      expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+    });
+
+    it("a workspace change clears the wait and discards the prior workspace's delayed reply", async () => {
+      const savedReply = await mockAskPersonalAssistant();
+      mockAskPersonalAssistant.mockClear();
+      let finish!: (value: any) => void;
+      mockAskPersonalAssistant.mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+      const screen = renderScreen(<SpeciesCropIdToolRoute />);
+      fireEvent.press(screen.getByText("Identify Plant from Photos"));
+      await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1));
+      mockEvidenceAssets = [];
+      mockEntitlementMode = "commercial";
+      await act(async () => { screen.rerender(<SpeciesCropIdToolRoute />); });
+      expect(screen.queryByText(/Photo identification can take a few minutes/)).toBeNull();
+      await act(async () => { finish(savedReply); });
+      expect(mockRunCalculator).not.toHaveBeenCalled();
+      expect(screen.queryByText("Species / Crop Identification result")).toBeNull();
+    });
+  });
+
   describe("Plant ID photo-first recovery", () => {
     const detailsLabel = "Optional details — add or review";
     const nameLabel = "Species / Crop Identification Plant or crop name";

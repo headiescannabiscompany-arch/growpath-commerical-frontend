@@ -364,6 +364,24 @@ is a different review. Historical non-durable attempts are not retroactively rec
 from a matching photo set. This does not make ToolRun saves idempotent, and it does not
 authorize any actual account adjustment.
 
+An optional server-only `OPENAI_PLANT_ID_MODEL=gpt-6.1-sol` selects medium reasoning
+and Standard service for structured Plant ID photos only. Unset/blank retains the
+existing model and legacy request identity; an unreviewed value fails before charging.
+Do not change the shared vision/text defaults, follow-up models, other tools or customer
+credit price. Bind the opt-in model profile to the same durable request and retain it
+on the usage receipt. A model/profile change is a different review, not recovery of an
+older uncertain attempt; inspect the retained result/support record before such a switch.
+Preserve strict output, high-detail originals, store:false, the 8,000 output-token cap,
+150-second provider deadline and zero automatic retries. An explicitly incomplete
+provider response is not a successful identification even if its JSON parses.
+
+Show a calm waiting message while Plant ID is busy, keep the existing duplicate-action
+lock, and allow a 180-second client request deadline (provider time plus preparation and
+receipt allowance). This is not a completion-time promise. Timeout retains the existing
+uncertain-outcome instructions and never triggers another model or automatic POST.
+Late replies from another workspace/evidence revision are discarded. This optional
+connection is not itself permission to enable a hosted model or spend on live analysis.
+
 Crop Identification uses a field-botany narrowing method informed by plant-systematics teaching, including the public Crime Pays But Botany Doesn't reading-list emphasis on synapomorphies, family/genus traits, habitat, and associated plant community. That channel remains Tier C method inspiration only; it is not taxonomic ground truth, and GrowPath does not copy or retain its videos, audio, frames, transcripts, or thumbnails without permission.
 
 Collect up to 12 role-diverse photos or extracted still frames: whole plant in habitat, leaf top, leaf underside, stem/node or bark, flower, fruit/seed, and diagnostic special structures. Optional structured context includes growth habit, plant size, leaf arrangement/type/margin/venation, stem traits, flower presence/symmetry/parts/inflorescence, fruit type, special structures, direct smell/sap/texture observations, wild versus cultivated status, indoor/outdoor/greenhouse setting, privacy-controlled region, observation date/season, habitat, substrate/geology, and associated plants. Never instruct a user to taste an unknown plant.

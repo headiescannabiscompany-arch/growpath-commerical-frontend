@@ -1809,6 +1809,12 @@ export default function BackendCalculatorToolScreen({
                   : aiPrefill.buttonLabel || "Fill with AI"}
               </Text>
             </Pressable>
+            {isCropIdentification && prefilling ? (
+              <Text accessibilityLiveRegion="polite" style={styles.guidanceText}>
+                Photo identification can take a few minutes. Keep this page open while
+                we wait for the result; no second analysis will start automatically.
+              </Text>
+            ) : null}
             {immediateAiResult ? (
               <View
                 accessibilityRole="alert"
