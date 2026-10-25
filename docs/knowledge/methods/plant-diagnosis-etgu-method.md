@@ -486,7 +486,7 @@ fields must not turn that candidate into an "unknown crop" headline. Reference
 coverage and real-image accuracy require separate evidence; mocked checks do not
 establish either.
 
-Under `plant-id-best-match-v8`, assess each proposal independently: an unsupported
+Under `plant-id-best-match-v9`, assess each proposal independently: an unsupported
 alternative must not erase a supported candidate. Preserve bounded rejection reasons.
 Compare independent organ-character combinations and account for typical trait
 variation with maturity and growing conditions. Repeated photos are not independent
@@ -562,6 +562,16 @@ slots; recognize close views, macro views and requests to show an attached organ
 Do not turn a descriptive comparison sentence into another question. Safety-required
 retakes remain separate. Reusing frozen replies is regression evidence, not a new
 independent accuracy trial, and must not trigger provider calls or rewrite history.
+
+The v9 partial-visibility correction does not treat a populated stem-traits field as
+an affirmative stem observation when its explicit stem references only report missing
+detail and the review narrative agrees. Visible leaf stalks can coexist with obscured
+connecting stems and nodes; preserve separately supported leaf evidence and the stated
+stem limitation. An affirmative stem claim on either side, or an implicit positive
+stem description such as "woody", remains subject to the existing conflict guard.
+Missing stem detail never becomes a new diagnostic character. Other quality, candidate,
+source-verification and confirmation ceilings are unchanged. Backend and client review
+policy advance together; historical v8 results stay immutable and are not rerun.
 
 Catalog reads prioritize eligible exact names/synonyms before remaining related-genus
 rows, retaining the combined 12-record per-catalog cap and timeout. Preserve completed
