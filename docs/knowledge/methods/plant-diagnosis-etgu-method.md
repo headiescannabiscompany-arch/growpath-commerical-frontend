@@ -486,7 +486,7 @@ fields must not turn that candidate into an "unknown crop" headline. Reference
 coverage and real-image accuracy require separate evidence; mocked checks do not
 establish either.
 
-Under `plant-id-best-match-v7`, assess each proposal independently: an unsupported
+Under `plant-id-best-match-v8`, assess each proposal independently: an unsupported
 alternative must not erase a supported candidate. Preserve bounded rejection reasons.
 Compare independent organ-character combinations and account for typical trait
 variation with maturity and growing conditions. Repeated photos are not independent
@@ -546,6 +546,22 @@ response conflict or insufficient taxon evidence, or append a redundant question
 The changed policy distinguishes new reviews from historical receipts; it never reruns
 AI automatically, rewrites a saved rejection, or establishes real-photo accuracy from
 synthetic checks.
+
+The saved-response filter correction recognizes calyces, spathes/spadices, racemes,
+spikelets, glumes, grass blades, sheathing bases, stalks and culms as morphological
+vocabulary, not additional votes. A usable tentative candidate may rest on two
+described organ roles plus its own distinguishing character combination; the
+strong-neutral/artificial-light gate still requires its original three-role evidence.
+Neither path confirms species. Unresolved character alternatives (such as "spiny or
+ribbed stems") are not observed diagnostic characters. No plant name is hardcoded.
+Natural-language "no identifiable fruit is visible" agrees with photo absence;
+"not clearly resolved" is unknown, not affirmative presence. Actual positive/negative
+conflicts still reject identity. Photo absence does not prove biological absence.
+After a usable review, show at most one optional action across question and photo
+slots; recognize close views, macro views and requests to show an attached organ.
+Do not turn a descriptive comparison sentence into another question. Safety-required
+retakes remain separate. Reusing frozen replies is regression evidence, not a new
+independent accuracy trial, and must not trigger provider calls or rewrite history.
 
 Catalog reads prioritize eligible exact names/synonyms before remaining related-genus
 rows, retaining the combined 12-record per-catalog cap and timeout. Preserve completed

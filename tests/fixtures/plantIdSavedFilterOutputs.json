@@ -1,0 +1,477 @@
+{
+  "source": "Local v8 normalizer → signed-snapshot reconstruction → existing calculator; five saved Sol development replies, not gold",
+  "sourceSha256": "5162a0f81892c1ef6ea18bfdb8da9488fe289f548165fc28ff317a2a167ad164",
+  "results": [
+    {
+      "sampleId": "sample-0001",
+      "outputs": {
+        "candidates": [
+          {
+            "scientificName": "Ocimum basilicum",
+            "commonNames": [
+              "Sweet basil",
+              "Basil"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Broad, glossy ovate leaves accompany white bilaterally symmetric flowers.",
+              "Stamens project beyond the corolla and end in brownish anthers.",
+              "Green calyces show a broad rounded upper lip, narrower pointed lower portions, and fine hairs."
+            ],
+            "counterEvidence": [],
+            "missingEvidence": [
+              "A complete flowering shoot showing leaf attachment, leaf proportions, and the spacing of flower groups."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "leading_candidate",
+          "candidateIndexes": [
+            0
+          ],
+          "reason": "Sweet basil best combines the broad glossy foliage with the white flowers, projecting stamens, and broad-lipped ribbed calyces. The foliage is less suggestive of the narrower, hairier-leaved alternative.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "withheld",
+            "reason": "This proposal lacks its own supported diagnostic combination or valid candidate-level name. Other proposals were assessed independently."
+          }
+        ],
+        "confirmationAvailable": false,
+        "likelyCrop": "unknown crop",
+        "identityEvidenceStatus": "candidate_only",
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 1,
+          "photosAnalyzed": 1,
+          "stillImagesAnalyzed": 1,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "requiredNextPhotos": [
+          "For stronger confirmation, provide one sharp photo of an entire flowering shoot in diffuse daylight, including several stem nodes and complete leaves."
+        ],
+        "requiredNextQuestions": []
+      }
+    },
+    {
+      "sampleId": "sample-0002",
+      "outputs": {
+        "candidates": [
+          {
+            "scientificName": "Zea mays",
+            "commonNames": [
+              "Corn",
+              "Maize"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Broad, elongated leaf blades arch outward from stout upright stalks.",
+              "Leaves have prominent pale midribs, parallel venation and sheathing bases.",
+              "Alternate leaf attachment and robust, visibly jointed stalks form a characteristic maize-like vegetative combination."
+            ],
+            "counterEvidence": [],
+            "missingEvidence": [
+              "A clearly resolved maize ear with silk or terminal tassel would provide stronger separation from other large crop grasses."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "leading_candidate",
+          "candidateIndexes": [
+            0
+          ],
+          "reason": "Maize best fits the combined broad arching leaf blades, substantial jointed stalks and alternate sheathing leaf bases; sorghum is a weaker vegetative lookalike.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "withheld",
+            "reason": "This proposal lacks its own supported diagnostic combination or valid candidate-level name. Other proposals were assessed independently."
+          }
+        ],
+        "confirmationAvailable": false,
+        "likelyCrop": "unknown crop",
+        "identityEvidenceStatus": "candidate_only",
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 1,
+          "photosAnalyzed": 1,
+          "stillImagesAnalyzed": 1,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "requiredNextPhotos": [
+          "A close view of a reproductive structure, when developed: a lateral husked ear with silk supports maize, whereas a terminal grain panicle supports sorghum."
+        ],
+        "requiredNextQuestions": []
+      }
+    },
+    {
+      "sampleId": "sample-0003",
+      "outputs": {
+        "candidates": [
+          {
+            "scientificName": "Cucumis sativus",
+            "commonNames": [
+              "Cucumber"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Angular, broadly triangular leaf blades have pointed shallow lobes and finely toothed margins.",
+              "Hairy stems, curling tendrils, and yellow five-lobed flowers form a combination consistent with cucumber.",
+              "Flowers are relatively small compared with the broad leaf blades."
+            ],
+            "counterEvidence": [],
+            "missingEvidence": [
+              "Attached fruit showing shape and surface texture would provide stronger separation from other Cucumis species."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "leading_candidate",
+          "candidateIndexes": [
+            0
+          ],
+          "reason": "Cucumber leads because the pointed, angular, finely toothed leaves occur together with hairy vine stems, curling tendrils, and relatively small yellow five-lobed flowers. Melon shares several traits but is less well supported by the visible leaf shape.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "withheld",
+            "reason": "This proposal lacks its own supported diagnostic combination or valid candidate-level name. Other proposals were assessed independently."
+          }
+        ],
+        "confirmationAvailable": false,
+        "likelyCrop": "unknown crop",
+        "identityEvidenceStatus": "candidate_only",
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 1,
+          "photosAnalyzed": 1,
+          "stillImagesAnalyzed": 1,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "requiredNextPhotos": [
+          "Optional for confirmation: a sharp close-up of an attached developing fruit, including its surface and connection to the vine."
+        ],
+        "requiredNextQuestions": []
+      }
+    },
+    {
+      "sampleId": "sample-0004",
+      "outputs": {
+        "candidates": [
+          {
+            "scientificName": "Spathiphyllum cochlearispathum",
+            "commonNames": [
+              "Giant peace lily",
+              "Peace lily"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "The white spathe is broad and conspicuously cupped around an elongated cream spadix.",
+              "Broad elliptic leaves have pronounced corrugation, entire intact margins, and pointed tips.",
+              "Leaf stalks and the upright inflorescence emerge from a basal clump."
+            ],
+            "counterEvidence": [
+              "These characters overlap with other broad-leaved Spathiphyllum species and cultivated hybrids."
+            ],
+            "missingEvidence": [
+              "A clear lateral view of the spadix base and its attachment relative to the spathe."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          },
+          {
+            "scientificName": "Spathiphyllum cannifolium",
+            "commonNames": [
+              "Peace lily"
+            ],
+            "rank": "working_candidate",
+            "confidence": "low",
+            "evidence": [
+              "Strongly ribbed, entire, elliptic leaves and a pale spathe surrounding a cylindrical spadix are compatible with this species."
+            ],
+            "counterEvidence": [
+              "The especially broad, cupped spathe favors the leading candidate, although its shape is partly affected by folding."
+            ],
+            "missingEvidence": [
+              "Spadix-to-spathe attachment detail and an unobstructed view of a complete leaf and petiole."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "leading_candidate",
+          "candidateIndexes": [
+            0
+          ],
+          "reason": "The broad, cupped white spathe together with the broad, deeply corrugated leaf blades favors Spathiphyllum cochlearispathum. Peace-lily identity is better supported than the exact species.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 1
+          }
+        ],
+        "confirmationAvailable": false,
+        "likelyCrop": "unknown crop",
+        "identityEvidenceStatus": "candidate_only",
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 1,
+          "photosAnalyzed": 1,
+          "stillImagesAnalyzed": 1,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "requiredNextPhotos": [
+          "Optional for species refinement: a sharp side-on close-up of the inflorescence showing where the spadix joins the stalk and spathe."
+        ],
+        "requiredNextQuestions": []
+      }
+    },
+    {
+      "sampleId": "sample-0005",
+      "outputs": {
+        "candidates": [
+          {
+            "scientificName": "Digitaria sanguinalis",
+            "commonNames": [
+              "Large crabgrass",
+              "Hairy crabgrass"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Numerous narrow, spreading racemes arise at closely spaced levels near the flowering stem tip.",
+              "The plant combines relatively broad, flat grass blades with spreading lower shoots and ascending flowering stems."
+            ],
+            "counterEvidence": [
+              "The visible character combination also fits closely related Digitaria species."
+            ],
+            "missingEvidence": [
+              "Leaf-blade and sheath hair distribution.",
+              "Fine spikelet and glume characters."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          },
+          {
+            "scientificName": "Digitaria ciliaris",
+            "commonNames": [
+              "Southern crabgrass"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Slender racemes with closely aligned spikelets and flat, pointed blades fit this species.",
+              "The spreading-to-ascending growth form is compatible."
+            ],
+            "counterEvidence": [
+              "No visible fine-scale character positively separates it from D. sanguinalis."
+            ],
+            "missingEvidence": [
+              "Close views of spikelet hairs, glumes, and sterile lemma."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          },
+          {
+            "scientificName": "Digitaria ischaemum",
+            "commonNames": [
+              "Smooth crabgrass"
+            ],
+            "rank": "working_candidate",
+            "confidence": "low",
+            "evidence": [
+              "Finger-like racemes with narrow rows of spikelets and flat grass blades are compatible."
+            ],
+            "counterEvidence": [
+              "The relatively numerous racemes distributed along the upper axis favor the other listed candidates, although this is not decisive."
+            ],
+            "missingEvidence": [
+              "Leaf and sheath hair detail.",
+              "A sharply resolved spikelet close-up."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "close_alternatives",
+          "candidateIndexes": [
+            0,
+            1
+          ],
+          "reason": "D. sanguinalis and D. ciliaris both fit the visible combination of numerous slender racemes, staggered raceme attachment, and flat pointed blades. Their distinguishing fine structures are unresolved.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 1
+          },
+          {
+            "proposedIndex": 2,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 2
+          }
+        ],
+        "confirmationAvailable": false,
+        "likelyCrop": "unknown crop",
+        "identityEvidenceStatus": "candidate_only",
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 1,
+          "photosAnalyzed": 1,
+          "stillImagesAnalyzed": 1,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "requiredNextPhotos": [
+          "A sharply focused macro of one raceme against a plain background, showing individual spikelets."
+        ],
+        "requiredNextQuestions": []
+      }
+    }
+  ]
+}
