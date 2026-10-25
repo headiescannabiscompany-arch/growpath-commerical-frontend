@@ -44,6 +44,55 @@ function EvidenceList({
   );
 }
 
+function ReferenceTraits({ record, candidates, styles }: {
+  record: Record<string, any>;
+  candidates: Record<string, any>[];
+  styles: PlantIdentificationResultStyles;
+}) {
+  const profile = record.identificationProfile;
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => setExpanded(false), [profile]);
+  const key = (value: unknown) => typeof value === "string" ? value.trim().toLowerCase().replace(/\s+/g, " ") : "";
+  if (profile?.purpose !== "reference_comparison" || !Number.isSafeInteger(profile.version) || profile.version < 1 ||
+      !key(profile.scientificName) || key(profile.scientificName) !== key(record.scientificName) ||
+      typeof profile.reviewedAt !== "string" || !Number.isFinite(Date.parse(profile.reviewedAt)) ||
+      (profile.horticulturalName != null && typeof profile.horticulturalName !== "string")) return null;
+  const traits = (Array.isArray(profile.traits) ? profile.traits : []).slice(0, 4)
+    .filter((trait: any) => trait?.comparisonStatus === "not_assessed" &&
+      [trait.character, trait.typicalState, trait.applicability].every((text) => typeof text === "string" && text.trim()) &&
+      Array.isArray(trait.sourceRecords) && trait.sourceRecords.length && trait.sourceRecords.every((source: any) =>
+        source && typeof source.sourceName === "string" && typeof source.url === "string" && typeof source.lastReviewedAt === "string"));
+  if (!traits.length) return null;
+  const namedTypeUnselected = profile.horticulturalName && !candidates.some((candidate) =>
+    candidate.rank === "horticultural_type" && key(candidate.scientificName) === key(profile.scientificName) &&
+    key(candidate.horticulturalName) === key(profile.horticulturalName));
+  const name = profile.horticulturalName || profile.scientificName;
+  return (
+    <View style={styles.group}>
+      <Pressable accessibilityRole="button" accessibilityState={{ expanded }}
+        onPress={() => setExpanded(!expanded)} style={styles.candidate}>
+        <Text style={styles.candidateTitle}>{expanded ? "Hide" : "Compare"} reference traits: {name}</Text>
+      </Pressable>
+      {expanded ? <>
+        <Text style={styles.meta}>Reference context—not confirmation or a new identification. Missing or unseen features are not evidence against a candidate.</Text>
+        {namedTypeUnselected ? <Text style={styles.meta}>This named-type reference is not a selected AI candidate.</Text> : null}
+        {traits.map((trait: any, index: number) => <View key={`${trait.traitId}-${index}`} style={styles.candidate}>
+          <Text style={styles.groupTitle}>{trait.character}</Text>
+          <Text style={styles.line}>Reference describes: {trait.typicalState}</Text>
+          <Text style={styles.meta}>Applies to: {trait.applicability}</Text>
+          {typeof trait.variation === "string" && trait.variation ? <Text style={styles.meta}>Can vary: {trait.variation}</Text> : null}
+          <Text style={styles.line}>{trait.observationOrigin === "image_analysis" && typeof trait.observation === "string" && trait.observation.trim()
+            ? `AI photo description: ${trait.observation}` : "Photo description: not recorded for this feature."}</Text>
+          <Text style={styles.meta}>The reference and photo description have not been scored as a match or conflict.</Text>
+          {trait.sourceRecords.slice(0, 2).map((source: any, sourceIndex: number) =>
+            <Text key={sourceIndex} style={styles.meta}>{source.sourceName} · {source.url} · Reviewed: {source.lastReviewedAt?.slice(0, 10)}</Text>)}
+        </View>)}
+        <Text style={styles.meta}>Saved reference version {profile.version} · Reviewed: {profile.reviewedAt?.slice(0, 10)}. No new AI call or live reference refresh.</Text>
+      </> : null}
+    </View>
+  );
+}
+
 export default function PlantIdentificationResultDetails({
   outputs: rawOutputs
 }: {
@@ -200,7 +249,7 @@ export default function PlantIdentificationResultDetails({
         {referenceLookup?.partial === true ? (
           <Text style={styles.meta}>Some reference checks were unavailable. Any matches shown were retained from the checks that completed.</Text>
         ) : null}
-        {referenceLookup?.recordsOmitted > 0 ? (
+        {referenceLookup?.recordsOmitted > 0 || referenceLookup?.traitProfilesOmitted > 0 ? (
           <Text style={styles.meta}>Some reference details were omitted to keep this result within its size limit.</Text>
         ) : null}
         {(Array.isArray(referenceLookup?.records) ? referenceLookup.records : []).map((record: any, index: number) => (
@@ -217,6 +266,10 @@ export default function PlantIdentificationResultDetails({
                 {source.sourceName} · {source.url} · Reviewed: {source.lastReviewedAt?.slice(0, 10)}
               </Text>
             ))}
+            {!correction && outputs.imageAnalysis?.performed === true && outputs.imageAnalysis?.quality === "usable" &&
+              outputs.imageAnalysis?.retakeRequired !== true && referenceLookup?.performed === true ? (
+                <ReferenceTraits record={record} candidates={candidates} styles={styles} />
+              ) : null}
           </View>
         ))}
       </View>

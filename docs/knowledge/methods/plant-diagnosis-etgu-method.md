@@ -599,9 +599,36 @@ not start another query after the deadline. An incomplete empty lookup is unavai
 not a completed no-match. Final candidate lists never inherit a stale draft selection.
 Named-type labels must also be removed from downgraded evidence, not only name fields.
 This existing
-catalog is name corroboration, not a trait-based botanical key or visual reranker;
-reference coverage and independently labeled real-photo improvement remain unverified.
-No second model call or additional charge is introduced.
+catalog is name corroboration, not a trait-based botanical key or visual reranker.
+Optional `identificationProfile` context extends the same PlantTaxon/CropProfile records:
+versioned, explicitly reviewed, dated, bound to the row's scientific name, and with
+separately cleared/date-reviewed sources for each trait. Named-type context must also
+match a named row alias; it must not provide a generic species candidate's common label.
+No default profile, seed, migration or additional index is introduced. Research citations
+alone do not supply commercial-use clearance or approve runtime records.
+
+At most four reviewed traits are displayed per reference, each with its character,
+typical state, applicable stage/context, variation and source. Whitelisted observations
+come from the existing normalized photo analysis, never the user's manual correction.
+They remain explicitly AI descriptions, not independently verified observations. Missing,
+unknown or unseen features do not become negative evidence. Free-text descriptions are
+not automatically scored as a match/conflict; this contextual comparison does not change
+candidate order, confidence, selected identities or confirmation availability. Related-genus
+and unselected named-type references remain reference context, not new AI candidates.
+
+The shared current/saved-result UI keeps reference comparisons collapsed by default,
+with no additional inputs or follow-up demands. Limited/unusable, unperformed or corrected
+results do not expose stale comparisons. The exact bounded trait/source/observation
+snapshot and profile version are receipt-bound and saved through the existing trusted
+path. Reopening a historical run does not refresh its profile or issue an AI/catalog call.
+Optional profiles are dropped before existing name provenance if the result-size limit
+requires it; a signed omission indicator explains the absence. Visual evidence is not
+truncated. Legacy receipts with no profile retain their previous representation.
+
+Reference coverage, runtime curation and independently labeled real-photo improvement
+remain unverified by this local extension. Seven-group synthetic transport checks are not
+seven botanically authenticated specimens. No second model call or additional charge is
+introduced; the existing v9 vision contract and model controls remain unchanged.
 
 Plant ID evaluation media follows an additional candidate-to-fixture boundary. An
 iNaturalist Research Grade wild observation, an iNaturalist captive/cultivated casual
