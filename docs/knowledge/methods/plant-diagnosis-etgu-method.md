@@ -504,7 +504,7 @@ fields must not turn that candidate into an "unknown crop" headline. Reference
 coverage and real-image accuracy require separate evidence; mocked checks do not
 establish either.
 
-Under `plant-id-best-match-v9`, assess each proposal independently: an unsupported
+Under `plant-id-best-match-v10`, assess each proposal independently: an unsupported
 alternative must not erase a supported candidate. Preserve bounded rejection reasons.
 Compare independent organ-character combinations and account for typical trait
 variation with maturity and growing conditions. Repeated photos are not independent
@@ -591,6 +591,23 @@ Missing stem detail never becomes a new diagnostic character. Other quality, can
 source-verification and confirmation ceilings are unchanged. Backend and client review
 policy advance together; historical v8 results stay immutable and are not rerun.
 
+The v10 observed-structure correction distinguishes explicitly partial obscuration
+of an organ from failure of the whole photo set. A partial exception needs one
+candidate's own affirmative character combination and a separately described,
+unaffected organ; it cannot pool evidence across candidates. Whole-set failures,
+unqualified obscuration and genuine structured contradictions still reject identity.
+Recognize described anthers, star-shaped flowers/corollas, berries, papery node
+sheaths/cataphylls, sheath scars, attachment roots and intervening leaflets. Bind
+new characters to their structures: bare vocabulary, hypothetical features,
+negated features and a taxon label do not supply diagnostic support. Petioles are
+part of the leaf role; attachment roots/nodes are grouped with the stem, not new
+independent observations. Keep each candidate's uncertainty and close alternatives.
+Artificial-light and limited-quality ceilings remain; no species/cultivar promotion
+from those corrections. Backend/client use the same v10 request identity. Historical
+v9 receipts remain unchanged and are never automatically reinterpreted or rerun.
+The four captured replies verify parsing, saving and display only, not independent
+botanical accuracy, edible use or complete reference coverage.
+
 Catalog reads prioritize eligible exact names/synonyms before remaining related-genus
 rows, retaining the combined 12-record per-catalog cap and timeout. Preserve completed
 matches if a later optional query or the other catalog fails; mark incomplete lookup
@@ -628,7 +645,7 @@ truncated. Legacy receipts with no profile retain their previous representation.
 Reference coverage, runtime curation and independently labeled real-photo improvement
 remain unverified by this local extension. Seven-group synthetic transport checks are not
 seven botanically authenticated specimens. No second model call or additional charge is
-introduced; the existing v9 vision contract and model controls remain unchanged.
+introduced; model controls remain unchanged (the later v10 parsing correction is above).
 
 Plant ID evaluation media follows an additional candidate-to-fixture boundary. An
 iNaturalist Research Grade wild observation, an iNaturalist captive/cultivated casual

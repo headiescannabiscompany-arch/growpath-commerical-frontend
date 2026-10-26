@@ -1,0 +1,860 @@
+{
+  "description": "Captured four-reply v10 normalization -> immutable snapshot -> secured mapper -> calculator outputs, generated offline with connections blocked. UI fixture, not live saved records or botanical gold.",
+  "policyVersion": "plant-id-best-match-v10",
+  "sourceHashes": {
+    "services/personalAssistantEvidence.js": "dd903a1f1c213c24d8528d810d8dc3fcc8752566eab9967e52012d5f879a3974",
+    "services/plantIdResultIntegrity.js": "613547dbee289b909b1b0ec734e40e594989c375212f558d2efa941d06b98ab1",
+    "services/toolCalculators.js": "7724a50fd9800b6326f4ac3992c29170b36c1aece8cf32e8a3edf816defd123c",
+    "routes/tools.js": "1d81348ffa6886d7f7f9971014e3525a663478c6946bb2f3ce8074ade38ad67a",
+    "tests/fixtures/plantIdObservedStructures.js": "4a88d9c0b49684e4eee9a9dcac6b2de0d8806a1bfb4bce46cef44b657ac9fd5d",
+    "tests/fixtures/plantIdObservedStructuresReplies.json": "adbdce22b76193dd6539cdbb116d133a1fa3dce43747714afd68f7d2b2b6c046"
+  },
+  "observations": [
+    {
+      "id": "hard-pair-0001",
+      "rawReplySha256": "42daad2bc7d740cd17e423bc969540e700c779dbb08a10bcbfee7177b9a099bb",
+      "outputsSha256": "14cd81bfbd04f7feca89862b2f48e39ad50d990c5b695079f0cc5791a9b0734a",
+      "outputs": {
+        "broadGroup": "unknown",
+        "likelyFamily": "Solanaceae",
+        "possibleGenera": [
+          "Solanum"
+        ],
+        "possibleSpecies": [],
+        "likelyCrop": "unknown crop",
+        "scientificName": null,
+        "commonNames": [],
+        "cultivar": null,
+        "cultivarOrStrain": null,
+        "confidence": "medium",
+        "identityConflictDetected": false,
+        "identityEvidenceStatus": "candidate_only",
+        "confirmationAvailable": false,
+        "confirmationBlockedReason": "Complete authoritative botanical name, range, habitat, season, and lookalike verification before confirming an exact species identity.",
+        "confirmationRequired": true,
+        "userConfirmationRequired": true,
+        "identityInputProvenance": {
+          "source": "unknown",
+          "providedFields": []
+        },
+        "candidates": [
+          {
+            "scientificName": "Solanum lycopersicum",
+            "commonNames": [
+              "Tomato"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Compound leaves combine large pointed leaflets with much smaller intervening leaflets.",
+              "Larger leaflets have irregular teeth and lobes.",
+              "Stems and leaf stalks are visibly hairy."
+            ],
+            "counterEvidence": [],
+            "missingEvidence": [
+              "A sharply focused view of one complete leaf would make leaflet attachment and lobing easier to verify."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "leading_candidate",
+          "candidateIndexes": [
+            0
+          ],
+          "reason": "Tomato leads because the combination of irregularly lobed, toothed leaflets, small intervening leaflets, and hairy stems is more consistent with tomato than potato.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "withheld",
+            "reason": "This proposal lacks its own supported diagnostic combination or valid candidate-level name. Other proposals were assessed independently."
+          }
+        ],
+        "evidence": [
+          "Leaves: compound blades with larger pointed leaflets and smaller intervening leaflets.",
+          "Leaf margins: irregular teeth and lobes.",
+          "Stems and petioles: visible fine hairs.",
+          "Reproductive organs: no flowers or fruit visible.",
+          "Best-supported identification: tomato",
+          "tentatively Solanum lycopersicum. The compound leaves",
+          "irregularly lobed and toothed leaflets",
+          "smaller intervening leaflets",
+          "and hairy stems support this identification. The original and both derived crops were inspected as one observation",
+          "not independent evidence. Cultivar cannot be determined from appearance.",
+          "Green",
+          "visibly hairy stems and leaf stalks",
+          "some darker coloration near branching points.",
+          "Small intervening leaflets along the compound leaf axes."
+        ],
+        "counterEvidence": [
+          "Some foreground foliage is out of focus, and overlapping leaves obscure portions of the compound leaf structure.",
+          "Tentative species candidate only; stored name matches do not verify this specimen or its cultivar."
+        ],
+        "missingInformation": [
+          "A sharply focused, unobstructed complete mature leaf.",
+          "Optional for confirmation: photograph one complete mature leaf, including its attachment to the stem, in sharp focus against a plain background."
+        ],
+        "requiredNextPhotos": [
+          "Optional for confirmation: photograph one complete mature leaf, including its attachment to the stem, in sharp focus against a plain background."
+        ],
+        "requiredNextQuestions": [],
+        "morphology": {
+          "growthHabit": "unknown",
+          "leafArrangement": "unknown",
+          "leafType": "unknown",
+          "leafMargin": "unknown",
+          "venation": "unknown",
+          "flowerPresent": "unknown",
+          "flowerSymmetry": "unknown",
+          "fruitPresent": "unknown",
+          "stemTraits": [
+            "Green",
+            "visibly hairy stems and leaf stalks",
+            "some darker coloration near branching points."
+          ],
+          "flowerPartsVisible": [],
+          "inflorescenceType": "",
+          "fruitType": "",
+          "specialStructures": [
+            "Small intervening leaflets along the compound leaf axes."
+          ],
+          "sensoryTraits": []
+        },
+        "observationContext": {
+          "cultivationStatus": "unknown",
+          "setting": "unknown",
+          "region": "",
+          "observationDate": "",
+          "habitat": "Paved, disturbed ground.",
+          "substrate": "Grit and soil within a pavement crack; root-zone composition is not visible.",
+          "associatedPlants": [
+            "Grass-like stems and small broadleaf plants nearby",
+            "identities unresolved."
+          ],
+          "plantSize": "Small plant; no reliable scale for measurement."
+        },
+        "identificationNotes": "Best-supported identification: tomato, tentatively Solanum lycopersicum. The compound leaves, irregularly lobed and toothed leaflets, smaller intervening leaflets, and hairy stems support this identification. The original and both derived crops were inspected as one observation, not independent evidence. Cultivar cannot be determined from appearance.",
+        "identifyingVisualTraits": null,
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 1,
+          "photosAnalyzed": 1,
+          "stillImagesAnalyzed": 1,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "evidenceUsed": [],
+        "sourceVerification": {
+          "status": "required_not_performed",
+          "performed": false,
+          "verifiedSourceRecords": [],
+          "recommendedSourceIds": [
+            "usda-plants-database",
+            "kew-powo",
+            "gbif-species-api",
+            "inaturalist-observations",
+            "regional-flora-or-herbarium"
+          ],
+          "note": "No external botanical database was queried by this calculator. Record exact source URLs and scope before calling a candidate source-verified."
+        },
+        "sourceRecords": [],
+        "methodIds": [
+          "plant-diagnosis-etgu"
+        ],
+        "sourceIds": [
+          "growpath-method",
+          "user-observation"
+        ],
+        "providerLabel": "AI crop identity review",
+        "cropProfileSuggestion": null,
+        "recommendationContext": "Do not use the submitted visual identity as crop context. Review the cautious candidates, add the requested diagnostic evidence, or enter and separately confirm a known identity.",
+        "warnings": [
+          "Confirm crop identity before relying on crop-specific recommendations.",
+          "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
+          "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
+          "The visual result is candidate-only: usable medium/low-confidence images without sufficient diagnostic support cannot populate the crop identity or crop profile.",
+          "Exact species confirmation is blocked until authoritative botanical source verification is completed and recorded."
+        ],
+        "limitations": [
+          "Image similarity cannot replace diagnostic characters, geographic range, habitat, season, and appropriate botanical keys.",
+          "iNaturalist observations and community identifications are leads unless the specific record, evidence quality, and taxon agreement are reviewed."
+        ],
+        "recommendations": [
+          "Optional for confirmation: photograph one complete mature leaf, including its attachment to the stem, in sharp focus against a plain background.",
+          "Cross-check the narrowed candidate against USDA PLANTS or a regional flora and Kew/GBIF taxonomy before treating a species name as verified."
+        ],
+        "userDecision": {
+          "value": "not_decided",
+          "allowed": [
+            "accepted",
+            "uncertain",
+            "rejected"
+          ],
+          "note": "User confirmation records the user's identity decision; it does not mean external botanical-source or expert verification."
+        }
+      }
+    },
+    {
+      "id": "hard-pair-0002",
+      "rawReplySha256": "484a00b0d70af53e3787246a1ba5a64bdd8fdbffa9737fae12ac8dfe013c5853",
+      "outputsSha256": "fbab6de84cf086947a29944beb22e706324266a7c10bbfc75d4dcc08caa12492",
+      "outputs": {
+        "broadGroup": "unknown",
+        "likelyFamily": null,
+        "possibleGenera": [
+          "Solanum"
+        ],
+        "possibleSpecies": [],
+        "likelyCrop": "unknown crop",
+        "scientificName": null,
+        "commonNames": [],
+        "cultivar": null,
+        "cultivarOrStrain": null,
+        "confidence": "medium",
+        "identityConflictDetected": false,
+        "identityEvidenceStatus": "candidate_only",
+        "confirmationAvailable": false,
+        "confirmationBlockedReason": "Complete authoritative botanical name, range, habitat, season, and lookalike verification before confirming an exact species identity.",
+        "confirmationRequired": true,
+        "userConfirmationRequired": true,
+        "identityInputProvenance": {
+          "source": "unknown",
+          "providedFields": []
+        },
+        "candidates": [
+          {
+            "scientificName": "Solanum nigrum",
+            "commonNames": [
+              "Black nightshade",
+              "European black nightshade"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Broad ovate, pointed leaves have wavy to shallowly toothed margins.",
+              "Small white star-shaped flowers have yellow central anthers.",
+              "Round black berries occur in small stalked clusters."
+            ],
+            "counterEvidence": [
+              "The conspicuously glossy berries also fit Solanum americanum and do not separate these species."
+            ],
+            "missingEvidence": [
+              "Sharp detail of mature-fruit calyx orientation and flower anther proportions."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          },
+          {
+            "scientificName": "Solanum americanum",
+            "commonNames": [
+              "American black nightshade"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Glossy black spherical berries occur in compact stalked clusters.",
+              "Small white star-shaped flowers with yellow centers accompany broad, shallowly toothed leaves."
+            ],
+            "counterEvidence": [
+              "The fruiting calyx details needed to distinguish it from Solanum nigrum are not sufficiently sharp."
+            ],
+            "missingEvidence": [
+              "A close side view resolving mature-fruit sepals and the anthers of an open flower."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "close_alternatives",
+          "candidateIndexes": [
+            0,
+            1
+          ],
+          "reason": "The combination of flowers, clustered black berries, and leaf shape supports black nightshade, but the visible gloss and leaf margins overlap between these two species. Fine floral and fruiting-calyx characters are not resolved well enough to favor one reliably.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 1
+          }
+        ],
+        "evidence": [
+          "Leaves: simple, broad ovate blades with pointed tips, pinnate veins, and shallow irregular teeth.",
+          "Flowers: white five-pointed corollas with yellow central anthers.",
+          "Fruit: small round green and glossy black berries in stalked clusters, with persistent basal calyces.",
+          "Stems: slender branching axes bearing stalked leaves.",
+          "This is a black nightshade-group plant",
+          "with Solanum nigrum and Solanum americanum the main tentative species alternatives. The original and both derived crops show the same observation",
+          "not independent specimens. Do not eat the berries or other plant parts based on this identification.",
+          "Slender",
+          "branching green to purplish stems.",
+          "Five white pointed corolla lobes surrounding yellow central anthers."
+        ],
+        "counterEvidence": [
+          "These visible traits identify the black nightshade group more securely than an individual species.",
+          "Tentative species candidate only; stored name matches do not verify this specimen or its cultivar."
+        ],
+        "missingInformation": [
+          "Fine anther and fruiting-sepal detail; the supplied enlargements cannot recover this resolution.",
+          "For a closer species identification, provide one sharp close-up showing an open flower and a mature black berry from the side, including its calyx and stalk."
+        ],
+        "requiredNextPhotos": [
+          "For a closer species identification, provide one sharp close-up showing an open flower and a mature black berry from the side, including its calyx and stalk."
+        ],
+        "requiredNextQuestions": [],
+        "morphology": {
+          "growthHabit": "unknown",
+          "leafArrangement": "unknown",
+          "leafType": "unknown",
+          "leafMargin": "unknown",
+          "venation": "unknown",
+          "flowerPresent": "unknown",
+          "flowerSymmetry": "unknown",
+          "fruitPresent": "unknown",
+          "stemTraits": [
+            "Slender",
+            "branching green to purplish stems."
+          ],
+          "flowerPartsVisible": [
+            "Five white pointed corolla lobes surrounding yellow central anthers."
+          ],
+          "inflorescenceType": "Small stalked clusters of flowers and berries.",
+          "fruitType": "Round berries with persistent calyces at their bases.",
+          "specialStructures": [],
+          "sensoryTraits": []
+        },
+        "observationContext": {
+          "cultivationStatus": "unknown",
+          "setting": "unknown",
+          "region": "",
+          "observationDate": "",
+          "habitat": "Mixed low vegetation with exposed soil and fallen leaves.",
+          "substrate": "Soil.",
+          "associatedPlants": [],
+          "plantSize": ""
+        },
+        "identificationNotes": "This is a black nightshade-group plant, with Solanum nigrum and Solanum americanum the main tentative species alternatives. The original and both derived crops show the same observation, not independent specimens. Do not eat the berries or other plant parts based on this identification.",
+        "identifyingVisualTraits": null,
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 1,
+          "photosAnalyzed": 1,
+          "stillImagesAnalyzed": 1,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "evidenceUsed": [],
+        "sourceVerification": {
+          "status": "required_not_performed",
+          "performed": false,
+          "verifiedSourceRecords": [],
+          "recommendedSourceIds": [
+            "usda-plants-database",
+            "kew-powo",
+            "gbif-species-api",
+            "inaturalist-observations",
+            "regional-flora-or-herbarium"
+          ],
+          "note": "No external botanical database was queried by this calculator. Record exact source URLs and scope before calling a candidate source-verified."
+        },
+        "sourceRecords": [],
+        "methodIds": [
+          "plant-diagnosis-etgu"
+        ],
+        "sourceIds": [
+          "growpath-method",
+          "user-observation"
+        ],
+        "providerLabel": "AI crop identity review",
+        "cropProfileSuggestion": null,
+        "recommendationContext": "Do not use the submitted visual identity as crop context. Review the cautious candidates, add the requested diagnostic evidence, or enter and separately confirm a known identity.",
+        "warnings": [
+          "Confirm crop identity before relying on crop-specific recommendations.",
+          "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
+          "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
+          "The visual result is candidate-only: usable medium/low-confidence images without sufficient diagnostic support cannot populate the crop identity or crop profile.",
+          "Exact species confirmation is blocked until authoritative botanical source verification is completed and recorded."
+        ],
+        "limitations": [
+          "Image similarity cannot replace diagnostic characters, geographic range, habitat, season, and appropriate botanical keys.",
+          "iNaturalist observations and community identifications are leads unless the specific record, evidence quality, and taxon agreement are reviewed."
+        ],
+        "recommendations": [
+          "For a closer species identification, provide one sharp close-up showing an open flower and a mature black berry from the side, including its calyx and stalk.",
+          "Cross-check the narrowed candidate against USDA PLANTS or a regional flora and Kew/GBIF taxonomy before treating a species name as verified."
+        ],
+        "userDecision": {
+          "value": "not_decided",
+          "allowed": [
+            "accepted",
+            "uncertain",
+            "rejected"
+          ],
+          "note": "User confirmation records the user's identity decision; it does not mean external botanical-source or expert verification."
+        }
+      }
+    },
+    {
+      "id": "hard-pair-0003",
+      "rawReplySha256": "9e626d503ec53322c68c7b1b075b751c50beed451b8d1d635d622dc8d36ed941",
+      "outputsSha256": "6bc58783c735bed61c981aeed9793b6ff99dde32f3dcbf02eb4f0fa0c0288456",
+      "outputs": {
+        "broadGroup": "unknown",
+        "likelyFamily": "Araceae",
+        "possibleGenera": [
+          "Epipremnum"
+        ],
+        "possibleSpecies": [],
+        "likelyCrop": "unknown crop",
+        "scientificName": null,
+        "commonNames": [],
+        "cultivar": null,
+        "cultivarOrStrain": null,
+        "confidence": "medium",
+        "identityConflictDetected": false,
+        "identityEvidenceStatus": "candidate_only",
+        "confirmationAvailable": false,
+        "confirmationBlockedReason": "The usable photos support only a broader working candidate. Add diagnostic structures and context before confirming an identity.",
+        "confirmationRequired": true,
+        "userConfirmationRequired": true,
+        "identityInputProvenance": {
+          "source": "unknown",
+          "providedFields": []
+        },
+        "candidates": [
+          {
+            "scientificName": "Epipremnum spp.",
+            "commonNames": [
+              "Epipremnum"
+            ],
+            "rank": "genus",
+            "confidence": "medium",
+            "evidence": [
+              "Broad ovate-cordate leaves have pointed tips, entire margins, and somewhat unequal basal lobes",
+              "Long green petioles and sheathing tissue are visible near the growing tip",
+              "The stout climbing stem bears repeated sheath scars and bark-contacting adventitious roots"
+            ],
+            "counterEvidence": [
+              "Artificial lighting preserves enough diagnostic morphology for a cautious crop- or genus-level candidate, but not a species or cultivar identification."
+            ],
+            "missingEvidence": [
+              "A distinguishing character is needed before narrowing beyond this broader candidate."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "insufficient_evidence",
+          "candidateIndexes": [],
+          "reason": "Only broader candidates were retained. No reliable species or named-type winner was established.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "downgraded",
+            "reason": "Artificial lighting preserves enough diagnostic morphology for a cautious crop- or genus-level candidate, but not a species or cultivar identification. Assessed independently; not a selected winner.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "withheld",
+            "reason": "This proposal lacks its own supported diagnostic evidence or valid botanical name at the permitted rank."
+          }
+        ],
+        "evidence": [
+          "Broad ovate-cordate leaves have pointed tips, entire margins, and somewhat unequal basal lobes",
+          "Long green petioles and sheathing tissue are visible near the growing tip",
+          "The stout climbing stem bears repeated sheath scars and bark-contacting adventitious roots",
+          "Artificial lighting preserves enough diagnostic morphology for a cautious crop- or genus-level candidate",
+          "but not a species or cultivar identification.",
+          "Thick green stem with distinct nodes",
+          "pale encircling leaf-sheath scars",
+          "and brown adventitious roots contacting the bark.",
+          "Clinging aerial roots and sheathing tissue at upper leaf bases."
+        ],
+        "counterEvidence": [
+          "Artificial lighting preserves enough diagnostic morphology for a cautious crop- or genus-level candidate, but not a species or cultivar identification."
+        ],
+        "missingInformation": [
+          "A distinguishing character is needed before narrowing beyond these broader candidates.",
+          "For greater confidence, take one sharp daylight side view of an upper leaf’s complete petiole, from its attachment on the vine to its junction with the blade, keeping the sheath and blade base visible."
+        ],
+        "requiredNextPhotos": [
+          "For greater confidence, take one sharp daylight side view of an upper leaf’s complete petiole, from its attachment on the vine to its junction with the blade, keeping the sheath and blade base visible."
+        ],
+        "requiredNextQuestions": [],
+        "morphology": {
+          "growthHabit": "unknown",
+          "leafArrangement": "unknown",
+          "leafType": "unknown",
+          "leafMargin": "unknown",
+          "venation": "unknown",
+          "flowerPresent": "unknown",
+          "flowerSymmetry": "unknown",
+          "fruitPresent": "unknown",
+          "stemTraits": [
+            "Thick green stem with distinct nodes",
+            "pale encircling leaf-sheath scars",
+            "and brown adventitious roots contacting the bark."
+          ],
+          "flowerPartsVisible": [],
+          "inflorescenceType": "",
+          "fruitType": "",
+          "specialStructures": [
+            "Clinging aerial roots and sheathing tissue at upper leaf bases."
+          ],
+          "sensoryTraits": []
+        },
+        "observationContext": {
+          "cultivationStatus": "unknown",
+          "setting": "unknown",
+          "region": "",
+          "observationDate": "",
+          "habitat": "",
+          "substrate": "Tree bark is the visible climbing support; the rooting substrate is not shown.",
+          "associatedPlants": [
+            "The supporting tree and nearby small-leaved vegetation are not identified."
+          ],
+          "plantSize": "The whole plant and a reliable scale are not shown."
+        },
+        "identificationNotes": "Artificial lighting preserves enough diagnostic morphology for a cautious crop- or genus-level candidate, but not a species or cultivar identification.",
+        "identifyingVisualTraits": null,
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 2,
+          "photosAnalyzed": 2,
+          "stillImagesAnalyzed": 2,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "evidenceUsed": [],
+        "sourceVerification": {
+          "status": "required_not_performed",
+          "performed": false,
+          "verifiedSourceRecords": [],
+          "recommendedSourceIds": [
+            "usda-plants-database",
+            "kew-powo",
+            "gbif-species-api",
+            "inaturalist-observations",
+            "regional-flora-or-herbarium"
+          ],
+          "note": "No external botanical database was queried by this calculator. Record exact source URLs and scope before calling a candidate source-verified."
+        },
+        "sourceRecords": [],
+        "methodIds": [
+          "plant-diagnosis-etgu"
+        ],
+        "sourceIds": [
+          "growpath-method",
+          "user-observation"
+        ],
+        "providerLabel": "AI crop identity review",
+        "cropProfileSuggestion": null,
+        "recommendationContext": "Do not use the submitted visual identity as crop context. Review the cautious candidates, add the requested diagnostic evidence, or enter and separately confirm a known identity.",
+        "warnings": [
+          "Confirm crop identity before relying on crop-specific recommendations.",
+          "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
+          "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
+          "The visual result is candidate-only: usable medium/low-confidence images without sufficient diagnostic support cannot populate the crop identity or crop profile."
+        ],
+        "limitations": [
+          "Image similarity cannot replace diagnostic characters, geographic range, habitat, season, and appropriate botanical keys.",
+          "iNaturalist observations and community identifications are leads unless the specific record, evidence quality, and taxon agreement are reviewed."
+        ],
+        "recommendations": [
+          "For greater confidence, take one sharp daylight side view of an upper leaf’s complete petiole, from its attachment on the vine to its junction with the blade, keeping the sheath and blade base visible.",
+          "Cross-check the narrowed candidate against USDA PLANTS or a regional flora and Kew/GBIF taxonomy before treating a species name as verified."
+        ],
+        "userDecision": {
+          "value": "not_decided",
+          "allowed": [
+            "accepted",
+            "uncertain",
+            "rejected"
+          ],
+          "note": "User confirmation records the user's identity decision; it does not mean external botanical-source or expert verification."
+        }
+      }
+    },
+    {
+      "id": "hard-pair-0004",
+      "rawReplySha256": "57876a43a6a4e0c3a330fde4e65f0c31763d2b5d84aeca8e1cad1d91dc06ec2d",
+      "outputsSha256": "ee6f2835dc21cc0863424f9df71f26b38b7fae806622bcc61bde14c249458702",
+      "outputs": {
+        "broadGroup": "unknown",
+        "likelyFamily": "Araceae",
+        "possibleGenera": [
+          "Philodendron"
+        ],
+        "possibleSpecies": [],
+        "likelyCrop": "unknown crop",
+        "scientificName": null,
+        "commonNames": [],
+        "cultivar": null,
+        "cultivarOrStrain": null,
+        "confidence": "medium",
+        "identityConflictDetected": false,
+        "identityEvidenceStatus": "candidate_only",
+        "confirmationAvailable": false,
+        "confirmationBlockedReason": "Complete authoritative botanical name, range, habitat, season, and lookalike verification before confirming an exact species identity.",
+        "confirmationRequired": true,
+        "userConfirmationRequired": true,
+        "identityInputProvenance": {
+          "source": "unknown",
+          "providedFields": []
+        },
+        "candidates": [
+          {
+            "scientificName": "Philodendron hederaceum",
+            "commonNames": [
+              "Heartleaf philodendron"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Leaf blades combine rounded heart-shaped basal lobes, entire margins, and elongated pointed tips.",
+              "Slender green climbing stems carry alternate leaves on long, rounded-looking petioles.",
+              "Papery remnants at nodes and the elongated lower sheathing structure support Philodendron."
+            ],
+            "counterEvidence": [],
+            "missingEvidence": [
+              "A clear side view of a complete node and petiole attachment would help distinguish closely similar climbing aroids."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "leading_candidate",
+          "candidateIndexes": [
+            0
+          ],
+          "reason": "The combination of cordate leaves, slender climbing stems, rounded-looking petioles, and separate papery sheaths favors heartleaf philodendron over pothos-like climbing aroids.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          }
+        ],
+        "evidence": [
+          "Leaves: simple cordate blades with smooth margins, pointed tips, and arching lateral veins.",
+          "Stems: green, jointed climbing axes with alternate leaf attachments.",
+          "Nodes: brown papery remnants and a separate elongated sheath are visible.",
+          "Best match: heartleaf philodendron",
+          "tentatively Philodendron hederaceum. The original and both derived crops show the same plant evidence",
+          "not separate observations. Identification rests on the combination of cordate leaf blades",
+          "slender climbing stems",
+          "rounded petioles",
+          "and papery node sheaths. Pothos is less supported because its conspicuously grooved or winged petioles are not demonstrated here",
+          "while the visible separate sheath supports Philodendron. No cultivar can be established from appearance.",
+          "Smooth green stems with distinct nodes",
+          "long curved petioles",
+          "and brown papery remnants at some nodes.",
+          "An elongated",
+          "pale orange sheathing structure is visible near the bottom",
+          "consistent with a philodendron cataphyll."
+        ],
+        "counterEvidence": [
+          "Overlapping foliage obscures some leaf bases and stem connections.",
+          "Bright reflections wash out small areas of leaf surface, but diagnostic shapes remain visible.",
+          "Tentative species candidate only; stored name matches do not verify this specimen or its cultivar."
+        ],
+        "missingInformation": [
+          "Fine detail of the petiole groove and sheath attachment.",
+          "Optional: one sharp side-on close-up of a leaf-bearing node, including the full petiole base and adjacent papery sheath."
+        ],
+        "requiredNextPhotos": [
+          "Optional: one sharp side-on close-up of a leaf-bearing node, including the full petiole base and adjacent papery sheath."
+        ],
+        "requiredNextQuestions": [],
+        "morphology": {
+          "growthHabit": "unknown",
+          "leafArrangement": "unknown",
+          "leafType": "unknown",
+          "leafMargin": "unknown",
+          "venation": "unknown",
+          "flowerPresent": "unknown",
+          "flowerSymmetry": "unknown",
+          "fruitPresent": "unknown",
+          "stemTraits": [
+            "Smooth green stems with distinct nodes",
+            "long curved petioles",
+            "and brown papery remnants at some nodes."
+          ],
+          "flowerPartsVisible": [],
+          "inflorescenceType": "",
+          "fruitType": "",
+          "specialStructures": [
+            "An elongated",
+            "pale orange sheathing structure is visible near the bottom",
+            "consistent with a philodendron cataphyll."
+          ],
+          "sensoryTraits": []
+        },
+        "observationContext": {
+          "cultivationStatus": "unknown",
+          "setting": "unknown",
+          "region": "",
+          "observationDate": "",
+          "habitat": "",
+          "substrate": "",
+          "associatedPlants": [],
+          "plantSize": ""
+        },
+        "identificationNotes": "Best match: heartleaf philodendron, tentatively Philodendron hederaceum. The original and both derived crops show the same plant evidence, not separate observations. Identification rests on the combination of cordate leaf blades, slender climbing stems, rounded petioles, and papery node sheaths. Pothos is less supported because its conspicuously grooved or winged petioles are not demonstrated here, while the visible separate sheath supports Philodendron. No cultivar can be established from appearance.",
+        "identifyingVisualTraits": null,
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 1,
+          "photosAnalyzed": 1,
+          "stillImagesAnalyzed": 1,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "evidenceUsed": [],
+        "sourceVerification": {
+          "status": "required_not_performed",
+          "performed": false,
+          "verifiedSourceRecords": [],
+          "recommendedSourceIds": [
+            "usda-plants-database",
+            "kew-powo",
+            "gbif-species-api",
+            "inaturalist-observations",
+            "regional-flora-or-herbarium"
+          ],
+          "note": "No external botanical database was queried by this calculator. Record exact source URLs and scope before calling a candidate source-verified."
+        },
+        "sourceRecords": [],
+        "methodIds": [
+          "plant-diagnosis-etgu"
+        ],
+        "sourceIds": [
+          "growpath-method",
+          "user-observation"
+        ],
+        "providerLabel": "AI crop identity review",
+        "cropProfileSuggestion": null,
+        "recommendationContext": "Do not use the submitted visual identity as crop context. Review the cautious candidates, add the requested diagnostic evidence, or enter and separately confirm a known identity.",
+        "warnings": [
+          "Confirm crop identity before relying on crop-specific recommendations.",
+          "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
+          "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
+          "The visual result is candidate-only: usable medium/low-confidence images without sufficient diagnostic support cannot populate the crop identity or crop profile.",
+          "Exact species confirmation is blocked until authoritative botanical source verification is completed and recorded."
+        ],
+        "limitations": [
+          "Image similarity cannot replace diagnostic characters, geographic range, habitat, season, and appropriate botanical keys.",
+          "iNaturalist observations and community identifications are leads unless the specific record, evidence quality, and taxon agreement are reviewed."
+        ],
+        "recommendations": [
+          "Optional: one sharp side-on close-up of a leaf-bearing node, including the full petiole base and adjacent papery sheath.",
+          "Cross-check the narrowed candidate against USDA PLANTS or a regional flora and Kew/GBIF taxonomy before treating a species name as verified."
+        ],
+        "userDecision": {
+          "value": "not_decided",
+          "allowed": [
+            "accepted",
+            "uncertain",
+            "rejected"
+          ],
+          "note": "User confirmation records the user's identity decision; it does not mean external botanical-source or expert verification."
+        }
+      }
+    }
+  ]
+}
