@@ -504,7 +504,7 @@ fields must not turn that candidate into an "unknown crop" headline. Reference
 coverage and real-image accuracy require separate evidence; mocked checks do not
 establish either.
 
-Under `plant-id-best-match-v10`, assess each proposal independently: an unsupported
+Under `plant-id-best-match-v11`, assess each proposal independently: an unsupported
 alternative must not erase a supported candidate. Preserve bounded rejection reasons.
 Compare independent organ-character combinations and account for typical trait
 variation with maturity and growing conditions. Repeated photos are not independent
@@ -607,6 +607,18 @@ from those corrections. Backend/client use the same v10 request identity. Histor
 v9 receipts remain unchanged and are never automatically reinterpreted or rerun.
 The four captured replies verify parsing, saving and display only, not independent
 botanical accuracy, edible use or complete reference coverage.
+
+The v11 candidate-summary correction recognizes affirmative pea-like/papilionaceous
+flower or corolla shape together with another described organ. This is morphology
+vocabulary, not a taxon-specific rule, botanical key or automatic species confirmation.
+Bare, hypothetical, negated, unresolved or contradicted features remain insufficient;
+candidate-local evidence and all existing quality/confirmation ceilings still apply.
+If filtering changes the proposals or invalidates their ranking, rebuild the summary
+from the final validated selection. A withheld leader must not survive as a best-match
+note, and the first surviving alternative must not become a winner by array order.
+Preserve structured evidence, limitations and a no-ingestion caution. Current reviews
+use the same v11 identity on client and server; historical v10 receipts remain immutable.
+Frozen-reply checks establish local evidence handling, not independent botanical accuracy.
 
 Catalog reads prioritize eligible exact names/synonyms before remaining related-genus
 rows, retaining the combined 12-record per-catalog cap and timeout. Preserve completed

@@ -3422,7 +3422,7 @@ describe("SpeciesCropIdToolRoute", () => {
           imageAnalysis: expect.objectContaining({
             quality: "usable",
             confidence: "high",
-            reviewPolicyVersion: "plant-id-best-match-v10",
+            reviewPolicyVersion: "plant-id-best-match-v11",
             limitations: expect.not.arrayContaining([
               expect.stringMatching(/same unchanged evidence/i)
             ])

@@ -1,0 +1,1196 @@
+{
+  "purpose": "Offline normalized/reference/snapshot/secured-map/calculator outputs; not a live save or botanical benchmark",
+  "policyVersion": "plant-id-best-match-v11",
+  "referenceLimit": "Three relevant rows from the retained 12-row bundle; no Trifolium row. Actual live clover coverage is unverified.",
+  "sourceHashes": {
+    "services/personalAssistantEvidence.js": "f58b049f662a629f537c536d14d7a33b73d8ed888199b2dc2f2b341bba77cf49",
+    "services/plantIdKnowledge.js": "aa66a48151fa959bbe18e80f6eafb853befe2b2e60601ca22f30203ed03a9710",
+    "services/plantIdResultIntegrity.js": "613547dbee289b909b1b0ec734e40e594989c375212f558d2efa941d06b98ab1",
+    "services/toolCalculators.js": "7724a50fd9800b6326f4ac3992c29170b36c1aece8cf32e8a3edf816defd123c",
+    "routes/tools.js": "1d81348ffa6886d7f7f9971014e3525a663478c6946bb2f3ce8074ade38ad67a",
+    "tests/fixtures/plantIdCandidateSummary.js": "90900b37a535beb42c39108e606c5ba09571511a7657c981ad6e579d2a5f3a93",
+    "tests/fixtures/plantIdCandidateSummaryReplies.json": "2df340583913ca23ca9a4862d9f1516e2140ff0e395db010430e05e6899e6e89",
+    "tests/fixtures/plantIdCandidateSummaryReference.json": "a717a57fde9c51ec9234c204c0a896b4a09e8fb4969fe0671c122f94a33a0149"
+  },
+  "bridgeSha256": "348f022881b4b413027b1bc71be4ec4b104c923dd4820be74a888507cd09b673",
+  "observations": [
+    {
+      "id": "contrast-0001",
+      "rawReplySha256": "ea976e8e7c90e6b95ed32740fc3f53b321fefba42d8c62c7f6fe54f20ddfa26e",
+      "normalizedSha256": "4928a14043462ce4a2db5433dc6191cf88f42256a82e767e8bccdce10684681c",
+      "outputsSha256": "fd5fe9156250470481c369261c6e5bc5ae94974e762b370634436c71aad09295",
+      "outputs": {
+        "broadGroup": "unknown",
+        "likelyFamily": null,
+        "possibleGenera": [
+          "Trianthema",
+          "Portulaca"
+        ],
+        "possibleSpecies": [],
+        "likelyCrop": "unknown crop",
+        "scientificName": null,
+        "commonNames": [],
+        "cultivar": null,
+        "cultivarOrStrain": null,
+        "confidence": "medium",
+        "identityConflictDetected": false,
+        "identityEvidenceStatus": "candidate_only",
+        "confirmationAvailable": false,
+        "confirmationBlockedReason": "Complete authoritative botanical name, range, habitat, season, and lookalike verification before confirming an exact species identity.",
+        "confirmationRequired": true,
+        "userConfirmationRequired": true,
+        "identityInputProvenance": {
+          "source": "unknown",
+          "providedFields": []
+        },
+        "candidates": [
+          {
+            "scientificName": "Portulaca oleracea",
+            "commonNames": [
+              "Common purslane"
+            ],
+            "rank": "working_candidate",
+            "confidence": "low",
+            "evidence": [
+              "Prostrate reddish succulent stems and fleshy, entire, obovate leaves fit purslane.",
+              "Some shoots have crowded terminal foliage."
+            ],
+            "counterEvidence": [
+              "The apparently unequal opposite leaves and numerous tiny nodal clusters favor Trianthema.",
+              "The granular-looking foliage is less typical of common purslane's usually smoother leaves."
+            ],
+            "missingEvidence": [
+              "Clear reproductive detail distinguishing a purslane capsule or flower from Trianthema."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "insufficient_evidence",
+          "candidateIndexes": [],
+          "reason": "The candidate comparison did not establish a reliable leader or close-alternative ranking.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "withheld",
+            "reason": "This proposal lacks its own supported diagnostic combination or valid candidate-level name. Other proposals were assessed independently."
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          }
+        ],
+        "evidence": [
+          "Leaves: small, fleshy, entire and rounded-obovate to short-oblong, with green and purple coloration.",
+          "Nodes: larger leaves occur beside crowded clusters of smaller leaves; clearer attachments appear opposite and unequal.",
+          "Stems: conspicuously pink-purple, succulent and spreading along the soil surface.",
+          "No reliable species match yet. The candidate comparison did not establish a reliable leader or close-alternative ranking. Do not eat or taste a plant based on this result.",
+          "Fleshy",
+          "cylindrical",
+          "strongly pink-purple stems with spreading branches.",
+          "Leaf surfaces have a finely granular or papillose-looking texture."
+        ],
+        "counterEvidence": [
+          "Neither original resolves diagnostic reproductive anatomy.",
+          "Original image 1 has a sharp hand-held sprig but a blurred background; original image 2 has useful central detail but blurred foreground foliage and shadowed lower areas.",
+          "Tentative species candidate only; stored name matches do not verify this specimen or its cultivar."
+        ],
+        "missingInformation": [
+          "Flower or capsule anatomy needed to confirm the tentative species identification.",
+          "Optional: one sharp macro photograph of a flower or mature capsule already present within a leaf cluster, including the adjacent leaf pair."
+        ],
+        "requiredNextPhotos": [
+          "Optional: one sharp macro photograph of a flower or mature capsule already present within a leaf cluster, including the adjacent leaf pair."
+        ],
+        "requiredNextQuestions": [],
+        "morphology": {
+          "growthHabit": "unknown",
+          "leafArrangement": "unknown",
+          "leafType": "unknown",
+          "leafMargin": "unknown",
+          "venation": "unknown",
+          "flowerPresent": "unknown",
+          "flowerSymmetry": "unknown",
+          "fruitPresent": "unknown",
+          "stemTraits": [
+            "Fleshy",
+            "cylindrical",
+            "strongly pink-purple stems with spreading branches."
+          ],
+          "flowerPartsVisible": [],
+          "inflorescenceType": "",
+          "fruitType": "",
+          "specialStructures": [
+            "Leaf surfaces have a finely granular or papillose-looking texture."
+          ],
+          "sensoryTraits": []
+        },
+        "observationContext": {
+          "cultivationStatus": "unknown",
+          "setting": "unknown",
+          "region": "",
+          "observationDate": "",
+          "habitat": "Open sandy ground with sparse vegetation.",
+          "substrate": "Reddish sandy soil.",
+          "associatedPlants": [
+            "Scattered grasses and small broadleaf plants",
+            "identities unresolved."
+          ],
+          "plantSize": "Low, spreading plant; no reliable measurements available."
+        },
+        "identificationNotes": "No reliable species match yet. The candidate comparison did not establish a reliable leader or close-alternative ranking. Do not eat or taste a plant based on this result.",
+        "identifyingVisualTraits": null,
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 2,
+          "photosAnalyzed": 2,
+          "stillImagesAnalyzed": 2,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "evidenceUsed": [],
+        "sourceVerification": {
+          "status": "required_not_performed",
+          "performed": false,
+          "verifiedSourceRecords": [],
+          "recommendedSourceIds": [
+            "usda-plants-database",
+            "kew-powo",
+            "gbif-species-api",
+            "inaturalist-observations",
+            "regional-flora-or-herbarium"
+          ],
+          "note": "No external botanical database was queried by this calculator. Record exact source URLs and scope before calling a candidate source-verified."
+        },
+        "referenceLookup": {
+          "performed": true,
+          "status": "matched",
+          "checkedAt": "2026-10-27T01:00:00.000Z",
+          "specimenVerified": false,
+          "externalLookupPerformed": false,
+          "bounded": true,
+          "perCatalogLimit": 12,
+          "records": [
+            {
+              "recordId": "554c60c3717047d37f12ba71",
+              "recordType": "plant_taxon",
+              "scientificName": "Portulaca oleracea",
+              "commonNames": [
+                "Common purslane"
+              ],
+              "matchType": "name_match",
+              "identificationProfile": {
+                "version": 1,
+                "scientificName": "Portulaca oleracea",
+                "horticulturalName": "",
+                "reviewedAt": "2026-10-25T21:24:11.000Z",
+                "purpose": "reference_comparison",
+                "traits": [
+                  {
+                    "traitId": "fleshy-leaves",
+                    "character": "Leaf construction",
+                    "typicalState": "The leaf blade is thick and succulent, without visible hairs; its outline is commonly oval or spoon-like.",
+                    "applicability": "Use developed leaves with visible thickness.",
+                    "variation": "Do not infer texture by touch or declare a plant edible from resemblance.",
+                    "observationField": "leafType",
+                    "observation": "Simple, fleshy, rounded-obovate to short-oblong leaves, green to reddish purple.",
+                    "observationOrigin": "image_analysis",
+                    "comparisonStatus": "not_assessed",
+                    "sourceRecords": [
+                      {
+                        "sourceName": "NC State Extension Plant Toolbox — Portulaca oleracea",
+                        "sourceType": "extension",
+                        "url": "https://plants.ces.ncsu.edu/plants/portulaca-oleracea/",
+                        "accessedAt": "2026-10-25T21:24:11.000Z",
+                        "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                      }
+                    ]
+                  },
+                  {
+                    "traitId": "fleshy-stems",
+                    "character": "Stem construction",
+                    "typicalState": "Branched stems are succulent and can be green to reddish-brown.",
+                    "applicability": "Assess a connected stem on the same plant.",
+                    "variation": "Red color and low mat-like growth occur in other weeds too.",
+                    "observationField": "stemTraits",
+                    "observation": "Fleshy, cylindrical, strongly pink-purple stems with spreading branches.",
+                    "observationOrigin": "image_analysis",
+                    "comparisonStatus": "not_assessed",
+                    "sourceRecords": [
+                      {
+                        "sourceName": "NC State Extension Plant Toolbox — Portulaca oleracea",
+                        "sourceType": "extension",
+                        "url": "https://plants.ces.ncsu.edu/plants/portulaca-oleracea/",
+                        "accessedAt": "2026-10-25T21:24:11.000Z",
+                        "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                      }
+                    ]
+                  },
+                  {
+                    "traitId": "yellow-flowers",
+                    "character": "Flower parts",
+                    "typicalState": "Open flowers are yellow with five petals.",
+                    "applicability": "Use an existing open bloom, if present.",
+                    "variation": "Flowers may be closed; no visible flower is not a contradiction.",
+                    "observationField": "flowerPartsVisible",
+                    "observation": null,
+                    "observationOrigin": "not_recorded",
+                    "comparisonStatus": "not_assessed",
+                    "sourceRecords": [
+                      {
+                        "sourceName": "NC State Extension Plant Toolbox — Portulaca oleracea",
+                        "sourceType": "extension",
+                        "url": "https://plants.ces.ncsu.edu/plants/portulaca-oleracea/",
+                        "accessedAt": "2026-10-25T21:24:11.000Z",
+                        "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "sourceRecords": [
+                {
+                  "sourceName": "NC State Extension Plant Toolbox — Portulaca oleracea",
+                  "sourceType": "extension",
+                  "url": "https://plants.ces.ncsu.edu/plants/portulaca-oleracea/",
+                  "accessedAt": "2026-10-25T21:24:11.000Z",
+                  "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                }
+              ]
+            }
+          ]
+        },
+        "sourceRecords": [],
+        "methodIds": [
+          "plant-diagnosis-etgu"
+        ],
+        "sourceIds": [
+          "growpath-method",
+          "user-observation"
+        ],
+        "providerLabel": "AI crop identity review",
+        "cropProfileSuggestion": null,
+        "recommendationContext": "Do not use the submitted visual identity as crop context. Review the cautious candidates, add the requested diagnostic evidence, or enter and separately confirm a known identity.",
+        "warnings": [
+          "Confirm crop identity before relying on crop-specific recommendations.",
+          "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
+          "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
+          "The visual result is candidate-only: usable medium/low-confidence images without sufficient diagnostic support cannot populate the crop identity or crop profile.",
+          "Exact species confirmation is blocked until authoritative botanical source verification is completed and recorded."
+        ],
+        "limitations": [
+          "Image similarity cannot replace diagnostic characters, geographic range, habitat, season, and appropriate botanical keys.",
+          "iNaturalist observations and community identifications are leads unless the specific record, evidence quality, and taxon agreement are reviewed."
+        ],
+        "recommendations": [
+          "Optional: one sharp macro photograph of a flower or mature capsule already present within a leaf cluster, including the adjacent leaf pair.",
+          "Cross-check the narrowed candidate against USDA PLANTS or a regional flora and Kew/GBIF taxonomy before treating a species name as verified."
+        ],
+        "userDecision": {
+          "value": "not_decided",
+          "allowed": [
+            "accepted",
+            "uncertain",
+            "rejected"
+          ],
+          "note": "User confirmation records the user's identity decision; it does not mean external botanical-source or expert verification."
+        }
+      }
+    },
+    {
+      "id": "contrast-0002",
+      "rawReplySha256": "0940b88532c0636fbd3959a5e9174a2201ef13337d1bf53753559b0c4231b36d",
+      "normalizedSha256": "cb62d72a7b8cdbd15d5e11dbe941831858dae40135a2a51d2fe1661baac38f88",
+      "outputsSha256": "f38823bff252fd4015ca2de7d7b8d1c45602874cf020e920907a511e5b21df32",
+      "outputs": {
+        "broadGroup": "unknown",
+        "likelyFamily": "Euphorbiaceae",
+        "possibleGenera": [
+          "Euphorbia"
+        ],
+        "possibleSpecies": [],
+        "likelyCrop": "unknown crop",
+        "scientificName": null,
+        "commonNames": [],
+        "cultivar": null,
+        "cultivarOrStrain": null,
+        "confidence": "medium",
+        "identityConflictDetected": false,
+        "identityEvidenceStatus": "candidate_only",
+        "confirmationAvailable": false,
+        "confirmationBlockedReason": "Complete authoritative botanical name, range, habitat, season, and lookalike verification before confirming an exact species identity.",
+        "confirmationRequired": true,
+        "userConfirmationRequired": true,
+        "identityInputProvenance": {
+          "source": "unknown",
+          "providedFields": []
+        },
+        "candidates": [
+          {
+            "scientificName": "Euphorbia maculata",
+            "commonNames": [
+              "Spotted spurge"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Prostrate, repeatedly branching pink-red stems form a spreading mat.",
+              "Opposite leaves are predominantly oblong rather than broadly rounded.",
+              "Fine stem hairs and compact axillary clusters of tiny pale flowers and lobed capsules fit spotted spurge."
+            ],
+            "counterEvidence": [
+              "A characteristic central leaf blotch is not consistently distinguishable; blotches can also be absent in this species."
+            ],
+            "missingEvidence": [
+              "A sharp view showing whether capsule hairs cover the surface or are restricted to the ridges."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          },
+          {
+            "scientificName": "Euphorbia prostrata",
+            "commonNames": [
+              "Prostrate spurge"
+            ],
+            "rank": "working_candidate",
+            "confidence": "low",
+            "evidence": [
+              "Also fits the prostrate reddish stems, opposite small leaves, and clustered spurge flowers and capsules."
+            ],
+            "counterEvidence": [
+              "The predominantly elongated oblong leaves favor Euphorbia maculata over the generally broader-leaved appearance of this alternative."
+            ],
+            "missingEvidence": [
+              "Capsule hair placement, particularly whether hairs are concentrated along the capsule ridges."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "leading_candidate",
+          "candidateIndexes": [
+            0
+          ],
+          "reason": "The elongated oblong opposite leaves, finely hairy pink stems, and dense axillary reproductive clusters favor Euphorbia maculata, although overlapping traits prevent confirmation.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 1
+          }
+        ],
+        "evidence": [
+          "Image 1 establishes the prostrate branching habit and growth from a paving crack.",
+          "Image 2 shows opposite oblong leaves, pink stems with fine hairs, and compact flower-and-capsule clusters.",
+          "Best tentative identification: spotted spurge (Euphorbia maculata). Both original images and their derived crops were inspected; the crops provide detail",
+          "not additional independent observations. The combination of prostrate pinkish hairy stems",
+          "opposite oblong leaves",
+          "and clustered tiny flowers and lobed capsules supports a creeping spurge. Exact species identification remains tentative because capsule hair distribution is not resolved.",
+          "Slender pink-red branching stems with fine pale hairs visible in the close-up.",
+          "Minute pale appendages around the flower clusters",
+          "individual reproductive parts are not sharply resolved."
+        ],
+        "counterEvidence": [
+          "Closely related creeping spurges share much of the visible morphology.",
+          "Tentative species candidate only; stored name matches do not verify this specimen or its cultivar."
+        ],
+        "missingInformation": [
+          "Capsule surface detail sufficient to distinguish the leading species from prostrate spurge.",
+          "For species confirmation, take one sharply focused side-on macro photo of an existing mature capsule and adjoining stem, with the capsule surface and ridges clearly visible."
+        ],
+        "requiredNextPhotos": [
+          "For species confirmation, take one sharply focused side-on macro photo of an existing mature capsule and adjoining stem, with the capsule surface and ridges clearly visible."
+        ],
+        "requiredNextQuestions": [],
+        "morphology": {
+          "growthHabit": "unknown",
+          "leafArrangement": "unknown",
+          "leafType": "unknown",
+          "leafMargin": "unknown",
+          "venation": "unknown",
+          "flowerPresent": "unknown",
+          "flowerSymmetry": "unknown",
+          "fruitPresent": "unknown",
+          "stemTraits": [
+            "Slender pink-red branching stems with fine pale hairs visible in the close-up."
+          ],
+          "flowerPartsVisible": [
+            "Minute pale appendages around the flower clusters",
+            "individual reproductive parts are not sharply resolved."
+          ],
+          "inflorescenceType": "Compact axillary clusters consistent with spurge cyathia.",
+          "fruitType": "Lobed capsules.",
+          "specialStructures": [],
+          "sensoryTraits": []
+        },
+        "observationContext": {
+          "cultivationStatus": "unknown",
+          "setting": "unknown",
+          "region": "",
+          "observationDate": "",
+          "habitat": "Pavement crevice.",
+          "substrate": "Small amounts of soil or debris within the paving crack.",
+          "associatedPlants": [],
+          "plantSize": "Low, spreading mat; dimensions cannot be determined reliably."
+        },
+        "identificationNotes": "Best tentative identification: spotted spurge (Euphorbia maculata). Both original images and their derived crops were inspected; the crops provide detail, not additional independent observations. The combination of prostrate pinkish hairy stems, opposite oblong leaves, and clustered tiny flowers and lobed capsules supports a creeping spurge. Exact species identification remains tentative because capsule hair distribution is not resolved.",
+        "identifyingVisualTraits": null,
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 2,
+          "photosAnalyzed": 2,
+          "stillImagesAnalyzed": 2,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "evidenceUsed": [],
+        "sourceVerification": {
+          "status": "required_not_performed",
+          "performed": false,
+          "verifiedSourceRecords": [],
+          "recommendedSourceIds": [
+            "usda-plants-database",
+            "kew-powo",
+            "gbif-species-api",
+            "inaturalist-observations",
+            "regional-flora-or-herbarium"
+          ],
+          "note": "No external botanical database was queried by this calculator. Record exact source URLs and scope before calling a candidate source-verified."
+        },
+        "referenceLookup": {
+          "performed": true,
+          "status": "matched",
+          "checkedAt": "2026-10-27T01:00:00.000Z",
+          "specimenVerified": false,
+          "externalLookupPerformed": false,
+          "bounded": true,
+          "perCatalogLimit": 12,
+          "records": [
+            {
+              "recordId": "7a5f7086b419cc08aff0807c",
+              "recordType": "plant_taxon",
+              "scientificName": "Euphorbia maculata",
+              "commonNames": [
+                "Spotted spurge"
+              ],
+              "matchType": "name_match",
+              "identificationProfile": {
+                "version": 1,
+                "scientificName": "Euphorbia maculata",
+                "horticulturalName": "",
+                "reviewedAt": "2026-10-25T21:24:11.000Z",
+                "purpose": "reference_comparison",
+                "traits": [
+                  {
+                    "traitId": "paired-leaves",
+                    "character": "Whole-leaf arrangement",
+                    "typicalState": "Leaves occur in opposite pairs along the stem.",
+                    "applicability": "Trace leaves to an unobscured node.",
+                    "variation": "Some leaves have a dark patch; its absence is not a species exclusion.",
+                    "observationField": "leafArrangement",
+                    "observation": "Opposite pairs.",
+                    "observationOrigin": "image_analysis",
+                    "comparisonStatus": "not_assessed",
+                    "sourceRecords": [
+                      {
+                        "sourceName": "NC State Extension Plant Toolbox — Euphorbia maculata",
+                        "sourceType": "extension",
+                        "url": "https://plants.ces.ncsu.edu/plants/euphorbia-maculata/",
+                        "accessedAt": "2026-10-25T21:24:11.000Z",
+                        "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                      }
+                    ]
+                  },
+                  {
+                    "traitId": "hairy-organs",
+                    "character": "Visible hairs",
+                    "typicalState": "Leaves, stems and fruit are described as hairy.",
+                    "applicability": "Use sufficient close-up detail to resolve hairs.",
+                    "variation": "Blur cannot establish hairlessness; do not generalize to every spurge.",
+                    "observationField": "specialStructures",
+                    "observation": null,
+                    "observationOrigin": "not_recorded",
+                    "comparisonStatus": "not_assessed",
+                    "sourceRecords": [
+                      {
+                        "sourceName": "NC State Extension Plant Toolbox — Euphorbia maculata",
+                        "sourceType": "extension",
+                        "url": "https://plants.ces.ncsu.edu/plants/euphorbia-maculata/",
+                        "accessedAt": "2026-10-25T21:24:11.000Z",
+                        "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                      }
+                    ]
+                  },
+                  {
+                    "traitId": "axillary-cups",
+                    "character": "Small flowerlike structures",
+                    "typicalState": "Small flowerlike cups occur at leaf axils.",
+                    "applicability": "Use a clear existing reproductive structure.",
+                    "variation": "A distant image may not resolve these; do not invent petals.",
+                    "observationField": "inflorescenceType",
+                    "observation": "Compact axillary clusters consistent with spurge cyathia.",
+                    "observationOrigin": "image_analysis",
+                    "comparisonStatus": "not_assessed",
+                    "sourceRecords": [
+                      {
+                        "sourceName": "NC State Extension Plant Toolbox — Euphorbia maculata",
+                        "sourceType": "extension",
+                        "url": "https://plants.ces.ncsu.edu/plants/euphorbia-maculata/",
+                        "accessedAt": "2026-10-25T21:24:11.000Z",
+                        "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "sourceRecords": [
+                {
+                  "sourceName": "NC State Extension Plant Toolbox — Euphorbia maculata",
+                  "sourceType": "extension",
+                  "url": "https://plants.ces.ncsu.edu/plants/euphorbia-maculata/",
+                  "accessedAt": "2026-10-25T21:24:11.000Z",
+                  "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                }
+              ]
+            }
+          ]
+        },
+        "sourceRecords": [],
+        "methodIds": [
+          "plant-diagnosis-etgu"
+        ],
+        "sourceIds": [
+          "growpath-method",
+          "user-observation"
+        ],
+        "providerLabel": "AI crop identity review",
+        "cropProfileSuggestion": null,
+        "recommendationContext": "Do not use the submitted visual identity as crop context. Review the cautious candidates, add the requested diagnostic evidence, or enter and separately confirm a known identity.",
+        "warnings": [
+          "Confirm crop identity before relying on crop-specific recommendations.",
+          "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
+          "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
+          "The visual result is candidate-only: usable medium/low-confidence images without sufficient diagnostic support cannot populate the crop identity or crop profile.",
+          "Exact species confirmation is blocked until authoritative botanical source verification is completed and recorded."
+        ],
+        "limitations": [
+          "Image similarity cannot replace diagnostic characters, geographic range, habitat, season, and appropriate botanical keys.",
+          "iNaturalist observations and community identifications are leads unless the specific record, evidence quality, and taxon agreement are reviewed."
+        ],
+        "recommendations": [
+          "For species confirmation, take one sharply focused side-on macro photo of an existing mature capsule and adjoining stem, with the capsule surface and ridges clearly visible.",
+          "Cross-check the narrowed candidate against USDA PLANTS or a regional flora and Kew/GBIF taxonomy before treating a species name as verified."
+        ],
+        "userDecision": {
+          "value": "not_decided",
+          "allowed": [
+            "accepted",
+            "uncertain",
+            "rejected"
+          ],
+          "note": "User confirmation records the user's identity decision; it does not mean external botanical-source or expert verification."
+        }
+      }
+    },
+    {
+      "id": "contrast-0003",
+      "rawReplySha256": "95ac9deb9bc5e73b7e3832316e6489455391d3402a7d7683a564ff9e67a98b17",
+      "normalizedSha256": "ace153aef0947ea7dd7a1ed0188561566c554d5c3bde38eb9353b86c6cbe3a43",
+      "outputsSha256": "5d66e5aff8512a93f3221def232f2654f71a71a14f538dffcd321af6c0a2ae07",
+      "outputs": {
+        "broadGroup": "unknown",
+        "likelyFamily": "Fabaceae",
+        "possibleGenera": [
+          "Trifolium"
+        ],
+        "possibleSpecies": [],
+        "likelyCrop": "unknown crop",
+        "scientificName": null,
+        "commonNames": [],
+        "cultivar": null,
+        "cultivarOrStrain": null,
+        "confidence": "medium",
+        "identityConflictDetected": false,
+        "identityEvidenceStatus": "candidate_only",
+        "confirmationAvailable": false,
+        "confirmationBlockedReason": "Complete authoritative botanical name, range, habitat, season, and lookalike verification before confirming an exact species identity.",
+        "confirmationRequired": true,
+        "userConfirmationRequired": true,
+        "identityInputProvenance": {
+          "source": "unknown",
+          "providedFields": []
+        },
+        "candidates": [
+          {
+            "scientificName": "Trifolium repens",
+            "commonNames": [
+              "White clover"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Trifoliate leaves have broad, rounded to obovate leaflets with conspicuous pale chevrons.",
+              "White pea-like flowers are grouped into rounded heads on slender, leafless stalks.",
+              "The foliage forms a low, spreading layer."
+            ],
+            "counterEvidence": [],
+            "missingEvidence": [
+              "A clearly exposed creeping stem showing roots at its nodes would strengthen species confirmation."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "leading_candidate",
+          "candidateIndexes": [
+            0
+          ],
+          "reason": "White clover best explains the combined rounded, chevron-marked trifoliate leaves, white flower heads on leafless stalks, and low spreading growth. Alsike clover shares the general flower structure but fits the foliage and habit less well.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "withheld",
+            "reason": "This proposal lacks its own supported diagnostic combination or valid candidate-level name. Other proposals were assessed independently."
+          }
+        ],
+        "evidence": [
+          "Leaves: repeated trifoliate units with rounded leaflets and pale V-shaped bands.",
+          "Flowers: white, pea-like individual flowers gathered into rounded heads.",
+          "Stalks and habit: slender leafless flower stalks above low spreading foliage.",
+          "Best working match: Trifolium repens. This remains a tentative candidate",
+          "not a confirmed identification. Do not eat or taste a plant based on this result.",
+          "Slender green",
+          "apparently leafless flower stalks rise above the foliage",
+          "creeping-stem nodes are not clearly exposed.",
+          "White pea-like petals and narrow green to brownish calyx teeth.",
+          "Conspicuous pale chevron markings on many leaflets."
+        ],
+        "counterEvidence": [
+          "Tentative species candidate only; stored name matches do not verify this specimen or its cultivar."
+        ],
+        "missingInformation": [
+          "Dense overlapping vegetation obscures stem connections and rooting nodes.",
+          "Fine leaflet teeth and small floral details are softened by image resolution.",
+          "Optional for stronger confirmation: gently part the foliage and photograph one connected horizontal clover stem at ground level, including a leaf attachment and any roots at the node."
+        ],
+        "requiredNextPhotos": [
+          "Optional for stronger confirmation: gently part the foliage and photograph one connected horizontal clover stem at ground level, including a leaf attachment and any roots at the node."
+        ],
+        "requiredNextQuestions": [],
+        "morphology": {
+          "growthHabit": "unknown",
+          "leafArrangement": "unknown",
+          "leafType": "unknown",
+          "leafMargin": "unknown",
+          "venation": "unknown",
+          "flowerPresent": "unknown",
+          "flowerSymmetry": "unknown",
+          "fruitPresent": "unknown",
+          "stemTraits": [
+            "Slender green",
+            "apparently leafless flower stalks rise above the foliage",
+            "creeping-stem nodes are not clearly exposed."
+          ],
+          "flowerPartsVisible": [
+            "White pea-like petals and narrow green to brownish calyx teeth."
+          ],
+          "inflorescenceType": "Rounded heads composed of numerous small flowers.",
+          "fruitType": "",
+          "specialStructures": [
+            "Conspicuous pale chevron markings on many leaflets."
+          ],
+          "sensoryTraits": []
+        },
+        "observationContext": {
+          "cultivationStatus": "unknown",
+          "setting": "unknown",
+          "region": "",
+          "observationDate": "",
+          "habitat": "",
+          "substrate": "Leaf litter and dry plant debris are visible beneath the foliage.",
+          "associatedPlants": [
+            "Other plants with lobed leaves and compact green flower clusters are intermingled with the clover."
+          ],
+          "plantSize": "Low-growing; no scale reference is supplied."
+        },
+        "identificationNotes": "Best working match: Trifolium repens. This remains a tentative candidate, not a confirmed identification. Do not eat or taste a plant based on this result.",
+        "identifyingVisualTraits": null,
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 2,
+          "photosAnalyzed": 2,
+          "stillImagesAnalyzed": 2,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "evidenceUsed": [],
+        "sourceVerification": {
+          "status": "required_not_performed",
+          "performed": false,
+          "verifiedSourceRecords": [],
+          "recommendedSourceIds": [
+            "usda-plants-database",
+            "kew-powo",
+            "gbif-species-api",
+            "inaturalist-observations",
+            "regional-flora-or-herbarium"
+          ],
+          "note": "No external botanical database was queried by this calculator. Record exact source URLs and scope before calling a candidate source-verified."
+        },
+        "referenceLookup": {
+          "performed": true,
+          "status": "no_match",
+          "checkedAt": "2026-10-27T01:00:00.000Z",
+          "specimenVerified": false,
+          "externalLookupPerformed": false,
+          "bounded": true,
+          "perCatalogLimit": 12,
+          "records": []
+        },
+        "sourceRecords": [],
+        "methodIds": [
+          "plant-diagnosis-etgu"
+        ],
+        "sourceIds": [
+          "growpath-method",
+          "user-observation"
+        ],
+        "providerLabel": "AI crop identity review",
+        "cropProfileSuggestion": null,
+        "recommendationContext": "Do not use the submitted visual identity as crop context. Review the cautious candidates, add the requested diagnostic evidence, or enter and separately confirm a known identity.",
+        "warnings": [
+          "Confirm crop identity before relying on crop-specific recommendations.",
+          "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
+          "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
+          "The visual result is candidate-only: usable medium/low-confidence images without sufficient diagnostic support cannot populate the crop identity or crop profile.",
+          "Exact species confirmation is blocked until authoritative botanical source verification is completed and recorded."
+        ],
+        "limitations": [
+          "Image similarity cannot replace diagnostic characters, geographic range, habitat, season, and appropriate botanical keys.",
+          "iNaturalist observations and community identifications are leads unless the specific record, evidence quality, and taxon agreement are reviewed."
+        ],
+        "recommendations": [
+          "Optional for stronger confirmation: gently part the foliage and photograph one connected horizontal clover stem at ground level, including a leaf attachment and any roots at the node.",
+          "Cross-check the narrowed candidate against USDA PLANTS or a regional flora and Kew/GBIF taxonomy before treating a species name as verified."
+        ],
+        "userDecision": {
+          "value": "not_decided",
+          "allowed": [
+            "accepted",
+            "uncertain",
+            "rejected"
+          ],
+          "note": "User confirmation records the user's identity decision; it does not mean external botanical-source or expert verification."
+        }
+      }
+    },
+    {
+      "id": "contrast-0004",
+      "rawReplySha256": "c4a2300fb865f7cc377bbff15a74d1a68f6091bc5744a2b2bed82b518442bd0d",
+      "normalizedSha256": "b9067d612ea7bb9702a77f3157b424e2d8d93e8bd1c6ef4d907f6cd2fb31fe7a",
+      "outputsSha256": "d02cc069d7f8a18f0af220f9a09fbc7854a9f164384849dc3585e9c541f1737a",
+      "outputs": {
+        "broadGroup": "unknown",
+        "likelyFamily": null,
+        "possibleGenera": [
+          "Oxalis"
+        ],
+        "possibleSpecies": [],
+        "likelyCrop": "unknown crop",
+        "scientificName": null,
+        "commonNames": [],
+        "cultivar": null,
+        "cultivarOrStrain": null,
+        "confidence": "medium",
+        "identityConflictDetected": false,
+        "identityEvidenceStatus": "candidate_only",
+        "confirmationAvailable": false,
+        "confirmationBlockedReason": "Complete authoritative botanical name, range, habitat, season, and lookalike verification before confirming an exact species identity.",
+        "confirmationRequired": true,
+        "userConfirmationRequired": true,
+        "identityInputProvenance": {
+          "source": "unknown",
+          "providedFields": []
+        },
+        "candidates": [
+          {
+            "scientificName": "Oxalis stricta",
+            "commonNames": [
+              "Common yellow woodsorrel",
+              "Upright yellow woodsorrel"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Upright, branching green shoots bear trifoliate leaves with heart-shaped leaflets.",
+              "The flower has five yellow petals.",
+              "Elongated upright capsules occur on slender stalks."
+            ],
+            "counterEvidence": [
+              "The visible character combination also fits Oxalis dillenii; the upright habit alone does not separate them."
+            ],
+            "missingEvidence": [
+              "Sharp stem-hair and stipule details at a leaf attachment."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          },
+          {
+            "scientificName": "Oxalis dillenii",
+            "commonNames": [
+              "Slender yellow woodsorrel"
+            ],
+            "rank": "working_candidate",
+            "confidence": "medium",
+            "evidence": [
+              "Trifoliate leaves have deeply notched, heart-shaped leaflets.",
+              "Yellow five-petaled flowers accompany slender elongated capsules.",
+              "Fine hairs are visible near the flower stalk."
+            ],
+            "counterEvidence": [
+              "The visible hairs do not resolve the stem-hair orientation needed to distinguish this species from Oxalis stricta."
+            ],
+            "missingEvidence": [
+              "A focused lateral view showing stem pubescence and stipules."
+            ],
+            "sourceRecords": [],
+            "verificationStatus": "not_verified"
+          }
+        ],
+        "candidateSelection": {
+          "status": "close_alternatives",
+          "candidateIndexes": [
+            0,
+            1
+          ],
+          "reason": "Both species fit the observed combination of upright branching shoots, heart-shaped trifoliate leaves, yellow five-petaled flowers, and elongated capsules. The supplied views do not affirmatively separate them.",
+          "discriminator": ""
+        },
+        "candidateAssessment": [
+          {
+            "proposedIndex": 0,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 0
+          },
+          {
+            "proposedIndex": 1,
+            "outcome": "retained",
+            "reason": "Candidate has its own affirmative character combination; remains tentative.",
+            "candidateIndex": 1
+          }
+        ],
+        "evidence": [
+          "Leaves: three heart-shaped leaflets meet at a common point, each with a terminal notch.",
+          "Flowers: image 2 resolves five yellow petals and central anthers.",
+          "Fruits: image 1 shows narrow upright green capsules.",
+          "Habit: image 1 shows slender, upright branching shoots.",
+          "These photos support yellow woodsorrel",
+          "with Oxalis stricta and Oxalis dillenii remaining unresolved species possibilities. Image 1 shows the upright branching habit",
+          "trifoliate leaves",
+          "and elongated capsules but has substantial foreground blur. Image 2 clearly resolves the yellow five-petaled flower; surrounding foliage and stem details are softer. The four crops were inspected as enlarged portions of their originals",
+          "not additional observations.",
+          "Slender green branching stems",
+          "fine hairs are visible near the flower stalk in image 2.",
+          "Five yellow petals and central yellow anthers."
+        ],
+        "counterEvidence": [
+          "Species-level diagnostic stem and node details are not sufficiently sharp.",
+          "Tentative species candidate only; stored name matches do not verify this specimen or its cultivar."
+        ],
+        "missingInformation": [
+          "Clearly resolved hairs and stipules on a leafy stem node.",
+          "For species-level separation, take one sharp, side-on macro of a leafy stem node, including the leaf-stalk base and adjacent stem hairs, in diffuse daylight."
+        ],
+        "requiredNextPhotos": [
+          "For species-level separation, take one sharp, side-on macro of a leafy stem node, including the leaf-stalk base and adjacent stem hairs, in diffuse daylight."
+        ],
+        "requiredNextQuestions": [],
+        "morphology": {
+          "growthHabit": "unknown",
+          "leafArrangement": "unknown",
+          "leafType": "unknown",
+          "leafMargin": "unknown",
+          "venation": "unknown",
+          "flowerPresent": "unknown",
+          "flowerSymmetry": "unknown",
+          "fruitPresent": "unknown",
+          "stemTraits": [
+            "Slender green branching stems",
+            "fine hairs are visible near the flower stalk in image 2."
+          ],
+          "flowerPartsVisible": [
+            "Five yellow petals and central yellow anthers."
+          ],
+          "inflorescenceType": "Small stalked flower clusters.",
+          "fruitType": "Narrow, elongated capsule.",
+          "specialStructures": [],
+          "sensoryTraits": []
+        },
+        "observationContext": {
+          "cultivationStatus": "unknown",
+          "setting": "unknown",
+          "region": "",
+          "observationDate": "",
+          "habitat": "Vegetated ground with moss and leaf litter.",
+          "substrate": "Leaf-litter-covered ground; underlying soil is not clearly exposed.",
+          "associatedPlants": [
+            "Grasses",
+            "mosses",
+            "and other broadleaf plants."
+          ],
+          "plantSize": "No reliable scale available."
+        },
+        "identificationNotes": "These photos support yellow woodsorrel, with Oxalis stricta and Oxalis dillenii remaining unresolved species possibilities. Image 1 shows the upright branching habit, trifoliate leaves, and elongated capsules but has substantial foreground blur. Image 2 clearly resolves the yellow five-petaled flower; surrounding foliage and stem details are softer. The four crops were inspected as enlarged portions of their originals, not additional observations.",
+        "identifyingVisualTraits": null,
+        "imageAnalysis": {
+          "requested": true,
+          "performed": true,
+          "photoCount": 2,
+          "photosAnalyzed": 2,
+          "stillImagesAnalyzed": 2,
+          "videoFramesAnalyzed": 0,
+          "videosAttached": 0,
+          "videosAnalyzed": 0,
+          "reviewPolicyVersion": null,
+          "reassessedUnderUpdatedPolicy": false,
+          "previousReviewPolicyVersion": null,
+          "provider": null,
+          "providerModel": null,
+          "providerLabel": "AI crop identity review",
+          "normalizedPlantIdResultDigest": null,
+          "confidence": "medium",
+          "quality": "usable",
+          "diagnosticDetailUsable": true,
+          "identifyingVisualTraits": "",
+          "evidenceUsed": [],
+          "limitations": [],
+          "status": "photo_pixels_analyzed",
+          "retakeRequired": false
+        },
+        "evidenceUsed": [],
+        "sourceVerification": {
+          "status": "required_not_performed",
+          "performed": false,
+          "verifiedSourceRecords": [],
+          "recommendedSourceIds": [
+            "usda-plants-database",
+            "kew-powo",
+            "gbif-species-api",
+            "inaturalist-observations",
+            "regional-flora-or-herbarium"
+          ],
+          "note": "No external botanical database was queried by this calculator. Record exact source URLs and scope before calling a candidate source-verified."
+        },
+        "referenceLookup": {
+          "performed": true,
+          "status": "matched",
+          "checkedAt": "2026-10-27T01:00:00.000Z",
+          "specimenVerified": false,
+          "externalLookupPerformed": false,
+          "bounded": true,
+          "perCatalogLimit": 12,
+          "records": [
+            {
+              "recordId": "fae57d6d1dc87fa9b6404eb0",
+              "recordType": "plant_taxon",
+              "scientificName": "Oxalis stricta",
+              "commonNames": [
+                "Yellow woodsorrel"
+              ],
+              "matchType": "name_match",
+              "identificationProfile": {
+                "version": 1,
+                "scientificName": "Oxalis stricta",
+                "horticulturalName": "",
+                "reviewedAt": "2026-10-25T21:24:11.000Z",
+                "purpose": "reference_comparison",
+                "traits": [
+                  {
+                    "traitId": "heart-leaflets",
+                    "character": "Leaflet outline",
+                    "typicalState": "Each compound leaf has three heart-shaped leaflets.",
+                    "applicability": "Compare expanded leaflets, including the tip notch.",
+                    "variation": "Folded or damaged leaves can hide the outline; three leaflets alone are insufficient.",
+                    "observationField": "leafType",
+                    "observation": "Trifoliate compound leaves with three distinctly heart-shaped, notched leaflets.",
+                    "observationOrigin": "image_analysis",
+                    "comparisonStatus": "not_assessed",
+                    "sourceRecords": [
+                      {
+                        "sourceName": "NC State Extension Plant Toolbox — Oxalis stricta",
+                        "sourceType": "extension",
+                        "url": "https://plants.ces.ncsu.edu/plants/oxalis-stricta/",
+                        "accessedAt": "2026-10-25T21:24:11.000Z",
+                        "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                      }
+                    ]
+                  },
+                  {
+                    "traitId": "yellow-flowers",
+                    "character": "Flower construction",
+                    "typicalState": "The flowers are small and yellow.",
+                    "applicability": "Compare an existing open flower.",
+                    "variation": "An absent or closed flower remains unknown. No exact petal count is inferred from a grouped attribute tag.",
+                    "observationField": "flowerPartsVisible",
+                    "observation": "Five yellow petals and central yellow anthers.",
+                    "observationOrigin": "image_analysis",
+                    "comparisonStatus": "not_assessed",
+                    "sourceRecords": [
+                      {
+                        "sourceName": "NC State Extension Plant Toolbox — Oxalis stricta",
+                        "sourceType": "extension",
+                        "url": "https://plants.ces.ncsu.edu/plants/oxalis-stricta/",
+                        "accessedAt": "2026-10-25T21:24:11.000Z",
+                        "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                      }
+                    ]
+                  },
+                  {
+                    "traitId": "cylindrical-pods",
+                    "character": "Seed-pod outline",
+                    "typicalState": "Seed pods have an elongated cylindrical outline.",
+                    "applicability": "Use a clearly visible, already present pod; do not touch or open it.",
+                    "variation": "No visible pod is not contrary evidence, and this shape is not unique to the species.",
+                    "observationField": "fruitType",
+                    "observation": "Narrow, elongated capsule.",
+                    "observationOrigin": "image_analysis",
+                    "comparisonStatus": "not_assessed",
+                    "sourceRecords": [
+                      {
+                        "sourceName": "NC State Extension Plant Toolbox — Oxalis stricta",
+                        "sourceType": "extension",
+                        "url": "https://plants.ces.ncsu.edu/plants/oxalis-stricta/",
+                        "accessedAt": "2026-10-25T21:24:11.000Z",
+                        "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "sourceRecords": [
+                {
+                  "sourceName": "NC State Extension Plant Toolbox — Oxalis stricta",
+                  "sourceType": "extension",
+                  "url": "https://plants.ces.ncsu.edu/plants/oxalis-stricta/",
+                  "accessedAt": "2026-10-25T21:24:11.000Z",
+                  "lastReviewedAt": "2026-10-25T21:24:11.000Z"
+                }
+              ]
+            }
+          ]
+        },
+        "sourceRecords": [],
+        "methodIds": [
+          "plant-diagnosis-etgu"
+        ],
+        "sourceIds": [
+          "growpath-method",
+          "user-observation"
+        ],
+        "providerLabel": "AI crop identity review",
+        "cropProfileSuggestion": null,
+        "recommendationContext": "Do not use the submitted visual identity as crop context. Review the cautious candidates, add the requested diagnostic evidence, or enter and separately confirm a known identity.",
+        "warnings": [
+          "Confirm crop identity before relying on crop-specific recommendations.",
+          "This is a working identification candidate, not authoritative taxonomy or expert confirmation.",
+          "No external botanical source, range record, regional flora, herbarium, or invasive-status service was queried for this run.",
+          "The visual result is candidate-only: usable medium/low-confidence images without sufficient diagnostic support cannot populate the crop identity or crop profile.",
+          "Exact species confirmation is blocked until authoritative botanical source verification is completed and recorded."
+        ],
+        "limitations": [
+          "Image similarity cannot replace diagnostic characters, geographic range, habitat, season, and appropriate botanical keys.",
+          "iNaturalist observations and community identifications are leads unless the specific record, evidence quality, and taxon agreement are reviewed."
+        ],
+        "recommendations": [
+          "For species-level separation, take one sharp, side-on macro of a leafy stem node, including the leaf-stalk base and adjacent stem hairs, in diffuse daylight.",
+          "Cross-check the narrowed candidate against USDA PLANTS or a regional flora and Kew/GBIF taxonomy before treating a species name as verified."
+        ],
+        "userDecision": {
+          "value": "not_decided",
+          "allowed": [
+            "accepted",
+            "uncertain",
+            "rejected"
+          ],
+          "note": "User confirmation records the user's identity decision; it does not mean external botanical-source or expert verification."
+        }
+      }
+    }
+  ]
+}
