@@ -106,6 +106,7 @@ export default function StripeConnectPayoutCard({
   const [feedback, setFeedback] = useState("");
   const [country, setCountry] = useState("");
   const [courseConfirmed, setCourseConfirmed] = useState(false);
+  const [courseConfirmationFocused, setCourseConfirmationFocused] = useState(false);
   const [courseUncertain, setCourseUncertain] = useState(false);
   const auth = useOptionalAuth();
   const identity = String(auth?.user?.id || auth?.user?._id || "");
@@ -303,11 +304,31 @@ export default function StripeConnectPayoutCard({
               <>
                 <Pressable accessibilityRole="checkbox"
                   accessibilityLabel="I want to set up course payments on my existing Stripe account"
+                  accessibilityHint="Select this option, then choose Set up course payments. Selecting it alone does not contact Stripe."
                   accessibilityState={{ checked: courseConfirmed, disabled: busy || courseUncertain }}
                   aria-checked={courseConfirmed}
                   disabled={busy || courseUncertain}
-                  onPress={() => setCourseConfirmed((value) => !value)}>
-                  <Text style={styles.note}>{courseConfirmed ? "☑" : "☐"} I want to set up course payments on my existing Stripe account.</Text>
+                  onFocus={() => setCourseConfirmationFocused(true)}
+                  onBlur={() => setCourseConfirmationFocused(false)}
+                  onPress={() => setCourseConfirmed((value) => !value)}
+                  style={[
+                    styles.courseConfirmation,
+                    courseConfirmed && styles.courseConfirmationSelected,
+                    courseConfirmationFocused && styles.courseConfirmationFocused
+                  ]}>
+                  <View
+                    accessible={false}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                    aria-hidden
+                    testID="course-payment-confirmation-box"
+                    style={[styles.courseConfirmationBox, courseConfirmed && styles.courseConfirmationBoxSelected]}
+                  >
+                    {courseConfirmed ? <Text style={styles.courseConfirmationCheck}>✓</Text> : null}
+                  </View>
+                  <Text style={styles.courseConfirmationLabel}>
+                    I want to set up course payments on my existing Stripe account.
+                  </Text>
                 </Pressable>
                 <Pressable accessibilityRole="button" accessibilityLabel={status?.coursePayments?.canResume ? "Resume course-payment setup" : "Set up course payments"}
                   accessibilityState={{ disabled: courseDisabled }} disabled={courseDisabled}
@@ -417,6 +438,40 @@ function createStyles(palette: ThemePalette) {
     fact: { color: palette.textMuted, fontSize: 13, fontWeight: "700" },
     requirementText: { color: palette.warning, fontWeight: "700", marginTop: 10 },
     note: { color: palette.textSoft, fontSize: 13, lineHeight: 19, marginTop: 10 },
+    courseConfirmation: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 2,
+      flexDirection: "row",
+      gap: 12,
+      marginTop: 14,
+      marginBottom: 12,
+      minHeight: 64,
+      padding: 14
+    },
+    courseConfirmationSelected: { backgroundColor: palette.accentSoft },
+    courseConfirmationFocused: {
+      outlineColor: palette.text,
+      outlineOffset: 3,
+      outlineStyle: "solid",
+      outlineWidth: 2
+    } as any,
+    courseConfirmationBox: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: 4,
+      borderWidth: 2,
+      flexShrink: 0,
+      height: 28,
+      justifyContent: "center",
+      width: 28
+    },
+    courseConfirmationBoxSelected: { backgroundColor: palette.accent },
+    courseConfirmationCheck: { color: palette.accentText, fontSize: 20, fontWeight: "900", lineHeight: 24 },
+    courseConfirmationLabel: { color: palette.text, flex: 1, flexShrink: 1, fontSize: 16, fontWeight: "700", lineHeight: 24 },
     error: { color: palette.danger, fontWeight: "700", lineHeight: 20, marginTop: 10 },
     success: {
       color: palette.success,
