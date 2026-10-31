@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import {
   act,
   cleanup,
@@ -182,6 +183,81 @@ describe("personal AI screen", () => {
       },
       collections: {}
     });
+  });
+
+  it.each(["personal", "commercial", "facility"] as const)(
+    "keeps the whole %s assistant and composer in one mobile scroll area",
+    async (workspaceType) => {
+      const screen = render(
+        <AiScreen workspaceType={workspaceType} facilityId="facility-1" />
+      );
+      await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+
+      const scroll = screen.getByTestId("ai-assistant-scroll");
+      const content = within(scroll);
+      expect(content.getByText("AI workspace options")).toBeTruthy();
+      expect(content.getByText("Context Loaded")).toBeTruthy();
+      expect(content.getByTestId("ai-assistant-composer")).toBeTruthy();
+      expect(content.getByText("Attach grow evidence")).toBeTruthy();
+      expect(content.getByText("Quick questions")).toBeTruthy();
+      expect(content.getByLabelText("Ask GrowPath AI")).toBeTruthy();
+      expect(content.getByLabelText("Send")).toBeTruthy();
+      expect(content.getByText(/Sending a request uses/)).toBeTruthy();
+      expect(scroll.props.keyboardShouldPersistTaps).toBe("handled");
+      expect(scroll.props.keyboardDismissMode).toBe("on-drag");
+      expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+      expect(mockCreatePersonalTask).not.toHaveBeenCalled();
+      expect(mockCreateFacilityTask).not.toHaveBeenCalled();
+    }
+  );
+
+  it("bounds the mobile scroll viewport and wraps long quick questions", async () => {
+    const screen = render(<AiScreen />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+
+    const scroll = screen.getByTestId("ai-assistant-scroll");
+    expect(StyleSheet.flatten(scroll.props.style)).toMatchObject({
+      flex: 1,
+      minHeight: 0
+    });
+    expect(StyleSheet.flatten(scroll.props.contentContainerStyle)).toMatchObject({
+      padding: 16,
+      paddingBottom: 24
+    });
+    for (const question of screen.getAllByLabelText(/^Use quick question:/)) {
+      expect(StyleSheet.flatten(question.props.style)).toMatchObject({
+        maxWidth: "100%",
+        flexShrink: 1
+      });
+    }
+  });
+
+  it("keeps a long reply and the reusable composer inside the mobile scroll area", async () => {
+    const reply = "Recorded observations remain available for review. ".repeat(80).trim();
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply,
+      actions: [],
+      referencedData: [],
+      proposedWrites: []
+    });
+    const screen = render(<AiScreen />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Ask GrowPath AI"), "Review my grow");
+    fireEvent.press(screen.getByLabelText("Send"));
+
+    await waitFor(() => expect(screen.getByText(reply)).toBeTruthy());
+    const content = within(screen.getByTestId("ai-assistant-scroll"));
+    expect(content.getByText(reply)).toBeTruthy();
+    expect(content.getByLabelText("Ask GrowPath AI")).toBeTruthy();
+    expect(content.getByLabelText("Send")).toBeTruthy();
+    fireEvent.changeText(content.getByLabelText("Ask GrowPath AI"), "Follow-up draft");
+    expect(content.getByLabelText("Send").props.accessibilityState).toEqual({
+      disabled: false,
+      busy: false
+    });
+    expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+    expect(mockCreatePersonalTask).not.toHaveBeenCalled();
   });
 
   it("answers VPD commands and context-aware task prompts", async () => {

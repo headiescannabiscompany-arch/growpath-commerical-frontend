@@ -40,7 +40,8 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 export const createAiWorkspaceThemeStyles = (palette: ThemePalette) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: palette.page },
-    body: { flex: 1, padding: 16 },
+    body: { flex: 1, minHeight: 0 },
+    bodyContent: { padding: 16, paddingBottom: 24 },
     contextCard: {
       padding: 12,
       borderWidth: 1,
@@ -203,6 +204,8 @@ export const createAiWorkspaceThemeStyles = (palette: ThemePalette) =>
       gap: 8
     },
     quickQuestion: {
+      maxWidth: "100%",
+      flexShrink: 1,
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.border,
       borderRadius: radius.card,
@@ -1112,7 +1115,13 @@ export default function AiScreen({
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView
+        testID="ai-assistant-scroll"
+        style={styles.body}
+        contentContainerStyle={styles.bodyContent}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         <BackButton
           fallbackHref={
             workspaceType === "facility"
@@ -1531,96 +1540,95 @@ export default function AiScreen({
         ) : null}
 
         <PersonalFeedPlacement placement="bottom" routeKey="personal_ai" longContent />
-      </ScrollView>
-
-      <View style={styles.composer}>
-        <Text style={styles.creditNotice}>
-          Sending a request uses {workspaceType === "facility" ? "Facility " : ""}AI
-          credits when the server accepts it for billing. Adding evidence alone does not
-          use a credit.
-        </Text>
-        <MediaEvidencePicker
-          aiUsable
-          titleHeadingLevel={2}
-          maxPhotos={10}
-          allowVideo
-          extractFramesFromVideo
-          maxExtractedVideoFrames={12}
-          maxVideoSeconds={30}
-          purpose="other"
-          sourceContext={{
-            growId: selectedGrowId || undefined,
-            facilityId:
+        <View style={styles.composer} testID="ai-assistant-composer">
+          <Text style={styles.creditNotice}>
+            Sending a request uses {workspaceType === "facility" ? "Facility " : ""}AI
+            credits when the server accepts it for billing. Adding evidence alone does not
+            use a credit.
+          </Text>
+          <MediaEvidencePicker
+            aiUsable
+            titleHeadingLevel={2}
+            maxPhotos={10}
+            allowVideo
+            extractFramesFromVideo
+            maxExtractedVideoFrames={12}
+            maxVideoSeconds={30}
+            purpose="other"
+            sourceContext={{
+              growId: selectedGrowId || undefined,
+              facilityId:
+                workspaceType === "facility" ? activeFacilityId || undefined : undefined
+            }}
+            videoWorkspaceType={workspaceType}
+            videoWorkspaceId={
               workspaceType === "facility" ? activeFacilityId || undefined : undefined
-          }}
-          videoWorkspaceType={workspaceType}
-          videoWorkspaceId={
-            workspaceType === "facility" ? activeFacilityId || undefined : undefined
-          }
-          value={evidenceAssets}
-          onChange={setEvidenceAssets}
-        />
-        <View style={styles.quickQuestionSection}>
-          <Text
-            accessibilityRole="header"
-            aria-level={2}
-            style={styles.quickQuestionTitle}
-          >
-            Quick questions
-          </Text>
-          <Text style={styles.quickQuestionHint}>
-            Choose one to fill the question, then review or edit it. No AI credit is used
-            until you press Send.
-          </Text>
-          <View style={styles.quickQuestionRow}>
-            {quickQuestions.map((question) => (
-              <Pressable
-                key={question}
-                accessibilityRole="button"
-                accessibilityLabel={`Use quick question: ${question}`}
-                accessibilityState={{ disabled: sending }}
-                disabled={sending}
-                onPress={() => setDraft(question)}
-                style={styles.quickQuestion}
-              >
-                <Text style={styles.quickQuestionText}>{question}</Text>
-              </Pressable>
-            ))}
+            }
+            value={evidenceAssets}
+            onChange={setEvidenceAssets}
+          />
+          <View style={styles.quickQuestionSection}>
+            <Text
+              accessibilityRole="header"
+              aria-level={2}
+              style={styles.quickQuestionTitle}
+            >
+              Quick questions
+            </Text>
+            <Text style={styles.quickQuestionHint}>
+              Choose one to fill the question, then review or edit it. No AI credit is
+              used until you press Send.
+            </Text>
+            <View style={styles.quickQuestionRow}>
+              {quickQuestions.map((question) => (
+                <Pressable
+                  key={question}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Use quick question: ${question}`}
+                  accessibilityState={{ disabled: sending }}
+                  disabled={sending}
+                  onPress={() => setDraft(question)}
+                  style={styles.quickQuestion}
+                >
+                  <Text style={styles.quickQuestionText}>{question}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
+          <TextInput
+            accessibilityLabel={
+              facilityPreset ? `Notes for ${facilityPreset.title}` : "Ask GrowPath AI"
+            }
+            style={styles.input}
+            value={draft}
+            onChangeText={setDraft}
+            placeholder={
+              facilityPreset ? `Add notes for ${facilityPreset.title}` : "Type here..."
+            }
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
+            autoComplete="off"
+            textContentType="none"
+            importantForAutofill="no"
+            onSubmitEditing={send}
+          />
+          <Pressable
+            style={[styles.send, { opacity: canSend ? 1 : 0.5 }]}
+            disabled={!canSend}
+            onPress={send}
+            accessibilityRole="button"
+            accessibilityLabel="Send"
+            accessibilityState={{ disabled: !canSend, busy: sending }}
+          >
+            <Text style={styles.sendText}>{sending ? "Thinking..." : "Send"}</Text>
+          </Pressable>
+          <Text style={styles.hint}>
+            {facilityPreset
+              ? facilityPreset.composerHint
+              : "Commands: vpd 78f 60 | vpd 25c 60"}
+          </Text>
         </View>
-        <TextInput
-          accessibilityLabel={
-            facilityPreset ? `Notes for ${facilityPreset.title}` : "Ask GrowPath AI"
-          }
-          style={styles.input}
-          value={draft}
-          onChangeText={setDraft}
-          placeholder={
-            facilityPreset ? `Add notes for ${facilityPreset.title}` : "Type here..."
-          }
-          placeholderTextColor={palette.textMuted}
-          selectionColor={palette.accent}
-          autoComplete="off"
-          textContentType="none"
-          importantForAutofill="no"
-          onSubmitEditing={send}
-        />
-        <Pressable
-          style={[styles.send, { opacity: canSend ? 1 : 0.5 }]}
-          disabled={!canSend}
-          onPress={send}
-          accessibilityRole="button"
-          accessibilityLabel="Send"
-          accessibilityState={{ disabled: !canSend, busy: sending }}
-        >
-          <Text style={styles.sendText}>{sending ? "Thinking..." : "Send"}</Text>
-        </Pressable>
-        <Text style={styles.hint}>
-          {facilityPreset
-            ? facilityPreset.composerHint
-            : "Commands: vpd 78f 60 | vpd 25c 60"}
-        </Text>
-      </View>
+      </ScrollView>
     </View>
   );
 }
