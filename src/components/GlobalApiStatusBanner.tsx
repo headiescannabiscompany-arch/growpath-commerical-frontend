@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
+import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 import {
   subscribeToApiTransport,
   type ApiError,
@@ -25,6 +26,7 @@ function bannerTitle(error: ApiError) {
 
 export function GlobalApiStatusBanner() {
   const { palette } = useAppTheme();
+  const insets = useContext(SafeAreaInsetsContext);
   const styles = useMemo(() => createGlobalApiStatusBannerStyles(palette), [palette]);
   const [error, setError] = useState<ApiError | null>(null);
 
@@ -44,7 +46,7 @@ export function GlobalApiStatusBanner() {
     <View
       accessibilityRole="alert"
       testID="global-api-status-banner"
-      style={styles.banner}
+      style={[styles.banner, connectionBannerInsets(insets)]}
     >
       <View style={styles.copy}>
         <Text style={styles.title}>{bannerTitle(error)}</Text>
@@ -65,6 +67,16 @@ export function GlobalApiStatusBanner() {
   );
 }
 
+// This banner sits above the routed SafeAreaView. Web must also cover the first
+// render before a safe-area provider has measured Safari's status/notch insets.
+export function connectionBannerInsets(insets: { top: number; left: number; right: number } | null): ViewStyle {
+  const edge = (name: "top" | "left" | "right", padding: number) =>
+    Platform.OS === "web"
+      ? `calc(${padding}px + max(${Math.max(0, insets?.[name] || 0)}px, env(safe-area-inset-${name}, 0px)))`
+      : padding + Math.max(0, insets?.[name] || 0);
+  return { paddingTop: edge("top", 10), paddingLeft: edge("left", 16), paddingRight: edge("right", 16) } as ViewStyle;
+}
+
 export function createGlobalApiStatusBannerStyles(palette: ThemePalette) {
   return StyleSheet.create({
     banner: {
@@ -79,7 +91,9 @@ export function createGlobalApiStatusBannerStyles(palette: ThemePalette) {
       paddingVertical: 10
     },
     copy: {
-      flex: 1
+      flex: 1,
+      minWidth: 0,
+      flexShrink: 1
     },
     title: {
       color: palette.danger,

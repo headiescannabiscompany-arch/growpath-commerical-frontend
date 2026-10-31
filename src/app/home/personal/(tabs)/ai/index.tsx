@@ -1097,15 +1097,26 @@ export default function AiScreen({
       setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
       setMessages((m) => [...m, { role: "assistant", text: reply }]);
     } catch (err: any) {
-      setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
-      setProviderLabel("Limited context answer - API unavailable");
+      // Restore the sent question without replacing a newer draft typed while waiting.
+      // Keep selected evidence; never automatically repeat an uncertain request.
+      setDraft((current) => current || text);
+      const hadEvidence = evidenceAssets.length > 0;
+      const creditOutcome = err?.data?.aiCreditsUsed === 0
+        ? "The server reports no AI credit used for this request."
+        : "The request outcome and credit charge could not be confirmed. Check AI usage or contact support before sending it again.";
+      if (!hadEvidence) {
+        setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
+      }
+      setProviderLabel(hadEvidence
+        ? "Photo request failed — no AI answer received"
+        : "Limited context answer - API unavailable");
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
-          text: `${buildContextReply(text, context)}\n\nAPI fallback: ${
-            err?.message || "Unable to reach assistant endpoint."
-          }`
+          text: hadEvidence
+            ? `Photo request failed: ${err?.message || "Unable to reach assistant endpoint."}\n\nYour question and selected photos are kept on this screen. No automatic retry was sent. ${creditOutcome}`
+            : `${buildContextReply(text, context)}\n\nAPI fallback: ${err?.message || "Unable to reach assistant endpoint."}\n\nYour question is kept on this screen. No automatic retry was sent. ${creditOutcome}`
         }
       ]);
     } finally {

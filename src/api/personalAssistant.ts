@@ -3,10 +3,6 @@ import { apiRequest } from "./apiRequest";
 // Allow the existing 150-second provider deadline plus preparation/receipt time.
 // A client timeout does not cancel the server operation or establish its charge.
 export const PLANT_ID_REQUEST_TIMEOUT_MS = 180_000;
-const PLANT_ID_PHOTO_WORKFLOWS = new Set([
-  "species-crop-id", "species_crop_id", "species_crop_identification",
-  "species-crop-identification"
-]);
 
 export type AssistantReference = {
   type: string;
@@ -86,11 +82,10 @@ export async function askPersonalAssistant(payload: {
   conversationId?: string;
   evidenceAssetIds?: string[];
 }): Promise<PersonalAssistantResponse> {
-  const plantIdPhotos = Boolean(payload.evidenceAssetIds?.length) &&
-    PLANT_ID_PHOTO_WORKFLOWS.has(String(payload.context?.workflow || "").trim().toLowerCase());
+  const hasPhotos = Boolean(payload.evidenceAssetIds?.length);
   return apiRequest<PersonalAssistantResponse>("/api/ai/assistant/personal", {
     method: "POST",
     body: payload,
-    ...(plantIdPhotos ? { timeoutMs: PLANT_ID_REQUEST_TIMEOUT_MS, retries: 0 } : {})
+    ...(hasPhotos ? { timeoutMs: PLANT_ID_REQUEST_TIMEOUT_MS, retries: 0 } : {})
   });
 }

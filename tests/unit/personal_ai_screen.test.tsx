@@ -185,6 +185,96 @@ describe("personal AI screen", () => {
     });
   });
 
+  function attachSyntheticPhotos() {
+    const photos = Array.from({ length: 6 }, (_, index) => ({
+      id: `picker-${index}`, _id: `66aa0000000000000000000${index}`,
+      assetType: "photo", originalUri: `/synthetic/${index}.jpg`,
+      durableUrl: `/synthetic/${index}.jpg`, source: "library", purpose: "other",
+      uploadStatus: "uploaded", aiUsable: true, qualityWarnings: []
+    }));
+    act(() => mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0]?.onChange(photos));
+    return photos;
+  }
+
+  it.each(["personal", "commercial", "facility"] as const)(
+    "photo failure recovery retains the question and all photos in %s without a fabricated answer or retry",
+    async (workspaceType) => {
+      const screen = render(<AiScreen workspaceType={workspaceType} facilityId="facility-1" />);
+      await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+      const photos = attachSyntheticPhotos();
+      const question = "Compare the visible features across these six leaves";
+      fireEvent.changeText(screen.getByLabelText("Ask GrowPath AI"), question);
+      fireEvent.press(screen.getByLabelText("Send"));
+      await waitFor(() => expect(screen.getByText("Photo request failed — no AI answer received")).toBeTruthy());
+      expect(screen.getByLabelText("Ask GrowPath AI").props.value).toBe(question);
+      expect(mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0]?.value).toEqual(photos);
+      expect(screen.getByText(/request outcome and credit charge could not be confirmed/)).toBeTruthy();
+      expect(screen.queryByText(/API fallback:/)).toBeNull();
+      expect(screen.queryByText(/Next open task:/)).toBeNull();
+      expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+      expect(mockAskPersonalAssistant.mock.calls[0][0].evidenceAssetIds).toEqual(photos.map(photo => photo._id));
+      expect(mockCreatePersonalTask).not.toHaveBeenCalled();
+      expect(mockCreateFacilityTask).not.toHaveBeenCalled();
+    }
+  );
+
+  it("photo failure recovery reports zero charge only from an explicit server outcome", async () => {
+    mockAskPersonalAssistant.mockRejectedValue(Object.assign(new Error("Photo analysis is busy"), { data: { aiCreditsUsed: 0 } }));
+    const screen = render(<AiScreen />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+    attachSyntheticPhotos();
+    fireEvent.changeText(screen.getByLabelText("Ask GrowPath AI"), "Review the leaves");
+    fireEvent.press(screen.getByLabelText("Send"));
+    await waitFor(() => expect(screen.getByText(/server reports no AI credit used/)).toBeTruthy());
+    expect(screen.queryByText(/credit charge could not be confirmed/)).toBeNull();
+    expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+  });
+
+  it("photo failure recovery preserves a newer draft entered while the request was pending", async () => {
+    let fail!: (error: Error) => void;
+    mockAskPersonalAssistant.mockImplementation(() => new Promise((_resolve, reject) => { fail = reject; }));
+    const screen = render(<AiScreen />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+    const photos = attachSyntheticPhotos();
+    fireEvent.changeText(screen.getByLabelText("Ask GrowPath AI"), "Original question");
+    fireEvent.press(screen.getByLabelText("Send"));
+    await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1));
+    fireEvent.changeText(screen.getByLabelText("Ask GrowPath AI"), "New unsent draft");
+    await act(async () => fail(new Error("Connection lost")));
+    expect(screen.getByLabelText("Ask GrowPath AI").props.value).toBe("New unsent draft");
+    expect(screen.getByText("Original question")).toBeTruthy();
+    expect(mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0]?.value).toEqual(photos);
+  });
+
+  it("photo failure recovery sends retained IDs only on an explicit retry and clears them after success", async () => {
+    mockAskPersonalAssistant.mockRejectedValueOnce(Object.assign(new Error("Busy before dispatch"), { data: { aiCreditsUsed: 0 } }))
+      .mockResolvedValueOnce({ success: true, reply: "Synthetic reviewed result", providerLabel: "Synthetic provider" });
+    const screen = render(<AiScreen />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+    const photos = attachSyntheticPhotos();
+    fireEvent.changeText(screen.getByLabelText("Ask GrowPath AI"), "Review the leaves");
+    fireEvent.press(screen.getByLabelText("Send"));
+    await waitFor(() => expect(screen.getByText(/server reports no AI credit used/)).toBeTruthy());
+    expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByLabelText("Send"));
+    await waitFor(() => expect(screen.getByText("Synthetic reviewed result")).toBeTruthy());
+    expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(2);
+    expect(mockAskPersonalAssistant.mock.calls[1][0].evidenceAssetIds).toEqual(photos.map(photo => photo._id));
+    expect(mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0]?.value).toEqual([]);
+    expect(screen.getByLabelText("Ask GrowPath AI").props.value).toBe("");
+  });
+
+  it("photo failure recovery also retains a failed text draft while labeling its local fallback", async () => {
+    const screen = render(<AiScreen />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Ask GrowPath AI"), "what is next");
+    fireEvent.press(screen.getByLabelText("Send"));
+    await waitFor(() => expect(screen.getByText(/Next open task: Inspect lowers/)).toBeTruthy());
+    expect(screen.getByText("Limited context answer - API unavailable")).toBeTruthy();
+    expect(screen.getByLabelText("Ask GrowPath AI").props.value).toBe("what is next");
+    expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+  });
+
   it.each(["personal", "commercial", "facility"] as const)(
     "keeps the whole %s assistant and composer in one mobile scroll area",
     async (workspaceType) => {

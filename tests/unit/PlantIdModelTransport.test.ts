@@ -65,10 +65,11 @@ describe("Plant ID model transport", () => {
   });
 
   test.each(["diagnosis", "ipm-scout", "plant-id-follow-up", "ipm-result-follow-up", "other"])(
-    "%s keeps the shared transport deadline unchanged", async workflow => {
+    "%s photos reuse the bounded transport without retrying", async workflow => {
       global.fetch = jest.fn(async () => response({ success: true })) as any;
       await askPersonalAssistant({ ...payload, context: { workflow } });
-      expect((global.fetch as jest.Mock).mock.calls[0][1].signal).toBeUndefined();
+      expect((global.fetch as jest.Mock).mock.calls[0][1].signal.aborted).toBe(false);
+      expect(global.fetch).toHaveBeenCalledTimes(1);
       expect(jest.getTimerCount()).toBe(0);
     });
 
@@ -76,6 +77,21 @@ describe("Plant ID model transport", () => {
     global.fetch = jest.fn(async () => response({ success: true })) as any;
     await askPersonalAssistant({ ...payload, evidenceAssetIds: [] });
     expect((global.fetch as jest.Mock).mock.calls[0][1].signal).toBeUndefined();
+  });
+
+  test("ordinary Assistant photos wait beyond a minute then report a bounded timeout without retry or charge claim", async () => {
+    global.fetch = jest.fn((_url, options) => new Promise((_resolve, reject) => {
+      options?.signal?.addEventListener("abort", () => reject(Object.assign(new Error("synthetic abort"), { name: "AbortError" })));
+    })) as any;
+    const outcome = askPersonalAssistant({ ...payload, context: {} }).catch(error => error);
+    await jest.advanceTimersByTimeAsync(120000);
+    expect((global.fetch as jest.Mock).mock.calls[0][1].signal.aborted).toBe(false);
+    await jest.advanceTimersByTimeAsync(60000);
+    const error = await outcome;
+    expect(error.code).toBe("TIMEOUT");
+    expect(error.data?.aiCreditsUsed).toBeUndefined();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(jest.getTimerCount()).toBe(0);
   });
 
   test("server-side unresolved result preserves its recovery instructions without resending", async () => {
