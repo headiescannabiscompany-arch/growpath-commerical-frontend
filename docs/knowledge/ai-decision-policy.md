@@ -13,6 +13,9 @@ AI is a synthesis and retrieval layer, not blind authority.
 2. Apply the relevant GrowPath method and deterministic calculators/rules.
 3. Apply source reliability by use case.
 4. Separate observation, calculation, inference and user claim.
+   Ordinary Assistant photo answers use distinct visible-observation, tentative-interpretation (when requested), and cannot-establish sections. Fruit colour, smooth skin, or apparent size alone do not establish ripeness, maturity, readiness, age or progression. Do not estimate absolute dimensions or waist-height without a supplied measurement or reliable scale; an unknown-size pot, building or hand is not a calibrated scale. Attribute user/record measurements and identity claims to their source, not to the image. Accompany photos only with records bound to the explicitly selected grow, honoring record exclusions; do not assume a selected grow describes the pictured subject. Do not attach keyword-only task references, write proposals or grow-builder shortcuts to a photo response. Specialized Plant ID/IPM contracts and explicit manual workflow entry points remain separate.
+   Existing explicit SOP-recommendation and inventory-risk workflows keep their reviewed context and action contracts; the ordinary photo-answer guard does not replace those workflows.
+   Release request-owned image-buffer references after streaming and on exit, including refusal or failure, without erasing retained evidence or changing its retention. Reference cleanup is not proof of immediate process-RSS reclamation; keep admission/crop limits and no-automatic-retry safeguards intact.
 5. Return evidence, counter-evidence, missing information, confidence, next checks and optional tasks.
 6. Show provider/fallback labels and disagreements. Never present a rule fallback as GPT.
 7. Do not invent sensor readings, lab values, label analyses, genetics provenance, IDs, dates, costs or actions.

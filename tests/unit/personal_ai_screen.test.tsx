@@ -197,6 +197,40 @@ describe("personal AI screen", () => {
   }
 
   it.each(["personal", "commercial", "facility"] as const)(
+    "photo closeout: %s photo success does not turn exclusions into a grow-builder action",
+    async (workspaceType) => {
+      mockAskPersonalAssistant.mockResolvedValue({ success: true, reply: "Visible observations: synthetic leaves.",
+        actions: [], referencedData: [], proposedWrites: [], sopRecommendations: [] });
+      const screen = render(<AiScreen workspaceType={workspaceType} facilityId="facility-1" />);
+      await screen.findByText("Context Loaded");
+      const photos = attachSyntheticPhotos();
+      fireEvent.changeText(screen.getByLabelText("Ask GrowPath AI"),
+        "Describe the photos. Ignore unrelated grow records. Do not create tasks.");
+      fireEvent.press(screen.getByLabelText("Send"));
+      await screen.findByText("Visible observations: synthetic leaves.");
+      expect(screen.queryByText("Review Build a Grow draft")).toBeNull();
+      expect(screen.queryByText("Open tasks")).toBeNull();
+      expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1);
+      expect(mockAskPersonalAssistant.mock.calls[0][0].evidenceAssetIds).toEqual(photos.map(photo => photo._id));
+      expect(mockCreatePersonalTask).not.toHaveBeenCalled();
+      expect(mockCreateFacilityTask).not.toHaveBeenCalled();
+      expect(mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0]?.value).toEqual([]);
+    }
+  );
+
+  it("photo closeout: explicit text-only grow creation keeps the reviewable entry without a write", async () => {
+    mockAskPersonalAssistant.mockResolvedValue({ success: true, reply: "Synthetic planning answer.", actions: [] });
+    const screen = render(<AiScreen />);
+    await screen.findByText("Context Loaded");
+    fireEvent.changeText(screen.getByLabelText("Ask GrowPath AI"), "Help me build an outdoor vegetable garden");
+    fireEvent.press(screen.getByLabelText("Send"));
+    await screen.findByText("Synthetic planning answer.");
+    expect(screen.getByText("Review Build a Grow draft")).toBeTruthy();
+    expect(mockCreatePersonalTask).not.toHaveBeenCalled();
+    expect(mockRouterPush).not.toHaveBeenCalled();
+  });
+
+  it.each(["personal", "commercial", "facility"] as const)(
     "photo failure recovery retains the question and all photos in %s without a fabricated answer or retry",
     async (workspaceType) => {
       const screen = render(<AiScreen workspaceType={workspaceType} facilityId="facility-1" />);

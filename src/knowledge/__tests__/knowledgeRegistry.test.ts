@@ -10,6 +10,13 @@ import {
 } from "@/knowledge";
 
 describe("GrowPath knowledge registries", () => {
+  it("photo closeout: runtime policy separates visible evidence, context relevance and buffer/RSS guarantees", () => {
+    const rules = aiDecisionPolicy.rules.join(" ");
+    expect(rules).toContain("absolute dimensions require a supplied measurement or reliable scale");
+    expect(rules).toContain("do not establish maturity or progression");
+    expect(rules).toContain("explicitly selected, non-excluded grow records");
+    expect(rules).toContain("not an immediate RSS-reclamation guarantee");
+  });
   it.each(["commercial-workflow", "facility-workflow"])(
     "keeps %s campaign timing explicit without changing other schedulers",
     (methodId) => {

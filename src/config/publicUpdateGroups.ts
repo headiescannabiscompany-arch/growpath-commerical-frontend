@@ -58,7 +58,8 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
       "public-guided-story-walkthroughs",
       "public-product-screenshots",
       "public-journal-demo",
-      "public-website-audit"
+      "public-website-audit",
+      "gardening-facility-information"
     ]
   },
   {
@@ -68,7 +69,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     status: "partial",
     scope: "Reliable course discovery, authoring, lesson media and learner journeys.",
     live: "Course discovery and sign-in returns, saved lesson editing safeguards, video switching and Retry, course-list recovery, analytics and builder navigation are live. Verified signup retains the course across browsers; choosing Pro offers a separate course return without activating paid access. Personal More groups existing courses, videos and Live Studio as Creator tools, without a separate signup or new permissions; eligible seller-payout setup stays separate. Personal creator profiles keep private drafts separate from reviewed publication, with withdrawal and clean sharing links. The course-to-discussion handoff passed a separate-learner staging check, including reload and test-course cleanup; discussion access rules are unchanged.",
-    next: "Remaining author and learner journey checks, including ordinary document uploads after secure file scanning is available. Ordinary Free creator-profile staging checks passed. Paid-Pro accounts, accounts confirmed to have no prior videos, native devices and external social composers remain unverified. Course gifting is a separate planned milestone.",
+    next: "Free and paid-Pro creator-profile checks, the recorded LinkedIn/Bluesky composers and bounded protected-document delivery are complete. General public document activation, accounts confirmed to have no prior videos, native devices and posted-recipient checks remain separate. Course gifting has its own launch review.",
     entryIds: [
       "course-media-playback-recovery",
       "course-lesson-authoring-guards",
@@ -77,8 +78,31 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
       "course-builder-source-return",
       "course-loading-readiness",
       "free-course-signup-return",
-      "course-discovery-signin"
+      "course-discovery-signin",
+      "creator-sharing-preview-repairs",
+      "course-documents-delivery-check",
+      "course-selling-rights-setup"
     ]
+  },
+  {
+    id: "assistant",
+    tab: "AI Assistant",
+    title: "Assistant photos and mobile recovery",
+    status: "partial",
+    scope: "Photo-request reliability, recoverable drafts, mobile scrolling and relevant answers.",
+    live: "Mobile scrolling reaches Send. Failed requests retain the question and photos and explain uncertain credit outcomes. Ordinary photo answers use bounded image handling and clearer evidence instructions, without unrelated task or grow-builder shortcuts.",
+    next: "Verify remaining live answer-quality and memory-recovery examples within an agreed request limit. Local safeguards do not establish physical-device behavior or universal image accuracy.",
+    entryIds: ["assistant-photo-recovery"]
+  },
+  {
+    id: "plant-id",
+    tab: "Plant ID",
+    title: "Plant identification and reference coverage",
+    status: "partial",
+    scope: "Photo-first tentative identification, alternatives, result recovery and reviewed botanical context.",
+    live: "Photo-first identification preserves supported candidates and alternatives, saved-result provenance and a separately selected vision-model connection. Reviewed botanical records distinguish source information from visual hypotheses and user claims.",
+    next: "Extend reviewed reference coverage and independent accuracy evidence. A tentative candidate is not confirmed cultivar identity; development comparisons do not establish a universal accuracy score.",
+    entryIds: ["plant-id-candidates-references"]
   },
   {
     id: "shopping",
@@ -147,13 +171,14 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     status: "complete",
     scope:
       "The accepted subscription, workspace billing, checkout/recovery and purchase/refund release.",
-    live: "Subscription and Facility checkout, purchase recovery, protected digital delivery and refund/seller-allocation handling are released. Financial test notes retain their original limits.",
+    live: "Subscription and Facility checkout, purchase recovery, protected digital delivery and refund/seller-allocation handling are released. Financial test notes retain their original limits. The production runtime received its reviewed security update.",
     next: "Sandbox acceptance does not certify a real bank payout or every future payment use. Course gifting, creator tips and other separately gated commerce additions are not included in this completed milestone.",
     entryIds: [
       "subscription-checkout",
       "facility-billing",
       "commerce-checkout",
-      "commerce-refunds-sellers"
+      "commerce-refunds-sellers",
+      "production-runtime-maintenance"
     ]
   },
   {
@@ -162,9 +187,9 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     title: "Payment continuity for buyers and sellers",
     status: "planned",
     scope:
-      "A payment-provider replacement for the full existing subscription and seller workflow, not a subscription-only switch.",
-    live: "Not released. Existing billing and checkout remain separate recorded releases; no provider replacement has been activated.",
-    next: "Verify support for subscriptions and gifts, courses, storefront product sales, protected downloads, commissions and seller settlement. Preserve complimentary access, stock reservations, orders, refunds, disputes and purchase history. Provider approval, fees and migration acceptance come before activation. Creator tips and course gifting stay in their separate later plans.",
+      "A deferred alternative-provider review covering the existing subscription and seller workflows.",
+    live: "Stripe remains the current provider; existing billing and checkout retain their recorded releases.",
+    next: "Replacement-provider work is deferred unless a suitable materially cheaper option is selected. Any future migration requires supported categories, fees, seller settlement and preservation of existing purchases and history. Creator tips and course gifting remain separately reviewed additions.",
     entryIds: ["payment-continuity-plan"]
   },
   {
@@ -219,20 +244,20 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     id: "course-gifts",
     tab: "Course gifts",
     title: "Gift a course",
-    status: "planned",
+    status: "progress",
     scope: "Buying a course for another person, separate from subscription gifts.",
-    live: "Not released. Existing subscription gifting does not provide course gifting.",
-    next: "Focused design and implementation follow the current completion work and store-discovery review.",
+    live: "Course gifts are not available to customers. Development and the recorded synthetic staging purchase, invitation, claim, refund and renewal journeys are complete; production controls remain off.",
+    next: "Finish applicable seller, policy and data-disposition requirements, a legitimate positive support case and reviewed production activation. Preserve completed acceptance; existing subscription gifts remain separate.",
     entryIds: ["course-gifting"]
   },
   {
     id: "future-lives",
     tab: "Future Lives",
     title: "In-app guests and creator tools",
-    status: "planned",
-    scope: "Later Live enhancements, after current completion work and course gifting.",
-    live: "Not released. Existing hosted Live playback remains a separate completed milestone.",
-    next: "Plan guest joining, private backstage preview, host admission and safety, grow showcases and audience tools. Creator tips require provider eligibility and approval before implementation.",
+    status: "progress",
+    scope: "Guest/backstage development and separately deferred creator tools.",
+    live: "Guest/backstage controls are in development and unavailable to customers. Local checks and one private generated-media preview are recorded; existing hosted Live playback remains its own completed milestone.",
+    next: "Resolve provider cleanup and finish the remaining talkback, program output and real-device/OBS/XSplit checks before release. Broader creator-growth tools and tips remain later work; tips require provider eligibility and reviewed terms.",
     entryIds: [
       "live-native-backstage",
       "live-host-safety",

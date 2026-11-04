@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "October 14, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 4, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,62 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "assistant-photo-recovery",
+        title: "Photo replies, request recovery and mobile scrolling",
+        date: "November 4, 2026",
+        dateLabel: "Released",
+        summary:
+          "The Assistant keeps the question and selected photos after a failed request and explains when the credit outcome is unknown. It does not retry automatically. Mobile scrolling reaches the composer and Send, and the connection banner respects screen safe areas. Multi-photo requests retain original image detail while bounding optional crops and memory admission. Photo answers now receive clearer instructions to separate visible observations, tentative interpretations and what the images cannot establish; appearance alone must not establish fruit maturity or unscaled tree height. Ordinary photo replies no longer inherit unrelated task links or grow-builder shortcuts, and request image references are released after streaming or failure. These controls have focused local verification; they do not establish universal answer accuracy, immediate server-memory recovery or physical-iPhone acceptance. Existing explicit SOP, inventory, Plant ID and text-only workflows retain their separate controls."
+      },
+      {
+        id: "plant-id-candidates-references",
+        title: "Plant ID candidates, saved results and reviewed references",
+        date: "October 27, 2026",
+        dateLabel: "Released",
+        summary:
+          "Species / Crop Identification uses photos first, preserves supported tentative candidates and alternatives, and keeps saved-result provenance and recovery. Its selected vision-model connection supports longer waits without starting a duplicate analysis. Reference details distinguish reviewed botanical information from visual hypotheses and user-supplied names. A reviewed white-clover record and four source-bound traits were added. Small development comparisons informed these repairs; they are not a representative accuracy score. Cultivar identity, broad reference coverage and independent recognition accuracy remain under review. Uploaded photos are not automatically added to a training database."
+      },
+      {
+        id: "creator-sharing-preview-repairs",
+        title: "Clearer creator and video sharing previews",
+        date: "October 21, 2026",
+        dateLabel: "Released",
+        summary:
+          "Eligible public creator-profile links now provide creator-specific preview information instead of a generic homepage card. Bluesky share text respects its post limits and existing video links carry the selected video's preview. Signed-in LinkedIn and Bluesky composer checks passed for the recorded profile, video and discussion cases; previews were discarded without posting. Private and withdrawn content keeps its access safeguards. Posted-recipient results, phone share sheets and other platforms remain separate checks."
+      },
+      {
+        id: "course-documents-delivery-check",
+        title: "Protected course documents verified in a bounded release check",
+        date: "October 15, 2026",
+        dateLabel: "Verified",
+        summary:
+          "A controlled production check verified protected PDF, DOCX and XLSX delivery for the authorized owner and learner, saved-lesson access and durability across a same-version deployment. Synthetic files were used and the temporary course/configuration was restored. The minimal DOCX visual check does not certify every complex layout. General public document activation and native/device coverage remain separate; this completed check is no longer waiting on initial file delivery."
+      },
+      {
+        id: "course-selling-rights-setup",
+        title: "Clearer course sellers, customer rights and payment setup",
+        date: "October 31, 2026",
+        dateLabel: "Released",
+        summary:
+          "Course terms and buyer review explain the independent creator's seller role, with GrowPathAI providing the marketplace and selling its own offerings separately. New course-payment setup follows the existing seller connection and shows capability readiness separately from publication. The confirmation checkbox and label are easier to see and select. Customer-rights information is clearer, while course content restrictions preserve purchase history and refund/support access. A display name or readiness label does not verify every seller's legal identity or territory eligibility. Course gifting remains unavailable pending its separate launch review."
+      },
+      {
+        id: "gardening-facility-information",
+        title: "General gardening information and Facility connections",
+        date: "October 22, 2026",
+        dateLabel: "Released",
+        summary:
+          "Public and Facility wording describes GrowPathAI as a general gardening, cultivation and plant-education platform. Facility management leads with daily operations and explains optional compliance-system connections in context. Dispensary discovery and its direct public handoffs are unavailable while their separate market requirements remain unresolved. Operator and founder information distinguish the current business from a planned LLC. Ordinary gardening stores, private grows and existing course access rules retain their own boundaries."
+      },
+      {
+        id: "production-runtime-maintenance",
+        title: "Production runtime security maintenance",
+        date: "October 23, 2026",
+        dateLabel: "Released",
+        summary:
+          "The production API and website build runtime received the reviewed Node.js security update. Focused startup, installed dependency and web-export checks supported the release. This note covers that production patch; staging runtime work and separate recovery or credential operations remain outside its completion."
+      },
       {
         id: "inventory-archive-export-safety",
         title: "Inventory records, safer audit downloads and stock-linked checkout",
@@ -490,7 +546,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "October 5, 2026",
         dateLabel: "Released",
         summary:
-          "Forum pages wait for account access to finish loading instead of briefly showing access denied. Discussion and comment reads now recover separately with Retry; a failed comments request no longer hides a readable post or claims there are no comments. Same-discussion recovery preserves unfinished replies, while changing discussions clears prior content. Copy Link, Copy Post and recipient paths remain checked; privacy rules and layout stay unchanged. X share text now fits the standard post limit, keeping the complete preview link and prioritizing the title and price before a shorter description. Full Copy Post text and saved content are unchanged. A synthetic staging discussion also opened Facebook's actual composer with its correct preview link and title; the composer was closed without posting. Reddit's desktop handoff opened the exact synthetic title and preview link without posting. Bluesky and LinkedIn reached their sign-in screens; their signed-in composers are not yet verified. This is not a claim about every social platform or phone share sheet. Shared Forum posting controls now follow your individual access, independently of the selected Facility subscription. Switching accounts or workspaces rechecks that access. Facility operational permissions and server posting rules are unchanged. Grow-interest choices now expose checked and expanded states to browser accessibility tools. Space toggles a focused choice once without scrolling; mouse and Enter controls still work. Other selected interests and existing Save actions are unchanged."
+          "Forum pages wait for account access to finish loading instead of briefly showing access denied. Discussion and comment reads now recover separately with Retry; a failed comments request no longer hides a readable post or claims there are no comments. Same-discussion recovery preserves unfinished replies, while changing discussions clears prior content. Copy Link, Copy Post and recipient paths remain checked; privacy rules and layout stay unchanged. X share text now fits the standard post limit, keeping the complete preview link and prioritizing the title and price before a shorter description. Full Copy Post text and saved content are unchanged. A synthetic staging discussion also opened Facebook's actual composer with its correct preview link and title; the composer was closed without posting. Reddit's desktop handoff opened the exact synthetic title and preview link without posting. At the October 5 checkpoint, Bluesky and LinkedIn reached only their sign-in screens. Later signed-in composer checks are recorded in the October 21 sharing update. This is not a claim about every social platform or phone share sheet. Shared Forum posting controls now follow your individual access, independently of the selected Facility subscription. Switching accounts or workspaces rechecks that access. Facility operational permissions and server posting rules are unchanged. Grow-interest choices now expose checked and expanded states to browser accessibility tools. Space toggles a focused choice once without scrolling; mouse and Enter controls still work. Other selected interests and existing Save actions are unchanged."
       },
       {
         id: "live-directory-readiness",
@@ -509,6 +565,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
       "Work already underway. Existing features may be live; the improvements and checks below are not yet complete.",
     emptyMessage: "No additional updates are currently listed as in testing.",
     entries: [
+      {
+        id: "course-gifting",
+        title: "Gift a course",
+        date: "October 30, 2026",
+        dateLabel: "Development reviewed",
+        summary:
+          "Course gifting is implemented behind disabled production controls. Synthetic staging checks covered payment, invitation, claim, refund/dispute handling, unpaid checkout cancellation and expired-link renewal, including the original seven-day journey and restored test fixtures. Remaining launch work concerns applicable seller/policy/disposition requirements, a legitimate positive support case and reviewed activation. It is not available to customers yet. Existing subscription gifting remains separate."
+      },
       {
         id: "recovery-release",
         title: "Recovery improvements: tested, not yet released",
@@ -544,10 +608,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "payment-continuity-plan",
         title: "Preserve subscriptions and the full seller sales workflow",
-        date: "October 13, 2026",
+        date: "October 30, 2026",
         dateLabel: "Plan reviewed",
         summary:
-          "Prepare a payment-provider replacement that preserves subscriptions, paid subscription gifts, separate complimentary access, courses, storefront product sales, protected downloads, seller commissions, orders, inventory reservations, refunds, disputes and purchase history. Product orders and downloadable offers remain separate workflows; a subscription-only replacement is not enough. Provider approval, supported categories, fees, seller settlement and migration checks must be verified before activation. No replacement is live, no new commission or payout timing is promised, and existing billing is unchanged. Creator tips and course gifting remain separate later plans; no customer wallet is planned."
+          "Stripe remains the current payment provider. Replacement-provider work is deferred unless a suitable materially cheaper option is selected. Any future change must preserve subscriptions, paid subscription gifts, complimentary access, courses, storefront product sales, protected downloads, seller commissions, orders, inventory reservations, refunds, disputes and purchase history. Product orders and downloadable offers remain separate workflows. No replacement is live, and this plan changes no fees or payout timing. Creator tips and course gifting remain separate from this deferred plan; no customer wallet is planned."
       },
       {
         id: "timeline-improvements",
@@ -564,39 +628,31 @@ export const PUBLIC_UPDATE_SECTIONS = [
         dateLabel: "Plan reviewed",
         summary:
           "After the focused browsing and catalog fixes, review the broader shopping and seller journeys, collection organization, and campaign clarity. Any larger layout changes require separate approval and will be ordered against course gifting by estimated effort."
-      },
-      {
-        id: "course-gifting",
-        title: "Gift a course",
-        date: "September 15, 2026",
-        dateLabel: "Plan reviewed",
-        summary:
-          "Purchase a course for someone else. This remains planned after current completion work and the store-discovery review. Larger storefront changes may follow it if their estimated work is longer. Course gifting is not available as part of the completed subscription-gifting work."
       }
     ]
   },
   {
     id: "lives-planned",
-    title: "Lives · Later roadmap",
+    title: "Lives · Development and later roadmap",
     description:
-      "Planned after current completion work and course gifting. These additions are not started or available yet; existing Live hosting and replay remain separate released features.",
+      "Guest/backstage development is underway separately from released Live hosting and replay. These additions are not available to customers; broader creator-growth and support features remain planned for later.",
     emptyMessage: "No later Live enhancements are currently listed.",
     entries: [
       {
         id: "live-native-backstage",
         title: "Join a Live and wait backstage inside GrowPath",
-        date: "October 1, 2026",
-        dateLabel: "Planned for later",
+        date: "October 30, 2026",
+        dateLabel: "Development reviewed",
         summary:
-          "Request to join from the Live page, check camera and microphone, and wait privately for host review. Hosts would preview guests before bringing them on air, with up to six people on screen. The guest experience would stay inside GrowPath; this does not replace OBS or promise an entirely self-hosted video system."
+          "Guest joining, private backstage, source/receiver routing and program-view controls have local implementation and focused checks. One private generated-media preview passed; remaining talkback, program output, cleanup and real-device/six-person acceptance are incomplete. The feature is not available to customers. It does not replace OBS or promise an entirely self-hosted video system."
       },
       {
         id: "live-host-safety",
         title: "Guest safety and easier show production",
-        date: "October 1, 2026",
-        dateLabel: "Planned for later",
+        date: "October 30, 2026",
+        dateLabel: "Development reviewed",
         summary:
-          "Private preview and clear Backstage / On air states, guest recording notices, delegated producer and moderator controls, mute/remove/block actions, an emergency host-only view, and reconnecting guests returned to backstage. Planned preparation checks and connection, duration and usage warnings would help hosts avoid interruptions."
+          "Private preview, producer screening, host talkback, resource limits and cleanup/recovery controls have focused local verification. Provider cleanup and the remaining joined-media checks must pass before these controls are released. Future moderation, emergency fallback and actual device acceptance retain their separately reviewed scope."
       },
       {
         id: "live-creator-growth",

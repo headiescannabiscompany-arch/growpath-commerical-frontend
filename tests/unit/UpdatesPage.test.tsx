@@ -25,6 +25,44 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("public Updates page", () => {
+  it("November catch-up keeps new histories reachable and excludes private release data", () => {
+    const ids = ["assistant-photo-recovery", "plant-id-candidates-references", "creator-sharing-preview-repairs",
+      "course-documents-delivery-check", "course-selling-rights-setup", "gardening-facility-information", "production-runtime-maintenance"];
+    for (const id of ids) {
+      const notes = PUBLIC_UPDATE_SECTIONS.flatMap(s => s.entries).filter(e => e.id === id);
+      expect(notes).toHaveLength(1);
+      expect(PUBLIC_UPDATE_GROUPS.filter(g => g.entryIds.includes(id))).toHaveLength(1);
+      expect(notes[0].summary).not.toMatch(/qa\.invalid|@gmail|dep-|srv-|operatorApprovalReference|policyId|[a-f0-9]{24}/);
+    }
+    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 4, 2026");
+    expect(PUBLIC_UPDATE_SECTIONS[0].entries.find(e => e.id === "course-documents-delivery-check")?.dateLabel).toBe("Verified");
+  });
+
+  it("November catch-up exposes AI and Plant ID histories without marking accuracy complete", () => {
+    const screen = render(<UpdatesPage />);
+    for (const [tab, id] of [["AI Assistant", "assistant"], ["Plant ID", "plant-id"]]) {
+      fireEvent.press(screen.getByRole("tab", { name: tab }));
+      fireEvent.press(screen.getByRole("button", { name: `Show ${tab} detailed history` }));
+      const group = PUBLIC_UPDATE_GROUPS.find(g => g.id === id)!;
+      expect(group.status).toBe("partial");
+      const note = updateGroupSections(group)[0].entries[0];
+      expect(screen.getByText(note.title)).toBeTruthy();
+    }
+  });
+
+  it("November catch-up keeps gift and backstage development out of release ages", () => {
+    for (const id of ["course-gifts", "future-lives"]) {
+      const group = PUBLIC_UPDATE_GROUPS.find(g => g.id === id)!;
+      expect(group.status).toBe("progress");
+      expect(latestGroupRelease(group, new Date("2026-11-04T18:00:00Z"))).toBeNull();
+      expect(group.live).toMatch(/not available|unavailable/);
+    }
+    const gift = PUBLIC_UPDATE_SECTIONS.find(s => s.id === "testing")!.entries.find(e => e.id === "course-gifting")!;
+    expect(gift.summary).toContain("original seven-day journey");
+    expect(gift.summary).toContain("not available to customers");
+    expect(PUBLIC_UPDATE_SECTIONS[0].entries.map(e => e.id)).not.toContain(gift.id);
+  });
+
   it("groups the released W10 corrections without closing genuine proof or device checks", () => {
     const group = PUBLIC_UPDATE_GROUPS.find((entry) => entry.id === "public-website")!;
     const notes = PUBLIC_UPDATE_SECTIONS[0].entries.filter(
@@ -209,7 +247,7 @@ describe("public Updates page", () => {
     expect(note?.summary).toContain(
       "Full Copy Post text and saved content are unchanged"
     );
-    expect(note?.summary).toContain("signed-in composers are not yet verified");
+    expect(note?.summary).toContain("Later signed-in composer checks are recorded in the October 21 sharing update");
     expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === "app-review")?.status).toBe(
       "progress"
     );
@@ -464,13 +502,13 @@ describe("public Updates page", () => {
       "orders, payments, prices and the layout stay unchanged"
     );
   });
-  it("keeps the later Lives roadmap after course gifting and out of released work", () => {
+  it("keeps ongoing Lives development and later additions out of released work", () => {
     const later = PUBLIC_UPDATE_SECTIONS[PUBLIC_UPDATE_SECTIONS.length - 1];
     expect(later.id).toBe("lives-planned");
     expect(later.description).toContain(
-      "after current completion work and course gifting"
+      "Guest/backstage development is underway"
     );
-    expect(later.description).toContain("not started or available yet");
+    expect(later.description).toContain("not available to customers");
     expect(later.entries.map((entry) => entry.id)).toEqual([
       "live-native-backstage",
       "live-host-safety",
@@ -478,7 +516,8 @@ describe("public Updates page", () => {
       "live-creator-tips"
     ]);
     for (const entry of later.entries) {
-      expect(entry.dateLabel).toBe("Planned for later");
+      expect(entry.dateLabel).toBe(["live-native-backstage", "live-host-safety"].includes(entry.id)
+        ? "Development reviewed" : "Planned for later");
       expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((item) => item.id)).not.toContain(
         entry.id
       );
@@ -488,7 +527,7 @@ describe("public Updates page", () => {
     fireEvent.press(
       screen.getByRole("button", { name: "Show Future Lives detailed history" })
     );
-    expect(screen.getByRole("header", { name: "Lives · Later roadmap" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Lives · Development and later roadmap" })).toBeTruthy();
     expect(screen.getByText("Support a Live host")).toBeTruthy();
   });
 
@@ -620,7 +659,7 @@ describe("public Updates page", () => {
     );
     for (const id of ["course-gifts", "future-lives"]) {
       expect(PUBLIC_UPDATE_GROUPS.find((group) => group.id === id)?.status).toBe(
-        "planned"
+        "progress"
       );
     }
   });
@@ -632,7 +671,7 @@ describe("public Updates page", () => {
     )!;
     expect(courses.status).toBe("partial");
     expect(courses.live).toContain("separate-learner staging check");
-    expect(courses.next).toContain("secure file scanning");
+    expect(courses.next).toContain("bounded protected-document delivery are complete");
     expect(courses.next).not.toContain("discussion handoffs");
     expect(receipt.summary).toContain("synthetic staging records");
     expect(receipt.summary).toContain("unpublished and archived");
@@ -652,12 +691,11 @@ describe("public Updates page", () => {
     expect(courses.status).toBe("partial");
     expect(courses.live).toContain("Creator tools");
     expect(courses.live).toContain("private drafts separate from reviewed publication");
-    expect(courses.next).toContain("Ordinary Free creator-profile staging checks passed");
-    expect(courses.next).toContain("Paid-Pro accounts");
+    expect(courses.next).toContain("Free and paid-Pro creator-profile checks");
     expect(courses.next).toContain("accounts confirmed to have no prior videos");
     expect(courses.next).toContain("native devices");
     expect(courses.next).not.toContain("Ordinary Free/Pro hosted creator-profile checks");
-    expect(courses.next).toContain("external social composers remain unverified");
+    expect(courses.next).toContain("recorded LinkedIn/Bluesky composers");
     expect(note.date).toBe("October 9, 2026");
     expect(note.summary).toContain("No separate creator signup is required");
     expect(note.summary).toContain("optional setup for eligible paid sales");
@@ -696,15 +734,22 @@ describe("public Updates page", () => {
     expect(PUBLIC_UPDATE_SECTIONS[2].entries.map((entry) => entry.id)).toEqual([
       "payment-continuity-plan",
       "timeline-improvements",
-      "store-discovery-review",
-      "course-gifting"
+      "store-discovery-review"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[1].entries.map((entry) => entry.id)).toEqual([
+      "course-gifting",
       "recovery-release",
       "admin-passkey-protection",
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "assistant-photo-recovery",
+      "plant-id-candidates-references",
+      "creator-sharing-preview-repairs",
+      "course-documents-delivery-check",
+      "course-selling-rights-setup",
+      "gardening-facility-information",
+      "production-runtime-maintenance",
       "inventory-archive-export-safety",
       "business-receipt-upload-readiness",
       "public-guided-story-walkthroughs",

@@ -1094,7 +1094,12 @@ export default function AiScreen({
       setProposedWrites([]);
       setSopRecommendations([]);
       const reply = await askBackend(text);
-      setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
+      // Photo answers must not gain an unrelated draft from keyword matches in
+      // exclusions (e.g. "ignore grow records; do not create tasks"). The explicit
+      // Build a Grow entry and existing text-only workflow remain available.
+      if (evidenceAssets.length === 0) {
+        setActions((current) => mergeAction(current, buildGrowDraftAction(text)));
+      }
       setMessages((m) => [...m, { role: "assistant", text: reply }]);
     } catch (err: any) {
       // Restore the sent question without replacing a newer draft typed while waiting.
