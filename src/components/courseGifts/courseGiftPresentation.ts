@@ -1,3 +1,6 @@
+import { validGiftMarket, type GiftMarket } from "@/utils/courseGiftMarket";
+import { parseGiftSellerFacts } from "@/utils/courseGiftSellerFacts";
+
 /** Presentation contracts only. No HTTP adapter, entitlement writer or public gate.
  * Future adapters must supply fresh server-authorized snapshots, not route params.
  * These types and UI checks are not authorization to purchase or enroll.
@@ -18,6 +21,8 @@ export type GiftQuote = {
   checkoutAttemptId: string;
   terms: GiftTerms;
   sellerDisclosure?: GiftSellerDisclosure | null;
+  market?: GiftMarket;
+  sellerFacts?: string;
 };
 
 // Self-published name only; not verified legal identity or payment authority.
@@ -96,6 +101,8 @@ export function usableGiftQuote(quote: GiftQuote | null): quote is GiftQuote {
     quote.amountCents > 0 &&
     quote.currency === "usd" &&
     validGiftSellerDisclosure(quote.sellerDisclosure) &&
+    (quote.market === undefined || validGiftMarket(quote.market)) &&
+    (quote.sellerFacts === undefined || Boolean(parseGiftSellerFacts(quote.sellerFacts))) &&
     quote.terms &&
     [
       quote.terms.version,

@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import AppCard from "@/components/layout/AppCard";
 import PrimaryButton from "@/components/PrimaryButton";
+import { giftMarketLabel } from "@/utils/courseGiftMarket";
+import { CourseGiftSellerFactsReview } from "./CourseGiftSellerFacts";
 import { useAppTheme } from "@/theme/appTheme";
 import {
   boundBuyerStatus,
@@ -155,6 +157,11 @@ function BuyerPanel({
         <Text style={{ color: palette.text }}>
           One course: USD {(quote.amountCents / 100).toFixed(2)}
         </Text>
+        {quote.market && (
+          <Text style={{ color: palette.text }}>
+            Your country: {giftMarketLabel[quote.market.buyerCountry]}. Recipient country: {giftMarketLabel[quote.market.recipientCountry]}.
+          </Text>
+        )}
         <Text style={{ color: palette.text }}>
           {quote.sellerDisclosure
             ? `Course creator: ${quote.sellerDisclosure.displayName}`
@@ -164,11 +171,11 @@ function BuyerPanel({
           Independent creators sell their own courses through GrowPathAI. GrowPathAI hosts
           the marketplace and sells its own courses and subscriptions.
         </Text>
-        <Text style={{ color: palette.textMuted }}>
+        {quote.sellerFacts ? <CourseGiftSellerFactsReview value={quote.sellerFacts} /> : <Text style={{ color: palette.textMuted }}>
           A public profile name is not verified legal seller information. Verified seller
           details are not available in this review. For questions before paying, contact
           support@growpathai.com.
-        </Text>
+        </Text>}
         <Text style={{ color: palette.textMuted }}>
           You’re buying this course for the email address shown. The recipient must sign
           in with that verified address and claim it. This does not enroll you or change

@@ -1,5 +1,167 @@
 # Course Media Workflow
 
+## Withdrawal outcome/deadline review — local preparation, November 4, 2026
+
+The verified notice intake is not a remedy decision. Extend existing Admin support,
+SupportRequest and Purchase evidence, not a new money/approval ledger. A structured
+withdrawal summary shows original receipt time, review version, outcome, conservative
+operational due time, overdue state and closure readiness. Do not bury an unclassified
+or refund-due notice under generic resolved/spam status. Ordinary support keeps its
+existing workflow. Private applicability reasons/evidence stay out of generic model
+JSON and the list's structured summary; protected case review uses existing Admin
+identity, role, passkey and no-store transport without changing security settings.
+
+The operator explicitly records applicability and its written evidence. Selecting
+an applicable German withdrawal sets a14-day conservative UTC elapsed-day refund
+cutoff from the ORIGINAL notice receipt; covered Thai direct-marketing withdrawal
+sets15days. These are operational targets, not a universal eligibility decision or
+a precise local-calendar/holiday legal calculation. Other mandatory bases need an
+explicit deadline. Earlier deadlines are retained; this UI cannot extend a recorded
+deadline or restart its clock on review, reassign, reopen or lost-response retry.
+Unknown applicability remains urgent review; a queue or absent creator never pauses
+a mandatory obligation. A course claim does not waive the buyer's rights.
+
+Outcomes are review required, refund due, full refund completed, or documented no
+refund due. The two closing outcomes require a reference to an already-communicated
+written decision. Typed references record an operator assertion; they do not prove
+message delivery or legal correctness. A completed-refund decision additionally reads
+the EXISTING purchase ledger: full refunded amounts, succeeded unique refund/event
+checkpoints and matching currency. The operator must explicitly document notice /
+claimant authority / purchase linkage. The service does not verify that linkage by
+guessing from names or emails, issue refunds, send notices or change course access.
+Closing rechecks the same financial evidence. Pending/partial/uncertain refunds remain
+open; never use an internal completion flag as proof that money was returned.
+
+Versioned review events in the same SupportRequest preserve actor, original evidence,
+operation fingerprint and history. CAS conflicts abort without automatic retry.
+An uncertain save keeps its exact operation/payload in page memory, locks editing,
+requires protected read and unchecked reconfirmation, then explicitly retries the
+same operation. Replay returns current state without reapplying an older decision.
+Only a fresh newer review version with the operation absent from immutable history
+can supersede an unsaved operation. A read is observational and never resubmits it.
+Passkey expiry hides private data while preserving same-identity continuation;
+identity change clears it and discards late replies. No browser storage, request-body
+diagnostics, credentials, automatic refund, email, archive/deletion or retention rule
+is added. The50-event bound stops new review rather than erasing old evidence.
+
+Status: locally verified44 unique scoped checks (40new/four affected) and focused
+types, with owned runner/cache cleanup. One unchanged ordinary Admin case passed
+its sole timeout retry; a generic type-guard declaration correction required only
+focused types again. No application behavior repair or passed-case rerun. Uncommitted
+and unreleased. Closed country38, intake28,
+declaration41 and hosted gifting journeys remain carried evidence. Country tax,
+actual legal/policy approval and reviewed production activation remain separate.
+
+Decision sources: [BGB357](https://www.gesetze-im-internet.de/bgb/__357.html) for the
+covered German refund period and [OCPB consumer guidance](https://www.ocpb.go.th/news_view.php?nid=13429)
+for covered Thai direct-marketing cancellation/refund; applicability remains explicit.
+
+## Creator seller/course declaration — local preparation, November 4, 2026
+
+Creators sell their own courses. Extend the existing per-course creator consent,
+not a second identity/KYC/approval store, to carry an explicit canonical declaration:
+current legal/trading seller name, geographic postal address including country,
+buyer-facing email and telephone, claimed trader/private status, recorded/live/mixed
+delivery, learner support/Q&A, assessment, access duration/schedule and commitments.
+Do not infer facts from public profile names or copy private Stripe verification data.
+Do not collect tax IDs, bank details or identity documents here. A private-sale choice
+does not settle tax liability or exempt the seller from mandatory rights.
+
+Showing these details to prospective buyers and appointing GrowPathAI to receive
+withdrawal notices require separate explicit unchecked authorizations, followed by
+review of the exact details and the existing gift terms. Prefilled saved details do
+not pre-check renewed authority. Edits invalidate the preview/terms acceptance. Save
+only into the existing immutable, revisioned consent; replacement/revocation reuses
+the unpaid-checkout change signal. Ownership, policy, account and transaction fences
+still apply. Truthful legal seller identity is not edited to remove words; the new
+course-access prose uses the existing course-content restriction, not pixel screening.
+
+Bind the exact declaration to buyer review/confirmation and the existing private
+buyer receipt. Display it as seller-provided, not verified legal identity, tax clearance
+or provider approval. New live reviews require it; historical receipts and existing
+Sandbox shapes receive no inferred defaults. Already-paid servicing is unchanged.
+Keep the canonical declaration private by default; creator-owned review and buyer
+review deliberately project only these authorized fields. Contact drafts never enter
+browser recovery storage. An uncertain consent save keeps its request ID and only an
+opaque declaration fingerprint in the existing recovery hint; changed facts cannot
+replace an unresolved request. If exact original facts are unavailable, use support.
+
+These seller contact copies are additional personal data belonging to that seller,
+not automatically anonymous or disposable under a buyer/recipient removal request.
+Inventory the consent and financial-receipt copies in the applicable privacy/hold
+review before disposition; do not promise deletion or apply a new retention period.
+Only creator review/save gets a bounded16KiB private JSON parser; other gift bodies
+retain the existing1KiB bound, with canonical/duplicate-key/UTF-8 protections preserved.
+
+Status: locally verified on November4:39 new plus two directly affected checks passed
+on the first run (41 unique), with focused types clean and owned cache/runner cleanup.
+No real database/server or provider call. Not committed or released. The closed
+38 country and28 withdrawal checks remain carried evidence. This declaration does not
+finish country-specific tax treatment, statutory remedies/deadlines, actual reviewed
+policy, eligible positive hosted support or production activation.
+
+## Course withdrawal intake — local preparation, November 4, 2026
+
+Germany is in the owner-selected launch scope. Prepare a conspicuous course-contract
+withdrawal entry from Terms and Support, with consumer name, contract reference and
+acknowledgement email; no reason, nationality or extra account is required. Show the
+exact declaration before a separate confirmation. Do not silently replace withdrawal
+with discretionary refund review, or interpret a recipient claim as the purchaser's
+waiver. Applicability, seller receipt authority, mandatory refund outcomes/deadlines,
+creator appointment of GrowPathAI to receive notices and complete launch terms still
+require the actual packet1 review. An intake receipt does not settle those questions.
+
+Reuse SupportRequest and the existing email engine. Record the original notice/time
+before claiming acknowledgement delivery. The same private request identity recovers
+the same receipt, rejects changed payloads and claims at most one send; lost or uncertain
+mail results require review, never automatic replay. No payment, refund, entitlement,
+seller capability, policy-approval, plan or credit operation belongs to this handler.
+Keep it independent of new gift-sale switches so existing customers can submit notices
+after new sales pause. This is request handling, not a replacement support or money ledger.
+
+The customer can retain the receipt as text and receives a clear uncertainty outcome.
+Public request/response values never contain another participant's details or gift tokens;
+do not store form drafts in browser recovery storage. Stored notice identity/fingerprints
+remain personal data when linkable. Legal/financial notice evidence is not automatically
+the routine-support 12-month category, and no retention/deletion rule or purge is added.
+Use the existing record-specific privacy/hold review before disposition or backup promises.
+
+Status: locally verified on November4:28 unique targeted checks and focused types passed; temporary caches cleaned. Not committed, released or legal clearance.
+No live notices or emails were created. Only its bounded new/directly affected verification
+belongs to this package. Country binding separately passed 38 unique checks and focused
+types; payment, dispute, delivery, expiry/renewal and earlier phone evidence stay closed.
+
+## Course-gift launch countries — local preparation, November 4, 2026
+
+Independent creators sell their own courses; the operator is not required to
+create or sell the first course. The owner selected United States, Germany and
+Thailand for the gift launch. Apply purchaser residence and recipient intended-use
+country declarations to the new gift transaction, not nationality, general app
+access or creator payout-country eligibility. Never infer a country from an email,
+IP, account display name or another participant's location.
+
+The dormant buyer form requires both choices without a default. The existing
+server review fingerprint binds the pair; confirmation, reservation and later
+creation recheck the same saved material. Retain the pair on the existing private
+buyer receipt, not a second identity or approval store, and do not add it to browser
+reload storage or provider metadata. Country edits require fresh unchecked review.
+Historical receipts keep their original material and hashes; accepted paid servicing
+does not become a new sale or require retroactive country declarations.
+
+This country-binding preparation passed 38 unique new/directly affected checks and
+focused types on November4, with temporary-data cleanup. It is not deployment, tax clearance or permission
+to activate. Country declarations are not evidence of a correct tax calculation,
+registration, legal seller identity or statutory-rights waiver. The single R09
+checklist still requires per-creator/course facts, applicable tax treatment and
+country-specific rights handling before live sale admission. Germany's withdrawal
+function/durable acknowledgement is distinct from voluntary refund review; the
+recipient cannot waive the purchaser's rights by claiming. Do not treat Stripe's
+general reinstatement or `on_behalf_of` as settling marketplace tax liability.
+
+Only new/directly affected checks belong to this change. Preserve accepted payment,
+dispute, delivery, expiry/renewal, phone and OFF-entry evidence. Gifting stays OFF;
+no hosted records, policies, accounts, plans, credits or retention are changed.
+
 ## Owner-directed course-content restriction — locally verified, October 22, 2026
 
 The owner now excludes cannabis-related text/images from courses, including existing

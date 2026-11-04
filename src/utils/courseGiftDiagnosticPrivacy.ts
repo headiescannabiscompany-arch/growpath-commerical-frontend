@@ -18,6 +18,7 @@ function privateText(value: string): boolean {
   if (value.length > 32768) return true;
   let decoded = value;
   for (let depth = 0; depth < 6; depth += 1) {
+    if (/\/api\/admin\/support-requests(?:\/|\?|$)/i.test(decoded)) return true;
     if (
       /course[-_ ]?gifts?|claim-course-gift|claimToken|checkoutAttemptId/i.test(
         decoded

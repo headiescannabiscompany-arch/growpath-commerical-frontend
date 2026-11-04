@@ -22,6 +22,8 @@ import type { AccountBillingReadModel, AccountBillingSource } from "@/api/auth";
 import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
+import CourseWithdrawalReviewPanel from "@/features/admin/CourseWithdrawalReviewPanel";
+import { validWithdrawalSummary, withdrawalCaseCanClose, withdrawalCaseVersion, type WithdrawalSummary } from "@/api/courseWithdrawalReview";
 import AppPage from "@/components/layout/AppPage";
 import TestimonialReviewPanel from "@/components/admin/TestimonialReviewPanel";
 import ComplimentaryGrantsAdminCard from "@/features/admin/ComplimentaryGrantsAdminCard";
@@ -494,6 +496,7 @@ type SupportRequest = {
   emailDelivery?: { sent?: boolean };
   assignedTo?: string | null;
   assignedAt?: string | null;
+  withdrawal?: WithdrawalSummary;
   adminNotes?: Array<{
     _id?: string;
     body: string;
@@ -1501,6 +1504,10 @@ export default function PlatformAdminRoute() {
     reason = "Platform owner support review"
   ) {
     const normalizedReason = String(reason || "").trim();
+    if (["resolved", "spam"].includes(status) && !withdrawalCaseCanClose(item)) {
+      setError("Record and complete the withdrawal rights review before closing this notice.");
+      return;
+    }
     if (status === "open" && !normalizedReason) {
       setError("A typed reason is required to reopen a completed support request.");
       return;
@@ -1510,7 +1517,8 @@ export default function PlatformAdminRoute() {
     try {
       await apiRequest(`/api/admin/support-requests/${item._id}`, {
         method: "PATCH",
-        body: { status, reason: normalizedReason }
+        body: { status, reason: normalizedReason,
+          ...(Object.hasOwn(item, "withdrawal") ? { withdrawalVersion: withdrawalCaseVersion(item) } : {}) }
       });
       if (status === "open") {
         setSupportReopenReasons((current) => ({ ...current, [item._id]: "" }));
@@ -1539,7 +1547,8 @@ export default function PlatformAdminRoute() {
         method: "PATCH",
         body: {
           ...(options.assignToSelf ? { assignToSelf: true } : {}),
-          ...(note ? { note, reason: "Platform owner support case note" } : {})
+          ...(note ? { note, reason: "Platform owner support case note" } : {}),
+          ...(Object.hasOwn(item, "withdrawal") ? { withdrawalVersion: withdrawalCaseVersion(item) } : {})
         }
       });
       if (note) {
@@ -2989,6 +2998,14 @@ export default function PlatformAdminRoute() {
                 <Text style={styles.meta}>
                   Email delivery: {item.emailDelivery?.sent ? "sent" : "not confirmed"}
                 </Text>
+                {Object.hasOwn(item, "withdrawal") && <>
+                  <Text style={styles.meta}>
+                    {validWithdrawalSummary(item.withdrawal)
+                      ? `Withdrawal: ${item.withdrawal.outcome}. ${item.withdrawal.dueAt ? `Operational due (UTC): ${item.withdrawal.dueAt}${item.withdrawal.overdue ? " — OVERDUE" : ""}` : "Deadline unclassified — urgent rights review."}`
+                      : "Withdrawal rights state could not be verified. Refresh before acting."}
+                  </Text>
+                  <CourseWithdrawalReviewPanel noticeId={item._id} onReviewed={() => void load()} />
+                </>}
                 <Text style={styles.meta}>
                   Assignment:{" "}
                   {item.assignedTo ? "assigned to an administrator" : "unassigned"}
@@ -3106,8 +3123,8 @@ export default function PlatformAdminRoute() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Resolve ${item.subject}`}
-                      accessibilityState={{ disabled: busyId === item._id }}
-                      disabled={busyId === item._id}
+                      accessibilityState={{ disabled: busyId === item._id || !withdrawalCaseCanClose(item) }}
+                      disabled={busyId === item._id || !withdrawalCaseCanClose(item)}
                       style={styles.primaryButton}
                       onPress={() => void updateSupportStatus(item, "resolved")}
                     >

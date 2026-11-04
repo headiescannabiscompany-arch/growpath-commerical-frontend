@@ -15,6 +15,7 @@ export type GiftSaleRecovery =
       policyReference: string;
       policyFingerprint: string;
       expectedConsentRef: string | null;
+      sellerFactsFingerprint?: string;
     };
 export type GiftRecoveryRead = {
   state: "empty" | "ready" | "blocked";
@@ -41,7 +42,7 @@ export function validGiftSaleRecovery(v: any): v is GiftSaleRecovery {
           "policyReference",
           "policyFingerprint",
           "expectedConsentRef"
-        ];
+        ].concat(Object.hasOwn(v, "sellerFactsFingerprint") ? ["sellerFactsFingerprint"] : []);
   if (
     Object.keys(v).length !== fields.length ||
     !fields.every((k) => Object.hasOwn(v, k))
@@ -53,6 +54,7 @@ export function validGiftSaleRecovery(v: any): v is GiftSaleRecovery {
         uuid(v.requestId) &&
         ref(v.policyReference) &&
         hash(v.policyFingerprint) &&
+        (v.sellerFactsFingerprint === undefined || hash(v.sellerFactsFingerprint)) &&
         (v.expectedConsentRef === null || ref(v.expectedConsentRef));
 }
 export function sameGiftRecovery(a: GiftSaleRecovery, b: GiftSaleRecovery) {

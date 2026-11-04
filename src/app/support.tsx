@@ -8,7 +8,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, type Href } from "expo-router";
 
 import { sendSupportContact, type SupportContactTopic } from "@/api/support";
 import BackButton from "@/components/nav/BackButton";
@@ -174,6 +174,11 @@ export default function SupportPage() {
           GrowPath team.
         </Text>
       </View>
+
+      <Link href={"/course-withdrawal" as Href} accessibilityRole="link"
+        style={{ color: palette.link, paddingVertical: 16, marginBottom: 12, fontWeight: "700", textDecorationLine: "underline" }}>
+        Withdraw from a course contract / Vertrag widerrufen
+      </Link>
 
       <Link
         href="/updates"

@@ -12,6 +12,8 @@ import {
   type GiftBuyerStatus
 } from "./courseGiftPresentation";
 import { CourseGiftBuyerPanel } from "./CourseGiftPanels";
+import { CourseGiftSellerFactsForm, CourseGiftSellerFactsReview } from "./CourseGiftSellerFacts";
+import { giftMarketCountries, giftMarketLabel, type GiftMarketCountry } from "@/utils/courseGiftMarket";
 
 type Session = ReturnType<typeof createInternalCourseGiftSaleSession>;
 type ClientOptions = Parameters<typeof createInternalCourseGiftHttpClient>[0];
@@ -102,7 +104,10 @@ function SaleScreen({
   const [creator, setCreator] = useState<CreatorGiftReview | null>(null);
   const [quote, setQuote] = useState<GiftSaleQuote | null>(null);
   const [email, setEmail] = useState("");
+  const [buyerCountry, setBuyerCountry] = useState<GiftMarketCountry | null>(null);
+  const [recipientCountry, setRecipientCountry] = useState<GiftMarketCountry | null>(null);
   const [accepted, setAccepted] = useState(false);
+  const [factsReviewed, setFactsReviewed] = useState(false);
   const [revoke, setRevoke] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -163,7 +168,9 @@ function SaleScreen({
               {recovery.creatorPending && (
                 <Text style={body}>
                   A consent save needs confirmation. Review current terms, then explicitly
-                  retry the same saved request. Reloading never opts you in.
+                  retry the same saved request with exactly the same seller and course
+                  details. Changed details cannot replace a pending request; contact
+                  support if the original details are unavailable. Reloading never opts you in.
                 </Text>
               )}
               {recovery.creatorPending && !session.reloadSaved() && (
@@ -190,6 +197,7 @@ function SaleScreen({
                 onPress={() =>
                   void act(async () => {
                     setCreator(null);
+                    setFactsReviewed(false);
                     setAccepted(false);
                     setRevoke(false);
                     const result = await session.reviewCreator();
@@ -200,6 +208,14 @@ function SaleScreen({
               />
               {creator && (
                 <>
+                  <CourseGiftSellerFactsForm savedValue={creator.savedSellerFacts} disabled={busy}
+                    onEdit={() => { setFactsReviewed(false); setAccepted(false); }}
+                    onReview={value => void act(async () => {
+                      setFactsReviewed(false); setAccepted(false);
+                      const result = await session.reviewCreator(value); current();
+                      setCreator(result); setFactsReviewed(true);
+                    })} />
+                  {factsReviewed && creator.sellerFacts && <CourseGiftSellerFactsReview value={creator.sellerFacts} />}
                   <Text style={body}>
                     {creator.consent?.enabled
                       ? creator.matchesPolicy
@@ -217,7 +233,7 @@ function SaleScreen({
                       Approved gift terms are unavailable. New consent cannot be saved.
                     </Text>
                   )}
-                  {creator.canAccept &&
+                  {creator.canAccept && factsReviewed && creator.sellerFacts &&
                     (!creator.matchesPolicy || recovery.creatorPending) && (
                       <>
                         <Check
@@ -320,16 +336,41 @@ function SaleScreen({
                     borderColor: palette.border
                   }}
                 />
+                <Text style={body}>
+                  Select where you live and where the recipient will use the course.
+                  Country affects availability and customer terms.
+                  If you do not know the recipient’s country, check with them before continuing.
+                </Text>
+                {([
+                  ["Your country", buyerCountry, setBuyerCountry],
+                  ["Recipient country", recipientCountry, setRecipientCountry]
+                ] as const).map(([label, selected, select]) => (
+                  <View key={label} style={{ gap: 8 }}>
+                    <Text style={body}>{label}</Text>
+                    <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                      {giftMarketCountries.map((country) => (
+                        <Pressable key={country} accessibilityRole="radio"
+                          accessibilityLabel={`${label}: ${giftMarketLabel[country]}`}
+                          accessibilityState={{ checked: selected === country, disabled: busy }}
+                          disabled={busy} onPress={() => select(country)}
+                          style={{ padding: 12, minHeight: 44, borderWidth: selected === country ? 2 : 1, borderColor: palette.border, borderRadius: 8 }}>
+                          <Text style={body}>{selected === country ? "● " : "○ "}{giftMarketLabel[country]}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                ))}
                 <PrimaryButton
                   title={
                     retrying
                       ? "Review original recipient for retry"
                       : "Get current gift review"
                   }
-                  disabled={busy || !normalizedGiftEmail(email)}
+                  disabled={busy || !normalizedGiftEmail(email) || !buyerCountry || !recipientCountry}
                   onPress={() =>
                     void act(async () => {
-                      const result = await session.reviewBuyer(email);
+                      if (!buyerCountry || !recipientCountry) return;
+                      const result = await session.reviewBuyer(email, { buyerCountry, recipientCountry });
                       current();
                       setQuote(result);
                     })

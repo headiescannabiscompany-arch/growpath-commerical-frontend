@@ -19,6 +19,8 @@ import {
   type GiftCheckoutRequest
 } from "@/components/courseGifts/courseGiftPresentation";
 import { sameGiftRecovery, type GiftSaleRecovery } from "./courseGiftSaleRecovery";
+import { validGiftMarket, sameGiftMarket, type GiftMarket } from "./courseGiftMarket";
+import { parseGiftSellerFacts } from "./courseGiftSellerFacts";
 
 type Client = ReturnType<typeof createInternalCourseGiftClient>;
 function fail(): never {
@@ -132,15 +134,18 @@ export function createInternalCourseGiftSaleSession({
     scope,
     courseId,
     attemptId,
-    reviewCreator: () =>
+    reviewCreator: (sellerFacts?: string) =>
       run(async () => {
         creator = null;
-        const result = await client.requestSale("creatorReview", { courseId });
+        if (sellerFacts !== undefined && !parseGiftSellerFacts(sellerFacts)) fail();
+        const result = await client.requestSale("creatorReview", { courseId, ...(sellerFacts !== undefined ? { sellerFacts } : {}) });
         current();
         if (!validCreatorReview(result, courseId)) fail();
+        if (result.sellerFacts !== sellerFacts) fail();
         const material = JSON.stringify([
           result.policy,
-          result.consent?.reference || null
+          result.consent?.reference || null,
+          result.sellerFactsFingerprint || null
         ]);
         if (!creatorHint && material !== consentMaterial) {
           requestId = "";
@@ -157,12 +162,15 @@ export function createInternalCourseGiftSaleSession({
               }
             : null,
           consent: result.consent ? consentView(result.consent) : null,
+          ...(result.savedSellerFacts !== undefined ? { savedSellerFacts: result.savedSellerFacts } : {}),
+          ...(result.sellerFacts !== undefined ? { sellerFacts: result.sellerFacts, sellerFactsFingerprint: result.sellerFactsFingerprint } : {}),
           canAccept:
             result.canAccept &&
             !creatorBlocked &&
             (!creatorHint ||
               (creatorHint.policyReference === result.policy?.reference &&
-                creatorHint.policyFingerprint === result.policy?.fingerprint)),
+                creatorHint.policyFingerprint === result.policy?.fingerprint &&
+                creatorHint.sellerFactsFingerprint === result.sellerFactsFingerprint)),
           matchesPolicy: result.matchesPolicy
         };
         return copy(creator);
@@ -183,7 +191,8 @@ export function createInternalCourseGiftSaleSession({
             requestId,
             policyReference: approved.policy!.reference,
             policyFingerprint: approved.policy!.fingerprint,
-            expectedConsentRef: approved.consent?.reference || null
+            expectedConsentRef: approved.consent?.reference || null,
+            ...(approved.sellerFactsFingerprint ? { sellerFactsFingerprint: approved.sellerFactsFingerprint } : {})
           };
         checkRecoveryWrite(creatorHint);
         reloadSaved = client.rememberSale(creatorHint);
@@ -193,7 +202,8 @@ export function createInternalCourseGiftSaleSession({
           policyReference: creatorHint.policyReference,
           policyFingerprint: creatorHint.policyFingerprint,
           expectedConsentRef: creatorHint.expectedConsentRef,
-          accepted: true
+          accepted: true,
+          ...(approved.sellerFacts !== undefined ? { sellerFacts: approved.sellerFacts, sellerFactsFingerprint: approved.sellerFactsFingerprint! } : {})
         });
         current();
         if (!validCreatorConsent(result)) fail();
@@ -228,29 +238,36 @@ export function createInternalCourseGiftSaleSession({
           fail();
         return consentView(result);
       }),
-    reviewBuyer: (email: string) =>
+    reviewBuyer: (email: string, market?: GiftMarket) =>
       run(async () => {
         retryReviewed = false;
         if (reserved && (buyerBlocked || !buyerHint || giftId || !statusChecked)) fail();
         quote = null;
         const recipientEmail = normalizedGiftEmail(email);
-        if (!recipientEmail) fail();
+        if (!recipientEmail || (market !== undefined && !validGiftMarket(market))) fail();
+        // Own a primitive copy before awaiting; caller mutation cannot change
+        // the reviewed countries or a later reservation.
+        const declared = market ? { buyerCountry: market.buyerCountry, recipientCountry: market.recipientCountry } : undefined;
         const result = await client.requestSale("buyerReview", {
           courseId,
           checkoutAttemptId: attemptId,
-          recipientEmail
+          recipientEmail,
+          ...declared
         });
         current();
         if (!validGiftSaleQuote(result, courseId, attemptId, recipientEmail)) fail();
+        if (!sameGiftMarket(declared, result.market)) fail();
         if (buyerHint && result.reviewFingerprint !== buyerHint.fingerprint) fail();
         quote = {
           version: result.version,
           courseId,
           checkoutAttemptId: attemptId,
           recipientEmail,
+          ...(declared ? { market: declared } : {}),
           title: result.title,
           amountCents: result.amountCents,
           currency: result.currency,
+          ...(result.sellerFacts !== undefined ? { sellerFacts: result.sellerFacts } : {}),
           reviewFingerprint: result.reviewFingerprint,
           sellerDisclosure: result.sellerDisclosure
             ? {
@@ -300,6 +317,7 @@ export function createInternalCourseGiftSaleSession({
           courseId,
           checkoutAttemptId: attemptId,
           recipientEmail: approved.recipientEmail,
+          ...(approved.market ? { buyerCountry: approved.market.buyerCountry, recipientCountry: approved.market.recipientCountry } : {}),
           reviewFingerprint: approved.reviewFingerprint,
           policyVersion: approved.terms.version,
           accepted: true

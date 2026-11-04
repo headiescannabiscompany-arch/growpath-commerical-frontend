@@ -3,6 +3,8 @@ import {
   validGiftSellerDisclosure,
   type GiftQuote
 } from "@/components/courseGifts/courseGiftPresentation";
+import { validGiftMarket, validGiftMarketCountry } from "@/utils/courseGiftMarket";
+import { parseGiftSellerFacts } from "@/utils/courseGiftSellerFacts";
 
 export const giftObjectId = (v: unknown): v is string =>
   typeof v === "string" && /^[a-f0-9]{24}$/.test(v);
@@ -54,11 +56,21 @@ const rules: Record<SaleOperation, Record<string, (value: unknown) => boolean>> 
 export function validGiftSaleBody(operation: SaleOperation, body: GiftWireBody) {
   if (!Object.hasOwn(rules, operation)) return false;
   const checks = rules[operation];
+  const hasMarket = ["buyerReview", "buyerReserve"].includes(operation) && body &&
+    (Object.hasOwn(body, "buyerCountry") || Object.hasOwn(body, "recipientCountry"));
+  const hasFacts = ["creatorReview", "creatorAccept"].includes(operation) && body &&
+    (Object.hasOwn(body, "sellerFacts") || Object.hasOwn(body, "sellerFactsFingerprint"));
+  const factKeys = hasFacts ? (operation === "creatorAccept" ? ["sellerFacts", "sellerFactsFingerprint"] : ["sellerFacts"]) : [];
+  const keys = Object.keys(checks).concat(hasMarket ? ["buyerCountry", "recipientCountry"] : [], factKeys);
   return Boolean(
     checks &&
     body &&
     Object.getPrototypeOf(body) === Object.prototype &&
-    Object.keys(body).length === Object.keys(checks).length &&
+    Object.keys(body).length === keys.length &&
+    Object.keys(body).every((key) => keys.includes(key)) &&
+    (!hasMarket || (validGiftMarketCountry(body.buyerCountry) && validGiftMarketCountry(body.recipientCountry))) &&
+    (!hasFacts || (Boolean(parseGiftSellerFacts(body.sellerFacts)) &&
+      (operation !== "creatorAccept" || hash(body.sellerFactsFingerprint)))) &&
     Object.entries(checks).every(
       ([key, check]) => Object.hasOwn(body, key) && check(body[key])
     )
@@ -88,6 +100,9 @@ export type CreatorGiftReview = {
   consent: CreatorConsent | null;
   canAccept: boolean;
   matchesPolicy: boolean;
+  savedSellerFacts?: string;
+  sellerFacts?: string;
+  sellerFactsFingerprint?: string;
 };
 export function validGiftSaleQuote(
   v: any,
@@ -107,6 +122,8 @@ export function validGiftSaleQuote(
     v.amountCents > 0 &&
     v.currency === "usd" &&
     validGiftSellerDisclosure(v.sellerDisclosure) &&
+    (v.market === undefined || validGiftMarket(v.market)) &&
+    (v.sellerFacts === undefined || Boolean(parseGiftSellerFacts(v.sellerFacts))) &&
     ref(v.terms?.version) &&
     [
       v.terms?.expiry,
@@ -137,6 +154,9 @@ export function validCreatorReview(v: any, courseId: string): v is CreatorGiftRe
     v.courseId === courseId &&
     typeof v.canAccept === "boolean" &&
     typeof v.matchesPolicy === "boolean" &&
+    (v.savedSellerFacts === undefined || Boolean(parseGiftSellerFacts(v.savedSellerFacts))) &&
+    ((v.sellerFacts === undefined && v.sellerFactsFingerprint === undefined) ||
+      (Boolean(parseGiftSellerFacts(v.sellerFacts)) && hash(v.sellerFactsFingerprint))) &&
     (v.consent === null || validCreatorConsent(v.consent)) &&
     (v.policy === null ||
       (ref(v.policy?.reference) &&

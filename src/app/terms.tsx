@@ -1,13 +1,16 @@
 import React from "react";
+import { Link, type Href } from "expo-router";
 
 import PublicInfoPage from "@/components/PublicInfoPage";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
+import { useAppTheme } from "@/theme/appTheme";
 
 export default function TermsPage() {
+  const { palette } = useAppTheme();
   return (
     <PublicInfoPage
       title="Terms of Service"
-      updated="October 21, 2026"
+      updated="November 4, 2026"
       intro="These terms govern access to GrowPath apps, websites, APIs, subscriptions, AI tools, and facility workflows."
       sections={[
         {
@@ -39,6 +42,10 @@ export default function TermsPage() {
           body: `For terms, legal, or account notices, contact ${SUPPORT_CONTACTS.legal}. For general account support, use ${SUPPORT_CONTACTS.general}.`
         }
       ]}
-    />
+    >
+      <Link href={"/course-withdrawal" as Href} accessibilityRole="link" style={{ color: palette.link, paddingVertical: 16, fontWeight: "700", textDecorationLine: "underline" }}>
+        Withdraw from a course contract / Vertrag widerrufen
+      </Link>
+    </PublicInfoPage>
   );
 }

@@ -13,6 +13,7 @@ import {
   type CourseGiftAuth
 } from "@/utils/courseGiftContinuation";
 import { safeGiftCheckoutUrl } from "@/api/courseGiftSaleContract";
+import { syntheticSellerFacts } from "../fixtures/courseGiftSellerFacts";
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: jest.fn(),
   ApiError: class extends Error {}
@@ -128,9 +129,15 @@ beforeEach(() => {
       url: URL
     }
   };
-  api.mockImplementation(async (url: string) => ({
+  api.mockImplementation(async (url: string, options: any) => ({
     success: true,
-    data: clone(replies[url.replace("/api/course-gifts/", "")])
+    data: {
+      ...clone(replies[url.replace("/api/course-gifts/", "")]),
+      ...(url === path("buyer/review") && options.body.buyerCountry && !replies["buyer/review"].market
+        ? { market: { buyerCountry: options.body.buyerCountry, recipientCountry: options.body.recipientCountry } } : {}),
+      ...(url === path("creator/review") && options.body.sellerFacts
+        ? { sellerFacts: options.body.sellerFacts, sellerFactsFingerprint: HASH } : {})
+    }
   }));
   session = createInternalCourseGiftSaleHttpSession({
     platform: "web",
@@ -149,6 +156,14 @@ afterEach(() => {
   jest.useRealTimers();
 });
 async function press(view: ReturnType<typeof render>, label: string) {
+  // Flush country state before invoking the newly enabled review button.
+  // One batched act would press the previous render's disabled control.
+  if (["Get current gift review", "Review original recipient for retry"].includes(label)) {
+    await act(async () => {
+      fireEvent.press(view.getByLabelText("Your country: United States"));
+      fireEvent.press(view.getByLabelText("Recipient country: United States"));
+    });
+  }
   await act(async () => {
     fireEvent.press(view.getByText(label));
   });
@@ -166,6 +181,52 @@ async function reserve() {
   await session.reviewBuyer(EMAIL);
   return session.reserveBuyer(request());
 }
+describe("R09 launch country session and screens", () => {
+  it("requires both country choices without guessing from email or account", async () => {
+    const view = screen("buyer");
+    fireEvent.changeText(view.getByLabelText("Gift recipient email"), EMAIL);
+    await act(async () => fireEvent.press(view.getByText("Get current gift review")));
+    expect(calls("buyer/review")).toHaveLength(0);
+    fireEvent.press(view.getByLabelText("Your country: Germany"));
+    await act(async () => fireEvent.press(view.getByText("Get current gift review")));
+    expect(calls("buyer/review")).toHaveLength(0);
+    fireEvent.press(view.getByLabelText("Recipient country: Thailand"));
+    await act(async () => fireEvent.press(view.getByText("Get current gift review")));
+    expect(calls("buyer/review")[0][1].body).toMatchObject({ buyerCountry: "DE", recipientCountry: "TH" });
+    expect(view.getByText("Your country: Germany. Recipient country: Thailand.")).toBeTruthy();
+    expect(view.getByLabelText("I reviewed the recipient and gift terms").props.accessibilityState.checked).toBe(false);
+    expect(calls("buyer/reserve")).toHaveLength(0);
+  });
+  it("binds the reviewed pair to reserve without placing countries in reload storage", async () => {
+    await session.reviewBuyer(EMAIL, { buyerCountry: "DE", recipientCountry: "TH" });
+    await session.reserveBuyer(request());
+    expect(calls("buyer/reserve")[0][1].body).toMatchObject({ buyerCountry: "DE", recipientCountry: "TH" });
+    expect(JSON.stringify(storage.setItem.mock.calls)).not.toContain("buyerCountry");
+    expect(JSON.stringify(storage.setItem.mock.calls)).not.toContain("recipientCountry");
+  });
+  it("rejects a different server country even when course, price and recipient match", async () => {
+    replies["buyer/review"].market = { buyerCountry: "US", recipientCountry: "TH" };
+    await expect(session.reviewBuyer(EMAIL, { buyerCountry: "DE", recipientCountry: "TH" })).rejects.toThrow();
+    await expect(session.reserveBuyer(request())).rejects.toThrow();
+    expect(calls("buyer/reserve")).toHaveLength(0);
+  });
+  it("rejects missing countries in a declared-market response", async () => {
+    api.mockResolvedValueOnce({ success: true, data: quote() });
+    await expect(session.reviewBuyer(EMAIL, { buyerCountry: "DE", recipientCountry: "TH" })).rejects.toThrow();
+  });
+  it("copies declarations before a delayed review and reservation", async () => {
+    const pending = deferred();
+    api.mockImplementationOnce(() => pending.promise);
+    const declared = { buyerCountry: "DE", recipientCountry: "TH" } as any;
+    const work = session.reviewBuyer(EMAIL, declared);
+    declared.buyerCountry = "US";
+    pending.resolve({ success: true, data: { ...quote(), market: { buyerCountry: "DE", recipientCountry: "TH" } } });
+    expect((await work).market?.buyerCountry).toBe("DE");
+    await session.reserveBuyer(request());
+    expect(calls("buyer/reserve")[0][1].body.buyerCountry).toBe("DE");
+  });
+});
+
 describe("R09-03E internal creator and buyer screens", () => {
   it("seller disclosure survives the real client/session projection without entering storage or request bodies", async () => {
     replies["buyer/review"].sellerDisclosure = {
@@ -241,6 +302,20 @@ describe("R09-03E internal creator and buyer screens", () => {
     expect(api).not.toHaveBeenCalled();
     await press(view, "Review current gift permission");
     expect(view.getByText("Synthetic creator terms")).toBeTruthy();
+    expect(view.queryByText("Save gift consent")).toBeNull();
+    for (const [label, value] of [
+      ["Legal seller name and any trading name", "Synthetic seller"],
+      ["Business / geographic postal address, including country (shown to buyers)", "1 Synthetic Street\nTest Town, United States"],
+      ["Seller contact email (shown to buyers)", "seller@example.invalid"],
+      ["Seller contact telephone, including country code (shown to buyers)", "+1 202 555 0100"],
+      ["Course access duration, start / delivery schedule and support commitments", "Prerecorded gardening lessons, twelve months access. Weekly group Q&A."]
+    ]) fireEvent.changeText(view.getByLabelText(label), value);
+    for (const label of ["Seller status: Selling as a business or sole proprietor", "Course delivery: Prerecorded lessons",
+      "Learner support / instructor Q&A: Group support / Q&A", "Assignments / assessment: None",
+      "I authorize these seller and course details to be shown to prospective buyers and retained with their transaction evidence.",
+      "I appoint GrowPathAI to receive and timestamp withdrawal notices for this course on my behalf. I remain responsible for required remedies and deadlines."])
+      fireEvent.press(view.getByLabelText(label));
+    await press(view, "Review seller and course details");
     expect(view.getByText("Save gift consent").parent).toBeTruthy();
     await press(view, "Save gift consent");
     expect(calls("creator/accept")).toHaveLength(0);
@@ -252,7 +327,8 @@ describe("R09-03E internal creator and buyer screens", () => {
       policyReference: "synthetic-policy",
       policyFingerprint: HASH,
       expectedConsentRef: null,
-      accepted: true
+      accepted: true,
+      sellerFacts: syntheticSellerFacts(), sellerFactsFingerprint: HASH
     });
     expect(view.getByText(/Consent saved/)).toBeTruthy();
     expect(view.queryByText("Save gift consent")).toBeNull();
@@ -298,6 +374,8 @@ describe("R09-03E internal creator and buyer screens", () => {
     await press(view, "Continue to checkout");
     expect(calls("buyer/reserve")[0][1].body).toEqual({
       ...request(),
+      buyerCountry: "US",
+      recipientCountry: "US",
       reviewFingerprint: HASH,
       accepted: true
     });
