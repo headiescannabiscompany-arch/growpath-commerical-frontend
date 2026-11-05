@@ -1,5 +1,147 @@
 # Course Media Workflow
 
+## Durable tax, receipt and refund wiring — local verification, November 5 2026
+
+November5 durable tax wiring LOCAL VERIFIED, not released: existing policy rules/private BuyerReview/reservation bind exact historical treatment and immutable Checkout parameters; actual PI/Charge/line tax evidence produces gross/tax/fee/creator-net Purchase/Earning checkpoints. Original tax withholding and cumulative refund transfer/fee recovery use separate durable same-key operations, bounded complete provider lists, retained unknown outcomes and a23-hour retry fence. Customer gross refund uses the existing refund lease with automatic reversal/fee flags OFF and is independent of tax-credit/creator recovery. Only actual reviewed tax-credit/fee targets authorize recovery; no partial-tax guess. Paid learner access is independent of a tax-only earnings hold; all original refund/dispute controls remain. Five new buyer UI checks show US jurisdiction and the tax-inclusive paid breakdown;43 unique scoped checks total (41new/two affected), focused types zero errors. One mock currency omission and web-platform fixture correction retained with failed-only retries; final earning-identity safeguard required three directly affected repeats. Normal production entry/flags OFF; protected refund/allocation callbacks default unavailable. Actual sourcing/classification/liability/registration/rights review, live policy, reviewed candidate release and eligible hosted acceptance remain in the existing six packets. No real provider/database/payment/email, build/release or plan/credit/security/retention change. This note supersedes earlier adapter-only remaining-coding pointers; historical evidence remains.
+
+Public amount breakdowns contain only subtotal, included tax and total; private
+review references, provider-account evidence and fingerprints stay server-side.
+This payment breakdown is not a promise of a jurisdiction-compliant tax invoice.
+The production preparation exposes trusted servicing methods with separately
+required protected refund/allocation authorization; no default authorizer, normal
+entry activation or hosted operator acceptance is inferred. Missing provider
+results stay pending/manual review. External provider/dashboard mutations are not
+authority to reset an operation or issue a fresh financial idempotency key.
+
+The older sections below describe their dated implementation snapshots; their
+remaining-connection statements are superseded by this local source stage.
+
+## Stripe tax request/evidence bridge — local preparation, November 5 2026
+
+Extend existing immutable checkout parameters and integer-cent amount/refund helpers.
+The bridge prepares an inclusive single-course USD Checkout request without changing
+the agreed fee or creator on_behalf_of identity. Tax liability is explicit and separate:
+platform uses automatic_tax liability self; creator uses the exact connected account.
+Automatic collection requires that liable account's fresh active settings/registration
+evidence for the reviewed jurisdiction. A separately reviewed no-collection basis is
+represented explicitly, never inferred from missing registration or zero output.
+
+Bind original policy/course/creator/declaration fingerprints, written classification,
+location and registration bases, exact candidate code and review dates. This supports
+only an explicitly reviewed purchase tax point and Checkout-customer-address sourcing.
+It does NOT implement recipient/consumption-location sourcing or redemption taxation.
+Mixed/instructor-dependent facts require their additional written format review.
+References remain potentially personal provenance and do not themselves prove approval.
+
+Hosted Checkout calculates its own tax. Do not claim a standalone preview calculation
+is sealed into it. Paid tax evidence requires the exact reviewed metadata, full single
+line, unchanged inclusive gross, code, liability, jurisdiction and complete tax result.
+Unknown, unsupported or not_collecting reasons need review; actual product-exempt zero
+is preserved. The canonical amount snapshot excludes tax from creator income.
+
+A customer's gross refund request is independent of tax-credit/withholding/creator
+recovery evidence and disables blind automatic transfer/fee refund. Recovery separately
+uses original historical receipt treatment and authoritative cumulative tax/fee credit.
+For platform liability it excludes the tax already withheld; for creator liability it
+recovers the creator-held tax too. Keep exact original-transfer/withholding/refund/fee
+checkpoints in the EXISTING Purchase/recovery records, with their leases/CAS and
+idempotency controls. The bridge is a request/evidence/accounting-target adapter,
+not a new approval store, durable executor, ledger update, provider call or payment proof.
+
+Status:26 new mocked backend checks passed, with exact resolved file/name selection,
+pre-Jest transport/process guards, zero attempted external calls, per-case evidence,
+unchanged source during execution and complete owned-cache cleanup. Method/registry
+notes receive static inspection only; no frontend tests/types or closed checks repeated.
+The existing sale/fulfillment guards remain in place. The bridge is
+NOT connected to policy/receipt persistence, actual provider retrieval/withholding,
+Purchase/Earning servicing or normal production composition yet. Those remain packet1
+work, alongside actual coverage/policy evidence. Prior37 monetary,23 declaration backend
+and14 UI checks/types remain closed. No release, actual tax setting, registration,
+payment/refund/email, plan/credit/security or live-retention change.
+
+## Creator format and included-tax price — local candidate, November 4 2026
+
+The owner confirmed tax-inclusive listed prices and the five canonical Stripe
+course-category candidates for LOCAL preparation. This does not classify an actual
+course, establish liability/exemption/registration, approve a policy or activate sales.
+The six-packet R09 checklist and its finite tax/rights receipt remain authoritative.
+
+New creator declarations use v2, reusing the existing seller/contact/consent record.
+Replace the broad recorded/live/mixed question with ONE actual-format choice:
+streamed prerecorded audio/video; prerecorded media with permanent download;
+written material; self-study web training without streamed/downloaded audio/video;
+live interactive virtual teaching without replays; or mixed/unsure for review.
+The versioned catalog holds the owner-reviewed candidate codes. No arbitrary client
+code, silent generic fallback, rate or exemption is accepted. Instructor support,
+instructor assessment and mixed/uncertain format need course-specific review.
+The compatibility delivery tag is not a claim that written material is video:
+v2 reviews display its precise format label.
+
+Display before review and on the reviewed declaration that the listed gift price
+includes applicable tax, which is deducted along with the existing fee before creator
+proceeds. The explicit consent includes this declaration. Old v1 bytes/hashes remain
+unchanged; do not infer a v2 format from old recorded/live/mixed facts. Prefill known
+contacts but leave the new format unanswered for v1. Saved v2 may prefill format,
+never re-check authority. Edits invalidate review and renewed consent. Same-request
+recovery binds the exact declaration fingerprint and keeps contacts out of browser
+storage; replacement consent preserves prior evidence and signals unpaid recovery.
+
+The existing private receipt stores the exact canonical declaration. Generic model
+JSON does not expose it; a changed category under an old material hash is not authority
+to recreate a checkout. New v2 declarations are refused by the old untaxed acquisition
+path until actual quote/provider/ledger tax wiring exists. This refusal does not alter
+previous paid servicing or deny mandatory customer rights.
+
+Status:23 scoped backend checks passed (20new/three directly affected), with exact
+resolved selection, private mocked records, blocked transport and owned-cache cleanup.
+Carry the prior37 monetary checks unchanged. November5: all14 frontend UI/affected
+checks and focused types passed under the owner's bounded exception. An initial
+setup attempt was interrupted without complete case results;13 cases then passed
+and one failed only at a missing test-client dispose mock. That fixture was corrected
+and only the one failed case retried. Native-find subprocess probing was blocked;
+Jest used its fallback. Both owned caches were removed. No real tax/provider call,
+registration, payment, refund, email, release, plan/credit or retention change.
+
+## Tax monetary boundary preparation November 4 2026
+
+Country, seller-declaration, withdrawal-intake and protected rights-review controls
+were production released with gifting OFF in API a6a33ef3 / website2b06a2bd.
+The older local/unreleased labels below describe their original preparation.
+Their accepted checks and journeys remain closed.
+
+New local source prepares a canonical course-gift monetary snapshot for both
+inclusive and exclusive listed prices, with no selected live default. Listed
+price, actual gross, explicit tax, agreed fee and creator net must reconcile in
+integer USD cents. A missing amount never becomes zero; no rate, registration,
+exemption, seller identity or liability decision is inferred. Private treatment
+and location-evidence references remain separate from the buyer amount projection.
+IDs and hashes remain potentially personal; no retention rule is changed.
+
+Refund targets require explicit cumulative gross refunded, authoritative tax
+credit and fee returned. A full refund includes all tax and commission; partial
+tax is never guessed as a percentage. Targets do not prove payment or authorize
+reversals. Keep prior tax withholding separate from later customer recovery.
+
+The existing gift payment parser now refuses unconnected automatic/manual tax
+evidence before its historical gross-minus-fee accounting. The historical refund
+adapter refuses tax-bearing gift markers before its blind full transfer reversal.
+These are safe refusals pending the actual tax-aware provider/ledger connection,
+not a new customer refund exclusion or an extension of a statutory deadline.
+Ordinary course payments and existing untaxed/Sandbox gifts keep their prior path.
+
+Status:37 selected backend checks passed in the corrected scoped run, including
+35 new/directly affected new cases and two affected existing refund checks.
+An initial runner loaded default setup and was stopped; its evidence/limits are
+retained separately. The corrected config was resolved/asserted before execution,
+with parent I/O/process blocks,37 per-case results and complete owned-cache cleanup.
+Frontend notes receive syntax/corruption inspection only; no frontend tests/types.
+This is local evidence, not a release.
+Tax calculation, reviewed liability/course/location/registration evidence, quote/
+receipt/provider creation, withholding/refund recovery, actual policy and normal
+production entry/activation remain unfinished. Neither these helpers nor a mocked
+test can activate sales. No actual provider call, filing, charge, refund, email,
+plan/credit/security or live-retention change.
+
 ## Withdrawal outcome/deadline review — local preparation, November 4, 2026
 
 The verified notice intake is not a remedy decision. Extend existing Admin support,

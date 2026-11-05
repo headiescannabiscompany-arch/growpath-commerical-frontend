@@ -126,7 +126,8 @@ export function createInternalCourseGiftSaleSession({
       checkoutAttemptId: attemptId,
       checkoutStatus: value.checkoutStatus,
       paymentRecorded: value.paymentRecorded,
-      recoveryRequired: value.recoveryRequired
+      recoveryRequired: value.recoveryRequired,
+      ...(value.taxAmounts ? { taxAmounts: { ...value.taxAmounts } } : {})
     };
     return copy(buyer);
   }
@@ -247,7 +248,7 @@ export function createInternalCourseGiftSaleSession({
         if (!recipientEmail || (market !== undefined && !validGiftMarket(market))) fail();
         // Own a primitive copy before awaiting; caller mutation cannot change
         // the reviewed countries or a later reservation.
-        const declared = market ? { buyerCountry: market.buyerCountry, recipientCountry: market.recipientCountry } : undefined;
+        const declared = market ? { buyerCountry: market.buyerCountry, recipientCountry: market.recipientCountry, ...(market.buyerRegion ? { buyerRegion: market.buyerRegion } : {}) } : undefined;
         const result = await client.requestSale("buyerReview", {
           courseId,
           checkoutAttemptId: attemptId,
@@ -317,7 +318,7 @@ export function createInternalCourseGiftSaleSession({
           courseId,
           checkoutAttemptId: attemptId,
           recipientEmail: approved.recipientEmail,
-          ...(approved.market ? { buyerCountry: approved.market.buyerCountry, recipientCountry: approved.market.recipientCountry } : {}),
+          ...(approved.market ? { buyerCountry: approved.market.buyerCountry, recipientCountry: approved.market.recipientCountry, ...(approved.market.buyerRegion ? { buyerRegion: approved.market.buyerRegion } : {}) } : {}),
           reviewFingerprint: approved.reviewFingerprint,
           policyVersion: approved.terms.version,
           accepted: true

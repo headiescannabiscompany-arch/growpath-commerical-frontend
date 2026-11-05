@@ -13,7 +13,7 @@ import {
   type CourseGiftAuth
 } from "@/utils/courseGiftContinuation";
 import { safeGiftCheckoutUrl } from "@/api/courseGiftSaleContract";
-import { syntheticSellerFacts } from "../fixtures/courseGiftSellerFacts";
+import { syntheticTaxSellerFacts } from "../fixtures/courseGiftSellerFacts";
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: jest.fn(),
   ApiError: class extends Error {}
@@ -310,7 +310,7 @@ describe("R09-03E internal creator and buyer screens", () => {
       ["Seller contact telephone, including country code (shown to buyers)", "+1 202 555 0100"],
       ["Course access duration, start / delivery schedule and support commitments", "Prerecorded gardening lessons, twelve months access. Weekly group Q&A."]
     ]) fireEvent.changeText(view.getByLabelText(label), value);
-    for (const label of ["Seller status: Selling as a business or sole proprietor", "Course delivery: Prerecorded lessons",
+    for (const label of ["Seller status: Selling as a business or sole proprietor", "Course delivery: Prerecorded audio/video — streaming only",
       "Learner support / instructor Q&A: Group support / Q&A", "Assignments / assessment: None",
       "I authorize these seller and course details to be shown to prospective buyers and retained with their transaction evidence.",
       "I appoint GrowPathAI to receive and timestamp withdrawal notices for this course on my behalf. I remain responsible for required remedies and deadlines."])
@@ -319,7 +319,7 @@ describe("R09-03E internal creator and buyer screens", () => {
     expect(view.getByText("Save gift consent").parent).toBeTruthy();
     await press(view, "Save gift consent");
     expect(calls("creator/accept")).toHaveLength(0);
-    fireEvent.press(view.getByLabelText("I agree to these gift terms for this course"));
+    fireEvent.press(view.getByLabelText("I agree to these gift terms and seller/course details, including the tax-inclusive listed price"));
     await press(view, "Save gift consent");
     expect(calls("creator/accept")[0][1].body).toEqual({
       courseId: COURSE,
@@ -328,7 +328,7 @@ describe("R09-03E internal creator and buyer screens", () => {
       policyFingerprint: HASH,
       expectedConsentRef: null,
       accepted: true,
-      sellerFacts: syntheticSellerFacts(), sellerFactsFingerprint: HASH
+      sellerFacts: syntheticTaxSellerFacts(), sellerFactsFingerprint: HASH
     });
     expect(view.getByText(/Consent saved/)).toBeTruthy();
     expect(view.queryByText("Save gift consent")).toBeNull();

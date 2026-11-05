@@ -428,6 +428,7 @@ export function createInternalCourseGiftClient(options: Options) {
         checkoutAttemptId: result.checkoutAttemptId,
         checkoutStatus: result.checkoutStatus,
         paymentRecorded: result.paymentRecorded,
+        ...(result.taxAmounts ? { taxAmounts: { ...result.taxAmounts } } : {}),
         recoveryRequired: result.recoveryRequired
       };
     },

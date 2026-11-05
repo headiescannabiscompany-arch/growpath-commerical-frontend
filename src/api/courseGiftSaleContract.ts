@@ -61,14 +61,14 @@ export function validGiftSaleBody(operation: SaleOperation, body: GiftWireBody) 
   const hasFacts = ["creatorReview", "creatorAccept"].includes(operation) && body &&
     (Object.hasOwn(body, "sellerFacts") || Object.hasOwn(body, "sellerFactsFingerprint"));
   const factKeys = hasFacts ? (operation === "creatorAccept" ? ["sellerFacts", "sellerFactsFingerprint"] : ["sellerFacts"]) : [];
-  const keys = Object.keys(checks).concat(hasMarket ? ["buyerCountry", "recipientCountry"] : [], factKeys);
+  const keys = Object.keys(checks).concat(hasMarket ? ["buyerCountry", "recipientCountry", ...(Object.hasOwn(body, "buyerRegion") ? ["buyerRegion"] : [])] : [], factKeys);
   return Boolean(
     checks &&
     body &&
     Object.getPrototypeOf(body) === Object.prototype &&
     Object.keys(body).length === keys.length &&
     Object.keys(body).every((key) => keys.includes(key)) &&
-    (!hasMarket || (validGiftMarketCountry(body.buyerCountry) && validGiftMarketCountry(body.recipientCountry))) &&
+    (!hasMarket || (validGiftMarketCountry(body.buyerCountry) && validGiftMarketCountry(body.recipientCountry) && (!Object.hasOwn(body, "buyerRegion") || (body.buyerCountry === "US" && typeof body.buyerRegion === "string" && /^[A-Z]{2}$/.test(body.buyerRegion))))) &&
     (!hasFacts || (Boolean(parseGiftSellerFacts(body.sellerFacts)) &&
       (operation !== "creatorAccept" || hash(body.sellerFactsFingerprint)))) &&
     Object.entries(checks).every(

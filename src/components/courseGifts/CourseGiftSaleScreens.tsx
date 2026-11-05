@@ -14,6 +14,7 @@ import {
 import { CourseGiftBuyerPanel } from "./CourseGiftPanels";
 import { CourseGiftSellerFactsForm, CourseGiftSellerFactsReview } from "./CourseGiftSellerFacts";
 import { giftMarketCountries, giftMarketLabel, type GiftMarketCountry } from "@/utils/courseGiftMarket";
+import { parseGiftSellerFacts } from "@/utils/courseGiftSellerFacts";
 
 type Session = ReturnType<typeof createInternalCourseGiftSaleSession>;
 type ClientOptions = Parameters<typeof createInternalCourseGiftHttpClient>[0];
@@ -104,6 +105,7 @@ function SaleScreen({
   const [creator, setCreator] = useState<CreatorGiftReview | null>(null);
   const [quote, setQuote] = useState<GiftSaleQuote | null>(null);
   const [email, setEmail] = useState("");
+  const [buyerRegion, setBuyerRegion] = useState("");
   const [buyerCountry, setBuyerCountry] = useState<GiftMarketCountry | null>(null);
   const [recipientCountry, setRecipientCountry] = useState<GiftMarketCountry | null>(null);
   const [accepted, setAccepted] = useState(false);
@@ -237,7 +239,9 @@ function SaleScreen({
                     (!creator.matchesPolicy || recovery.creatorPending) && (
                       <>
                         <Check
-                          label="I agree to these gift terms for this course"
+                          label={parseGiftSellerFacts(creator.sellerFacts)?.version === "course-gift-seller-facts-v2"
+                            ? "I agree to these gift terms and seller/course details, including the tax-inclusive listed price"
+                            : "I agree to these gift terms for this course"}
                           checked={accepted}
                           disabled={busy}
                           onChange={() => setAccepted(!accepted)}
@@ -352,7 +356,7 @@ function SaleScreen({
                         <Pressable key={country} accessibilityRole="radio"
                           accessibilityLabel={`${label}: ${giftMarketLabel[country]}`}
                           accessibilityState={{ checked: selected === country, disabled: busy }}
-                          disabled={busy} onPress={() => select(country)}
+                          disabled={busy} onPress={() => { select(country); if (label === "Your country") setBuyerRegion(""); }}
                           style={{ padding: 12, minHeight: 44, borderWidth: selected === country ? 2 : 1, borderColor: palette.border, borderRadius: 8 }}>
                           <Text style={body}>{selected === country ? "● " : "○ "}{giftMarketLabel[country]}</Text>
                         </Pressable>
@@ -360,17 +364,18 @@ function SaleScreen({
                     </View>
                   </View>
                 ))}
+                {buyerCountry === "US" ? <View style={{ gap: 8 }}><Text style={body}>Your state or territory (two-letter code)</Text><TextInput accessibilityLabel="Your state or territory" value={buyerRegion} autoCapitalize="characters" maxLength={2} onChangeText={value => setBuyerRegion(value.toUpperCase().replace(/[^A-Z]/g, ""))} style={{ padding: 12, minHeight: 44, borderWidth: 1, borderColor: palette.border, borderRadius: 8 }} /><Text style={body}>Use your billing address. Checkout verifies the address before payment.</Text></View> : null}
                 <PrimaryButton
                   title={
                     retrying
                       ? "Review original recipient for retry"
                       : "Get current gift review"
                   }
-                  disabled={busy || !normalizedGiftEmail(email) || !buyerCountry || !recipientCountry}
+                  disabled={busy || !normalizedGiftEmail(email) || !buyerCountry || !recipientCountry || (buyerCountry === "US" && !/^[A-Z]{2}$/.test(buyerRegion))}
                   onPress={() =>
                     void act(async () => {
                       if (!buyerCountry || !recipientCountry) return;
-                      const result = await session.reviewBuyer(email, { buyerCountry, recipientCountry });
+                      const result = await session.reviewBuyer(email, { buyerCountry, recipientCountry, ...(buyerCountry === "US" ? { buyerRegion } : {}) });
                       current();
                       setQuote(result);
                     })
@@ -414,6 +419,7 @@ function SaleScreen({
                 })
               }
             />
+            {buyerStatus?.taxAmounts ? <View style={{ gap: 6 }}><Text style={body}>Payment breakdown</Text><Text style={body}>Course before tax: ${(buyerStatus.taxAmounts.subtotalCents / 100).toFixed(2)}</Text><Text style={body}>Included tax: ${(buyerStatus.taxAmounts.taxAmountCents / 100).toFixed(2)}</Text><Text style={body}>Total paid: ${(buyerStatus.taxAmounts.totalCents / 100).toFixed(2)} USD</Text><Text style={body}>This breakdown records the payment. Refund rights remain available separately.</Text></View> : null}
             {recovery.canReviewRetry && !retrying && (
               <PrimaryButton
                 title="Review same reservation for retry"

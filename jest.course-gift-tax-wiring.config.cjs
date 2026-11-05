@@ -1,0 +1,1 @@
+const base=require("./jest.course-gift-seller-facts.config.cjs"); module.exports={...base,testMatch:["<rootDir>/tests/unit/CourseGiftTaxWiring.test.tsx"],testNamePattern:"^R09 durable tax buyer UI "};

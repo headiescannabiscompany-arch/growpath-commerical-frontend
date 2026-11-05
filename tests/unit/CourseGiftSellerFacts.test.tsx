@@ -5,7 +5,7 @@ import { parseGiftSellerFacts } from "@/utils/courseGiftSellerFacts";
 import { createInternalCourseGiftSaleSession } from "@/utils/courseGiftSaleSession";
 import { validGiftSaleBody } from "@/api/courseGiftSaleContract";
 import { validGiftSaleRecovery } from "@/utils/courseGiftSaleRecovery";
-import { syntheticSellerFacts as facts } from "../fixtures/courseGiftSellerFacts";
+import { syntheticSellerFacts as facts, syntheticTaxSellerFacts as taxFacts } from "../fixtures/courseGiftSellerFacts";
 jest.mock("@/theme/appTheme", () => {
   const actual = jest.requireActual("@/theme/appTheme");
   return { ...actual, useAppTheme: () => ({ palette: actual.getThemePalette("night", "dark") }) };
@@ -40,13 +40,18 @@ test("creator form has no inferred status or implicit publication/agency authori
   expect(view.getByLabelText(agency).props.accessibilityState.checked).toBe(false);
   fireEvent.press(view.getByText("Review seller and course details")); expect(onReview).not.toHaveBeenCalled();
 });
-test("saved facts prefill without prechecking new authority and require both explicit choices", () => {
+test("saved facts prefill without inferring the new format and require renewed authority", () => {
   const { view, onReview } = form(facts());
   expect(view.getByDisplayValue("Synthetic seller")).toBeTruthy();
   fireEvent.press(view.getByLabelText(publication)); fireEvent.press(view.getByText("Review seller and course details"));
   expect(onReview).not.toHaveBeenCalled();
   fireEvent.press(view.getByLabelText(agency)); fireEvent.press(view.getByText("Review seller and course details"));
-  expect(onReview).toHaveBeenCalledWith(facts());
+  expect(onReview).not.toHaveBeenCalled();
+  fireEvent.press(view.getByLabelText("Course delivery: Prerecorded audio/video — streaming only"));
+  expect(view.getByLabelText(publication).props.accessibilityState.checked).toBe(false);
+  fireEvent.press(view.getByLabelText(publication)); fireEvent.press(view.getByLabelText(agency));
+  fireEvent.press(view.getByText("Review seller and course details"));
+  expect(onReview).toHaveBeenCalledWith(taxFacts());
 });
 test("editing a reviewed contact clears authority and informs the parent to invalidate terms", () => {
   const { view, onReview, onEdit } = form(facts());

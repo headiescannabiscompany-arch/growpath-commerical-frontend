@@ -62,6 +62,7 @@ export type GiftBuyerStatus = {
   checkoutStatus: string;
   paymentRecorded: boolean;
   recoveryRequired: boolean;
+  taxAmounts?: { version: "course-gift-tax-amounts-v1"; taxBehavior: "inclusive"; listedAmountCents: number; subtotalCents: number; taxAmountCents: number; totalCents: number; currency: "usd" };
 };
 
 export type GiftClaimResult = {
@@ -120,8 +121,17 @@ export function boundBuyerStatus(value: GiftBuyerStatus, attemptId: string): boo
     value.checkoutAttemptId === attemptId &&
     text(value.checkoutStatus) &&
     typeof value.paymentRecorded === "boolean" &&
-    typeof value.recoveryRequired === "boolean"
+    typeof value.recoveryRequired === "boolean" &&
+    (value.taxAmounts === undefined || (value.paymentRecorded && validGiftTaxAmounts(value.taxAmounts)))
   );
+}
+export function validGiftTaxAmounts(v: unknown): v is NonNullable<GiftBuyerStatus["taxAmounts"]> {
+  if (!v || typeof v !== "object") return false;
+  const a = v as NonNullable<GiftBuyerStatus["taxAmounts"]>;
+  return Object.keys(a).sort().join(",") === "currency,listedAmountCents,subtotalCents,taxAmountCents,taxBehavior,totalCents,version" &&
+    a.version === "course-gift-tax-amounts-v1" && a.taxBehavior === "inclusive" && a.currency === "usd" &&
+    [a.listedAmountCents,a.subtotalCents,a.taxAmountCents,a.totalCents].every(n => Number.isSafeInteger(n) && n >= 0) &&
+    a.totalCents > 0 && a.listedAmountCents === a.totalCents && a.subtotalCents + a.taxAmountCents === a.totalCents;
 }
 
 export function buyerGiftMessage(status: GiftBuyerStatus): string {

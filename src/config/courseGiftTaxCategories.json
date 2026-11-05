@@ -1,0 +1,12 @@
+{
+  "version": "course-gift-tax-categories-v1",
+  "pricingTaxBehavior": "inclusive",
+  "categories": {
+    "recorded_streaming": { "label": "Prerecorded audio/video — streaming only", "deliveryFormat": "recorded", "taxCodeCandidate": "txcd_20060158" },
+    "recorded_download": { "label": "Prerecorded audio/video — includes permanent downloads", "deliveryFormat": "recorded", "taxCodeCandidate": "txcd_20060258" },
+    "written": { "label": "Written course material — viewed or downloaded", "deliveryFormat": "recorded", "taxCodeCandidate": "txcd_20060358" },
+    "self_study": { "label": "Self-study web training — no streamed or downloaded audio/video", "deliveryFormat": "recorded", "taxCodeCandidate": "txcd_20060058" },
+    "live_virtual": { "label": "Live interactive virtual teaching — no replays", "deliveryFormat": "live", "taxCodeCandidate": "txcd_20060045" },
+    "mixed_review": { "label": "Mixed formats or unsure — needs review", "deliveryFormat": "mixed", "taxCodeCandidate": null }
+  }
+}

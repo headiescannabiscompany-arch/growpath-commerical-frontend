@@ -1,6 +1,6 @@
 export const giftMarketCountries = ["US", "DE", "TH"] as const;
 export type GiftMarketCountry = (typeof giftMarketCountries)[number];
-export type GiftMarket = { buyerCountry: GiftMarketCountry; recipientCountry: GiftMarketCountry };
+export type GiftMarket = { buyerCountry: GiftMarketCountry; recipientCountry: GiftMarketCountry; buyerRegion?: string };
 export const giftMarketLabel: Record<GiftMarketCountry, string> = {
   US: "United States", DE: "Germany", TH: "Thailand"
 };
@@ -10,11 +10,11 @@ export function validGiftMarketCountry(value: unknown): value is GiftMarketCount
 export function validGiftMarket(value: unknown): value is GiftMarket {
   if (!value || typeof value !== "object" || Object.getPrototypeOf(value) !== Object.prototype) return false;
   const v = value as Record<string, unknown>;
-  return Object.keys(v).length === 2 && Object.hasOwn(v, "buyerCountry") &&
+  return Object.keys(v).length === (Object.hasOwn(v, "buyerRegion") ? 3 : 2) && Object.hasOwn(v, "buyerCountry") &&
     Object.hasOwn(v, "recipientCountry") && validGiftMarketCountry(v.buyerCountry) &&
-    validGiftMarketCountry(v.recipientCountry);
+    validGiftMarketCountry(v.recipientCountry) && (!Object.hasOwn(v, "buyerRegion") || (v.buyerCountry === "US" && typeof v.buyerRegion === "string" && /^[A-Z]{2}$/.test(v.buyerRegion)));
 }
 export function sameGiftMarket(left: GiftMarket | undefined, right: GiftMarket | undefined) {
   return left === undefined ? right === undefined : validGiftMarket(left) && validGiftMarket(right) &&
-    left.buyerCountry === right.buyerCountry && left.recipientCountry === right.recipientCountry;
+    left.buyerCountry === right.buyerCountry && left.recipientCountry === right.recipientCountry && left.buyerRegion === right.buyerRegion;
 }
