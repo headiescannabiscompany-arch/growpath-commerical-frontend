@@ -1,5 +1,22 @@
 # Reviewed Public Copies
 
+## Platform operator contact — November 6, 2026 local draft
+
+The owner selected the business address already saved in Stripe for a draft
+buyer-facing operator disclosure. The prepared Terms copy names John Collins as
+the current Maryland sole proprietor, gives the selected postal contact and the
+existing monitored legal mailbox, and keeps Interactive Framework Builders LLC
+explicitly planned, not formed. Independent creators supply their own course
+seller details; the platform operator's contact does not establish their identity
+or allocate their tax obligations.
+
+This is an owner-review draft, not publication approval or a released change.
+Never import private Stripe or creator verification fields into public copy
+automatically. A later provider-address change must not silently change the
+reviewed public text. Preserve mandatory-remedy wording and the existing course
+withdrawal link. This copy alone does not complete jurisdiction-specific seller,
+tax, telephone/contact or statutory-invoice requirements and does not enable gifting.
+
 ## Founder marketing correction — October 22, 2026
 
 Keep the founder's identity, supplied portrait and remembered chronology accurate.
