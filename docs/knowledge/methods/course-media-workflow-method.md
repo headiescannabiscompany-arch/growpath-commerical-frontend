@@ -1,5 +1,28 @@
 # Course Media Workflow
 
+## Record-specific financial retention floors — local verification, November 6 2026
+
+The existing metadata-only retention assessment can now consider explicitly
+supplied financial-record minimums. An applicable Non-Union OSS record uses a
+conservative UTC review boundary after the full tenth calendar year following
+its transaction year; [Irish Revenue's manual, section4.2](https://www.revenue.ie/en/tax-professionals/tdm/value-added-tax/part10-special-schemes/vat-ecommerce-rules/non-union-scheme-one-stop-shop-oss.pdf)
+is the source for the ten-year year-end requirement. This rule is conditional:
+neither a German customer nor a typed reference establishes scheme applicability.
+Other written minimums may extend the date; they do not shorten the approved
+seven-year business calculation. A conflicting maximum requires explicit review,
+with no invented cleanup date. Existing holds still take precedence.
+
+These inputs concern only the financial subset, not every contact or log copy.
+Incomplete/unknown metadata refuses a date, private references are not echoed,
+and an assessment verifies no written source or legal ground. Qualified-review,
+disposition, account-removal and activation authority remain false. No new store,
+route, worker, TTL or mounted writer is added. All18 new and two directly affected checks passed with synthetic metadata and
+blocked external I/O;48 unrelated cases stayed skipped. The test source was
+unchanged during the run, and owned cache/temp/guard files were removed. No
+database or server started. One blocked native subprocess probe did not prevent
+completion. All other accepted suites remain closed. Production records,
+retention settings, gifting, plans and credits are unchanged.
+
 ## Private financial Admin connection — locally verified, November 6 2026
 
 The November6 OFF-only release is API4b83cf54 /website77927fb9. The protected

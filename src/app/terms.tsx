@@ -10,9 +10,13 @@ export default function TermsPage() {
   return (
     <PublicInfoPage
       title="Terms of Service"
-      updated="November 4, 2026"
+      updated="November 6, 2026"
       intro="These terms govern access to GrowPath apps, websites, APIs, subscriptions, AI tools, and facility workflows."
       sections={[
+        {
+          title: "Platform Operator",
+          body: `GrowPathAI is operated by John Collins, a sole proprietor in Maryland, United States. Business and legal-notice address: 14328 Twig Rd, Silver Spring, MD 20905, United States. Email: ${SUPPORT_CONTACTS.legal}. Interactive Framework Builders LLC is planned and has not yet been formed. Independent creators supply their own seller details for their courses.`
+        },
         {
           title: "Use of GrowPath",
           body: "You are responsible for using GrowPath lawfully and for keeping your account credentials secure. GrowPath is a software tool and does not replace professional legal, compliance, cultivation, medical, or financial advice."
