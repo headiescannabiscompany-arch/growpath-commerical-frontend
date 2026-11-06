@@ -7,6 +7,8 @@ import {
   subscribeAdminSecurity
 } from "./adminPasskeys";
 import { giftObjectId, giftUuid } from "./courseGiftSaleContract";
+import { FINANCIAL_PATHS, financialCandidate, financialPrivateResult,
+  type FinancialAction, type FinancialResult } from "./courseGiftFinancialContract";
 
 export const COURSE_CHECKOUT_SUPPORT_REQUEST_MS = 20_000;
 const PATHS = Object.freeze({
@@ -37,7 +39,7 @@ export type CourseGiftDeliveryReview = Readonly<{
   schedulingChanged: false;
   activationAllowed: false;
 }>;
-type Mode = "recovery" | "history" | "reference" | "delivery";
+type Mode = "recovery" | "history" | "reference" | "delivery" | `financial_${FinancialAction}`;
 export type CourseCheckoutSupportHistory = Readonly<{
   status: "unknown" | "request_recorded" | "binding_recorded";
   historicalOnly: true;
@@ -54,6 +56,7 @@ type Status =
   | "history_read"
   | "reference_issued"
   | "technical_review_only"
+  | "financial_result"
   | "disposed";
 type Code =
   | "NOT_RELEASED"
@@ -99,6 +102,14 @@ function fields(value: unknown, keys: string[]): Record<string, unknown> | null 
 
 function candidate(operation: Operation, input: unknown, mode: Mode): Body {
   if (!Object.hasOwn(PATHS, operation)) return fail("INPUT_INVALID");
+  if (mode.startsWith("financial_")) {
+    const body = operation === "courseGift" ? financialCandidate(mode.slice(10) as FinancialAction, input) : null;
+    if (!body) return fail("INPUT_INVALID");
+    try {
+      if (encodeURIComponent(JSON.stringify(body)).replace(/%[A-F\d]{2}/gi, "x").length > 8192) return fail("INPUT_INVALID");
+    } catch { return fail("INPUT_INVALID"); }
+    return body;
+  }
   if (mode === "reference" || mode === "delivery") {
     if (operation !== "courseGift") return fail("INPUT_INVALID");
     const keys = [
@@ -298,10 +309,21 @@ export function createInternalCourseGiftDeliveryReviewClient({
   return createController(platform, "delivery");
 }
 
+/** Existing private request engine, with separate assessment and financial intent.
+ * No construction probe, automatic submit/retry, new operation or provider access. */
+export function createInternalCourseGiftFinancialReviewClient({ platform, action }: {
+  platform: "web" | "native"; action: FinancialAction;
+}) {
+  if (!Object.hasOwn(FINANCIAL_PATHS, action)) return fail("INPUT_INVALID");
+  return createController(platform, `financial_${action}`);
+}
+
 function createController(platform: "web" | "native", mode: Mode) {
   const history = mode === "history";
   const delivery = mode === "delivery";
   const reference = mode === "reference";
+  const financialAction = mode.startsWith("financial_") ? mode.slice(10) as FinancialAction : null;
+  const readOnly = history || delivery || financialAction === "assess";
   if (platform !== "web") return fail("NOT_RELEASED");
   const identity = getAdminSecurityIdentityEpoch();
   let status: Status = "empty";
@@ -310,6 +332,7 @@ function createController(platform: "web" | "native", mode: Mode) {
   let recorded: CourseCheckoutSupportHistory | null = null;
   let referenceResult: CourseGiftSupportReference | null = null;
   let deliveryResult: CourseGiftDeliveryReview | null = null;
+  let financialResult: FinancialResult | null = null;
   let lastCode: Code | null = null;
   let cancel: (() => void) | null = null;
   let unsubscribe: () => void = () => {};
@@ -319,6 +342,7 @@ function createController(platform: "web" | "native", mode: Mode) {
     recorded = null;
     referenceResult = null;
     deliveryResult = null;
+    financialResult = null;
     lastCode = null;
     cancel?.();
     unsubscribe();
@@ -338,6 +362,7 @@ function createController(platform: "web" | "native", mode: Mode) {
     else {
       recorded = null;
       deliveryResult = null;
+      financialResult = null;
       cancel?.(); // Same-account verification may renew proof, never replay.
     }
   });
@@ -349,17 +374,19 @@ function createController(platform: "web" | "native", mode: Mode) {
       ...(history ? { history: hasProof() ? recorded : null } : {}),
       ...(reference ? { reference: hasProof() ? referenceResult : null } : {}),
       ...(delivery ? { deliveryReview: hasProof() ? deliveryResult : null } : {}),
+      ...(financialAction ? { financial: hasProof() ? financialResult : null } : {}),
       needsStepUp: status !== "disposed" && !hasProof()
     });
   }
   function prepare(operation: Operation, input: unknown) {
     current();
     if (status === "pending") return fail("BUSY");
-    if (attempted && !history && !delivery) return fail("REQUEST_FROZEN");
+    if (attempted && !readOnly) return fail("REQUEST_FROZEN");
     prepared = null;
     status = "empty";
     recorded = null;
     deliveryResult = null;
+    financialResult = null;
     prepared = { operation, body: candidate(operation, input, mode) };
     status = "prepared";
     lastCode = null;
@@ -367,11 +394,12 @@ function createController(platform: "web" | "native", mode: Mode) {
   }
   function clearHistory() {
     current();
-    if (!history && !delivery) return fail("INPUT_INVALID");
+    if (!readOnly) return fail("INPUT_INVALID");
     if (status === "pending") return fail("BUSY");
     prepared = null;
     recorded = null;
     deliveryResult = null;
+    financialResult = null;
     lastCode = null;
     status = "empty";
     return snapshot();
@@ -382,6 +410,8 @@ function createController(platform: "web" | "native", mode: Mode) {
     if (confirmed !== true) return fail("CONFIRMATION_REQUIRED");
     if (!prepared) return fail("INPUT_INVALID");
     if (!hasProof()) return fail("STEP_UP_REQUIRED");
+    if (financialAction && !readOnly && status === "uncertain") return fail("REQUEST_FROZEN");
+    if (status === "financial_result" && !readOnly) return snapshot();
     if (status === "bound_for_review" || status === "reference_issued") return snapshot();
     const request = prepared;
     const epoch = getAdminSecurityEpoch();
@@ -390,6 +420,7 @@ function createController(platform: "web" | "native", mode: Mode) {
     attempted = true;
     recorded = null;
     deliveryResult = null;
+    financialResult = null;
     lastCode = null;
     let timer: ReturnType<typeof setTimeout>;
     const interruption = new Promise<never>((_, reject) => {
@@ -404,7 +435,7 @@ function createController(platform: "web" | "native", mode: Mode) {
       if (controller.signal.aborted || getAdminSecurityEpoch() !== epoch || !hasProof())
         return fail("UNKNOWN");
       const result = await adminVaultRequest(
-        reference
+        financialAction ? FINANCIAL_PATHS[financialAction] : reference
           ? "/api/course-gifts/support/gift/reference"
           : delivery
             ? "/api/course-gifts/support/gift/delivery-review"
@@ -428,6 +459,11 @@ function createController(platform: "web" | "native", mode: Mode) {
       current();
       if (controller.signal.aborted || epoch !== getAdminSecurityEpoch() || !hasProof())
         return fail("UNKNOWN");
+      if (financialAction) {
+        const value = financialPrivateResult(financialAction, result, request.body);
+        if (!value) return fail("UNKNOWN");
+        return { financial: value };
+      }
       if (history) return { history: historyResult(result) };
       if (reference)
         return {
@@ -452,7 +488,8 @@ function createController(platform: "web" | "native", mode: Mode) {
       recorded = "history" in result ? result.history! : null;
       referenceResult = "reference" in result ? result.reference! : null;
       deliveryResult = "delivery" in result ? result.delivery! : null;
-      status = history
+      financialResult = "financial" in result ? result.financial! : null;
+      status = financialAction ? "financial_result" : history
         ? "history_read"
         : reference
           ? "reference_issued"

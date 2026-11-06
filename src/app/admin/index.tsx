@@ -30,6 +30,7 @@ import ComplimentaryGrantsAdminCard from "@/features/admin/ComplimentaryGrantsAd
 import AdminAccountBillingVerification from "@/features/admin/AdminAccountBillingVerification";
 import AdminCommercePaymentReviewCard from "@/features/admin/AdminCommercePaymentReviewCard";
 import StagingCourseCheckoutSupportEntry from "@/features/admin/StagingCourseCheckoutSupportEntry";
+import PreparedProductionCourseGiftFinancialEntry from "@/features/admin/PreparedProductionCourseGiftFinancialEntry";
 import AdminFacilityDocuments from "@/features/admin/AdminFacilityDocuments";
 import AdminEvidenceVaultCard, {
   type AdminEvidenceVaultUser
@@ -2725,6 +2726,7 @@ export default function PlatformAdminRoute() {
 
       <AdminCommercePaymentReviewCard />
       <StagingCourseCheckoutSupportEntry />
+      <PreparedProductionCourseGiftFinancialEntry />
       <AdminFacilityDocuments />
 
       <TestimonialReviewPanel authorized={isAdmin} />

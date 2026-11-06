@@ -1,5 +1,39 @@
 # Course Media Workflow
 
+## Private financial Admin connection — locally verified, November 6 2026
+
+The November6 OFF-only release is API4b83cf54 /website77927fb9. The protected
+Owner/passkey financial service is separately saved as local backend f4545c22;
+its25 accepted scoped checks remain closed. Historical local/not-released notes
+below describe their original observation time, not a request to repeat them.
+
+The remaining Admin connection is now locally verified, not committed or released:
+three exact private support POSTs reuse the existing origin/bearer/passkey quotas,
+canonical bodies, private errors and quiet memory-only request controller. A
+code-selected production boundary supplies the protected financial service; default
+and Sandbox compositions cannot acquire it from a request or flag. The prepared
+Admin outlet requires an existing verified Admin session and the exact production
+transport and origins. It starts closed and does no lookup, verification ceremony
+or financial work until deliberate action. Owner authority remains server-side.
+
+Assessment is read-only and does not verify original tax evidence. Refunds need
+an exact amount, original operation, evidence review, typed confirmation and a
+separate acknowledgment. Tax allocation separately records cumulative gross,
+authoritative tax-credit and agreed fee-return amounts; never calculate a guessed
+partial credit or make the buyer remedy wait for creator recovery. No tax-invoice
+certification follows. Responses omit provider identifiers/diagnostics and contacts.
+
+After an uncertain mutation, freeze the original financial intent. A separate
+current assessment can confirm the recorded operation/allocation or precede an
+explicit review of the same immutable intent; never generate a replacement or
+automatically replay. Closing, lost identity/readiness or changed transport clears
+private page memory. Proof loss hides private values, clears confirmation and
+requires a new assessment after verification. No browser persistence or diagnostics
+may retain the form. Default/public/native gifting and normal production startup
+remain OFF. Local checks and focused types are prepared but not yet run for this
+connection; actual policy, course/market evidence, hosted support and activation
+remain the same six-packet gates. Plans and credits are unchanged.
+
 ## Durable tax, receipt and refund wiring — local verification, November 5 2026
 
 November5 durable tax wiring LOCAL VERIFIED, not released: existing policy rules/private BuyerReview/reservation bind exact historical treatment and immutable Checkout parameters; actual PI/Charge/line tax evidence produces gross/tax/fee/creator-net Purchase/Earning checkpoints. Original tax withholding and cumulative refund transfer/fee recovery use separate durable same-key operations, bounded complete provider lists, retained unknown outcomes and a23-hour retry fence. Customer gross refund uses the existing refund lease with automatic reversal/fee flags OFF and is independent of tax-credit/creator recovery. Only actual reviewed tax-credit/fee targets authorize recovery; no partial-tax guess. Paid learner access is independent of a tax-only earnings hold; all original refund/dispute controls remain. Five new buyer UI checks show US jurisdiction and the tax-inclusive paid breakdown;43 unique scoped checks total (41new/two affected), focused types zero errors. One mock currency omission and web-platform fixture correction retained with failed-only retries; final earning-identity safeguard required three directly affected repeats. Normal production entry/flags OFF; protected refund/allocation callbacks default unavailable. Actual sourcing/classification/liability/registration/rights review, live policy, reviewed candidate release and eligible hosted acceptance remain in the existing six packets. No real provider/database/payment/email, build/release or plan/credit/security/retention change. This note supersedes earlier adapter-only remaining-coding pointers; historical evidence remains.
