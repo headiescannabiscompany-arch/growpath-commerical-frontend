@@ -91,22 +91,48 @@ function ageFromDate(value: string) {
 }
 
 export default function RegisterScreen() {
+  const { next, plan } = useLocalSearchParams<{
+    next?: string | string[];
+    plan?: string | string[];
+  }>();
+  // Pricing can suggest a choice. Existing claim and shopper links own their flow.
+  const pricingChoice =
+    next === undefined && typeof plan === "string"
+      ? ACCOUNT_CHOICES.find((item) => item.key !== "free" && item.key === plan)
+      : undefined;
+  return (
+    <RegisterForm
+      key={pricingChoice?.key ?? "default"}
+      next={next}
+      pricingChoice={pricingChoice}
+    />
+  );
+}
+
+function RegisterForm({
+  next,
+  pricingChoice
+}: {
+  next?: string | string[];
+  pricingChoice?: AccountChoice;
+}) {
   const router = useRouter();
-  const params = useLocalSearchParams<{ next?: string | string[] }>();
   const auth = useAuth();
   const { palette } = useAppTheme();
   const styles = createRegisterStyles(palette);
   const { width } = useWindowDimensions();
   const isWide = width >= 860;
-  const claimNext = parseClaimReturnPath(params.next);
-  const safeNext = parseSafeLoginReturnPath(params.next);
+  const claimNext = parseClaimReturnPath(next);
+  const safeNext = parseSafeLoginReturnPath(next);
   const entitlementClaimNext =
     claimNext || (safeNext === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "");
-  const shopperNext = parseShopperSignupReturnPath(params.next);
+  const shopperNext = parseShopperSignupReturnPath(next);
   const isComplimentaryClaim = entitlementClaimNext === COMPLIMENTARY_CLAIM_PATH;
   const giftSignupChoice = ACCOUNT_CHOICES[0];
 
-  const [choice, setChoice] = useState<AccountChoice>(ACCOUNT_CHOICES[0]);
+  const [choice, setChoice] = useState<AccountChoice>(
+    pricingChoice ?? ACCOUNT_CHOICES[0]
+  );
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -293,6 +319,12 @@ export default function RegisterScreen() {
           <Text style={styles.formSub}>
             {entitlementClaimNext ? giftSignupChoice.description : choice.description}
           </Text>
+          {pricingChoice && choice.key !== "free" ? (
+            <Text style={styles.formSub}>
+              Creating an account does not charge you. You can review the price and
+              choose whether to subscribe after signing in.
+            </Text>
+          ) : null}
 
           <TextInput
             accessibilityLabel="Register name"

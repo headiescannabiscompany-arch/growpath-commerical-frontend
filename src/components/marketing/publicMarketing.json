@@ -59,15 +59,21 @@
         },
         {
           "title": "Pro Grower — $10/month or $100/year",
-          "body": "For growers who need more room: 10 grows, 50 plants, and 100 AI credits each week. Annual billing is charged as one $100 payment; save $20 compared with 12 monthly payments."
+          "body": "For growers who need more room: 10 grows, 50 plants, and 100 AI credits each week. Annual billing is charged as one $100 payment; save $20 compared with 12 monthly payments.",
+          "href": "/register?plan=pro",
+          "linkLabel": "Choose Pro Grower"
         },
         {
           "title": "Commercial — $50/month or $500/year",
-          "body": "For brands and sellers: 50 grows, 500 plants, and 500 AI credits each week, plus storefront product sales, downloadable offers, orders, courses, campaigns, inventory, and trial workflows. Paid sales still require seller and product eligibility. Annual billing is charged as one $500 payment; save $100 compared with 12 monthly payments."
+          "body": "For brands and sellers: 50 grows, 500 plants, and 500 AI credits each week, plus storefront product sales, downloadable offers, orders, courses, campaigns, inventory, and trial workflows. Paid sales still require seller and product eligibility. Annual billing is charged as one $500 payment; save $100 compared with 12 monthly payments.",
+          "href": "/register?plan=commercial",
+          "linkLabel": "Choose Commercial"
         },
         {
           "title": "Facility — $100/month or $1,000/year",
-          "body": "For room-based team work: 200 grows, 2,000 plants, and a shared Facility pool of 2,000 AI credits each week. Annual billing is charged as one $1,000 payment; save $200 compared with 12 monthly payments."
+          "body": "For room-based team work: 200 grows, 2,000 plants, and a shared Facility pool of 2,000 AI credits each week. Annual billing is charged as one $1,000 payment; save $200 compared with 12 monthly payments.",
+          "href": "/register?plan=facility",
+          "linkLabel": "Choose Facility"
         }
       ]
     },
