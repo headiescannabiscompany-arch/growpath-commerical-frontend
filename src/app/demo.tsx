@@ -9,7 +9,10 @@ import {
   View
 } from "react-native";
 import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
-import { createPublicLandingStyles } from "@/components/marketing/PublicLandingPage";
+import {
+  createPublicLandingStyles,
+  PUBLIC_PAGE_COPY
+} from "@/components/marketing/PublicLandingPage";
 import demo from "@/components/marketing/syntheticGrowDemo.json";
 import { useAppTheme } from "@/theme/appTheme";
 import { fmtDate } from "@/features/grows/routeUtils";
@@ -51,6 +54,19 @@ export default function PublicGrowDemo() {
     []
   );
   const compact = width < 600;
+  const plan = story === "seller" || story === "creator" ? "commercial" : story;
+  const planSignup =
+    Platform.OS === "web" && plan !== "free"
+      ? PUBLIC_PAGE_COPY.pricing.sections.find(
+          (section) => section.href === `/register?plan=${plan}`
+        )
+      : undefined;
+  const signupLink = planSignup?.href && planSignup.linkLabel ? (
+    <Link href={planSignup.href as never} style={styles.primary}>
+      {planSignup.linkLabel}
+    </Link>
+  ) : null;
+
   function selectStory(nextStory: DemoStoryId) {
     if (nextStory === story) return;
     setShareStatus("");
@@ -109,7 +125,11 @@ export default function PublicGrowDemo() {
       <DemoExplorer story={story} onStoryChange={selectStory} showScreenshot={false} />
       <DemoWalkthrough story={walkthrough as DemoWalkthroughStory} />
       <View style={styles.actions}>
-        <Link href={walkthrough.ctaHref as never} style={styles.primary}>
+        {signupLink}
+        <Link
+          href={walkthrough.ctaHref as never}
+          style={signupLink ? styles.secondary : styles.primary}
+        >
           {walkthrough.ctaLabel}
         </Link>
       </View>
@@ -175,10 +195,16 @@ export default function PublicGrowDemo() {
         <Text style={styles.cardBody}>
           {story === "free"
             ? "Start with your own grow, then add your notes and photos. Free account. No payment card required."
-            : "Review the plan and setup for the work you want to do. This demo does not create an account, change your plan or start a purchase."}
+            : signupLink
+              ? "Continue to signup with this plan selected, or review the details first. You can change your choice before creating an account."
+              : "Review the plan and setup for the work you want to do. This demo does not create an account, change your plan or start a purchase."}
         </Text>
         <View style={styles.actions}>
-          <Link href={walkthrough.ctaHref as never} style={styles.primary}>
+          {signupLink}
+          <Link
+            href={walkthrough.ctaHref as never}
+            style={signupLink ? styles.secondary : styles.primary}
+          >
             {story === "free" ? "Create free account" : walkthrough.ctaLabel}
           </Link>
           <Pressable
