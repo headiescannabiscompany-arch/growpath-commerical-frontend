@@ -3,7 +3,8 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-nati
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
-import { confirmEmailVerification } from "@/api/auth";
+import { confirmEmailVerification, type AuthUser } from "@/api/auth";
+import { pendingSignupPlan } from "@/features/billing/pendingSignupPlan";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { parseSafeLoginReturnPath, safeLoginPath } from "@/utils/authReturnPath";
@@ -37,8 +38,9 @@ function VerificationResult({ token, safeNext }: { token: string; safeNext: stri
 
   const [state, setState] = useState<VerifyState>("checking");
   const [message, setMessage] = useState("Verifying your email address...");
-  const [accountEmail, setAccountEmail] = useState("");
+  const [verifiedUser, setVerifiedUser] = useState<AuthUser | null>(null);
   const [complimentaryContinuation, setComplimentaryContinuation] = useState(false);
+  const accountEmail = String(verifiedUser?.email || "");
 
   useEffect(() => {
     setComplimentaryContinuation(hasPendingComplimentaryClaimContinuation());
@@ -57,7 +59,7 @@ function VerificationResult({ token, safeNext }: { token: string; safeNext: stri
       try {
         const response = await confirmEmailVerification(token);
         if (!mounted) return;
-        setAccountEmail(String(response.user?.email || ""));
+        setVerifiedUser(response.user ?? null);
         setState("success");
         setMessage("Your email is verified. You can sign in to GrowPath.");
       } catch (err: any) {
@@ -100,7 +102,11 @@ function VerificationResult({ token, safeNext }: { token: string; safeNext: stri
               (hasPendingComplimentaryClaimContinuation()
                 ? COMPLIMENTARY_CLAIM_PATH
                 : "");
-            router.replace(safeLoginPath(accountEmail, next) as any);
+            const loginPath = safeLoginPath(accountEmail, next);
+            const reviewSignup = !next && accountEmail.trim() && pendingSignupPlan(verifiedUser);
+            router.replace(
+              (reviewSignup ? `${loginPath}&reviewSignup=1` : loginPath) as any
+            );
           }}
           style={styles.button}
         >

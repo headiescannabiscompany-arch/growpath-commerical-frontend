@@ -21,6 +21,7 @@ import { useAuth } from "@/auth/AuthContext";
 import AuthAutofillStyle from "@/components/auth/AuthAutofillStyle";
 import LegalLinks from "@/components/LegalLinks";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
+import { pendingSignupPlan } from "@/features/billing/pendingSignupPlan";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
@@ -41,6 +42,7 @@ export default function LoginScreen() {
     email?: string | string[];
     reset?: string | string[];
     next?: string | string[];
+    reviewSignup?: string | string[];
   }>();
   const auth = useAuth();
   const { palette } = useAppTheme();
@@ -54,6 +56,11 @@ export default function LoginScreen() {
   const initialEmail = String(
     Array.isArray(params.email) ? params.email[0] || "" : params.email || ""
   );
+  const reviewSignupEmail =
+    params.reviewSignup === "1" && typeof params.email === "string"
+      ? params.email.trim().toLowerCase()
+      : "";
+  const signupPlan = reviewSignupEmail ? pendingSignupPlan(auth.user) : null;
   const resetResult = Array.isArray(params.reset) ? params.reset[0] : params.reset;
 
   const [email, setEmail] = useState(initialEmail);
@@ -82,7 +89,9 @@ export default function LoginScreen() {
     auth.isAuthed,
     auth.meStatus,
     auth.isHydrating,
-    safeNext
+    safeNext,
+    reviewSignupEmail,
+    signupPlan
   ]);
   const sessionScope = useRef({ key: sessionKey, generation: 0 });
   if (sessionScope.current.key !== sessionKey) {
@@ -190,10 +199,17 @@ export default function LoginScreen() {
         return;
       }
       // A newer local signup must not be consumed or adopted by this attempt.
-      const destination =
+      const savedPath =
         shopperResume.snapshot && consumeShopperSignupContinuation(shopperResume.snapshot)
           ? shopperResume.snapshot.path
-          : "/account/workspace";
+          : "";
+      // A review hint cannot select a plan or follow a different account.
+      const reviewPlan =
+        !shopperResume.snapshot && reviewSignupEmail === shopperResume.email
+          ? signupPlan
+          : null;
+      const destination =
+        savedPath || (reviewPlan ? `/offers?signupPlan=${reviewPlan}` : "/account/workspace");
       finish();
       router.replace(destination as any);
     })();
@@ -205,6 +221,8 @@ export default function LoginScreen() {
     auth.token,
     auth.user?.email,
     auth.user?.id,
+    reviewSignupEmail,
+    signupPlan,
     safeNext,
     router
   ]);

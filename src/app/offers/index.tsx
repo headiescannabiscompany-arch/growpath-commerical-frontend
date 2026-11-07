@@ -29,6 +29,7 @@ import {
 } from "@/features/billing/planCopy";
 import GiftCheckoutReviewAction from "@/features/billing/GiftCheckoutReviewAction";
 import GiftCheckoutRecoveryAction from "@/features/billing/GiftCheckoutRecoveryAction";
+import { pendingSignupPlan } from "@/features/billing/pendingSignupPlan";
 import SubscriptionCheckoutRecoveryAction from "@/features/billing/SubscriptionCheckoutRecoveryAction";
 import {
   formatVerifiedRecurringBillingNote,
@@ -98,6 +99,7 @@ export default function Offers() {
     subscription?: string | string[];
     gift?: string | string[];
     liveSessionId?: string | string[];
+    signupPlan?: string | string[];
   }>();
   const isWide = width >= 980;
 
@@ -187,7 +189,20 @@ export default function Offers() {
   );
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
   const giftRecipientValid = isLikelyEmail(giftRecipientValue);
-  const purchasablePlans = giftMode ? GIFTABLE_BILLING_PLANS : BILLING_PLANS;
+  const signupPlan =
+    authenticated && auth.meStatus === "ready" && !giftMode &&
+    !searchParams.gift && !searchParams.liveSessionId && !searchParams.subscription
+      ? pendingSignupPlan(auth.user)
+      : null;
+  const signupOffer =
+    signupPlan && searchParams.signupPlan === signupPlan
+      ? BILLING_PLANS.find((plan) => plan.key === signupPlan)
+      : undefined;
+  const purchasablePlans = giftMode
+    ? GIFTABLE_BILLING_PLANS
+    : signupOffer
+      ? [signupOffer, ...BILLING_PLANS.filter((plan) => plan.key !== signupOffer.key)]
+      : BILLING_PLANS;
   const handleGiftFeedback = useCallback((tone: FeedbackTone, message: string) => {
     setFeedbackTone(tone);
     setFeedback(message);
@@ -338,7 +353,9 @@ export default function Offers() {
         <View style={styles.header}>
           <Text style={styles.kicker}>Plans</Text>
           <Text accessibilityRole="header" aria-level={1} style={styles.headerTitle}>
-            Choose your GrowPath plan
+            {signupOffer
+              ? `Review your ${signupOffer.title} plan`
+              : "Choose your GrowPath plan"}
           </Text>
           <Text style={styles.headerSubtitle}>
             {subscription?.checkoutBlockedReason === "protected_identity"
