@@ -9,6 +9,7 @@ const mockLogout = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockSelectFacility = jest.fn();
+let mockParams: { reviewBilling?: string | string[] } = {};
 const mockFacilityStore = {
   selectedId: "facility-current",
   selectFacility: (...args: any[]) => mockSelectFacility(...args)
@@ -20,6 +21,7 @@ const mockApiErrorState = {
 };
 
 jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockParams,
   useRouter: () => ({ replace: mockReplace, push: mockPush })
 }));
 
@@ -52,11 +54,24 @@ jest.mock("@/state/useFacility", () => ({
 describe("FacilitySelectRoute", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockParams = {};
     mockApiRequest.mockResolvedValue([
       { id: "facility-current", name: "Current Facility" },
       { id: "facility-next", name: "Next Facility" }
     ]);
     mockLogout.mockResolvedValue(undefined);
+  });
+
+  it("opens billing for the workspace explicitly selected from a billing review", async () => {
+    mockParams = { reviewBilling: "1" };
+    const screen = render(<FacilitySelectRoute />);
+    fireEvent.press(await screen.findByLabelText("Select facility Next Facility"));
+
+    expect(mockSelectFacility).toHaveBeenCalledWith({
+      id: "facility-next",
+      name: "Next Facility"
+    });
+    expect(mockReplace).toHaveBeenCalledWith("/home/facility/billing");
   });
 
   it("announces loading and exposes current and pending facility selection", async () => {

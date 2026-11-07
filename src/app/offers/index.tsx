@@ -163,7 +163,9 @@ export default function Offers() {
     trialEnabled && serverTrialEligible;
   const eligibleTrialPlanTitles = BILLING_PLANS.filter(
     (plan) =>
-      trialEligibleForPlan(plan.key) && !(subscriptionActive && activePlan === plan.key)
+      plan.key !== "facility" &&
+      trialEligibleForPlan(plan.key) &&
+      !(subscriptionActive && activePlan === plan.key)
   ).map((plan) => plan.title);
   const subscriptionResult = useMemo(() => {
     const value = searchParams.subscription;
@@ -302,7 +304,7 @@ export default function Offers() {
   }, [auth, subscriptionResult]);
 
   async function startCheckout(plan: BillingPlanKey, confirmedImmediateBilling = false) {
-    if (giftMode || !access.canOpenCheckout) {
+    if (plan === "facility" || giftMode || !access.canOpenCheckout) {
       return;
     }
 
@@ -358,7 +360,9 @@ export default function Offers() {
               : "Choose your GrowPath plan"}
           </Text>
           <Text style={styles.headerSubtitle}>
-            {subscription?.checkoutBlockedReason === "protected_identity"
+            {signupOffer?.key === "facility"
+              ? "Choose or create the Facility workspace you want to subscribe. Its owner can review the price and continue to Stripe from Facility billing."
+              : subscription?.checkoutBlockedReason === "protected_identity"
               ? access.message
               : eligibleTrialPlanTitles.length > 0
                 ? `This account has one ${trialDays}-day introductory trial. Choose which plan to try; using it consumes the account's only trial. Stripe requires a payment method and paid billing begins after the trial unless canceled.`
@@ -711,6 +715,30 @@ export default function Offers() {
                   onFeedback={handleGiftFeedback}
                   openCheckoutUrl={openCheckoutUrl}
                 />
+              ) : plan.key === "facility" ? (
+                <>
+                  <Text style={styles.helper}>
+                    Facility subscriptions are billed to one workspace. Its owner can
+                    review monthly and yearly billing there.
+                  </Text>
+                  {authenticated ? (
+                    <Pressable
+                      onPress={() =>
+                        router.push(
+                          ent.mode === "facility"
+                            ? "/home/facility/select?reviewBilling=1"
+                            : "/onboarding/create-facility?reviewBilling=1"
+                        )
+                      }
+                      disabled={!ent.ready}
+                      accessibilityRole="button"
+                      accessibilityState={{ disabled: !ent.ready }}
+                      style={[styles.button, !ent.ready && styles.buttonDisabled]}
+                    >
+                      <Text style={styles.buttonText}>Choose or create a Facility</Text>
+                    </Pressable>
+                  ) : null}
+                </>
               ) : access.canOpenCheckout ? (
                 <Pressable
                   onPress={() => startCheckout(plan.key, confirmingImmediateBilling)}

@@ -8,7 +8,7 @@ import {
   Text,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { InlineError } from "@/components/InlineError";
@@ -47,6 +47,8 @@ function uniquePaths(paths: unknown[]): string[] {
 
 export default function FacilitySelectRoute() {
   const router = useRouter();
+  const { reviewBilling } = useLocalSearchParams<{ reviewBilling?: string | string[] }>();
+  const billingReview = reviewBilling === "1";
   const store: any = useFacility();
   const auth = useAuth();
   const { palette } = useAppTheme();
@@ -140,9 +142,13 @@ export default function FacilitySelectRoute() {
           <View style={styles.titleRow}>
             <View style={{ flex: 1 }}>
               <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
-                Select a Facility
+                {billingReview ? "Choose a Facility for billing" : "Select a Facility"}
               </Text>
-              <Text style={styles.muted}>Choose where you want to work.</Text>
+              <Text style={styles.muted}>
+                {billingReview
+                  ? "Choose the workspace you want to subscribe. Only its owner can start checkout."
+                  : "Choose where you want to work."}
+              </Text>
             </View>
             <Pressable
               accessibilityRole="button"
@@ -195,7 +201,13 @@ export default function FacilitySelectRoute() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Create facility"
-                    onPress={() => router.push("/onboarding/create-facility")}
+                    onPress={() =>
+                      router.push(
+                        billingReview
+                          ? "/onboarding/create-facility?reviewBilling=1"
+                          : "/onboarding/create-facility"
+                      )
+                    }
                     style={styles.primaryButton}
                   >
                     <Text style={styles.primaryText}>Create Facility</Text>
@@ -247,7 +259,9 @@ export default function FacilitySelectRoute() {
                   setSelectingId(id);
                   try {
                     selectFacility({ ...item, id, name });
-                    router.replace("/home/facility/dashboard");
+                    router.replace(
+                      billingReview ? "/home/facility/billing" : "/home/facility/dashboard"
+                    );
                   } catch (error) {
                     resolved.handleApiError(error);
                     setSelectingId("");

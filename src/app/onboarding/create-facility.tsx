@@ -7,13 +7,15 @@ import {
   TextInput,
   View
 } from "react-native";
-import { Redirect, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { useAuth } from "@/auth/AuthContext";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { useEntitlements } from "@/entitlements";
+import { switchAccountMode } from "@/features/mode/switchAccountMode";
 import { useCreateFacility } from "@/hooks/useCreateFacility";
+import { useAccountMode } from "@/state/useAccountMode";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -22,10 +24,15 @@ export default function CreateFacilityScreen() {
   const [businessType, setBusinessType] = useState("indoor cultivation");
   const [touched, setTouched] = useState(false);
   const [createdName, setCreatedName] = useState("");
+  const [checkingBillingAccess, setCheckingBillingAccess] = useState(false);
+  const [billingAccessError, setBillingAccessError] = useState("");
   const createFacility = useCreateFacility();
   const router = useRouter();
+  const { reviewBilling } = useLocalSearchParams<{ reviewBilling?: string | string[] }>();
+  const billingReview = reviewBilling === "1";
   const auth = useAuth();
   const entitlements = useEntitlements();
+  const { setMode } = useAccountMode();
   const { palette } = useAppTheme();
   const styles = createFacilityStyles(palette);
 
@@ -41,7 +48,34 @@ export default function CreateFacilityScreen() {
     return <Redirect href="/login" />;
   }
 
-  if (entitlements.facilityId) {
+  async function continueToBilling() {
+    if (checkingBillingAccess) return;
+    setCheckingBillingAccess(true);
+    setBillingAccessError("");
+    try {
+      if (!entitlements.facilityId) {
+        await auth.retryMe();
+        return;
+      }
+      await switchAccountMode("facility", {
+        currentMode: entitlements.mode,
+        setMode,
+        setPreferredMode: entitlements.setPreferredMode,
+        router: { replace: () => router.replace("/home/facility/select?reviewBilling=1") }
+      });
+    } catch {
+      setBillingAccessError("Unable to open Facility billing. Please try again.");
+    } finally {
+      setCheckingBillingAccess(false);
+    }
+  }
+
+  if (entitlements.facilityId || (billingReview && createdName)) {
+    const continueLabel = !billingReview
+      ? "Open facility workspace"
+      : entitlements.facilityId
+        ? "Choose Facility for billing"
+        : "Check Facility access";
     return (
       <AppPage
         routeKey="create-facility"
@@ -51,24 +85,31 @@ export default function CreateFacilityScreen() {
           <View style={styles.header}>
             <Text style={styles.kicker}>Facility setup</Text>
             <Text accessibilityRole="header" aria-level={1} style={styles.title}>
-              Facility already connected
+              {billingReview && createdName ? "Facility created" : "Facility already connected"}
             </Text>
             <Text style={styles.subtitle}>
-              This account already belongs to a Facility workspace. Open that workspace
-              instead of creating another one.
+              {billingReview
+                ? "Choose the workspace you want to review for billing."
+                : "This account already belongs to a Facility workspace. Open that workspace instead of creating another one."}
             </Text>
           </View>
         }
       >
         <AppCard>
           <Pressable
-            onPress={() => router.replace("/home/facility")}
+            onPress={() =>
+              billingReview ? void continueToBilling() : router.replace("/home/facility")
+            }
+            disabled={checkingBillingAccess}
             accessibilityRole="button"
-            accessibilityLabel="Open facility workspace"
-            style={styles.primaryButton}
+            accessibilityLabel={continueLabel}
+            style={[styles.primaryButton, checkingBillingAccess && styles.disabledButton]}
           >
-            <Text style={styles.primaryButtonText}>Open facility workspace</Text>
+            <Text style={styles.primaryButtonText}>
+              {checkingBillingAccess ? "Checking access…" : continueLabel}
+            </Text>
           </Pressable>
+          {billingAccessError ? <Text style={styles.error}>{billingAccessError}</Text> : null}
         </AppCard>
       </AppPage>
     );
@@ -85,7 +126,11 @@ export default function CreateFacilityScreen() {
       {
         onSuccess: (facility: any) => {
           setCreatedName(String(facility?.name || trimmedName));
-          router.replace("/onboarding/first-setup");
+          if (billingReview) {
+            void continueToBilling();
+          } else {
+            router.replace("/onboarding/first-setup");
+          }
         }
       }
     );

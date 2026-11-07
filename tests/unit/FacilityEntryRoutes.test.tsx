@@ -20,6 +20,7 @@ const mockEntitlements: { ready: boolean; facilityId: string | null } = {
 
 jest.mock("expo-router", () => ({
   Redirect: () => null,
+  useLocalSearchParams: () => ({}),
   useRouter: () => ({ replace: mockReplace })
 }));
 
