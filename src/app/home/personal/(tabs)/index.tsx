@@ -67,7 +67,7 @@ export default function PersonalHomeTab() {
     try {
       const [grows, logs, plants, tasks, toolRuns, diagnosisResponse] = await Promise.all(
         [
-          listPersonalGrows(),
+          listPersonalGrows({ throwOnError: true }),
           listPersonalLogs(),
           listPersonalPlants(),
           listPersonalTasks(),
@@ -152,6 +152,7 @@ export default function PersonalHomeTab() {
 
   const growId = model?.activeGrowId || "";
   const growHref = growId ? `/home/personal/grows/${growId}` : "/home/personal/grows";
+  const showGrowSetup = !loading && !error && model !== null && !model.activeGrow;
 
   return (
     <AppPage
@@ -172,15 +173,27 @@ export default function PersonalHomeTab() {
       }
     >
       {loading ? <ActivityIndicator color={palette.accent} /> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? (
+        <AppCard>
+          <Text accessibilityRole="alert" style={styles.error}>
+            {error}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry grow overview"
+            onPress={() => void load()}
+            style={styles.inlineAction}
+          >
+            <Text style={styles.inlineActionText}>Retry</Text>
+          </Pressable>
+        </AppCard>
+      ) : null}
 
-      <PersonalFeaturedFeed />
-
-      {!loading && !model?.activeGrow ? (
+      {showGrowSetup ? (
         <View style={styles.section}>
           <AppCard style={styles.firstRunCard}>
-            <Text style={styles.commandEyebrow}>First run setup</Text>
-            <Text style={styles.commandTitle}>Build your grow workspace</Text>
+            <Text style={styles.commandEyebrow}>Grow setup</Text>
+            <Text style={styles.commandTitle}>Start a grow</Text>
             <Text style={styles.commandDescription}>
               Start with one grow, then attach plants, photos, journal notes, tasks, tool
               runs, and diagnosis history to the same record.
@@ -233,6 +246,8 @@ export default function PersonalHomeTab() {
           </View>
         </View>
       ) : null}
+
+      <PersonalFeaturedFeed />
 
       {model?.activeGrow ? (
         <View style={styles.section}>

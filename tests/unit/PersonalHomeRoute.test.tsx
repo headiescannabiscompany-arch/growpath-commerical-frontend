@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet } from "react-native";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import PersonalHomeRoute, { createPersonalHomeStyles } from "@/app/home/personal/(tabs)";
 import { getThemePalette } from "@/theme/appTheme";
@@ -219,6 +219,25 @@ describe("PersonalHomeRoute", () => {
     expect(screen.getByText("Grow Analytics")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Community" })).toBeNull();
     expect(screen.queryByText("Platform Administration")).toBeNull();
+  });
+
+  it("offers Retry instead of grow setup when the grow read fails", async () => {
+    mockListPersonalGrows
+      .mockImplementationOnce(async ({ throwOnError } = {}) => {
+        if (throwOnError) throw new Error("Service unavailable");
+        return [];
+      })
+      .mockResolvedValueOnce([]);
+
+    const screen = render(<PersonalHomeRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Unable to refresh your grow overview.")).toBeTruthy()
+    );
+    expect(screen.queryByText("Start a grow")).toBeNull();
+    fireEvent.press(screen.getByRole("button", { name: "Retry grow overview" }));
+    await waitFor(() => expect(screen.getByText("Start a grow")).toBeTruthy());
+    expect(screen.getByRole("button", { name: "Create Grow" })).toBeTruthy();
   });
 
   it("keeps platform governance reachable for an administrator in Personal", async () => {
