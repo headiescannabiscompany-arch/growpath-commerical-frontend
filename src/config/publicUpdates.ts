@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 4, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 7, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "website-plan-signup",
+        title: "Go from Pricing or a demo straight to signup",
+        date: "November 7, 2026",
+        dateLabel: "Released",
+        summary:
+          "Choose Pro Grower, Commercial or Facility from Pricing or a matching demo story. The signup form opens with your plan selected, and you can change it before creating an account. After you verify your email and sign in, you can review the plan before choosing whether to subscribe. For Facility, choose the team workspace first so billing applies to the right workspace."
+      },
       {
         id: "assistant-photo-recovery",
         title: "Photo replies, request recovery and mobile scrolling",

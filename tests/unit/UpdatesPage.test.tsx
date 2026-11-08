@@ -26,7 +26,7 @@ jest.mock("expo-router", () => ({
 
 describe("public Updates page", () => {
   it("November catch-up keeps new histories reachable and excludes private release data", () => {
-    const ids = ["assistant-photo-recovery", "plant-id-candidates-references", "creator-sharing-preview-repairs",
+    const ids = ["website-plan-signup", "assistant-photo-recovery", "plant-id-candidates-references", "creator-sharing-preview-repairs",
       "course-documents-delivery-check", "course-selling-rights-setup", "gardening-facility-information", "production-runtime-maintenance"];
     for (const id of ids) {
       const notes = PUBLIC_UPDATE_SECTIONS.flatMap(s => s.entries).filter(e => e.id === id);
@@ -34,7 +34,7 @@ describe("public Updates page", () => {
       expect(PUBLIC_UPDATE_GROUPS.filter(g => g.entryIds.includes(id))).toHaveLength(1);
       expect(notes[0].summary).not.toMatch(/qa\.invalid|@gmail|dep-|srv-|operatorApprovalReference|policyId|[a-f0-9]{24}/);
     }
-    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 4, 2026");
+    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 7, 2026");
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.find(e => e.id === "course-documents-delivery-check")?.dateLabel).toBe("Verified");
   });
 
@@ -743,6 +743,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "website-plan-signup",
       "assistant-photo-recovery",
       "plant-id-candidates-references",
       "creator-sharing-preview-repairs",
