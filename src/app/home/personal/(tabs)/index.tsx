@@ -59,11 +59,11 @@ export default function PersonalHomeTab() {
   const [globeLoading, setGlobeLoading] = useState(true);
   const [globeVisible, setGlobeVisible] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<"sign-in" | "overview" | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       const [grows, logs, plants, tasks, toolRuns, diagnosisResponse] = await Promise.all(
         [
@@ -107,8 +107,13 @@ export default function PersonalHomeTab() {
           telemetryUnavailable
         })
       );
-    } catch {
-      setError("Unable to refresh your grow overview.");
+    } catch (requestError) {
+      const signInRejected =
+        requestError &&
+        typeof requestError === "object" &&
+        "status" in requestError &&
+        requestError.status === 401;
+      setError(signInRejected ? "sign-in" : "overview");
     } finally {
       setLoading(false);
     }
@@ -176,16 +181,27 @@ export default function PersonalHomeTab() {
       {error ? (
         <AppCard>
           <Text accessibilityRole="alert" style={styles.error}>
-            {error}
+            {error === "sign-in"
+              ? "We couldn't load your grow overview with this sign-in."
+              : "Unable to refresh your grow overview."}
           </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Retry grow overview"
-            onPress={() => void load()}
-            style={styles.inlineAction}
-          >
-            <Text style={styles.inlineActionText}>Retry</Text>
-          </Pressable>
+          <View style={styles.actions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry grow overview"
+              onPress={() => void load()}
+              style={styles.inlineAction}
+            >
+              <Text style={styles.inlineActionText}>Retry</Text>
+            </Pressable>
+            {error === "sign-in" ? (
+              <Link href="/login" asChild>
+                <Pressable accessibilityRole="link" style={styles.inlineAction}>
+                  <Text style={styles.inlineActionText}>Sign in again</Text>
+                </Pressable>
+              </Link>
+            ) : null}
+          </View>
         </AppCard>
       ) : null}
 

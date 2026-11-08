@@ -235,9 +235,26 @@ describe("PersonalHomeRoute", () => {
       expect(screen.getByText("Unable to refresh your grow overview.")).toBeTruthy()
     );
     expect(screen.queryByText("Start a grow")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Sign in again" })).toBeNull();
     fireEvent.press(screen.getByRole("button", { name: "Retry grow overview" }));
     await waitFor(() => expect(screen.getByText("Start a grow")).toBeTruthy());
     expect(screen.getByRole("button", { name: "Create Grow" })).toBeTruthy();
+  });
+
+  it("offers sign-in recovery and Retry when a Home read returns 401", async () => {
+    mockListPersonalGrows
+      .mockRejectedValueOnce(Object.assign(new Error("Not authenticated"), { status: 401 }))
+      .mockResolvedValueOnce([]);
+
+    const screen = render(<PersonalHomeRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByRole("link", { name: "Sign in again" })).toBeTruthy()
+    );
+    expect(screen.queryByText("Start a grow")).toBeNull();
+    fireEvent.press(screen.getByRole("button", { name: "Retry grow overview" }));
+    await waitFor(() => expect(screen.getByText("Start a grow")).toBeTruthy());
+    expect(screen.queryByRole("link", { name: "Sign in again" })).toBeNull();
   });
 
   it("keeps platform governance reachable for an administrator in Personal", async () => {
