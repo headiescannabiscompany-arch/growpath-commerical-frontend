@@ -150,10 +150,11 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     title: "Grow journals and visual timeline fixes",
     status: "complete",
     scope:
-      "The released photo, Personal web PDF/HTML, timeline-sharing, creation and grow-navigation fixes—not every future timeline enhancement.",
-    live: "Larger journal-photo handling, adding photos to older entries, clearer grow limits, duplicate-looking timeline cleanup, visual multi-point/photo sharing, Personal web PDFs with saved photos, portable HTML downloads, phone headings and safe return paths are live.",
+      "The released Personal Home, grow navigation, journal photo, timeline sharing and Personal web export improvements.",
+    live: "Larger journal-photo handling, adding photos to older entries, clearer grow limits, duplicate-looking timeline cleanup, visual multi-point/photo sharing, Personal web PDFs with saved photos, portable HTML downloads, phone headings and safe return paths are live. Personal Home on the website brings grow setup above the feed and gives you a way to retry or sign in again when needed.",
     next: "Separate follow-ups remain for reported date mismatches, longer timelines, native PDF checks, Commercial exports and additional sharing destinations. They do not reopen the completed fixes above.",
     entryIds: [
+      "personal-home-grow-setup-recovery",
       "grow-list-readiness",
       "timeline-export-return",
       "general-crop-calendar-access",

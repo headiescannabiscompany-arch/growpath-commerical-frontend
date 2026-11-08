@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 7, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 8, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "personal-home-grow-setup-recovery",
+        title: "Find grow setup and sign-in help on Personal Home",
+        date: "November 8, 2026",
+        dateLabel: "Released",
+        summary:
+          "On the website, Create Grow appears above the feed if your Personal account can create grows and has no active grow. If the overview fails to load, select Retry. If Home can’t load the overview with your current sign-in, it also offers Sign in again."
+      },
       {
         id: "website-plan-signup",
         title: "Go from Pricing or a demo straight to signup",
