@@ -121,6 +121,7 @@ type BackendCalculatorToolScreenProps = {
         commercialAccountId: string;
         workspaceType: "personal" | "commercial" | "facility";
       }) => React.ReactNode);
+  formFooter?: BackendCalculatorToolScreenProps["formHeader"];
   status?: string;
   runLabel?: string;
   runAccessibilityLabel?: string;
@@ -360,6 +361,7 @@ export default function BackendCalculatorToolScreen({
   executionBlockedMessage = "Finish the current action before running this tool.",
   onExecutionBusyChange,
   formHeader,
+  formFooter,
   status = "CALCULATED",
   runLabel: runLabelOverride,
   runAccessibilityLabel,
@@ -1790,6 +1792,16 @@ export default function BackendCalculatorToolScreen({
             ) : null}
           </View>
         ) : null}
+
+        {typeof formFooter === "function"
+          ? formFooter({
+              growId,
+              plantId: plantContext.plantId,
+              facilityId,
+              commercialAccountId,
+              workspaceType
+            })
+          : formFooter}
 
         {assistantBrief ? (
           <View style={styles.guidanceCard}>
