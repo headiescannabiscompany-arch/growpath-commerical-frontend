@@ -8,6 +8,7 @@ export type SourceUseCase =
   | "fertilizer_label"
   | "water_quality"
   | "cultivar_parentage"
+  | "experimental_cross_reference"
   | "breeder_claim"
   | "lab_result"
   | "market_menu"
@@ -590,6 +591,26 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     requiresCrossCheck: true,
     preferredCrossCheckSources: ["usda-ars-hemp-tissue-culture-protocol-2025"],
     lastReviewedAt: "2026-07-21"
+  },
+  {
+    id: "research:stack-2023-carmagnola-uso31-f2",
+    name: "Stack et al. (2023), Horticulture Research 10(11), uhad207",
+    domain: "doi.org",
+    sourceType: "peer_reviewed",
+    reliabilityTier: "A",
+    trustedFor: ["experimental_cross_reference"],
+    notTrustedFor: [
+      "cultivar_parentage",
+      "breeder_claim",
+      "plant_identification",
+      "lab_result",
+      "qa_evaluation",
+      "commercial_product"
+    ],
+    notes:
+      "DOI 10.1093/hr/uhad207, CC BY 4.0. Read-only Genetics Inventory citation and factual Carmagnola × USO-31 experimental F2 population labels only. Woods et al. (DOI 10.1093/genetics/iyab099) documents the original mapping population. Exclude article prose, figures and photos, seed-sale links, commercial genealogy, user plant identity, and model use.",
+    requiresCrossCheck: true,
+    lastReviewedAt: "2026-11-08"
   },
   {
     id: "pmc9404914-postharvest-review",

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
+import GeneticsReferenceLookup from "@/features/personal/tools/GeneticsReferenceLookup";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
@@ -123,6 +124,11 @@ export default function GeneticsInventoryToolRoute() {
           multiline: true
         }
       ]}
+      formFooter={({ workspaceType, facilityId, commercialAccountId }) =>
+        workspaceType === "personal" && !facilityId && !commercialAccountId ? (
+          <GeneticsReferenceLookup />
+        ) : null
+      }
       buildPayload={(values, { growId, plantContext }) => ({
         growId,
         ...plantContext.toolRunContext,
