@@ -11,6 +11,8 @@ Reliability is use-case specific. A breeder can be authoritative for its own par
 
 ## Initial authorities
 
+- Opal Zi director's 2015 interview and Bulgaria's official tomato variety list, reviewed 2026-11-09: use the firsthand report as a Tier B description of the Pink Magic selection, and the Tier A register for cultivar identity. Neither identifies earlier parents or any user's seed lot. France's official Sakata listing identifies a separate hybrid.
+
 - [Stripe subscription cancellation documentation](https://docs.stripe.com/billing/subscriptions/cancel), reviewed 2026-10-12: Tier B provider authority for `cancel_at_period_end`, preserved paid-through time and terminal cancellation semantics. It does not prove a recipient's live status, authorize a cancellation, waive protected identities or establish a GrowPath release. Cross-check exact bound provider state, billing ledger and reviewed transaction evidence before changing access.
 
 - UC IPM, USDA/APHIS, Cornell, Penn State, NC State, Maryland, Oregon State, Colorado State, Clemson and Virginia Tech extension: Tier A for IPM, soil, fertility, water and horticultural principles.

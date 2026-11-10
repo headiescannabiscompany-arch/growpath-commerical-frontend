@@ -112,6 +112,7 @@ type BackendCalculatorToolScreenProps = {
   executionBlocked?: boolean;
   executionBlockedMessage?: string;
   onExecutionBusyChange?: (busy: boolean) => void;
+  personalReadOnlyReference?: React.ReactNode;
   formHeader?:
     | React.ReactNode
     | ((context: {
@@ -359,6 +360,7 @@ export default function BackendCalculatorToolScreen({
   executionBlocked = false,
   executionBlockedMessage = "Finish the current action before running this tool.",
   onExecutionBusyChange,
+  personalReadOnlyReference,
   formHeader,
   status = "CALCULATED",
   runLabel: runLabelOverride,
@@ -1567,6 +1569,7 @@ export default function BackendCalculatorToolScreen({
             {title}
           </Text>
           <Text style={styles.subtitle}>{subtitle}</Text>
+          {workspaceType === "personal" ? personalReadOnlyReference : null}
           {bannerPolicy.top ? (
             <FeedBanner
               placement="top"
@@ -1605,6 +1608,7 @@ export default function BackendCalculatorToolScreen({
           {title}
         </Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
+        {workspaceType === "personal" ? personalReadOnlyReference : null}
         {bannerPolicy.top ? (
           <FeedBanner
             placement="top"

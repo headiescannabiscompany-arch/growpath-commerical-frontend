@@ -4,6 +4,7 @@ import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import PinkMagicFamilyTree from "@/features/personal/tools/PinkMagicFamilyTree";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
 import type { EvidenceAsset } from "@/types/evidence";
@@ -70,6 +71,7 @@ export default function GeneticsInventoryToolRoute() {
       toolKey="genetics-inventory"
       title="Genetics Inventory"
       subtitle="Record cultivar, parentage, feeding response, stress notes, flower timing, and keeper signals."
+      personalReadOnlyReference={<PinkMagicFamilyTree />}
       formHeader={({ growId }) => (
         <MediaEvidencePicker
           aiUsable

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, Redirect, Stack, useLocalSearchParams, usePathname } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { isFeatureNavigable, personalToolFeatures } from "@/config/featureStatus";
 import { useAuth } from "@/auth/AuthContext";
@@ -8,6 +8,8 @@ import { flattenGrowInterests } from "@/utils/growInterests";
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import { coerceParam, isCannabisGrow } from "@/features/grows/routeUtils";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import PinkMagicFamilyTree from "@/features/personal/tools/PinkMagicFamilyTree";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 
 const CANNABIS_TOOL_PATHS = new Set([
   "/home/personal/tools/crop-steering-project",
@@ -137,6 +139,16 @@ export default function ToolsLayout() {
       (auth.user as any)?.accountPurpose
     )
   ) {
+    if (pathname === "/home/personal/tools/genetics-inventory") {
+      return (
+        <ScreenBoundary title="Genetics Inventory" showBack backFallbackHref="/home/personal/tools">
+          <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+            <PinkMagicFamilyTree />
+            <CannabisToolAccessNotice />
+          </ScrollView>
+        </ScreenBoundary>
+      );
+    }
     return <CannabisToolAccessNotice />;
   }
 
