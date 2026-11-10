@@ -9,3 +9,12 @@ Keep distinct decisions: flower, hash, clone, mother, breeding parent, stress-re
 ## Genetics Inventory research reference
 
 The local candidate `research:stack-2023-carmagnola-uso31-f2` is an opt-in, read-only reference for the Carmagnola × USO-31 experimental F2 population. Keep the stable ID, parent labels, study scope, attribution and license together. Display the reference separately from saved provenance. The study documents its own population. Confirming an individual grow's plant or commercial release requires separate evidence. Keep private notes, articles and images, vendor links, and model requests outside this lookup.
+
+## Pink Magic crop reference
+
+Genetics Inventory can show reviewed, read-only crop pedigrees separately from
+private genetics records and paid tool actions. Pink Magic uses Opal Zi's
+attributed selection from village-grown pink tomato stock. Keep the original
+seed identity and earlier parents unknown; registry entries and similarly
+named cultivars are identity evidence, not ancestors. Opening the tree never
+changes a record, an entitlement, or cannabis visibility.

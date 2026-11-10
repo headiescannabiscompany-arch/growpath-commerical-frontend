@@ -2,6 +2,7 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import GeneticsInventoryToolRoute from "@/app/home/personal/(tabs)/tools/genetics-inventory";
+import { GeneticsInventoryAccess } from "@/features/personal/tools/GeneticsInventoryAccess";
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
@@ -83,7 +84,11 @@ describe("GeneticsInventoryToolRoute", () => {
   });
 
   it("creates genetics provenance and preservation follow-up tasks", async () => {
-    const screen = render(<GeneticsInventoryToolRoute />);
+    const screen = render(
+      <GeneticsInventoryAccess.Provider value={{ canOpen: true, lockedNotice: null }}>
+        <GeneticsInventoryToolRoute />
+      </GeneticsInventoryAccess.Provider>
+    );
 
     fireEvent.changeText(
       screen.getByLabelText("Genetics Inventory Cultivar"),

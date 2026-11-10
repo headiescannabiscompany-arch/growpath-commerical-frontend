@@ -72,6 +72,18 @@ const horticulture = [
 
 export const sourceRegistry: SourceRegistryEntry[] = [
   {
+    id: "opal-zi-rozova-magiya-selection",
+    name: "Opal Zi director's account of the Rozova Magiya selection",
+    domain: "agrovestnik.com",
+    sourceType: "breeder",
+    reliabilityTier: "B",
+    trustedFor: ["breeder_claim"],
+    notTrustedFor: ["cultivar_parentage", "plant_identification"],
+    notes: "Supports the reported selection from Bulgarian village-grown pink tomatoes. Cross-check cultivar identity against Bulgaria's official list and keep Sakata's separately registered hybrid distinct. No named parent lines or plant-level identity evidence.",
+    requiresCrossCheck: true,
+    lastReviewedAt: "2026-11-09"
+  },
+  {
     id: "missouri-botanical-garden-plant-finder",
     name: "Missouri Botanical Garden Plant Finder",
     domain: "missouribotanicalgarden.org",

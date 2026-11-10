@@ -11,6 +11,8 @@ Reliability is use-case specific. A breeder can be authoritative for its own par
 
 ## Initial authorities
 
+- Opal Zi director's 2015 interview and Bulgaria's official tomato variety list, reviewed 2026-11-09: use the firsthand report as a Tier B description of the Pink Magic selection, and the Tier A register for cultivar identity. Neither identifies earlier parents or any user's seed lot. France's official Sakata listing identifies a separate hybrid.
+
 - UC IPM, USDA/APHIS, Cornell, Penn State, NC State, Maryland, Oregon State, Colorado State, Clemson and Virginia Tech extension: Tier A for IPM, soil, fertility, water and horticultural principles.
 - UC IPM Thrips and Powdery Mildew pages, reviewed 2026-08-06: Tier A for distinguishing thrips-compatible silvering/stippling/scarring and black frass from superficial white-to-gray powdery growth. These traits support an evidence differential; they do not justify a confirmed diagnosis from one ambiguous photo.
 - USDA Agricultural Research Service Image Gallery, reviewed 2026-08-08: Tier A government media source for rights-cleared IPM evaluation candidates when the individual asset is marked copyright-free/public domain. Preserve the asset URL, ARS identifier, caption, photographer, downloaded original, and review date. Use the caption as a candidate label, not automatic diagnostic ground truth; independently verify the organism, visible sign, host, and intended evaluation label. Exclude any asset whose page says otherwise or whose rights are ambiguous.

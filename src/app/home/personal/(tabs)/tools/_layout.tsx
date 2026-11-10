@@ -8,6 +8,7 @@ import { flattenGrowInterests } from "@/utils/growInterests";
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import { coerceParam, isCannabisGrow } from "@/features/grows/routeUtils";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import { GeneticsInventoryAccess } from "@/features/personal/tools/GeneticsInventoryAccess";
 
 const CANNABIS_TOOL_PATHS = new Set([
   "/home/personal/tools/crop-steering-project",
@@ -127,20 +128,20 @@ export default function ToolsLayout() {
     return null;
   }
   if (growId && isCannabisToolPath(pathname) && routeGrow === undefined) return null;
-  if (
-    !canOpenCannabisTool(
-      pathname,
-      auth.user?.growInterests,
-      auth.user?.cannabisVisibility ||
-        (auth.user as any)?.contentControls?.cannabisVisibility,
-      routeGrow,
-      (auth.user as any)?.accountPurpose
-    )
-  ) {
+  const isGeneticsInventory = pathname === "/home/personal/tools/genetics-inventory";
+  const canOpenTool = canOpenCannabisTool(
+    pathname,
+    auth.user?.growInterests,
+    auth.user?.cannabisVisibility ||
+      (auth.user as any)?.contentControls?.cannabisVisibility,
+    routeGrow,
+    (auth.user as any)?.accountPurpose
+  );
+  if (!canOpenTool && !isGeneticsInventory) {
     return <CannabisToolAccessNotice />;
   }
 
-  return (
+  const screens = (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="vpd" options={{ title: "VPD Calculator" }} />
@@ -209,6 +210,16 @@ export default function ToolsLayout() {
         options={{ title: "Soil & Nutrient Batch Planner" }}
       />
     </Stack>
+  );
+  return (
+    <GeneticsInventoryAccess.Provider
+      value={{
+        canOpen: isGeneticsInventory && canOpenTool,
+        lockedNotice: isGeneticsInventory && !canOpenTool ? <CannabisToolAccessNotice /> : null
+      }}
+    >
+      {screens}
+    </GeneticsInventoryAccess.Provider>
   );
 }
 

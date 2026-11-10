@@ -476,6 +476,16 @@ export default function ToolsHubScreen() {
       </View>
 
       <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: palette.accent }]}>Crop references</Text>
+        <Link
+          href="/home/personal/tools/genetics-inventory"
+          style={[styles.utilityText, { color: palette.link, paddingVertical: 12 }]}
+        >
+          Bulgarian Pink Magic family tree
+        </Link>
+      </View>
+
+      <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: palette.accent }]}>Tool Library</Text>
       </View>
       {AREA_ORDER.map((area, index) => {
