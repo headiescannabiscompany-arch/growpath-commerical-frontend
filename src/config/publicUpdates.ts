@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 8, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 9, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "pink-magic-family-tree",
+        title: "Explore the Bulgarian Pink Magic family tree",
+        date: "November 9, 2026",
+        dateLabel: "Released",
+        summary:
+          "On the website, open Personal Tools → Crop references to find the Bulgarian Pink Magic tomato in Genetics Inventory. The tree shows Opal Zi’s reported selection from unnamed pink tomatoes grown in Bulgarian villages, links to the sources and marks earlier ancestry as Unknown parentage. It’s a read-only cultivar reference."
+      },
       {
         id: "personal-home-grow-setup-recovery",
         title: "Find grow setup and sign-in help on Personal Home",

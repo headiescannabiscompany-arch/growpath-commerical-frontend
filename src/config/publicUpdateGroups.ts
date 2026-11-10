@@ -103,7 +103,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     scope: "Photo-first tentative identification, alternatives, result recovery and reviewed botanical context.",
     live: "Photo-first identification preserves supported candidates and alternatives, saved-result provenance and a separately selected vision-model connection. Reviewed botanical records distinguish source information from visual hypotheses and user claims.",
     next: "Extend reviewed reference coverage and independent accuracy evidence. A tentative candidate is not confirmed cultivar identity; development comparisons do not establish a universal accuracy score.",
-    entryIds: ["plant-id-candidates-references"]
+    entryIds: ["pink-magic-family-tree", "plant-id-candidates-references"]
   },
   {
     id: "shopping",
