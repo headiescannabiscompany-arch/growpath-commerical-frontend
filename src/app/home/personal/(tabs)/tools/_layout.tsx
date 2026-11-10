@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, Redirect, Stack, useLocalSearchParams, usePathname } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { isFeatureNavigable, personalToolFeatures } from "@/config/featureStatus";
 import { useAuth } from "@/auth/AuthContext";
@@ -8,8 +8,7 @@ import { flattenGrowInterests } from "@/utils/growInterests";
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import { coerceParam, isCannabisGrow } from "@/features/grows/routeUtils";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
-import PinkMagicFamilyTree from "@/features/personal/tools/PinkMagicFamilyTree";
-import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { GeneticsInventoryAccess } from "@/features/personal/tools/GeneticsInventoryAccess";
 
 const CANNABIS_TOOL_PATHS = new Set([
   "/home/personal/tools/crop-steering-project",
@@ -129,30 +128,20 @@ export default function ToolsLayout() {
     return null;
   }
   if (growId && isCannabisToolPath(pathname) && routeGrow === undefined) return null;
-  if (
-    !canOpenCannabisTool(
-      pathname,
-      auth.user?.growInterests,
-      auth.user?.cannabisVisibility ||
-        (auth.user as any)?.contentControls?.cannabisVisibility,
-      routeGrow,
-      (auth.user as any)?.accountPurpose
-    )
-  ) {
-    if (pathname === "/home/personal/tools/genetics-inventory") {
-      return (
-        <ScreenBoundary title="Genetics Inventory" showBack backFallbackHref="/home/personal/tools">
-          <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-            <PinkMagicFamilyTree />
-            <CannabisToolAccessNotice />
-          </ScrollView>
-        </ScreenBoundary>
-      );
-    }
+  const isGeneticsInventory = pathname === "/home/personal/tools/genetics-inventory";
+  const canOpenTool = canOpenCannabisTool(
+    pathname,
+    auth.user?.growInterests,
+    auth.user?.cannabisVisibility ||
+      (auth.user as any)?.contentControls?.cannabisVisibility,
+    routeGrow,
+    (auth.user as any)?.accountPurpose
+  );
+  if (!canOpenTool && !isGeneticsInventory) {
     return <CannabisToolAccessNotice />;
   }
 
-  return (
+  const screens = (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="vpd" options={{ title: "VPD Calculator" }} />
@@ -221,6 +210,16 @@ export default function ToolsLayout() {
         options={{ title: "Soil & Nutrient Batch Planner" }}
       />
     </Stack>
+  );
+  return (
+    <GeneticsInventoryAccess.Provider
+      value={{
+        canOpen: isGeneticsInventory && canOpenTool,
+        lockedNotice: isGeneticsInventory && !canOpenTool ? <CannabisToolAccessNotice /> : null
+      }}
+    >
+      {screens}
+    </GeneticsInventoryAccess.Provider>
   );
 }
 

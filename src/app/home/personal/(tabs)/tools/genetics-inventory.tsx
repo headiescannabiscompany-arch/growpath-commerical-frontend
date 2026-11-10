@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { ScrollView } from "react-native";
 
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PinkMagicFamilyTree from "@/features/personal/tools/PinkMagicFamilyTree";
+import { GeneticsInventoryAccess } from "@/features/personal/tools/GeneticsInventoryAccess";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
 import type { EvidenceAsset } from "@/types/evidence";
@@ -65,6 +68,17 @@ function geneticsTaskPlan(outputs: Record<string, any>) {
 
 export default function GeneticsInventoryToolRoute() {
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
+  const { canOpen, lockedNotice } = useContext(GeneticsInventoryAccess);
+  if (!canOpen) {
+    return (
+      <ScreenBoundary title="Genetics Inventory" showBack backFallbackHref="/home/personal/tools">
+        <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+          <PinkMagicFamilyTree />
+          {lockedNotice}
+        </ScrollView>
+      </ScreenBoundary>
+    );
+  }
   return (
     <BackendCalculatorToolScreen
       tool="genetics-inventory"
