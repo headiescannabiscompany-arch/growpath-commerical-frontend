@@ -1,9 +1,15 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import GrowTimelineScreen from "@/app/home/personal/(tabs)/grows/[growId]/timeline";
 
 const mockGetWorkspaceGrowTimeline = jest.fn();
+let mockFocused = true;
+
+jest.mock("@/auth/AuthContext", () => ({
+  ...jest.requireActual("@/auth/AuthContext"),
+  useAuth: () => ({ user: { id: "account-1" } })
+}));
 
 jest.mock("@/features/grows/workspaceData", () => ({
   getWorkspaceGrowTimeline: (...args: any[]) => mockGetWorkspaceGrowTimeline(...args),
@@ -29,7 +35,8 @@ jest.mock("@react-navigation/native", () => {
   const React = require("react");
   return {
     useFocusEffect: (callback: any) => {
-      React.useEffect(() => callback(), [callback]);
+      const focused = mockFocused;
+      React.useEffect(() => (focused ? callback() : undefined), [callback, focused]);
     }
   };
 });
@@ -44,6 +51,7 @@ jest.mock("@/components/personal/GrowWorkspaceNav", () => {
 describe("GrowTimelineScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockFocused = true;
     mockGetWorkspaceGrowTimeline.mockResolvedValue([
       {
         id: "GrowLog:log-1",
@@ -143,13 +151,71 @@ describe("GrowTimelineScreen", () => {
     ]);
   });
 
+  it("retries a failed timeline read for the same grow and preserves the selected view", async () => {
+    const screen = render(<GrowTimelineScreen />);
+    await screen.findByLabelText("Visual grow timeline flowchart");
+    fireEvent.press(screen.getByText("Detailed List"));
+    fireEvent.press(screen.getByLabelText("Show timeline by Day"));
+    fireEvent.press(screen.getByText("Journal"));
+    expect(screen.getByText("Watered blueberry")).toBeTruthy();
+    expect(screen.queryByText("VPD result saved")).toBeNull();
+
+    let rejectRead!: (error: Error) => void;
+    mockGetWorkspaceGrowTimeline.mockReturnValueOnce(new Promise((_, reject) => {
+      rejectRead = reject;
+    }));
+    mockFocused = false;
+    screen.rerender(<GrowTimelineScreen />);
+    mockFocused = true;
+    screen.rerender(<GrowTimelineScreen />);
+    await act(async () => {
+      rejectRead(new Error("Simulated timeline read failure"));
+    });
+
+    expect(screen.getByText("Could not load this timeline")).toBeTruthy();
+    expect(screen.queryByText(/No timeline events match this view/)).toBeNull();
+    const retry = screen.getByRole("button", { name: "Retry" });
+    await act(async () => {
+      fireEvent.press(retry);
+    });
+
+    expect(screen.queryByText("Could not load this timeline")).toBeNull();
+    expect(screen.getByText("Watered blueberry")).toBeTruthy();
+    expect(screen.queryByText("VPD result saved")).toBeNull();
+    expect(screen.getByRole("button", { name: "Detailed List", selected: true })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Show timeline by Day", selected: true })).toBeTruthy();
+    expect(mockGetWorkspaceGrowTimeline.mock.calls).toEqual([
+      ["personal", "grow-1", { verifyRecords: true }],
+      ["personal", "grow-1", { verifyRecords: true }],
+      ["personal", "grow-1", { verifyRecords: true }]
+    ]);
+  });
+
+  it("shows the empty timeline only after a verified empty read", async () => {
+    let resolveRead!: (events: unknown[]) => void;
+    mockGetWorkspaceGrowTimeline.mockReturnValueOnce(new Promise((resolve) => {
+      resolveRead = resolve;
+    }));
+    const screen = render(<GrowTimelineScreen />);
+    expect(screen.queryByText(/No timeline events match this view/)).toBeNull();
+
+    await act(async () => {
+      resolveRead([]);
+    });
+
+    expect(screen.getByText(/No timeline events match this view/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+  });
+
   it.each(["personal", "commercial"] as const)(
     "keeps the clearly named Share Timeline link and selected presentation in %s",
     async (workspace) => {
       const screen = render(<GrowTimelineScreen workspace={workspace} />);
 
       await waitFor(() =>
-        expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith(workspace, "grow-1")
+        expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith(workspace, "grow-1", {
+          verifyRecords: true
+        })
       );
 
       expect(screen.getByRole("link", { name: "Share Timeline" })).toBeTruthy();
@@ -176,7 +242,9 @@ describe("GrowTimelineScreen", () => {
     const screen = render(<GrowTimelineScreen />);
 
     await waitFor(() =>
-      expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith("personal", "grow-1")
+      expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith("personal", "grow-1", {
+        verifyRecords: true
+      })
     );
 
     fireEvent.press(screen.getByText("Detailed List"));
@@ -226,7 +294,9 @@ describe("GrowTimelineScreen", () => {
     const screen = render(<GrowTimelineScreen />);
 
     await waitFor(() =>
-      expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith("personal", "grow-1")
+      expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith("personal", "grow-1", {
+        verifyRecords: true
+      })
     );
 
     fireEvent.press(screen.getByText("Detailed List"));
@@ -292,7 +362,9 @@ describe("GrowTimelineScreen", () => {
       ]);
       const screen = render(<GrowTimelineScreen workspace={workspace} />);
       await screen.findByText("3 points");
-      expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith(workspace, "grow-1");
+      expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith(workspace, "grow-1", {
+        verifyRecords: true
+      });
       fireEvent.press(screen.getByText("Journal"));
 
       expect(screen.getByText("2 points")).toBeTruthy();

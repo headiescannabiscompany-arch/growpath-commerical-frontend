@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { type PersonalGrowTimelineEvent } from "@/api/grows";
+import { useAuth } from "@/auth/AuthContext";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
@@ -139,7 +140,8 @@ export const createGrowTimelineStyles = (palette: ThemePalette) =>
       color: palette.textMuted,
       backgroundColor: palette.surfaceMuted
     },
-    error: { marginTop: 12, color: palette.danger }
+    error: { marginTop: 12, color: palette.danger, fontWeight: "800" },
+    retry: { minHeight: 44, justifyContent: "center" }
   });
 
 function eventGroup(event: PersonalGrowTimelineEvent) {
@@ -313,52 +315,62 @@ function sourceLabel(event: PersonalGrowTimelineEvent) {
   return "Open Source";
 }
 
+type TimelineRead =
+  | { status: "loading" | "failed" }
+  | { status: "ready"; events: PersonalGrowTimelineEvent[] };
+
 export default function GrowTimelineScreen({
   workspace = "personal"
 }: {
   workspace?: GrowWorkspace;
 } = {}) {
+  const { user } = useAuth();
+  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const growId = coerceParam(rawGrowId);
+  return (
+    <GrowTimelineContent
+      key={JSON.stringify([user?.id, workspace, growId])}
+      growId={growId}
+      workspace={workspace}
+    />
+  );
+}
+
+function GrowTimelineContent({ growId, workspace }: { growId: string; workspace: GrowWorkspace }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowTimelineStyles(palette), [palette]);
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
-  const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const basePath = growWorkspaceBasePath(workspace);
 
-  const [events, setEvents] = useState<PersonalGrowTimelineEvent[]>([]);
+  const [read, setRead] = useState<TimelineRead>({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
   const [zoom, setZoom] = useState<GrowTimelineZoom>("lifecycle");
   const [view, setView] = useState<"visual" | "list">("visual");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const load = useCallback(async () => {
-    if (!growId) {
-      setError("Missing grow id.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError("");
-    try {
-      const timelineRows = await getWorkspaceGrowTimeline(workspace, growId);
-      setEvents(timelineRows);
-    } catch {
-      setEvents([]);
-      setError("Failed to load grow timeline.");
-    } finally {
-      setLoading(false);
-    }
-  }, [growId, workspace]);
 
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load])
+      if (!growId) return;
+      let current = true;
+      setRead({ status: "loading" });
+      void getWorkspaceGrowTimeline(workspace, growId, { verifyRecords: true }).then(
+        (events) => {
+          if (current) setRead({ status: "ready", events });
+        },
+        () => {
+          if (current) setRead({ status: "failed" });
+        }
+      );
+      return () => {
+        current = false;
+      };
+    }, [attempt, growId, workspace])
   );
 
   const visibleEvents = useMemo(
-    () => events.filter((event) => eventMatchesFilter(event, filter)),
-    [events, filter]
+    () => read.status === "ready"
+      ? read.events.filter((event) => eventMatchesFilter(event, filter))
+      : [],
+    [read, filter]
   );
   const consolidatedEvents = useMemo(
     () => visualTimelineEvents(visibleEvents),
@@ -393,6 +405,19 @@ export default function GrowTimelineScreen({
         A visual history of saved photos, important notes, tasks, tool results, diagnoses,
         and milestones. Zoom changes detail; it never invents missing events.
       </Text>
+      {!growId ? <Text style={styles.error}>No grow selected.</Text> : null}
+      {growId && read.status === "failed" ? (
+        <View>
+          <Text accessibilityRole="alert" style={styles.error}>Could not load this timeline</Text>
+          <Pressable
+            accessibilityRole="button"
+            style={[styles.sourceAction, styles.retry]}
+            onPress={() => setAttempt((previous) => previous + 1)}
+          >
+            <Text style={styles.sourceActionText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
       <PersonalFeedPlacement
         placement="top"
         routeKey="personal_grows_growid_timeline"
@@ -489,8 +514,9 @@ export default function GrowTimelineScreen({
         })}
       </View>
 
-      {loading ? <ActivityIndicator color={palette.accent} /> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {growId && read.status === "loading" ? (
+        <ActivityIndicator accessibilityLabel="Loading timeline" color={palette.accent} />
+      ) : null}
 
       <PersonalFeedPlacement
         placement="middle"
@@ -498,14 +524,14 @@ export default function GrowTimelineScreen({
         longContent
       />
 
-      {!loading && !visibleEvents.length ? (
+      {read.status === "ready" && !visibleEvents.length ? (
         <Text style={styles.empty}>
           No timeline events match this view. Save a grow log, run a tool, create a task,
           or run a diagnosis from this grow.
         </Text>
       ) : null}
 
-      {view === "visual" && !loading ? <GrowTimelineFlow events={flowEvents} /> : null}
+      {view === "visual" && read.status === "ready" ? <GrowTimelineFlow events={flowEvents} /> : null}
 
       {view === "list" &&
         groupedEvents.map((period) => (

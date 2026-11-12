@@ -804,6 +804,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Journal reference calendar dates preserve their saved day for date-only and UTC-midnight storage; genuine event timestamps retain local-time semantics.",
       "Grow Overview verifies the selected grow before loading activity. Failed reads offer read-only Retry for that grow; verified Personal absence and Commercial 404 show unavailability. Withhold grow details and actions until a successful read and ignore late results across account, workspace or grow changes.",
       "Personal and Commercial grow journals keep readable entries visible after a partial read, label incomplete activity, and retry the same grow and filter without writes. Empty and filtered no-match states require successful log, tool-result, and task reads.",
+      "Grow Timeline shows saved activity or an empty view only after a verified read. Read-only Retry keeps the same grow, filter, detail level and view. Ignore late results after blur or a change of account, workspace or grow.",
       "Do not rank an overall best run with hidden weights.",
       "Do not compare unlike stages without an explicit limitation.",
       "Do not claim causation from an observational run comparison.",

@@ -34,6 +34,11 @@ succeeds. Ignore late reads after blur/unmount or a different grow/workspace;
 post-write refresh supersedes older reads. Existing reminder and source-link
 entitlements, task payloads, scheduling and sharing rules remain unchanged.
 
+Grow Timeline verifies the selected grow’s timeline before showing saved activity
+or an empty view. Failed reads offer read-only Retry for the same grow and keep
+the chosen filter, detail level and view. Ignore late reads after leaving the
+screen or changing account, workspace or grow.
+
 Saved ToolRun history distinguishes loading, unavailable reads and confirmed empty
 collections. Offer single-flight read-only Refresh/Retry, label retained same-query
 snapshots, and discard prior results after account/session, workspace, Facility or
