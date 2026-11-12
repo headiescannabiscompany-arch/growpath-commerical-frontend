@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <PublicInfoPage
       title="Privacy Policy"
-      updated="October 4, 2026"
+      updated="November 11, 2026"
       intro="GrowPath collects only the information needed to provide account access, cultivation records, diagnostics, subscriptions, support, and compliance workflows."
       sections={[
         {
@@ -20,7 +20,11 @@ export default function PrivacyPage() {
         },
         {
           title: "Sharing",
-          body: "We do not sell personal information. We share data with service providers such as hosting, database, payment, monitoring, email, and analytics vendors only as needed to run GrowPath."
+          body: "We do not sell personal information. We share data with service providers such as hosting, database, payment, monitoring, email, analytics, and AI providers only as needed to run GrowPath."
+        },
+        {
+          title: "External AI Processing",
+          body: "OpenAI processes requests for some GrowPathAI features. Depending on the feature, we may send your question or notes, photos, video stills or documents you select, and relevant plant, grow, or workspace details to OpenAI to generate a response. Some requests include an account-derived identifier. On iPhone and iPad, Assistant and photo diagnosis ask for permission before sending each request to OpenAI. Choosing Cancel stops that OpenAI request. Adding evidence can upload it to GrowPathAI before the permission prompt. For Assistant and photo diagnosis, GrowPathAI strips embedded GPS metadata from image copies prepared for OpenAI. The original upload can still contain that metadata."
         },
         {
           title: "Public Website Analytics",
