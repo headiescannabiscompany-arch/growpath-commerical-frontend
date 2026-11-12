@@ -155,7 +155,10 @@ export default function PersonalMoreRoute() {
           <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             Open the tools and secondary surfaces that do not fit in the compact tab bar.
           </Text>
-          <Link href="/updates" style={[styles.updatesLink, { color: palette.link }]}>
+          <Link
+            href="/updates?from=personal-more"
+            style={[styles.updatesLink, { color: palette.link }]}
+          >
             What’s new
           </Link>
         </View>

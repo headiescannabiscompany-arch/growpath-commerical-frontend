@@ -12,6 +12,10 @@ import { getThemePalette } from "@/theme/appTheme";
 import { getRoutePolicy } from "@/navigation/routeAccess";
 import { metadataForPathname } from "@/seo/publicRouteMetadata";
 
+const mockBack = jest.fn();
+const mockReplace = jest.fn();
+let mockUpdatesFrom: string | undefined;
+
 jest.mock("expo-router", () => ({
   Link: ({ children, href }: { children: React.ReactNode; href: string }) => {
     const { Text } = require("react-native");
@@ -21,10 +25,30 @@ jest.mock("expo-router", () => ({
       </Text>
     );
   },
-  useRouter: () => ({ back: jest.fn(), canGoBack: () => true, replace: jest.fn() })
+  useLocalSearchParams: () => ({ from: mockUpdatesFrom }),
+  useRouter: () => ({ back: mockBack, canGoBack: () => true, replace: mockReplace })
 }));
 
 describe("public Updates page", () => {
+  it.each(["personal-more", undefined, "https://example.invalid"])(
+    "only overrides ordinary Back for the Personal More source (%s)",
+    (from) => {
+      mockUpdatesFrom = from;
+      try {
+        const screen = render(<UpdatesPage />);
+        fireEvent.press(screen.getByRole("button", { name: "Back" }));
+        if (from === "personal-more") {
+          expect(mockReplace).toHaveBeenCalledWith("/home/personal/more");
+          expect(mockBack).not.toHaveBeenCalled();
+        } else {
+          expect(mockBack).toHaveBeenCalledTimes(1);
+          expect(mockReplace).not.toHaveBeenCalled();
+        }
+      } finally {
+        mockUpdatesFrom = undefined;
+      }
+    }
+  );
   it("November catch-up keeps new histories reachable and excludes private release data", () => {
     const ids = [
       "assistant-photo-privacy",

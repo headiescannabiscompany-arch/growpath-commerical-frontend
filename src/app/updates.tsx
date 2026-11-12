@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import BackButton from "@/components/nav/BackButton";
 import { PUBLIC_UPDATES_REVIEWED } from "@/config/publicUpdates";
@@ -12,9 +12,12 @@ import {
 } from "@/config/publicUpdateGroups";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { personalMoreReturnHref } from "@/utils/personalMoreReturn";
 import { releaseAgeLabel } from "@/utils/releaseAge";
 
 export default function UpdatesPage() {
+  const { from } = useLocalSearchParams<{ from?: string | string[] }>();
+  const moreReturn = personalMoreReturnHref(from);
   const { palette } = useAppTheme();
   const styles = createUpdatesStyles(palette);
   const [selected, setSelected] = useState("overview");
@@ -46,7 +49,10 @@ export default function UpdatesPage() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={styles.backRow}>
-        <BackButton fallbackHref="/support" />
+        <BackButton
+          fallbackHref={moreReturn ?? "/support"}
+          preferFallback={Boolean(moreReturn)}
+        />
       </View>
       <Text style={styles.brand}>GrowPathAI</Text>
       <Text accessibilityRole="header" aria-level={1} style={styles.title}>

@@ -35,6 +35,7 @@ describe("PersonalMoreRoute", () => {
     expect(screen.getByLabelText("Open Field Studies")).toBeTruthy();
     expect(screen.getByLabelText("Open Discovery Nature")).toBeTruthy();
     expect(screen.getByLabelText("Open Switch workspace")).toBeTruthy();
+    expect(screen.getByText("What’s new").props.href).toBe("/updates?from=personal-more");
     expect(screen.queryByLabelText("Open Admin Tools")).toBeNull();
   });
 
