@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 11, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 12, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "personal-home-grow-journal-shortcuts",
+        title: "Get back to your active grow faster",
+        date: "November 12, 2026",
+        dateLabel: "Released",
+        summary:
+          "On the website, Personal Home puts Open grow and Add journal entry above the feed when you have an active grow. Add Photo opens the journal with Photos first and that grow already selected. Tap Attach Photos when you’re ready."
+      },
       {
         id: "assistant-photo-privacy",
         title: "Clearer AI privacy and GPS protection for photos",
