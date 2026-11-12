@@ -153,6 +153,7 @@ function publicMarketingMarkup(route) {
   return (
     '<main id="seo-content" class="marketing"><nav aria-label="GrowPathAI public pages"><a class="brand" href="/">GrowPathAI</a>' +
     links.map(anchor).join(" ") +
+    (page === "home" ? " " + anchor(["What’s new", "/updates"]) : "") +
     '</nav><header class="marketing-hero"><p>' +
     escape(copy.eyebrow) +
     "</p><h1>" +

@@ -155,6 +155,9 @@ export default function PersonalMoreRoute() {
           <Text style={[styles.subtitle, { color: palette.textMuted }]}>
             Open the tools and secondary surfaces that do not fit in the compact tab bar.
           </Text>
+          <Link href="/updates" style={[styles.updatesLink, { color: palette.link }]}>
+            What’s new
+          </Link>
         </View>
       }
     >
@@ -249,6 +252,16 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     lineHeight: 20
+  },
+  updatesLink: {
+    alignSelf: "flex-start",
+    minHeight: 44,
+    minWidth: 44,
+    paddingVertical: 12,
+    lineHeight: 20,
+    fontSize: 16,
+    fontWeight: "700",
+    textDecorationLine: "underline"
   },
   title: {
     fontSize: 28,

@@ -111,6 +111,11 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
           <Link href="/login" style={styles.navigationLink}>
             Sign in
           </Link>
+          {page === "home" && (
+            <Link href="/updates" style={styles.navigationLink}>
+              What’s new
+            </Link>
+          )}
         </View>
       </View>
       <View style={isCompact ? [styles.hero, styles.heroCompact] : styles.hero}>
