@@ -51,6 +51,7 @@ describe("public Updates page", () => {
   );
   it("November catch-up keeps new histories reachable and excludes private release data", () => {
     const ids = [
+      "mobile-grow-recovery-and-forum-reporting",
       "personal-home-grow-journal-shortcuts",
       "assistant-photo-privacy",
       "pink-magic-family-tree",
@@ -779,6 +780,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "mobile-grow-recovery-and-forum-reporting",
       "personal-home-grow-journal-shortcuts",
       "assistant-photo-privacy",
       "pink-magic-family-tree",

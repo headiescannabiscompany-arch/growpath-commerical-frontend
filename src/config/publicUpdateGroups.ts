@@ -154,6 +154,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     live: "Larger journal-photo handling, adding photos to older entries, clearer grow limits, duplicate-looking timeline cleanup, visual multi-point/photo sharing, Personal web PDFs with saved photos, portable HTML downloads, phone headings and safe return paths are live. Personal Home on the website brings grow setup and active-grow shortcuts above the feed and gives you a way to retry or sign in again when needed.",
     next: "Separate follow-ups remain for reported date mismatches, longer timelines, native PDF checks, Commercial exports and additional sharing destinations. They do not reopen the completed fixes above.",
     entryIds: [
+      "mobile-grow-recovery-and-forum-reporting",
       "personal-home-grow-journal-shortcuts",
       "personal-home-grow-setup-recovery",
       "grow-list-readiness",

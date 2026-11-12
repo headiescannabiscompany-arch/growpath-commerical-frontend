@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "mobile-grow-recovery-and-forum-reporting",
+        title: "Pick up where you left off on the mobile website",
+        date: "November 12, 2026",
+        dateLabel: "Released",
+        summary:
+          "If Grow Overview or the Journal has trouble loading, tap Retry to reload the same grow. The Journal keeps your filter. Drafts opened from Personal Home show the selected grow’s name when available, and Back returns to Home. Signed-in Free members can use Report on visible Forum posts by other members."
+      },
+      {
         id: "personal-home-grow-journal-shortcuts",
         title: "Get back to your active grow faster",
         date: "November 12, 2026",
