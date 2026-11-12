@@ -7,6 +7,7 @@ import {
   PUBLIC_UPDATE_GROUPS,
   UPDATE_STATUS_LABELS,
   latestGroupRelease,
+  recentPublicReleases,
   updateGroupSections
 } from "@/config/publicUpdateGroups";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -18,6 +19,7 @@ export default function UpdatesPage() {
   const styles = createUpdatesStyles(palette);
   const [selected, setSelected] = useState("overview");
   const [expanded, setExpanded] = useState(false);
+  const [openRelease, setOpenRelease] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 60_000);
@@ -32,6 +34,7 @@ export default function UpdatesPage() {
   const tabs = [{ id: "overview", tab: "Overview" }, ...PUBLIC_UPDATE_GROUPS];
   const tabRefs = useRef<any[]>([]);
   const group = PUBLIC_UPDATE_GROUPS.find((item) => item.id === selected);
+  const recent = recentPublicReleases(now);
   const selectTab = (id: string) => {
     setSelected(id);
     setExpanded(false);
@@ -50,15 +53,50 @@ export default function UpdatesPage() {
         Updates
       </Text>
       <Text style={styles.intro}>
-        Major milestones, what is live, and what remains. Small fixes stay grouped inside
-        each milestone instead of becoming separate announcements.
+        See what’s new and find something to try on GrowPathAI.
       </Text>
       <Text style={styles.date}>Last updated {PUBLIC_UPDATES_REVIEWED}</Text>
-      <Text style={styles.body}>
-        “100% complete” means the stated milestone is finished and live—not the whole app
-        or future additions. Partially live work is not marked complete. Plans are not a
-        promise of a release date.
-      </Text>
+      <View style={styles.actions}>
+        <Link href="/demo" style={[styles.link, styles.actionLink]}>
+          Try the sample grow journal
+        </Link>
+        <Link href="/" style={styles.link}>
+          Open GrowPathAI
+        </Link>
+      </View>
+      {!group && recent.length > 0 ? (
+        <View style={styles.recent}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+            What’s new
+          </Text>
+          {recent.map((entry) => {
+            const isOpen = openRelease === entry.id;
+            return (
+              <View key={entry.id} style={styles.releaseCard}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={entry.title}
+                  accessibilityState={{ expanded: isOpen }}
+                  aria-expanded={isOpen}
+                  onPress={() =>
+                    setOpenRelease((current) => (current === entry.id ? null : entry.id))
+                  }
+                  style={styles.releaseButton}
+                >
+                  <View style={styles.releaseLabel}>
+                    <Text style={styles.releaseTitle}>{entry.title}</Text>
+                    <Text style={styles.releaseDate}>{entry.date}</Text>
+                  </View>
+                  <Text aria-hidden style={styles.releaseTitle}>
+                    {isOpen ? "−" : "+"}
+                  </Text>
+                </Pressable>
+                {isOpen ? <Text style={styles.releaseSummary}>{entry.summary}</Text> : null}
+              </View>
+            );
+          })}
+        </View>
+      ) : null}
       <View
         accessibilityRole="tablist"
         accessibilityLabel="Update milestones"
@@ -116,6 +154,10 @@ export default function UpdatesPage() {
           <>
             <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
               Milestone overview
+            </Text>
+            <Text style={styles.body}>
+              “100% complete” applies to the named milestone. Plans are not a promise of a
+              release date.
             </Text>
             {PUBLIC_UPDATE_GROUPS.map((item) => (
               <View key={item.id} style={styles.card}>
@@ -246,6 +288,33 @@ export function createUpdatesStyles(palette: ThemePalette) {
       borderRadius: radius.card,
       padding: 18,
       gap: 10
+    },
+    actions: { flexDirection: "row", flexWrap: "wrap", columnGap: 20 },
+    actionLink: { fontWeight: "700" },
+    recent: { gap: 8, marginTop: 16 },
+    releaseCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card
+    },
+    releaseButton: {
+      minHeight: 48,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 9
+    },
+    releaseLabel: { flex: 1, minWidth: 0 },
+    releaseTitle: { color: palette.text, fontSize: 16, lineHeight: 22, fontWeight: "700" },
+    releaseDate: { color: palette.textMuted, fontSize: 13, lineHeight: 18 },
+    releaseSummary: {
+      color: palette.textSoft,
+      fontSize: 16,
+      lineHeight: 25,
+      paddingHorizontal: 14,
+      paddingBottom: 14
     },
     tabs: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 24 },
     tab: {

@@ -27,6 +27,7 @@ jest.mock("expo-router", () => ({
 describe("public Updates page", () => {
   it("November catch-up keeps new histories reachable and excludes private release data", () => {
     const ids = [
+      "assistant-photo-privacy",
       "pink-magic-family-tree",
       "personal-home-grow-setup-recovery",
       "website-plan-signup",
@@ -44,7 +45,7 @@ describe("public Updates page", () => {
       expect(PUBLIC_UPDATE_GROUPS.filter(g => g.entryIds.includes(id))).toHaveLength(1);
       expect(notes[0].summary).not.toMatch(/qa\.invalid|@gmail|dep-|srv-|operatorApprovalReference|policyId|[a-f0-9]{24}/);
     }
-    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 9, 2026");
+    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 11, 2026");
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.find(e => e.id === "course-documents-delivery-check")?.dateLabel).toBe("Verified");
   });
 
@@ -753,6 +754,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "assistant-photo-privacy",
       "pink-magic-family-tree",
       "personal-home-grow-setup-recovery",
       "website-plan-signup",

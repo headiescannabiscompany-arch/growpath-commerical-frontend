@@ -93,7 +93,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     scope: "Photo-request reliability, recoverable drafts, mobile scrolling and relevant answers.",
     live: "Mobile scrolling reaches Send. Failed requests retain the question and photos and explain uncertain credit outcomes. Ordinary photo answers use bounded image handling and clearer evidence instructions, without unrelated task or grow-builder shortcuts.",
     next: "Verify remaining live answer-quality and memory-recovery examples within an agreed request limit. Local safeguards do not establish physical-device behavior or universal image accuracy.",
-    entryIds: ["assistant-photo-recovery"]
+    entryIds: ["assistant-photo-privacy", "assistant-photo-recovery"]
   },
   {
     id: "plant-id",
@@ -276,20 +276,25 @@ export function updateGroupSections(group: UpdateGroup) {
   })).filter((section) => section.entries.length > 0);
 }
 
-export function latestGroupRelease(group: UpdateGroup, now = new Date()) {
+function releasedEntries(now: Date, group?: UpdateGroup) {
   const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000;
-  return (
-    PUBLIC_UPDATE_SECTIONS.filter((section) => section.id === "live")
-      .flatMap((section) => section.entries)
-      .filter((entry) => {
-        const day = releaseDay(entry.date);
-        return (
-          group.entryIds.includes(entry.id) &&
-          entry.dateLabel === "Released" &&
-          day !== null &&
-          day <= today
-        );
-      })
-      .sort((a, b) => releaseDay(b.date)! - releaseDay(a.date)!)[0]?.date ?? null
-  );
+  return PUBLIC_UPDATE_SECTIONS.filter((section) => section.id === "live")
+    .flatMap((section) => section.entries)
+    .flatMap((entry) => {
+      if (group && !group.entryIds.includes(entry.id)) return [];
+      const day = releaseDay(entry.date);
+      return entry.dateLabel === "Released" && day !== null && day <= today
+        ? [{ entry, day }]
+        : [];
+    })
+    .sort((a, b) => b.day - a.day)
+    .map(({ entry }) => entry);
+}
+
+export function recentPublicReleases(now = new Date()) {
+  return releasedEntries(now).slice(0, 3);
+}
+
+export function latestGroupRelease(group: UpdateGroup, now = new Date()) {
+  return releasedEntries(now, group)[0]?.date ?? null;
 }

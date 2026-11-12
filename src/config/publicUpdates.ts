@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 9, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 11, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "assistant-photo-privacy",
+        title: "Clearer AI privacy and GPS protection for photos",
+        date: "November 11, 2026",
+        dateLabel: "Released",
+        summary:
+          "Our Privacy Policy explains what GrowPathAI may share with OpenAI to answer a request. For Assistant and photo diagnosis, GrowPathAI removes embedded GPS information from the copy of the photo it sends to OpenAI. The original upload is unchanged."
+      },
       {
         id: "pink-magic-family-tree",
         title: "Explore the Bulgarian Pink Magic family tree",
