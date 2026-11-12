@@ -59,8 +59,11 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     growId?: string | string[];
     plantId?: string | string[];
     toolRunId?: string | string[];
+    focus?: string | string[];
   }>();
   const growId = param(params.growId);
+  const showPhotosFirst =
+    workspace === "personal" && Boolean(growId) && param(params.focus) === "photos";
   const initialPlantId = param(params.plantId);
   const queryToolRunId = param(params.toolRunId);
   const entitlements = useEntitlements();
@@ -335,6 +338,76 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     setRejectedTags([]);
   }
 
+  const photoSection = (
+    <>
+      <View style={styles.photoHeader}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+          Photos
+        </Text>
+        <Pressable
+          style={styles.secondaryButton}
+          disabled={saving}
+          onPress={pickPhotos}
+          accessibilityRole="button"
+          accessibilityLabel="Attach log photos"
+        >
+          <Text style={styles.secondaryButtonText}>
+            {photos.length ? "Add More Photos" : "Attach Photos"}
+          </Text>
+        </Pressable>
+      </View>
+      {photos.length ? (
+        <View style={styles.photoGrid}>
+          {photos.map((photo, index) => (
+            <View key={`${photo.uri}-${index}`} style={styles.photoTile}>
+              <Image
+                source={{ uri: resolveImageUri(photo.uri) }}
+                style={styles.photoThumb}
+                accessibilityLabel={`Attached journal photo ${index + 1}`}
+              />
+              <Pressable
+                style={styles.removePhoto}
+                disabled={saving}
+                onPress={() => {
+                  if (saveInFlight.current) return;
+                  setPhotos((current) =>
+                    current.filter((_, itemIndex) => itemIndex !== index)
+                  );
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={`Remove attached photo ${index + 1}`}
+              >
+                <Text style={styles.removePhotoText}>Remove</Text>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      ) : null}
+      <View style={styles.urlRow}>
+        <TextInput
+          style={styles.urlInput}
+          value={photoUrl}
+          editable={!saving}
+          onChangeText={(value) => {
+            if (!saveInFlight.current) setPhotoUrl(value);
+          }}
+          placeholder="/uploads/grow-photo.jpg or https://..."
+          placeholderTextColor={palette.textMuted}
+          accessibilityLabel="Photo URL"
+        />
+        <Pressable
+          style={[styles.secondaryButton, !photoUrl.trim() && styles.disabled]}
+          disabled={saving || !photoUrl.trim()}
+          onPress={addPhotoUrl}
+          accessibilityRole="button"
+          accessibilityLabel="Add photo URL"
+        >
+          <Text style={styles.secondaryButtonText}>Add URL</Text>
+        </Pressable>
+      </View>
+    </>
+  );
+
   return (
     <ScreenBoundary
       title="New Journal Entry"
@@ -353,6 +426,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
         <Text style={styles.subtitle}>
           {growId ? `Grow context: ${growId}` : "No grow selected"}
         </Text>
+        {showPhotosFirst ? photoSection : null}
         <PersonalFeedPlacement
           placement="top"
           routeKey={
@@ -440,69 +514,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           accessibilityLabel="Log notes"
         />
 
-        <View style={styles.photoHeader}>
-          <Text style={styles.label}>Photos</Text>
-          <Pressable
-            style={styles.secondaryButton}
-            disabled={saving}
-            onPress={pickPhotos}
-            accessibilityRole="button"
-            accessibilityLabel="Attach log photos"
-          >
-            <Text style={styles.secondaryButtonText}>
-              {photos.length ? "Add More Photos" : "Attach Photos"}
-            </Text>
-          </Pressable>
-        </View>
-        {photos.length ? (
-          <View style={styles.photoGrid}>
-            {photos.map((photo, index) => (
-              <View key={`${photo.uri}-${index}`} style={styles.photoTile}>
-                <Image
-                  source={{ uri: resolveImageUri(photo.uri) }}
-                  style={styles.photoThumb}
-                  accessibilityLabel={`Attached journal photo ${index + 1}`}
-                />
-                <Pressable
-                  style={styles.removePhoto}
-                  disabled={saving}
-                  onPress={() => {
-                    if (saveInFlight.current) return;
-                    setPhotos((current) =>
-                      current.filter((_, itemIndex) => itemIndex !== index)
-                    );
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Remove attached photo ${index + 1}`}
-                >
-                  <Text style={styles.removePhotoText}>Remove</Text>
-                </Pressable>
-              </View>
-            ))}
-          </View>
-        ) : null}
-        <View style={styles.urlRow}>
-          <TextInput
-            style={styles.urlInput}
-            value={photoUrl}
-            editable={!saving}
-            onChangeText={(value) => {
-              if (!saveInFlight.current) setPhotoUrl(value);
-            }}
-            placeholder="/uploads/grow-photo.jpg or https://..."
-            placeholderTextColor={palette.textMuted}
-            accessibilityLabel="Photo URL"
-          />
-          <Pressable
-            style={[styles.secondaryButton, !photoUrl.trim() && styles.disabled]}
-            disabled={saving || !photoUrl.trim()}
-            onPress={addPhotoUrl}
-            accessibilityRole="button"
-            accessibilityLabel="Add photo URL"
-          >
-            <Text style={styles.secondaryButtonText}>Add URL</Text>
-          </Pressable>
-        </View>
+        {!showPhotosFirst ? photoSection : null}
 
         <Pressable
           style={[
