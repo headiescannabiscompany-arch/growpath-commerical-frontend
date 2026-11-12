@@ -1,13 +1,21 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
+import { ApiError } from "@/api/apiRequest";
 import GrowOverviewScreen from "@/app/home/personal/(tabs)/grows/[growId]";
 
+let mockAccountId = "account-1";
 const mockGetPersonalGrowTimeline = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockListPersonalLogs = jest.fn();
 const mockListPersonalTasks = jest.fn();
 const mockListToolRuns = jest.fn();
+
+jest.mock("@/auth/AuthContext", () => ({
+  ...jest.requireActual("@/auth/AuthContext"),
+  useAuth: () => ({ user: { id: mockAccountId } }),
+  useOptionalAuth: () => ({ user: { id: mockAccountId } })
+}));
 
 jest.mock("@/api/grows", () => ({
   getPersonalGrowTimeline: (...args: any[]) => mockGetPersonalGrowTimeline(...args),
@@ -72,6 +80,7 @@ jest.mock("@/components/personal/GrowWorkspaceNav", () => {
 describe("GrowOverviewScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockAccountId = "account-1";
     mockListPersonalGrows.mockResolvedValue([
       {
         id: "grow-1",
@@ -138,6 +147,68 @@ describe("GrowOverviewScreen", () => {
         timestamp: "2026-07-07T15:00:00.000Z"
       }
     ]);
+  });
+
+  it("retries a failed grow read and recovers the same overview", async () => {
+    let rejectRead!: (error: ApiError) => void;
+    mockListPersonalGrows.mockReturnValueOnce(new Promise((_, reject) => {
+      rejectRead = reject;
+    }));
+
+    const screen = render(<GrowOverviewScreen />);
+    await act(async () => {
+      rejectRead(new ApiError("NETWORK_ERROR", null));
+    });
+    expect(screen.getByText("Could not load this grow")).toBeTruthy();
+    expect(screen.queryByText(/^Status:/)).toBeNull();
+    expect(screen.queryByText("Recent timeline")).toBeNull();
+    expect(screen.queryByTestId("grow-workspace-nav")).toBeNull();
+    expect(mockGetPersonalGrowTimeline).not.toHaveBeenCalled();
+
+    await act(async () => {
+      fireEvent.press(screen.getByRole("button", { name: "Retry" }));
+    });
+
+    expect(screen.getByText("Connected Run")).toBeTruthy();
+    expect(screen.queryByText("Could not load this grow")).toBeNull();
+    expect(screen.getByTestId("grow-workspace-nav")).toBeTruthy();
+    expect(mockListPersonalGrows).toHaveBeenCalledTimes(2);
+    expect(mockListPersonalGrows).toHaveBeenNthCalledWith(1, { verifyRecords: true });
+    expect(mockListPersonalGrows).toHaveBeenNthCalledWith(2, { verifyRecords: true });
+    expect(mockGetPersonalGrowTimeline).toHaveBeenCalledWith("grow-1");
+    expect(mockListToolRuns).toHaveBeenCalledWith({ growId: "grow-1", workspaceType: "personal" });
+  });
+
+  it("shows unavailability when the verified Personal list has no matching grow", async () => {
+    mockListPersonalGrows.mockResolvedValueOnce([{ id: "grow-2", name: "Other grow" }]);
+
+    const screen = render(<GrowOverviewScreen />);
+    expect(await screen.findByText("Grow unavailable")).toBeTruthy();
+    expect(screen.queryByText("Other grow")).toBeNull();
+    expect(screen.queryByText(/^Status:/)).toBeNull();
+    expect(screen.queryByTestId("grow-workspace-nav")).toBeNull();
+    expect(mockGetPersonalGrowTimeline).not.toHaveBeenCalled();
+  });
+
+  it("ignores an earlier account's pending read for the same grow ID", async () => {
+    let finishPreviousRead!: (rows: { id: string; name: string }[]) => void;
+    mockListPersonalGrows.mockReturnValueOnce(new Promise((resolve) => {
+      finishPreviousRead = resolve;
+    }));
+
+    const screen = render(<GrowOverviewScreen />);
+    await waitFor(() => expect(mockListPersonalGrows).toHaveBeenCalledTimes(1));
+
+    mockAccountId = "account-2";
+    screen.rerender(<GrowOverviewScreen />);
+    expect(await screen.findByText("Connected Run")).toBeTruthy();
+
+    await act(async () => {
+      finishPreviousRead([{ id: "grow-1", name: "Previous account grow" }]);
+    });
+
+    expect(screen.queryByText("Previous account grow")).toBeNull();
+    expect(screen.getByText("Connected Run")).toBeTruthy();
   });
 
   it("opens explicit linked timeline preview sources with the shared source resolver", async () => {

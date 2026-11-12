@@ -10,8 +10,10 @@ import {
   View
 } from "react-native";
 
+import { ApiError } from "@/api/apiRequest";
 import { type PersonalGrow, type PersonalGrowTimelineEvent } from "@/api/grows";
 import { listToolRuns } from "@/api/toolRuns";
+import { useAuth } from "@/auth/AuthContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
@@ -93,7 +95,7 @@ export const createGrowOverviewStyles = (palette: ThemePalette) =>
     timelineSummary: { marginTop: 3, color: palette.textSoft },
     sourceText: { marginTop: 6, fontWeight: "800", color: palette.link },
     empty: { marginTop: 8, color: palette.textMuted },
-    error: { color: palette.danger, marginTop: 8 }
+    retry: { alignSelf: "flex-start", minHeight: 44, justifyContent: "center", marginTop: 12 }
   });
 
 type GrowOverviewStyles = ReturnType<typeof createGrowOverviewStyles>;
@@ -202,70 +204,129 @@ function TimelinePreviewItem({
   return <View style={styles.timelineItem}>{content}</View>;
 }
 
-function GrowOverviewContent({ workspace }: { workspace: GrowWorkspace }) {
+type OverviewRead =
+  | { status: "loading" }
+  | { status: "unavailable"; canRetry: boolean }
+  | { status: "failed"; accessDenied: boolean }
+  | {
+      status: "ready";
+      grow: PersonalGrow;
+      counts: { logs: number; tasks: number; runs: number };
+      timeline: PersonalGrowTimelineEvent[];
+      cannabisGrow: boolean;
+    };
+
+function GrowOverviewContent({
+  workspace,
+  growId
+}: {
+  workspace: GrowWorkspace;
+  growId: string;
+}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowOverviewStyles(palette), [palette]);
   const basePath = growWorkspaceBasePath(workspace);
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
-  const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
-
-  const [grow, setGrow] = useState<PersonalGrow | null>(null);
-  const [counts, setCounts] = useState({ logs: 0, tasks: 0, runs: 0 });
-  const [timeline, setTimeline] = useState<PersonalGrowTimelineEvent[]>([]);
-  const [cannabisGrow, setCannabisGrow] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const load = useCallback(async () => {
-    if (!growId) {
-      setError("Missing grow id.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError("");
-    try {
-      const [current, logs, tasks, runs, timelineRows] = await Promise.all([
-        getWorkspaceGrow(workspace, growId),
-        listWorkspaceLogs(workspace, growId),
-        listWorkspaceTasks(workspace, growId),
-        listToolRuns({ growId, workspaceType: workspace }),
-        getWorkspaceGrowTimeline(workspace, growId)
-      ]);
-      setGrow(current);
-      setCannabisGrow(isCannabisGrow(current, runs));
-      setCounts({
-        logs: Array.isArray(logs) ? logs.length : 0,
-        tasks: Array.isArray(tasks) ? tasks.length : 0,
-        runs: Array.isArray(runs) ? runs.length : 0
-      });
-      setTimeline(Array.isArray(timelineRows) ? timelineRows.slice(0, 5) : []);
-      if (!current) setError("Grow not found.");
-    } catch {
-      setError("Failed to load grow workspace.");
-      setGrow(null);
-      setCannabisGrow(false);
-      setCounts({ logs: 0, tasks: 0, runs: 0 });
-      setTimeline([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [growId, workspace]);
+  const [read, setRead] = useState<OverviewRead>({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load])
+      if (!growId) return;
+      let current = true;
+      setRead({ status: "loading" });
+
+      async function load() {
+        let grow: PersonalGrow | null;
+        try {
+          grow = await getWorkspaceGrow(workspace, growId, { verifyRecords: true });
+        } catch (error) {
+          if (!current) return;
+          const status = error instanceof ApiError ? error.status : null;
+          if (workspace === "commercial" && status === 404) {
+            setRead({ status: "unavailable", canRetry: true });
+          } else {
+            setRead({ status: "failed", accessDenied: status === 401 || status === 403 });
+          }
+          return;
+        }
+
+        if (!current) return;
+        if (!grow) {
+          setRead({ status: "unavailable", canRetry: false });
+          return;
+        }
+
+        try {
+          const [logs, tasks, runs, timeline] = await Promise.all([
+            listWorkspaceLogs(workspace, growId),
+            listWorkspaceTasks(workspace, growId),
+            listToolRuns({ growId, workspaceType: workspace }),
+            getWorkspaceGrowTimeline(workspace, growId)
+          ]);
+          if (!current) return;
+          setRead({
+            status: "ready",
+            grow,
+            cannabisGrow: isCannabisGrow(grow, runs),
+            counts: {
+              logs: Array.isArray(logs) ? logs.length : 0,
+              tasks: Array.isArray(tasks) ? tasks.length : 0,
+              runs: Array.isArray(runs) ? runs.length : 0
+            },
+            timeline: Array.isArray(timeline) ? timeline.slice(0, 5) : []
+          });
+        } catch {
+          if (current) setRead({ status: "failed", accessDenied: false });
+        }
+      }
+
+      void load();
+      return () => {
+        current = false;
+      };
+    }, [attempt, growId, workspace])
   );
 
-  if (loading) {
+  if (!growId || read.status === "unavailable" || read.status === "failed") {
+    const failed = read.status === "failed";
+    const canRetry = !!growId && (failed || (read.status === "unavailable" && read.canRetry));
+    const message = failed
+      ? read.accessDenied
+        ? "Check that you’re signed in and have access to this grow, then try again."
+        : "Try again to reload this grow."
+      : canRetry
+        ? "This grow is currently unavailable. Try again or return to your grows."
+        : "This grow is unavailable in this workspace. Go back to your grows.";
+    return (
+      <ScrollView style={styles.container}>
+        <View accessibilityRole="alert">
+          <Text accessibilityRole="header" style={styles.title}>
+            {failed ? "Could not load this grow" : "Grow unavailable"}
+          </Text>
+          <Text style={styles.subtitle}>{message}</Text>
+        </View>
+        {canRetry ? (
+          <Pressable
+            accessibilityRole="button"
+            style={[styles.action, styles.retry]}
+            onPress={() => setAttempt((previous) => previous + 1)}
+          >
+            <Text style={styles.actionText}>Retry</Text>
+          </Pressable>
+        ) : null}
+      </ScrollView>
+    );
+  }
+
+  if (read.status === "loading") {
     return (
       <View style={styles.container}>
-        <ActivityIndicator color={palette.accent} />
+        <ActivityIndicator accessibilityLabel="Loading grow" color={palette.accent} />
       </View>
     );
   }
 
+  const { grow, counts, timeline, cannabisGrow } = read;
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 28 }}>
       <Text accessibilityRole="header" style={styles.title}>
@@ -462,7 +523,6 @@ function GrowOverviewContent({ workspace }: { workspace: GrowWorkspace }) {
         </Link>
       </View>
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
       <PersonalFeedPlacement
         placement="bottom"
         routeKey="personal_grow_overview"
@@ -477,10 +537,17 @@ export default function GrowOverviewScreen({
 }: {
   workspace?: GrowWorkspace;
 } = {}) {
+  const { user } = useAuth();
+  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const growId = coerceParam(rawGrowId);
   const basePath = growWorkspaceBasePath(workspace);
   return (
     <ScreenBoundary title="Grow overview" showBack backFallbackHref={`${basePath}/grows`}>
-      <GrowOverviewContent workspace={workspace} />
+      <GrowOverviewContent
+        key={JSON.stringify([user?.id, workspace, growId])}
+        workspace={workspace}
+        growId={growId}
+      />
     </ScreenBoundary>
   );
 }

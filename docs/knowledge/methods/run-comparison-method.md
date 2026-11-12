@@ -11,6 +11,14 @@ Journal reference dates are calendar days. Preserve their saved day when rendere
 from date-only or UTC-midnight storage, rather than shifting them into the previous
 local day. Genuine event timestamps retain their normal local-time semantics.
 
+Grow Overview verifies the selected grow before loading its activity. Failed
+reads show a clear error and read-only Retry for the same grow. A verified
+Personal list that lacks the selected grow shows that it is unavailable in
+that workspace. A Commercial 404 shows unavailability with Retry because the
+response does not distinguish a missing record from a missing route. Withhold
+grow details and actions until the read succeeds. Discard late reads after blur,
+unmount, or a change of account, workspace, or grow.
+
 The Personal and Commercial grow journal verifies the three grow-scoped
 collections independently. If a journal, tool-result, or task read fails, keep
 records from the successful reads visible, label the journal incomplete, and

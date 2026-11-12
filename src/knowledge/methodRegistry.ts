@@ -802,6 +802,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not use demo runs or silently convert missing values to zero.",
       "Comparison and saved-result requests preserve the explicitly selected workspace, including Personal for a Commercial-plan account, through reads, reopening and reviewed writes; never search another workspace to recover a scope mismatch.",
       "Journal reference calendar dates preserve their saved day for date-only and UTC-midnight storage; genuine event timestamps retain local-time semantics.",
+      "Grow Overview verifies the selected grow before loading activity. Failed reads offer read-only Retry for that grow; verified Personal absence and Commercial 404 show unavailability. Withhold grow details and actions until a successful read and ignore late results across account, workspace or grow changes.",
       "Personal and Commercial grow journals keep readable entries visible after a partial read, label incomplete activity, and retry the same grow and filter without writes. Empty and filtered no-match states require successful log, tool-result, and task reads.",
       "Do not rank an overall best run with hidden weights.",
       "Do not compare unlike stages without an explicit limitation.",
