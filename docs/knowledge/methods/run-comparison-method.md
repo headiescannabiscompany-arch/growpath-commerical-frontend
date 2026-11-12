@@ -11,6 +11,13 @@ Journal reference dates are calendar days. Preserve their saved day when rendere
 from date-only or UTC-midnight storage, rather than shifting them into the previous
 local day. Genuine event timestamps retain their normal local-time semantics.
 
+The Personal and Commercial grow journal verifies the three grow-scoped
+collections independently. If a journal, tool-result, or task read fails, keep
+records from the successful reads visible, label the journal incomplete, and
+offer read-only Retry for the same grow and filter. Show empty or no-match
+guidance only after all three reads succeed. Ignore late results after blur,
+unmount, or a change of account, workspace, or grow.
+
 Grow-specific task queues distinguish failed reads from confirmed empty lists.
 Read-only Retry preserves unfinished input and makes no task mutation. A failed
 post-write read retains explicitly labeled previous tasks alongside the separate
