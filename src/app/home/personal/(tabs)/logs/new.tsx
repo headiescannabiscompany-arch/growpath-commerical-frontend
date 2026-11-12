@@ -13,6 +13,7 @@ import {
 
 import { suggestLogInsights } from "@/api/logInsights";
 import { listToolRuns } from "@/api/toolRuns";
+import { useOptionalAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
@@ -33,7 +34,7 @@ import {
   resolveImageUri,
   type UploadedPhotoMetadata
 } from "@/utils/photoUploads";
-import { createWorkspaceLog } from "@/features/grows/workspaceData";
+import { createWorkspaceLog, getWorkspaceGrow } from "@/features/grows/workspaceData";
 import { localCalendarDate } from "@/features/grows/routeUtils";
 
 type SelectedPhoto = {
@@ -63,6 +64,8 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     from?: string | string[];
   }>();
   const growId = param(params.growId);
+  const accountId = useOptionalAuth()?.user?.id;
+  const growNameScope = accountId && growId ? JSON.stringify([accountId, workspace, growId]) : null;
   const fromPersonalHome = workspace === "personal" && params.from === "personal-home";
   const growJournalHref = growId
     ? `${basePath}/grows/${encodeURIComponent(growId)}/journal`
@@ -82,6 +85,8 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
   const { plants, plantId, selectedPlant, setPlantId, toolRunContext } =
     useToolPlantContext(growId, initialPlantId, true, workspace);
 
+  const [growNameRead, setGrowNameRead] = useState<{ scope: string; name: string } | null>(null);
+  const growName = growNameRead?.scope === growNameScope ? growNameRead.name : "";
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(() => localCalendarDate());
   const [notes, setNotes] = useState("");
@@ -102,6 +107,22 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     () => ["watering", "feed", "training", "environment", "issues", "harvest", "other"],
     []
   );
+
+  useEffect(() => {
+    if (!growNameScope) return;
+    let current = true;
+    void getWorkspaceGrow(workspace, growId, { verifyRecords: true, notifyTransport: false })
+      .catch(() => null)
+      .then((grow) => {
+        if (!current) return;
+        const matches = grow?.id === growId || grow?._id === growId;
+        const name = matches && typeof grow?.name === "string" ? grow.name.trim() : "";
+        setGrowNameRead({ scope: growNameScope, name });
+      });
+    return () => {
+      current = false;
+    };
+  }, [growId, growNameScope, workspace]);
 
   useEffect(() => {
     if (!growId) return;
@@ -424,8 +445,8 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
         <Text accessibilityRole="header" style={styles.title}>
           New Journal Entry
         </Text>
-        <Text style={styles.subtitle}>
-          {growId ? `Grow context: ${growId}` : "No grow selected"}
+        <Text style={styles.subtitle} numberOfLines={2}>
+          {growName ? `Grow: ${growName}` : growId ? "Selected grow" : "No grow selected"}
         </Text>
         {showPhotosFirst ? photoSection : null}
         <PersonalFeedPlacement

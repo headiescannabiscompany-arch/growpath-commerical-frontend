@@ -155,11 +155,17 @@ export interface PersonalGrowTimelineEvent {
  * Personal mode is user-scoped; no facilityId parameter.
  */
 export async function listPersonalGrows(
-  options: { archived?: boolean; throwOnError?: boolean; verifyRecords?: boolean } = {}
+  options: {
+    archived?: boolean;
+    throwOnError?: boolean;
+    verifyRecords?: boolean;
+    notifyTransport?: boolean;
+  } = {}
 ): Promise<PersonalGrow[]> {
   try {
     const personalRes = await apiRequest("/api/personal/grows", {
       ...(options.verifyRecords ? { cache: "no-store" as const } : {}),
+      ...(options.notifyTransport === false ? { notifyTransport: false } : {}),
       params: options.verifyRecords
         ? withFreshnessParam(options.archived ? { archived: "true" } : {})
         : options.archived

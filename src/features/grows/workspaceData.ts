@@ -120,7 +120,7 @@ export async function listWorkspaceGrows(
 export async function getWorkspaceGrow(
   workspace: GrowWorkspace,
   growId: string,
-  options: { verifyRecords?: boolean } = {}
+  options: { verifyRecords?: boolean; notifyTransport?: boolean } = {}
 ): Promise<PersonalGrow | null> {
   const id = String(growId || "").trim();
   if (!id) {
@@ -129,12 +129,19 @@ export async function getWorkspaceGrow(
     return null;
   }
   if (workspace === "personal") {
-    const rows = await listPersonalGrows();
+    const rows = options.verifyRecords || options.notifyTransport === false
+      ? await listPersonalGrows(options)
+      : await listPersonalGrows();
     return rows.find((grow) => entityId(grow as any) === id) || null;
   }
   const response: any = await apiRequest(
     `/api/commercial/grows/${encodeURIComponent(id)}`,
-    { method: "GET", cache: "no-store", params: withFreshnessParam() }
+    {
+      method: "GET",
+      cache: "no-store",
+      params: withFreshnessParam(),
+      ...(options.notifyTransport === false ? { notifyTransport: false } : {})
+    }
   );
   if (options.verifyRecords) {
     const invalid = () => new Error("Selected grow could not be verified. Please retry.");
