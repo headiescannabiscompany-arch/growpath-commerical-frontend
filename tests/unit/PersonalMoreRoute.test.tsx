@@ -6,7 +6,12 @@ import PersonalMoreRoute from "@/app/home/personal/(tabs)/more";
 const mockUseAuth = jest.fn();
 
 jest.mock("expo-router", () => ({
-  Link: ({ children, href }: any) => require("react").cloneElement(children, { href })
+  Link: ({ asChild, children, href, ...props }: any) => {
+    const React = require("react");
+    if (asChild) return React.cloneElement(children, { href });
+    const { Text } = require("react-native");
+    return React.createElement(Text, { ...props, href, accessibilityRole: "link" }, children);
+  }
 }));
 jest.mock("@/auth/AuthContext", () => ({ useAuth: () => mockUseAuth() }));
 jest.mock("@/components/layout/AppPage", () => {
@@ -35,7 +40,9 @@ describe("PersonalMoreRoute", () => {
     expect(screen.getByLabelText("Open Field Studies")).toBeTruthy();
     expect(screen.getByLabelText("Open Discovery Nature")).toBeTruthy();
     expect(screen.getByLabelText("Open Switch workspace")).toBeTruthy();
-    expect(screen.getByText("What’s new").props.href).toBe("/updates?from=personal-more");
+    expect(screen.getByRole("link", { name: "What’s new" }).props.href).toBe(
+      "/updates?from=personal-more"
+    );
     expect(screen.queryByLabelText("Open Admin Tools")).toBeNull();
   });
 
