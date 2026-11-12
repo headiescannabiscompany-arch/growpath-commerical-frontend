@@ -60,8 +60,13 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     plantId?: string | string[];
     toolRunId?: string | string[];
     focus?: string | string[];
+    from?: string | string[];
   }>();
   const growId = param(params.growId);
+  const fromPersonalHome = workspace === "personal" && params.from === "personal-home";
+  const growJournalHref = growId
+    ? `${basePath}/grows/${encodeURIComponent(growId)}/journal`
+    : `${basePath}/grows`;
   const showPhotosFirst =
     workspace === "personal" && Boolean(growId) && param(params.focus) === "photos";
   const initialPlantId = param(params.plantId);
@@ -413,11 +418,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
       title="New Journal Entry"
       showBack
       preferBackFallback
-      backFallbackHref={
-        growId
-          ? `${basePath}/grows/${encodeURIComponent(growId)}/journal`
-          : `${basePath}/grows`
-      }
+      backFallbackHref={fromPersonalHome ? "/home/personal" : growJournalHref}
     >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" style={styles.title}>

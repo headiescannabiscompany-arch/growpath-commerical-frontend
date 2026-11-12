@@ -157,6 +157,7 @@ export default function PersonalHomeTab() {
 
   const growId = model?.activeGrowId || "";
   const growHref = growId ? `/home/personal/grows/${growId}` : "/home/personal/grows";
+  const homeJournalHref = `/home/personal/logs/new?growId=${encodeURIComponent(growId)}&from=personal-home`;
   const showGrowSetup = !loading && !error && model !== null && !model.activeGrow;
 
   return (
@@ -183,7 +184,7 @@ export default function PersonalHomeTab() {
                 <ActionLink href={growHref} label="Open grow" />
                 {canCreateLog ? (
                   <ActionLink
-                    href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
+                    href={homeJournalHref}
                     label="Add journal entry"
                   />
                 ) : null}
@@ -343,7 +344,7 @@ export default function PersonalHomeTab() {
           <View style={styles.actions}>
             {canCreateLog ? (
               <ActionLink
-                href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
+                href={`${homeJournalHref}&focus=photos`}
                 label="Add Photo"
               />
             ) : null}
@@ -463,7 +464,7 @@ export default function PersonalHomeTab() {
             </Text>
             {canCreateLog ? (
               <ActionLink
-                href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
+                href={`${homeJournalHref}&focus=photos`}
                 label="Add Photo"
               />
             ) : null}
