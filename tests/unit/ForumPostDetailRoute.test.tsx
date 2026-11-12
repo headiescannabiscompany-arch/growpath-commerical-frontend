@@ -19,6 +19,8 @@ const mockCreatePersonalTask = jest.fn();
 let mockParams: Record<string, string> = { id: "post-1", growId: "grow-1" };
 let mockAccessReady = true;
 let mockCanView = true;
+let mockCanPost = true;
+let mockIsAuthed = true;
 let mockViewerId = "viewer-1";
 let mockFacilityId: string | undefined;
 
@@ -82,18 +84,16 @@ jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     ready: mockAccessReady,
     facilityId: mockFacilityId,
-    can: () => mockCanView
+    can: (capability: string) => (capability === "forum_post" ? mockCanPost : mockCanView)
   })
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
-    isAuthed: true,
-    user: {
-      id: mockViewerId,
-      username: "EtGU_Jay",
-      email: "viewer@example.com"
-    }
+    isAuthed: mockIsAuthed,
+    user: mockIsAuthed
+      ? { id: mockViewerId, username: "EtGU_Jay", email: "viewer@example.com" }
+      : null
   })
 }));
 
@@ -122,6 +122,8 @@ describe("ForumPostDetailRoute", () => {
     mockParams = { id: "post-1", growId: "grow-1" };
     mockAccessReady = true;
     mockCanView = true;
+    mockCanPost = true;
+    mockIsAuthed = true;
     mockViewerId = "viewer-1";
     mockFacilityId = undefined;
     mockGetForumPost.mockResolvedValue({
@@ -539,6 +541,35 @@ describe("ForumPostDetailRoute", () => {
     expect(screen.getByLabelText("Follow author author-1")).toBeTruthy();
     expect(screen.getByLabelText("Report forum comment")).toBeTruthy();
     expect(screen.queryByLabelText("Delete your comment")).toBeNull();
+  });
+
+  it("lets a signed-in Free reader report the visible post while comments stay locked", async () => {
+    mockCanPost = false;
+    mockReportForumPost.mockResolvedValue({ message: "Reported" });
+    const screen = render(<ForumPostDetailRoute />);
+
+    const report = await screen.findByRole("button", { name: "Report forum post" });
+    expect(report).toBeEnabled();
+    expect(screen.queryByLabelText("Submit forum comment")).toBeNull();
+    fireEvent.press(report);
+
+    expect(await screen.findByText("Report sent for moderation review.")).toBeTruthy();
+    expect(mockReportForumPost).toHaveBeenCalledTimes(1);
+    expect(mockReportForumPost).toHaveBeenCalledWith("post-1", {
+      reason: "other",
+      details: "Reported from personal forum post detail screen."
+    });
+  });
+
+  it("requires a signed-in reader to report a visible post", async () => {
+    mockCanPost = false;
+    mockIsAuthed = false;
+    const screen = render(<ForumPostDetailRoute />);
+
+    const report = await screen.findByRole("button", { name: "Report forum post" });
+    expect(report).toBeDisabled();
+    fireEvent.press(report);
+    expect(mockReportForumPost).not.toHaveBeenCalled();
   });
 
   it("replies to a visible comment with its parent id", async () => {

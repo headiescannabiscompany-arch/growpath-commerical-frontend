@@ -132,6 +132,11 @@ actions on discussion or linked-grow changes. Discard late superseded reads and
 reject mismatched post identities. Existing server visibility and moderation rules
 remain authoritative.
 
+A signed-in Forum reader can report a loaded discussion from another author,
+including with Free access. Posting and comment creation still require the
+posting capability. The report uses the existing moderation submission and
+the exact discussion the reader opened.
+
 The first public-copy workflow is a grow timeline. The owner opens the private visual
 timeline, chooses the visible date range/events and owned photos, reviews the exact title,
 description and public preview, then explicitly publishes. Cancel publishes nothing.

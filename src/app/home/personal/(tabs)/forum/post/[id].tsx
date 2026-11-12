@@ -275,6 +275,8 @@ function ReadyForumPostDetailRoute() {
 
   const loadedId = useMemo(() => postId(post), [post]);
   const isPostOwner = useMemo(() => isOwnedBy(post, auth.user), [auth.user, post]);
+  const canReportPost =
+    auth.isAuthed && canView && !!loadedId && loadedId === id && !isPostOwner;
 
   const loadComments = useCallback(async () => {
     if (!id || !canView || commentsPending.current) return;
@@ -562,12 +564,11 @@ function ReadyForumPostDetailRoute() {
   }
 
   async function reportPost() {
-    const targetId = loadedId || id;
-    if (!targetId || !canPost) return;
+    if (!canReportPost || saving) return;
     setSaving(true);
     setFeedback("");
     try {
-      await reportForumPost(targetId, {
+      await reportForumPost(loadedId, {
         reason: "other",
         details: "Reported from personal forum post detail screen."
       });
@@ -904,9 +905,9 @@ function ReadyForumPostDetailRoute() {
                     </>
                   ) : (
                     <Pressable
-                      disabled={!canPost || saving}
+                      disabled={!canReportPost || saving}
                       onPress={reportPost}
-                      style={[styles.dangerBtn, (!canPost || saving) && styles.disabled]}
+                      style={[styles.dangerBtn, (!canReportPost || saving) && styles.disabled]}
                       accessibilityRole="button"
                       accessibilityLabel="Report forum post"
                     >
