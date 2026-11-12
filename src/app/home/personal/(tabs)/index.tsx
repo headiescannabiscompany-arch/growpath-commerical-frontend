@@ -174,6 +174,22 @@ export default function PersonalHomeTab() {
           <Text style={[styles.headerSubtitle, { color: palette.textMuted }]}>
             {[auth.user?.email, `${ent.plan || "free"} plan`].filter(Boolean).join(" | ")}
           </Text>
+          {!loading && !error && model?.activeGrow && growId ? (
+            <View style={styles.resumeGrow}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+                Continue {model.activeGrow.name || "your grow"}
+              </Text>
+              <View style={styles.actions}>
+                <ActionLink href={growHref} label="Open grow" />
+                {canCreateLog ? (
+                  <ActionLink
+                    href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
+                    label="Add journal entry"
+                  />
+                ) : null}
+              </View>
+            </View>
+          ) : null}
         </View>
       }
     >
@@ -325,18 +341,11 @@ export default function PersonalHomeTab() {
             </Pressable>
           </Link>
           <View style={styles.actions}>
-            <ActionLink href={growHref} label="Open Grow" />
             {canCreateLog ? (
-              <>
-                <ActionLink
-                  href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
-                  label="Add Log"
-                />
-                <ActionLink
-                  href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
-                  label="Add Photo"
-                />
-              </>
+              <ActionLink
+                href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}&focus=photos`}
+                label="Add Photo"
+              />
             ) : null}
             <ActionLink
               href={`/home/personal/tools?growId=${encodeURIComponent(growId)}`}
@@ -568,6 +577,7 @@ export const createPersonalHomeStyles = (palette: ThemePalette) =>
       marginBottom: 4
     },
     headerSubtitle: { color: palette.textMuted, fontSize: 14 },
+    resumeGrow: { marginTop: 12, gap: 8 },
     section: { gap: 10 },
     sectionTitle: { color: palette.text, fontSize: 18, fontWeight: "700" },
     commandCard: {
