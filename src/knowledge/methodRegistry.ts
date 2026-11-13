@@ -806,6 +806,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Personal and Commercial grow journals keep readable entries visible after a partial read, label incomplete activity, and retry the same grow and filter without writes. Empty and filtered no-match states require successful log, tool-result, and task reads.",
       "Grow Timeline shows saved activity or an empty view only after a verified read. Read-only Retry keeps the same grow, filter, detail level and view. Ignore late results after blur or a change of account, workspace or grow.",
       "Grow Plants verifies the list before showing an empty state or calculating the Free plant allowance. Read-only Retry reloads the same grow and retains open draft inputs while saving waits for the verified list.",
+      "Add Plant preserves the draft after rejection. Unconfirmed saves require a verified read of the same grow before another submission. Clear the draft only after a confirmed save for that grow.",
       "Do not rank an overall best run with hidden weights.",
       "Do not compare unlike stages without an explicit limitation.",
       "Do not claim causation from an observational run comparison.",

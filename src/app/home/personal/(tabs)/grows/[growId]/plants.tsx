@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Link, useLocalSearchParams } from "expo-router";
 import {
@@ -11,6 +11,7 @@ import {
   View
 } from "react-native";
 
+import { ApiError } from "@/api/apiRequest";
 import { type PersonalPlant } from "@/api/plants";
 import { createCropProfile, listCropProfiles } from "@/api/cropKnowledge";
 import { useAuth } from "@/auth/AuthContext";
@@ -32,6 +33,8 @@ type PlantsRead =
   | { status: "loading" | "failed" }
   | { status: "ready"; plants: PersonalPlant[] };
 
+type SaveReview = "idle" | "unconfirmed" | "checking" | "checked";
+
 function GrowPlantsContent({
   workspace,
   growId,
@@ -49,6 +52,9 @@ function GrowPlantsContent({
   const [read, setRead] = useState<PlantsRead>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [creating, setCreating] = useState(false);
+  const creatingRef = useRef(false);
+  const checkAttempt = useRef<number | null>(null);
+  const [saveReview, setSaveReview] = useState<SaveReview>("idle");
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [cropCommonName, setCropCommonName] = useState("");
@@ -66,19 +72,32 @@ function GrowPlantsContent({
   const [feedback, setFeedback] = useState("");
   const canWritePlants = read.status === "ready" &&
     (workspace === "commercial" || hasPlantWriteCapability || maxPlants > read.plants.length);
+  const saveNeedsCheck = saveReview === "unconfirmed" || saveReview === "checking";
+  const saveDisabled = !canWritePlants || !name.trim() || creating || saveNeedsCheck;
   const basePath = growWorkspaceBasePath(workspace);
 
   useFocusEffect(
     useCallback(() => {
       if (!growId) return;
       let current = true;
+      const checkingSave = checkAttempt.current === attempt;
       setRead({ status: "loading" });
       void listWorkspacePlants(workspace, growId, { verifyRecords: true }).then(
         (plants) => {
-          if (current) setRead({ status: "ready", plants });
+          if (!current) return;
+          setRead({ status: "ready", plants });
+          if (checkingSave) {
+            checkAttempt.current = null;
+            setSaveReview("checked");
+          }
         },
         () => {
-          if (current) setRead({ status: "failed" });
+          if (!current) return;
+          setRead({ status: "failed" });
+          if (checkingSave) {
+            checkAttempt.current = null;
+            setSaveReview("unconfirmed");
+          }
         }
       );
       return () => {
@@ -167,37 +186,38 @@ function GrowPlantsContent({
   }
 
   async function create() {
-    if (read.status !== "ready") return;
-    if (!canWritePlants) {
-      setFeedback("Free accounts can create one plant. Upgrade to add more plants.");
-      return;
-    }
-    if (!growId || creating || !name.trim()) return;
+    if (!growId || saveDisabled || creatingRef.current) return;
+    creatingRef.current = true;
     setCreating(true);
+    setSaveReview("idle");
     setFeedback("");
-    const created = await createWorkspacePlant(workspace, {
-      growId,
-      name: name.trim(),
-      cropCommonName: cropCommonName.trim() || undefined,
-      scientificName: scientificName.trim() || undefined,
-      cropProfileId: cropProfileId || undefined,
-      confirmationStatus: cropProfileId ? "user_confirmed" : "needs_confirmation",
-      cultivar: cultivar.trim() || undefined,
-      strain: cultivar.trim() || undefined,
-      medium: medium.trim() || undefined,
-      sizeMetrics: canopyWidthCm.trim()
-        ? { canopyWidthCm: Number(canopyWidthCm.trim()) }
-        : undefined,
-      timingAdjustments: timingOffsetDays.trim()
-        ? { stageDaysOffset: Number(timingOffsetDays.trim()) }
-        : undefined,
-      waterUseProfile: waterDemand.trim()
-        ? { observedDemand: waterDemand.trim() }
-        : undefined,
-      phenoLabel: phenoLabel.trim() || undefined,
-      stage: "seedling"
-    });
-    if (created) {
+    try {
+      const created = await createWorkspacePlant(workspace, {
+        growId,
+        name: name.trim(),
+        cropCommonName: cropCommonName.trim() || undefined,
+        scientificName: scientificName.trim() || undefined,
+        cropProfileId: cropProfileId || undefined,
+        confirmationStatus: cropProfileId ? "user_confirmed" : "needs_confirmation",
+        cultivar: cultivar.trim() || undefined,
+        strain: cultivar.trim() || undefined,
+        medium: medium.trim() || undefined,
+        sizeMetrics: canopyWidthCm.trim()
+          ? { canopyWidthCm: Number(canopyWidthCm.trim()) }
+          : undefined,
+        timingAdjustments: timingOffsetDays.trim()
+          ? { stageDaysOffset: Number(timingOffsetDays.trim()) }
+          : undefined,
+        waterUseProfile: waterDemand.trim()
+          ? { observedDemand: waterDemand.trim() }
+          : undefined,
+        phenoLabel: phenoLabel.trim() || undefined,
+        stage: "seedling"
+      });
+      if (typeof created?.id !== "string" || !created.id.trim() || created.growId !== growId) {
+        setSaveReview("unconfirmed");
+        return;
+      }
       setName("");
       setCropCommonName("");
       setScientificName("");
@@ -211,11 +231,23 @@ function GrowPlantsContent({
       setPhenoLabel("");
       setShowForm(false);
       setFeedback("Plant added to this grow.");
+      setRead({ status: "loading" });
       setAttempt((previous) => previous + 1);
-    } else {
-      setFeedback("Unable to create plant.");
+    } catch (error) {
+      const status = error instanceof ApiError ? error.status : null;
+      if (status === 400 || status === 422) {
+        setFeedback("Could not save the plant. Check the plant details and try again.");
+      } else if (status === 401 || status === 403) {
+        setFeedback("Could not save the plant. Check your sign-in and access to this grow.");
+      } else if (status === 404) {
+        setFeedback("Could not save the plant. Check that the grow and any linked crop profile are available.");
+      } else {
+        setSaveReview("unconfirmed");
+      }
+    } finally {
+      creatingRef.current = false;
+      setCreating(false);
     }
-    setCreating(false);
   }
 
   function growthOverlayLine(plant: PersonalPlant) {
@@ -249,18 +281,51 @@ function GrowPlantsContent({
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Plants</Text>
       <Text style={styles.subtitle}>Plants tracked inside this grow.</Text>
+      {saveReview !== "idle" ? (
+        <View style={styles.form}>
+          <Text accessibilityRole="alert" style={styles.readError}>
+            {saveReview === "checked"
+              ? "Review the plant list before saving again"
+              : "Could not confirm the plant was saved"}
+          </Text>
+          <Text style={styles.help}>
+            {saveReview === "checked"
+              ? "If the plant is already in this grow, you can close the draft."
+              : "Check this grow’s plant list before trying to save again."}
+          </Text>
+          {saveNeedsCheck ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Check plants"
+              disabled={saveReview === "checking"}
+              style={[styles.secondaryButton, styles.retry]}
+              onPress={() => {
+                if (checkAttempt.current !== null) return;
+                checkAttempt.current = attempt + 1;
+                setSaveReview("checking");
+                setRead({ status: "loading" });
+                setAttempt(attempt + 1);
+              }}
+            >
+              <Text style={styles.secondaryButtonText}>
+                {saveReview === "checking" ? "Checking plants…" : "Check plants"}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
       {!growId ? <Text style={styles.subtitle}>No grow selected.</Text> : null}
       {growId && read.status === "failed" ? (
         <View style={styles.form}>
           <Text accessibilityRole="alert" style={styles.readError}>Could not load plants</Text>
           <Text style={styles.help}>Try again to reload the plants in this grow.</Text>
-          <Pressable
+          {!saveNeedsCheck ? <Pressable
             accessibilityRole="button"
             style={[styles.secondaryButton, styles.retry]}
             onPress={() => setAttempt((previous) => previous + 1)}
           >
             <Text style={styles.secondaryButtonText}>Retry</Text>
-          </Pressable>
+          </Pressable> : null}
         </View>
       ) : null}
       <PersonalFeedPlacement
@@ -270,10 +335,11 @@ function GrowPlantsContent({
       />
       <GrowWorkspaceNav growId={growId} active="plants" />
 
-      {canWritePlants ? (
+      {canWritePlants || (showForm && saveReview === "checked") ? (
         <Pressable
           style={styles.primaryButton}
           onPress={() => setShowForm((value) => !value)}
+          disabled={creating}
           accessibilityRole="button"
           accessibilityLabel={showForm ? "Cancel adding plant" : "Add plant"}
         >
@@ -291,7 +357,7 @@ function GrowPlantsContent({
         </View>
       ) : null}
 
-      {showForm && (read.status !== "ready" || canWritePlants) ? (
+      {showForm && (read.status !== "ready" || canWritePlants || saveReview !== "idle") ? (
         <View style={styles.form}>
           <Text style={styles.label}>Plant name *</Text>
           <TextInput
@@ -426,8 +492,8 @@ function GrowPlantsContent({
             />
           </View>
           <Pressable
-            style={[styles.primaryButton, (!canWritePlants || !name.trim() || creating) && styles.disabled]}
-            disabled={!canWritePlants || !name.trim() || creating}
+            style={[styles.primaryButton, saveDisabled && styles.disabled]}
+            disabled={saveDisabled}
             onPress={create}
             accessibilityRole="button"
             accessibilityLabel="Add plant to grow"

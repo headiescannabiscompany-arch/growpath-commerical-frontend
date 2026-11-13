@@ -199,17 +199,19 @@ export async function createPersonalPlant(data: {
   stage?: string;
   medium?: string;
   notes?: string;
-}): Promise<PersonalPlant | null> {
+}, options: { throwOnError?: boolean } = {}): Promise<PersonalPlant | null> {
   try {
     const response: any = await apiRequest("/api/personal/plants", {
       method: "POST",
       body: data
     });
+    if (response?.success === false || response?.ok === false) return null;
     return (response?.created ??
       response?.plant ??
       response?.data?.plant ??
       response) as PersonalPlant;
   } catch (_error) {
+    if (options.throwOnError) throw _error;
     return null;
   }
 }

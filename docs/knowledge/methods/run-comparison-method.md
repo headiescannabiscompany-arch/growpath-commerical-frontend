@@ -45,6 +45,11 @@ Retry for the same grow. An open draft keeps its inputs while the screen
 waits for a verified list before saving. Ignore late reads after leaving
 the screen or changing account, workspace or grow.
 
+An Add Plant rejection preserves the draft and releases the busy state.
+A save without a confirmed plant identity requires a fresh read of the same
+grow’s plants before another submission. The user reviews the saved list and
+chooses whether to retry. Only a confirmed save clears the draft.
+
 Saved ToolRun history distinguishes loading, unavailable reads and confirmed empty
 collections. Offer single-flight read-only Refresh/Retry, label retained same-query
 snapshots, and discard prior results after account/session, workspace, Facility or

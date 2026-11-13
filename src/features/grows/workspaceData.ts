@@ -322,18 +322,16 @@ export async function createWorkspacePlant(
   workspace: GrowWorkspace,
   data: Parameters<typeof createPersonalPlant>[0]
 ): Promise<PersonalPlant | null> {
-  if (workspace === "personal") return createPersonalPlant(data);
+  if (workspace === "personal") return createPersonalPlant(data, { throwOnError: true });
   const response: any = await apiRequest(commercialGrowChildPath(data.growId, "plants"), {
     method: "POST",
     body: data
   });
+  if (response?.success === false || response?.ok === false) return null;
   const row = response?.plant ?? response?.item ?? response?.data?.plant;
-  return (
-    commercialPlants({
-      id: data.growId,
-      plants: row ? [row] : []
-    })[0] || null
-  );
+  const id = row?.id || row?._id;
+  if (typeof id !== "string" || !id.trim()) return null;
+  return commercialPlants({ id: data.growId, plants: [row] })[0] || null;
 }
 
 export async function listWorkspaceLogs(
