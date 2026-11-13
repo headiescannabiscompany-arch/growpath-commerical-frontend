@@ -13,6 +13,7 @@ import {
 
 import { type PersonalPlant } from "@/api/plants";
 import { createCropProfile, listCropProfiles } from "@/api/cropKnowledge";
+import { useAuth } from "@/auth/AuthContext";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, getRowId } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -27,20 +28,26 @@ import {
   type GrowWorkspace
 } from "@/features/grows/workspaceData";
 
-function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
+type PlantsRead =
+  | { status: "loading" | "failed" }
+  | { status: "ready"; plants: PersonalPlant[] };
+
+function GrowPlantsContent({
+  workspace,
+  growId,
+  routePlantId
+}: {
+  workspace: GrowWorkspace;
+  growId: string;
+  routePlantId: string;
+}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowPlantsStyles(palette), [palette]);
   const entitlements = useEntitlements();
   const hasPlantWriteCapability = entitlements.can(CAPABILITY_KEYS.PLANTS_PERSONAL_WRITE);
   const maxPlants = Number(entitlements.limits?.maxPlants ?? 0);
-  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
-    growId?: string | string[];
-    plantId?: string | string[];
-  }>();
-  const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
-  const routePlantId = useMemo(() => coerceParam(rawPlantId), [rawPlantId]);
-  const [plants, setPlants] = useState<PersonalPlant[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [read, setRead] = useState<PlantsRead>({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
   const [creating, setCreating] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
@@ -57,33 +64,27 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
   const [timingOffsetDays, setTimingOffsetDays] = useState("");
   const [phenoLabel, setPhenoLabel] = useState("");
   const [feedback, setFeedback] = useState("");
-  const canWritePlants =
-    workspace === "commercial" ||
-    hasPlantWriteCapability ||
-    (!loading && maxPlants > plants.length);
+  const canWritePlants = read.status === "ready" &&
+    (workspace === "commercial" || hasPlantWriteCapability || maxPlants > read.plants.length);
   const basePath = growWorkspaceBasePath(workspace);
-
-  const load = useCallback(async () => {
-    if (!growId) {
-      setPlants([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      setPlants(await listWorkspacePlants(workspace, growId));
-    } catch {
-      setPlants([]);
-      setFeedback("Unable to load plants.");
-    } finally {
-      setLoading(false);
-    }
-  }, [growId, workspace]);
 
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load])
+      if (!growId) return;
+      let current = true;
+      setRead({ status: "loading" });
+      void listWorkspacePlants(workspace, growId, { verifyRecords: true }).then(
+        (plants) => {
+          if (current) setRead({ status: "ready", plants });
+        },
+        () => {
+          if (current) setRead({ status: "failed" });
+        }
+      );
+      return () => {
+        current = false;
+      };
+    }, [attempt, growId, workspace])
   );
 
   async function matchCropProfile() {
@@ -128,7 +129,7 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
 
   async function createDraftCropProfile() {
     const displayName = cropCommonName.trim() || scientificName.trim();
-    if (!displayName || profileDrafting) return;
+    if (!canWritePlants || !displayName || profileDrafting) return;
     setProfileDrafting(true);
     setFeedback("");
     try {
@@ -166,6 +167,7 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
   }
 
   async function create() {
+    if (read.status !== "ready") return;
     if (!canWritePlants) {
       setFeedback("Free accounts can create one plant. Upgrade to add more plants.");
       return;
@@ -209,7 +211,7 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
       setPhenoLabel("");
       setShowForm(false);
       setFeedback("Plant added to this grow.");
-      await load();
+      setAttempt((previous) => previous + 1);
     } else {
       setFeedback("Unable to create plant.");
     }
@@ -247,6 +249,20 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Plants</Text>
       <Text style={styles.subtitle}>Plants tracked inside this grow.</Text>
+      {!growId ? <Text style={styles.subtitle}>No grow selected.</Text> : null}
+      {growId && read.status === "failed" ? (
+        <View style={styles.form}>
+          <Text accessibilityRole="alert" style={styles.readError}>Could not load plants</Text>
+          <Text style={styles.help}>Try again to reload the plants in this grow.</Text>
+          <Pressable
+            accessibilityRole="button"
+            style={[styles.secondaryButton, styles.retry]}
+            onPress={() => setAttempt((previous) => previous + 1)}
+          >
+            <Text style={styles.secondaryButtonText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
       <PersonalFeedPlacement
         placement="top"
         routeKey="personal_grows_growid_plants"
@@ -265,7 +281,7 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
             {showForm ? "Cancel" : "+ Add Plant"}
           </Text>
         </Pressable>
-      ) : (
+      ) : read.status === "ready" ? (
         <View style={styles.form}>
           <Text style={styles.label}>Plant tracking writes are Pro</Text>
           <Text style={styles.help}>
@@ -273,9 +289,9 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
             crop profiles, and plant-level grow history.
           </Text>
         </View>
-      )}
+      ) : null}
 
-      {showForm && canWritePlants ? (
+      {showForm && (read.status !== "ready" || canWritePlants) ? (
         <View style={styles.form}>
           <Text style={styles.label}>Plant name *</Text>
           <TextInput
@@ -343,8 +359,8 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
             </Pressable>
             {!cropProfileId && (cropCommonName.trim() || scientificName.trim()) ? (
               <Pressable
-                style={[styles.secondaryButton, profileDrafting ? styles.disabled : null]}
-                disabled={profileDrafting}
+                style={[styles.secondaryButton, (!canWritePlants || profileDrafting) && styles.disabled]}
+                disabled={!canWritePlants || profileDrafting}
                 onPress={createDraftCropProfile}
                 accessibilityRole="button"
                 accessibilityLabel="Create draft crop profile"
@@ -410,8 +426,8 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
             />
           </View>
           <Pressable
-            style={[styles.primaryButton, (!name.trim() || creating) && styles.disabled]}
-            disabled={!name.trim() || creating}
+            style={[styles.primaryButton, (!canWritePlants || !name.trim() || creating) && styles.disabled]}
+            disabled={!canWritePlants || !name.trim() || creating}
             onPress={create}
             accessibilityRole="button"
             accessibilityLabel="Add plant to grow"
@@ -429,9 +445,10 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
         routeKey="personal_grows_growid_plants"
         longContent
       />
-      {loading ? (
-        <ActivityIndicator color={palette.accent} />
-      ) : plants.length === 0 ? (
+      {growId && read.status === "loading" ? (
+        <ActivityIndicator accessibilityLabel="Loading plants" color={palette.accent} />
+      ) : null}
+      {read.status === "ready" && (read.plants.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.cardTitle}>No plants yet</Text>
           <Text style={styles.subtitle}>
@@ -444,7 +461,7 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
           />
         </View>
       ) : (
-        plants.map((plant, index) => {
+        read.plants.map((plant, index) => {
           const currentPlantId = getRowId(plant);
           const isSelected = Boolean(routePlantId && routePlantId === currentPlantId);
           return (
@@ -540,7 +557,7 @@ function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
             </View>
           );
         })
-      )}
+      ))}
 
       <PersonalFeedPlacement
         placement="bottom"
@@ -556,8 +573,10 @@ export default function GrowPlantsScreen({
 }: {
   workspace?: GrowWorkspace;
 } = {}) {
-  const { growId: rawGrowId } = useLocalSearchParams<{
+  const { user } = useAuth();
+  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
+    plantId?: string | string[];
   }>();
   const growId = coerceParam(rawGrowId);
   const basePath = growWorkspaceBasePath(workspace);
@@ -569,7 +588,12 @@ export default function GrowPlantsScreen({
         growId ? `${basePath}/grows/${encodeURIComponent(growId)}` : `${basePath}/grows`
       }
     >
-      <GrowPlantsContent workspace={workspace} />
+      <GrowPlantsContent
+        key={JSON.stringify([user?.id, workspace, growId])}
+        workspace={workspace}
+        growId={growId}
+        routePlantId={coerceParam(rawPlantId)}
+      />
     </ScreenBoundary>
   );
 }
@@ -627,6 +651,8 @@ export const createGrowPlantsStyles = (palette: ThemePalette) =>
       paddingVertical: 9
     },
     secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    retry: { minHeight: 44, justifyContent: "center" },
+    readError: { color: palette.danger, fontWeight: "800" },
     disabled: { opacity: 0.55 },
     feedback: { color: palette.textMuted, fontWeight: "700" },
     profileMatch: { color: palette.link, fontWeight: "800", alignSelf: "center" },

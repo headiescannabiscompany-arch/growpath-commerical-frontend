@@ -39,6 +39,12 @@ or an empty view. Failed reads offer read-only Retry for the same grow and keep
 the chosen filter, detail level and view. Ignore late reads after leaving the
 screen or changing account, workspace or grow.
 
+The grow’s Plants screen verifies the plant list before showing an empty
+state or calculating the Free plant allowance. A failed read offers read-only
+Retry for the same grow. An open draft keeps its inputs while the screen
+waits for a verified list before saving. Ignore late reads after leaving
+the screen or changing account, workspace or grow.
+
 Saved ToolRun history distinguishes loading, unavailable reads and confirmed empty
 collections. Offer single-flight read-only Refresh/Retry, label retained same-query
 snapshots, and discard prior results after account/session, workspace, Facility or
