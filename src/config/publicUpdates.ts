@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 12, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 13, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -14,7 +14,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "November 12, 2026",
         dateLabel: "Released",
         summary:
-          "If Grow Overview or the Journal has trouble loading, tap Retry to reload the same grow. The Journal keeps your filter. Drafts opened from Personal Home show the selected grow’s name when available, and Back returns to Home. Signed-in Free members can use Report on visible Forum posts by other members."
+          "If Grow Overview, Journal, Timeline or Plants has trouble loading, tap Retry to reload the same grow. Journal keeps your filter, and Timeline keeps your filter, zoom and view. Add Plant keeps your draft after a rejected save. If you see Check plants after a save attempt, use it to review the list before submitting again. Drafts opened from Personal Home show the selected grow’s name when available, and Back returns to Home. Signed-in Free members can use Report on visible Forum posts by other members."
       },
       {
         id: "personal-home-grow-journal-shortcuts",
