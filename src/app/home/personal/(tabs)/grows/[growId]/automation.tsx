@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -29,6 +29,7 @@ import type {
   AutomationPolicy,
   AutomationPolicyPayload
 } from "@/types/automation";
+import { useAuth } from "@/auth/AuthContext";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -74,6 +75,7 @@ export const createGrowAutomationStyles = (palette: ThemePalette) =>
     },
     dangerButton: { borderColor: palette.danger },
     disabledButton: { opacity: 0.45 },
+    retry: { alignSelf: "flex-start", minHeight: 44, justifyContent: "center", marginTop: 8 },
     buttonText: { color: palette.link, fontWeight: "800" },
     primaryButtonText: { color: palette.accentText },
     dangerText: { color: palette.danger },
@@ -189,68 +191,91 @@ function eventSummary(event: AutomationEvent) {
   return `${event.processed ? "Processed" : "Pending"} | matched ${matches} policy(s)`;
 }
 
-export default function GrowAutomationScreen({
-  workspace = "personal"
+type AutomationRead<T> =
+  | { status: "loading" | "failed" }
+  | { status: "ready"; rows: T[] };
+
+function GrowAutomationContent({
+  workspace,
+  growId
 }: {
-  workspace?: "personal" | "commercial";
+  workspace: "personal" | "commercial";
+  growId: string;
 }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowAutomationStyles(palette), [palette]);
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
-  const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
-
-  const [policies, setPolicies] = useState<AutomationPolicy[]>([]);
-  const [events, setEvents] = useState<AutomationEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [policyRead, setPolicyRead] = useState<AutomationRead<AutomationPolicy>>({
+    status: "loading"
+  });
+  const [eventRead, setEventRead] = useState<AutomationRead<AutomationEvent>>({
+    status: "loading"
+  });
+  const activeRead = useRef<symbol | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
+  const policies = policyRead.status === "ready" ? policyRead.rows : [];
+  const events = eventRead.status === "ready" ? eventRead.rows : [];
+  const loading = Boolean(growId) &&
+    (policyRead.status === "loading" || eventRead.status === "loading");
+  const policyUnavailable = policyRead.status === "failed";
+  const eventUnavailable = eventRead.status === "failed";
+  const policyActionsDisabled = busy || policyRead.status !== "ready";
 
-  const load = useCallback(async () => {
-    if (!growId) {
-      setError("Missing grow id.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError("");
-    try {
-      const [policyRows, eventRows] = await Promise.all(
-        workspace === "commercial"
-          ? [
-              listCommercialAutomationPolicies({ growId }),
-              listCommercialAutomationEvents({ growId })
-            ]
-          : [
-              listPersonalAutomationPolicies({ growId }),
-              listPersonalAutomationEvents({ growId })
-            ]
-      );
-      setPolicies(policyRows);
-      setEvents(eventRows);
-    } catch {
-      setPolicies([]);
-      setEvents([]);
-      setError("Failed to load automation policies.");
-    } finally {
-      setLoading(false);
-    }
+  const load = useCallback(() => {
+    const request = Symbol();
+    activeRead.current = request;
+    setPolicyRead({ status: "loading" });
+    setEventRead({ status: "loading" });
+
+    const filters = { growId, strict: true };
+    const policiesRequest = workspace === "commercial"
+      ? listCommercialAutomationPolicies(filters)
+      : listPersonalAutomationPolicies(filters);
+    const eventsRequest = workspace === "commercial"
+      ? listCommercialAutomationEvents(filters)
+      : listPersonalAutomationEvents(filters);
+
+    const policiesLoaded = policiesRequest.then(
+      (rows) => {
+        if (activeRead.current === request) setPolicyRead({ status: "ready", rows });
+      },
+      () => {
+        if (activeRead.current === request) setPolicyRead({ status: "failed" });
+      }
+    );
+    const eventsLoaded = eventsRequest.then(
+      (rows) => {
+        if (activeRead.current === request) setEventRead({ status: "ready", rows });
+      },
+      () => {
+        if (activeRead.current === request) setEventRead({ status: "failed" });
+      }
+    );
+    return Promise.all([policiesLoaded, eventsLoaded]);
   }, [growId, workspace]);
 
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load])
+      if (!growId) return;
+      void load();
+      return () => {
+        activeRead.current = null;
+      };
+    }, [growId, load])
   );
 
   async function runAction(action: () => Promise<unknown>, message: string) {
+    if (!activeRead.current || policyActionsDisabled) return;
     setBusy(true);
     setError("");
     setStatus("");
     try {
       await action();
-      setStatus(message);
-      await load();
+      if (activeRead.current) {
+        setStatus(message);
+        await load();
+      }
     } catch (err: any) {
       setError(err?.message || "Automation action failed.");
     } finally {
@@ -272,9 +297,34 @@ export default function GrowAutomationScreen({
       />
       <GrowWorkspaceNav growId={growId} active="automation" />
 
+      {!growId ? <Text style={styles.error}>Missing grow id.</Text> : null}
+      {policyUnavailable || eventUnavailable ? (
+        <View>
+          {policyUnavailable ? (
+            <Text accessibilityRole="alert" style={styles.error}>
+              Couldn’t load automation policies.
+            </Text>
+          ) : null}
+          {eventUnavailable ? (
+            <Text accessibilityRole="alert" style={styles.error}>
+              Couldn’t load recent automation events.
+            </Text>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            disabled={loading || busy}
+            onPress={() => void load()}
+            style={[styles.button, styles.retry, (loading || busy) && styles.disabledButton]}
+          >
+            <Text style={styles.buttonText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
       <View style={styles.topActions}>
         <Pressable
-          disabled={!growId || busy}
+          accessibilityRole="button"
+          disabled={policyActionsDisabled}
           onPress={() =>
             runAction(
               () =>
@@ -290,7 +340,7 @@ export default function GrowAutomationScreen({
           style={[
             styles.button,
             styles.primaryButton,
-            (!growId || busy) && styles.disabledButton
+            policyActionsDisabled && styles.disabledButton
           ]}
         >
           <Text style={[styles.buttonText, styles.primaryButtonText]}>
@@ -298,7 +348,8 @@ export default function GrowAutomationScreen({
           </Text>
         </Pressable>
         <Pressable
-          disabled={!growId || busy}
+          accessibilityRole="button"
+          disabled={policyActionsDisabled}
           onPress={() =>
             runAction(
               () =>
@@ -311,7 +362,7 @@ export default function GrowAutomationScreen({
               "AI diagnosis automation added."
             )
           }
-          style={[styles.button, (!growId || busy) && styles.disabledButton]}
+          style={[styles.button, policyActionsDisabled && styles.disabledButton]}
         >
           <Text style={styles.buttonText}>Add AI Follow-Up</Text>
         </Pressable>
@@ -321,7 +372,7 @@ export default function GrowAutomationScreen({
       {status ? <Text style={styles.status}>{status}</Text> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      {!loading && !policies.length ? (
+      {policyRead.status === "ready" && !policies.length ? (
         <Text style={styles.empty}>
           No automation policies are attached to this grow yet. Add a starter policy
           above, then run Dew Point Guard or AI diagnosis from this grow.
@@ -352,6 +403,7 @@ export default function GrowAutomationScreen({
 
           <View style={styles.actions}>
             <Pressable
+              accessibilityRole="button"
               disabled={busy}
               onPress={() =>
                 runAction(
@@ -379,6 +431,7 @@ export default function GrowAutomationScreen({
               </Text>
             </Pressable>
             <Pressable
+              accessibilityRole="button"
               disabled={busy}
               onPress={() =>
                 runAction(
@@ -397,6 +450,7 @@ export default function GrowAutomationScreen({
               <Text style={styles.buttonText}>Test</Text>
             </Pressable>
             <Pressable
+              accessibilityRole="button"
               disabled={busy}
               onPress={() =>
                 runAction(
@@ -416,7 +470,7 @@ export default function GrowAutomationScreen({
       ))}
 
       <Text style={styles.sectionTitle}>Recent Automation Events</Text>
-      {!loading && !events.length ? (
+      {eventRead.status === "ready" && !events.length ? (
         <Text style={styles.empty}>
           No automation events have fired for this grow yet.
         </Text>
@@ -445,5 +499,22 @@ export default function GrowAutomationScreen({
         longContent
       />
     </ScrollView>
+  );
+}
+
+export default function GrowAutomationScreen({
+  workspace = "personal"
+}: {
+  workspace?: "personal" | "commercial";
+} = {}) {
+  const { user } = useAuth();
+  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const growId = coerceParam(rawGrowId);
+  return (
+    <GrowAutomationContent
+      key={JSON.stringify([user?.id, workspace, growId])}
+      workspace={workspace}
+      growId={growId}
+    />
   );
 }

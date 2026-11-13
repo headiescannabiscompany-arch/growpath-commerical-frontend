@@ -39,6 +39,13 @@ or an empty view. Failed reads offer read-only Retry for the same grow and keep
 the chosen filter, detail level and view. Ignore late reads after leaving the
 screen or changing account, workspace or grow.
 
+Grow Automation verifies policies and recent events independently. When one
+collection fails, show its read error and keep the other verified collection
+visible. Read-only Retry uses the selected workspace and grow. Show each empty
+state only after its collection loads successfully. Policy actions require a
+verified policy list. Ignore late reads after leaving the screen or changing
+account, workspace or grow.
+
 The grow’s Plants screen verifies the plant list before showing an empty
 state or calculating the Free plant allowance. A failed read offers read-only
 Retry for the same grow. An open draft keeps its inputs while the screen

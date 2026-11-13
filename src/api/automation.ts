@@ -53,18 +53,35 @@ function normalizePolicy(raw: any): AutomationPolicy {
   };
 }
 
-function normalizePolicyList(res: any): AutomationPolicy[] {
+function normalizeAutomationList<T extends { id: string }>(
+  res: any,
+  list: unknown,
+  normalize: (row: any) => T,
+  strict: boolean
+): T[] {
+  if (strict) {
+    if (res?.success === false || res?.data?.success === false || !Array.isArray(list)) {
+      throw new Error("Invalid automation list response.");
+    }
+    if (list.some((row) => {
+      const id = row?.id || row?._id;
+      return typeof id !== "string" || !id.trim();
+    })) {
+      throw new Error("Invalid automation record identity.");
+    }
+  }
+  return Array.isArray(list) ? list.map(normalize).filter((row) => row.id) : [];
+}
+
+function normalizePolicyList(res: any, strict = false): AutomationPolicy[] {
   const list =
     res?.policies ||
     res?.automationPolicies ||
     res?.data?.policies ||
     res?.data?.automationPolicies ||
     res?.data ||
-    res ||
-    [];
-  return Array.isArray(list)
-    ? list.map(normalizePolicy).filter((policy) => policy.id)
-    : [];
+    res;
+  return normalizeAutomationList(res, list, normalizePolicy, strict);
 }
 
 function normalizeEvent(raw: any): AutomationEvent {
@@ -92,16 +109,15 @@ function normalizeEvent(raw: any): AutomationEvent {
   };
 }
 
-function normalizeEventList(res: any): AutomationEvent[] {
+function normalizeEventList(res: any, strict = false): AutomationEvent[] {
   const list =
     res?.events ||
     res?.automationEvents ||
     res?.data?.events ||
     res?.data?.automationEvents ||
     res?.data ||
-    res ||
-    [];
-  return Array.isArray(list) ? list.map(normalizeEvent).filter((event) => event.id) : [];
+    res;
+  return normalizeAutomationList(res, list, normalizeEvent, strict);
 }
 
 export async function listAutomationPolicies(facilityId: string) {
@@ -112,13 +128,14 @@ export async function listAutomationPolicies(facilityId: string) {
 export async function listPersonalAutomationPolicies(params: {
   growId?: string;
   facilityId?: string;
+  strict?: boolean;
 }) {
   const query = new URLSearchParams();
   if (params.growId) query.set("growId", params.growId);
   if (params.facilityId) query.set("facilityId", params.facilityId);
   const suffix = query.toString() ? `?${query.toString()}` : "";
   const res = await apiRequest(`/api/automation/policies${suffix}`);
-  return normalizePolicyList(res);
+  return normalizePolicyList(res, params.strict);
 }
 
 export async function listPersonalAutomationEvents(params: {
@@ -126,6 +143,7 @@ export async function listPersonalAutomationEvents(params: {
   facilityId?: string;
   source?: string;
   eventType?: string;
+  strict?: boolean;
 }) {
   const query = new URLSearchParams();
   if (params.growId) query.set("growId", params.growId);
@@ -134,7 +152,7 @@ export async function listPersonalAutomationEvents(params: {
   if (params.eventType) query.set("eventType", params.eventType);
   const suffix = query.toString() ? `?${query.toString()}` : "";
   const res = await apiRequest(`/api/automation/events${suffix}`);
-  return normalizeEventList(res);
+  return normalizeEventList(res, params.strict);
 }
 
 type CommercialAutomationFilters = {
@@ -142,6 +160,7 @@ type CommercialAutomationFilters = {
   plantId?: string;
   source?: string;
   eventType?: string;
+  strict?: boolean;
 };
 
 function commercialAutomationQuery(params: CommercialAutomationFilters = {}) {
@@ -159,7 +178,7 @@ export async function listCommercialAutomationPolicies(
   const res = await apiRequest(
     `/api/automation/policies?${commercialAutomationQuery(params)}`
   );
-  return normalizePolicyList(res);
+  return normalizePolicyList(res, params.strict);
 }
 
 export async function listCommercialAutomationEvents(
@@ -168,7 +187,7 @@ export async function listCommercialAutomationEvents(
   const res = await apiRequest(
     `/api/automation/events?${commercialAutomationQuery(params)}`
   );
-  return normalizeEventList(res);
+  return normalizeEventList(res, params.strict);
 }
 
 export async function createCommercialAutomationPolicy(payload: AutomationPolicyPayload) {

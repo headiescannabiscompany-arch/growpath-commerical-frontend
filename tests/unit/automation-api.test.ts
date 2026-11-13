@@ -9,6 +9,58 @@ describe("automation API", () => {
     jest.resetAllMocks();
   });
 
+  it("verifies Personal and Commercial automation lists without changing their filters or aliases", async () => {
+    const {
+      listPersonalAutomationPolicies,
+      listPersonalAutomationEvents,
+      listCommercialAutomationPolicies,
+      listCommercialAutomationEvents
+    } = require("@/api/automation");
+
+    mockApiRequest
+      .mockResolvedValueOnce({ automationPolicies: [{ _id: "personal-policy", growId: "grow 1" }] })
+      .mockResolvedValueOnce({ data: { automationEvents: [{ id: "personal-event", growId: "grow 1" }] } })
+      .mockResolvedValueOnce({ data: { policies: [{ id: "commercial-policy", growId: "grow 2" }] } })
+      .mockResolvedValueOnce({ success: true, events: [] });
+
+    await expect(listPersonalAutomationPolicies({ growId: "grow 1", strict: true }))
+      .resolves.toMatchObject([{ id: "personal-policy" }]);
+    await expect(listPersonalAutomationEvents({ growId: "grow 1", source: "tool_run", strict: true }))
+      .resolves.toMatchObject([{ id: "personal-event" }]);
+    await expect(listCommercialAutomationPolicies({ growId: "grow 2", plantId: "plant 2", strict: true }))
+      .resolves.toMatchObject([{ id: "commercial-policy" }]);
+    await expect(listCommercialAutomationEvents({ growId: "grow 2", eventType: "dew_point_high_risk", strict: true }))
+      .resolves.toEqual([]);
+
+    expect(mockApiRequest.mock.calls.map(([url]) => url)).toEqual([
+      "/api/automation/policies?growId=grow+1",
+      "/api/automation/events?growId=grow+1&source=tool_run",
+      "/api/automation/policies?workspaceType=commercial&growId=grow+2&plantId=plant+2",
+      "/api/automation/events?workspaceType=commercial&growId=grow+2&eventType=dew_point_high_risk"
+    ]);
+  });
+
+  it("rejects malformed automation envelopes and missing row identities in strict mode", async () => {
+    const {
+      listPersonalAutomationPolicies,
+      listPersonalAutomationEvents,
+      listCommercialAutomationPolicies,
+      listCommercialAutomationEvents
+    } = require("@/api/automation");
+
+    mockApiRequest
+      .mockResolvedValueOnce({ policies: {}, automationPolicies: [] })
+      .mockResolvedValueOnce({ events: [{ source: "tool_run" }] })
+      .mockResolvedValueOnce({ success: false, policies: [] })
+      .mockResolvedValueOnce({ data: { automationEvents: [{ eventType: "dew_point_high_risk" }] } });
+
+    const scope = { growId: "grow-1", strict: true };
+    await expect(listPersonalAutomationPolicies(scope)).rejects.toThrow();
+    await expect(listPersonalAutomationEvents(scope)).rejects.toThrow();
+    await expect(listCommercialAutomationPolicies(scope)).rejects.toThrow();
+    await expect(listCommercialAutomationEvents(scope)).rejects.toThrow();
+  });
+
   it("normalizes facility automation policy envelopes", async () => {
     mockApiRequest.mockResolvedValue({
       policies: [

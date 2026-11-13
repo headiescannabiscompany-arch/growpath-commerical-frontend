@@ -16,6 +16,12 @@ const mockUpdateCommercialPolicy = jest.fn();
 const mockDeleteCommercialPolicy = jest.fn();
 const mockTestCommercialPolicy = jest.fn();
 
+jest.mock("@/auth/AuthContext", () => ({
+  ...jest.requireActual("@/auth/AuthContext"),
+  useAuth: () => ({ user: { id: "account-1" } }),
+  useOptionalAuth: () => ({ user: { id: "account-1" } })
+}));
+
 jest.mock("@/api/automation", () => ({
   listPersonalAutomationPolicies: (...args: any[]) => mockListPolicies(...args),
   listPersonalAutomationEvents: (...args: any[]) => mockListEvents(...args),
@@ -48,6 +54,8 @@ jest.mock("@react-navigation/native", () => {
     }
   };
 });
+
+jest.mock("@/components/feed/PersonalFeedPlacement", () => () => null);
 
 jest.mock("@/components/personal/GrowWorkspaceNav", () => {
   const { View } = require("react-native");
@@ -99,13 +107,68 @@ describe("GrowAutomationScreen", () => {
     });
   });
 
+  it("preserves events after a policy read fails and retries both lists for the same grow", async () => {
+    mockListPolicies
+      .mockRejectedValueOnce(new Error("Simulated policy read failure"))
+      .mockResolvedValueOnce([]);
+
+    const screen = render(<GrowAutomationScreen />);
+    const retry = await screen.findByRole("button", { name: /^Retry\b/i });
+
+    expect(screen.getByText(/Couldn[’']t load automation policies/)).toBeTruthy();
+    expect(screen.getByText("Risk: high")).toBeTruthy();
+    expect(screen.queryByText(/No automation policies are attached/)).toBeNull();
+    expect(screen.queryByText(/No automation events have fired/)).toBeNull();
+    expect(screen.getByRole("button", { name: "Add Dew Point Alert", disabled: true })).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Add Dew Point Alert" }));
+    expect(mockCreatePolicy).not.toHaveBeenCalled();
+
+    fireEvent.press(retry);
+
+    expect(await screen.findByText(/No automation policies are attached/)).toBeTruthy();
+    expect(screen.getByText("Risk: high")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Add Dew Point Alert", disabled: false })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /^Retry\b/i })).toBeNull();
+    const read = { growId: "grow-1", strict: true };
+    expect(mockListPolicies.mock.calls).toEqual([[read], [read]]);
+    expect(mockListEvents.mock.calls).toEqual([[read], [read]]);
+    expect(mockCreatePolicy).not.toHaveBeenCalled();
+  });
+
+  it("preserves Commercial policies while events are unavailable and shows empty history after Retry", async () => {
+    mockListCommercialPolicies.mockResolvedValue([
+      { id: "commercial-policy-1", name: "Commercial humidity alert", enabled: true }
+    ]);
+    mockListCommercialEvents.mockRejectedValueOnce(new Error("Simulated event read failure"));
+
+    const screen = render(<GrowAutomationScreen workspace="commercial" />);
+    const retry = await screen.findByRole("button", { name: /^Retry\b/i });
+
+    expect(screen.getByText(/Couldn[’']t load recent automation events/)).toBeTruthy();
+    expect(screen.getByText("Commercial humidity alert")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Add Dew Point Alert", disabled: false })).toBeTruthy();
+    expect(screen.queryByText(/No automation events have fired/)).toBeNull();
+
+    fireEvent.press(retry);
+
+    expect(await screen.findByText(/No automation events have fired/)).toBeTruthy();
+    expect(screen.getByText("Commercial humidity alert")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /^Retry\b/i })).toBeNull();
+    const read = { growId: "grow-1", strict: true };
+    expect(mockListCommercialPolicies.mock.calls).toEqual([[read], [read]]);
+    expect(mockListCommercialEvents.mock.calls).toEqual([[read], [read]]);
+    expect(mockListPolicies).not.toHaveBeenCalled();
+    expect(mockListEvents).not.toHaveBeenCalled();
+    expect(mockCreateCommercialPolicy).not.toHaveBeenCalled();
+  });
+
   it("manages grow-scoped automation policies from the grow workspace", async () => {
     const screen = render(<GrowAutomationScreen />);
 
     await waitFor(() =>
-      expect(mockListPolicies).toHaveBeenCalledWith({ growId: "grow-1" })
+      expect(mockListPolicies).toHaveBeenCalledWith({ growId: "grow-1", strict: true })
     );
-    expect(mockListEvents).toHaveBeenCalledWith({ growId: "grow-1" });
+    expect(mockListEvents).toHaveBeenCalledWith({ growId: "grow-1", strict: true });
 
     expect(screen.getByText("Dew Point High Risk Alert")).toBeTruthy();
     expect(screen.getByText("Trigger: tool run:dew point high risk")).toBeTruthy();
@@ -116,7 +179,7 @@ describe("GrowAutomationScreen", () => {
     expect(screen.getByText("Processed | matched 1 policy(s)")).toBeTruthy();
     expect(screen.getByText("Risk: high")).toBeTruthy();
 
-    fireEvent.press(screen.getByText("Add Dew Point Alert"));
+    fireEvent.press(await screen.findByRole("button", { name: "Add Dew Point Alert", disabled: false }));
     await waitFor(() =>
       expect(mockCreatePolicy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -130,13 +193,13 @@ describe("GrowAutomationScreen", () => {
       expect(screen.getByText("Dew Point automation added.")).toBeTruthy()
     );
 
-    fireEvent.press(screen.getByText("Disable"));
+    fireEvent.press(await screen.findByRole("button", { name: "Disable", disabled: false }));
     await waitFor(() =>
       expect(mockUpdatePolicy).toHaveBeenCalledWith("policy-1", { enabled: false })
     );
     await waitFor(() => expect(screen.getByText("Automation disabled.")).toBeTruthy());
 
-    fireEvent.press(screen.getByText("Test"));
+    fireEvent.press(await screen.findByRole("button", { name: "Test", disabled: false }));
     await waitFor(() =>
       expect(mockTestPolicy).toHaveBeenCalledWith("policy-1", {
         risk: "high",
@@ -145,7 +208,7 @@ describe("GrowAutomationScreen", () => {
     );
     await waitFor(() => expect(screen.getByText("Dry-run completed.")).toBeTruthy());
 
-    fireEvent.press(screen.getByText("Delete"));
+    fireEvent.press(await screen.findByRole("button", { name: "Delete", disabled: false }));
     await waitFor(() => expect(mockDeletePolicy).toHaveBeenCalledWith("policy-1"));
   });
 
@@ -164,13 +227,13 @@ describe("GrowAutomationScreen", () => {
     const screen = render(<GrowAutomationScreen workspace="commercial" />);
 
     await waitFor(() =>
-      expect(mockListCommercialPolicies).toHaveBeenCalledWith({ growId: "grow-1" })
+      expect(mockListCommercialPolicies).toHaveBeenCalledWith({ growId: "grow-1", strict: true })
     );
-    expect(mockListCommercialEvents).toHaveBeenCalledWith({ growId: "grow-1" });
+    expect(mockListCommercialEvents).toHaveBeenCalledWith({ growId: "grow-1", strict: true });
     expect(mockListPolicies).not.toHaveBeenCalled();
     expect(mockListEvents).not.toHaveBeenCalled();
 
-    fireEvent.press(screen.getByText("Add Dew Point Alert"));
+    fireEvent.press(await screen.findByRole("button", { name: "Add Dew Point Alert", disabled: false }));
     await waitFor(() =>
       expect(mockCreateCommercialPolicy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -185,7 +248,7 @@ describe("GrowAutomationScreen", () => {
     );
     expect(mockCreatePolicy).not.toHaveBeenCalled();
 
-    fireEvent.press(screen.getByText("Disable"));
+    fireEvent.press(await screen.findByRole("button", { name: "Disable", disabled: false }));
     await waitFor(() =>
       expect(mockUpdateCommercialPolicy).toHaveBeenCalledWith("commercial-policy-1", {
         enabled: false
@@ -194,7 +257,7 @@ describe("GrowAutomationScreen", () => {
     await waitFor(() => expect(screen.getByText("Automation disabled.")).toBeTruthy());
     expect(mockUpdatePolicy).not.toHaveBeenCalled();
 
-    fireEvent.press(screen.getByText("Test"));
+    fireEvent.press(await screen.findByRole("button", { name: "Test", disabled: false }));
     await waitFor(() =>
       expect(mockTestCommercialPolicy).toHaveBeenCalledWith("commercial-policy-1", {
         growId: "grow-1",
@@ -204,7 +267,7 @@ describe("GrowAutomationScreen", () => {
     await waitFor(() => expect(screen.getByText("Dry-run completed.")).toBeTruthy());
     expect(mockTestPolicy).not.toHaveBeenCalled();
 
-    fireEvent.press(screen.getByText("Delete"));
+    fireEvent.press(await screen.findByRole("button", { name: "Delete", disabled: false }));
     await waitFor(() =>
       expect(mockDeleteCommercialPolicy).toHaveBeenCalledWith("commercial-policy-1")
     );
