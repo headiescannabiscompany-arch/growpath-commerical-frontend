@@ -23,7 +23,7 @@ export function LockedScreen({
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>
       {onAction ? (
-        <Pressable onPress={onAction} style={styles.action}>
+        <Pressable accessibilityRole="button" onPress={onAction} style={styles.action}>
           <Text style={styles.actionText}>{actionLabel}</Text>
         </Pressable>
       ) : null}
@@ -52,6 +52,8 @@ export const createLockedScreenStyles = (palette: ThemePalette) =>
     },
     action: {
       alignSelf: "flex-start",
+      justifyContent: "center",
+      minHeight: 44,
       backgroundColor: palette.surface,
       borderColor: palette.accent,
       borderRadius: radius.card,

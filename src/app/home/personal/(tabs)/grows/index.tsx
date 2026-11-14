@@ -318,6 +318,13 @@ export default function PersonalGrowsRoute({
     Number.isFinite(maxGrows) &&
     maxGrows > 0 &&
     grows.length >= maxGrows;
+  const canComparePlans =
+    Platform.OS === "web" &&
+    workspace === "personal" &&
+    ent.plan === "free" &&
+    hasCreateCapability &&
+    maxGrows === 1 &&
+    growLimitReached;
   const limitMessage =
     maxGrows === 1
       ? "Free includes one active grow. Upgrade to Pro to create up to 10 active grows."
@@ -480,8 +487,8 @@ export default function PersonalGrowsRoute({
                 />
               ) : (
                 <ActionButton
-                  href={`${basePath}/profile`}
-                  label="Manage Billing"
+                  href={canComparePlans ? "/offers" : `${basePath}/profile`}
+                  label={canComparePlans ? "Compare plans" : "Manage Billing"}
                   primary
                 />
               )
@@ -794,8 +801,8 @@ export default function PersonalGrowsRoute({
                   />
                 ) : (
                   <ActionButton
-                    href={`${basePath}/profile`}
-                    label="Manage Billing"
+                    href={canComparePlans ? "/offers" : `${basePath}/profile`}
+                    label={canComparePlans ? "Compare plans" : "Manage Billing"}
                     primary
                   />
                 )

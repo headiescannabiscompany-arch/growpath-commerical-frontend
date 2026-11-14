@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import NewGrowScreen from "@/app/home/personal/(tabs)/grows/new";
 
@@ -12,6 +13,7 @@ const mockListPersonalGrows = jest.fn();
 const mockPersistImageUris = jest.fn();
 const mockEntitlementsCan = jest.fn();
 let mockLimits: Record<string, number> = {};
+let mockPlan = "pro";
 let mockSearchParams: Record<string, string> = {};
 let mockGrowInterests: Record<string, string[]> = {};
 
@@ -78,7 +80,10 @@ jest.mock("@/entitlements", () => ({
   },
   useEntitlements: () => ({
     can: mockEntitlementsCan,
-    limits: mockLimits
+    limits: mockLimits,
+    plan: mockPlan,
+    ready: true,
+    bootstrapError: null
   })
 }));
 
@@ -114,6 +119,7 @@ describe("NewGrowScreen access", () => {
       experience: ["Intermediate"]
     };
     mockLimits = {};
+    mockPlan = "pro";
     mockListPersonalGrows.mockResolvedValue([]);
     mockPersistImageUris.mockResolvedValue([]);
     mockApiRequest.mockResolvedValue({ grow: { id: "grow-bruce-banner" } });
@@ -147,6 +153,7 @@ describe("NewGrowScreen access", () => {
     "shows a retryable loading error, not a full limit (%s), and recovers",
     async (maxGrows) => {
       mockLimits = { maxGrows };
+      mockPlan = "free";
       mockListPersonalGrows.mockRejectedValueOnce(new Error("Network unavailable"));
       render(<NewGrowScreen />);
 
@@ -157,6 +164,7 @@ describe("NewGrowScreen access", () => {
       );
       expect(screen.queryByText("Free grow limit reached")).toBeNull();
       expect(screen.queryByText("Grow limit reached")).toBeNull();
+      expect(screen.queryByRole("button", { name: "Compare plans" })).toBeNull();
       expect(screen.queryByLabelText("Create grow")).toBeNull();
       expect(mockApiRequest).not.toHaveBeenCalled();
 
@@ -165,6 +173,32 @@ describe("NewGrowScreen access", () => {
       expect(mockListPersonalGrows).toHaveBeenCalledTimes(2);
       expect(mockListPersonalGrows).toHaveBeenCalledWith({ throwOnError: true });
       expect(screen.queryByRole("alert")).toBeNull();
+    }
+  );
+
+  it.each([true, false])(
+    "offers plan comparison from a full Free account with create permission=%s",
+    async (canCreate) => {
+      const os = jest.replaceProperty(Platform, "OS", "web");
+      try {
+        mockPlan = "free";
+        mockLimits = { maxGrows: 1 };
+        mockEntitlementsCan.mockReturnValue(canCreate);
+        mockListPersonalGrows.mockResolvedValue([{ id: "grow-1" }]);
+        render(<NewGrowScreen />);
+        await screen.findByText("Free grow limit reached");
+
+        if (canCreate) {
+          fireEvent.press(screen.getByRole("button", { name: "Compare plans" }));
+          expect(mockPush).toHaveBeenCalledWith("/offers");
+        } else {
+          expect(screen.queryByRole("button", { name: "Compare plans" })).toBeNull();
+          expect(mockPush).not.toHaveBeenCalled();
+        }
+        expect(mockApiRequest).not.toHaveBeenCalled();
+      } finally {
+        os.restore();
+      }
     }
   );
 

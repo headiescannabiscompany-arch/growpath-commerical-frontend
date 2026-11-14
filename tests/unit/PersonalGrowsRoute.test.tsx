@@ -1,5 +1,6 @@
 import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import PersonalGrowsRoute, {
   formatGrowStartDate,
@@ -12,6 +13,7 @@ const mockRestorePersonalGrow = jest.fn();
 const mockPush = jest.fn();
 let mockEntitlements = {
   ready: true,
+  plan: "pro",
   bootstrapError: null as string | null,
   can: () => true,
   limits: { maxGrows: 10 }
@@ -116,6 +118,7 @@ describe("PersonalGrowsRoute", () => {
     mockPush.mockReset();
     mockEntitlements = {
       ready: true,
+      plan: "pro",
       bootstrapError: null,
       can: () => true,
       limits: { maxGrows: 10 }
@@ -124,6 +127,33 @@ describe("PersonalGrowsRoute", () => {
     mockArchivePersonalGrow.mockResolvedValue({});
     mockRestorePersonalGrow.mockResolvedValue({});
   });
+
+  it.each(["web", "ios"] as const)(
+    "offers direct plan comparison at a confirmed Free grow limit on %s only on the web",
+    async (platform) => {
+      const os = jest.replaceProperty(Platform, "OS", platform);
+      try {
+        mockEntitlements.plan = "free";
+        mockEntitlements.limits.maxGrows = 1;
+        mockListPersonalGrows.mockImplementation(async (options?: { archived?: boolean }) =>
+          options?.archived ? [] : [{ id: "grow-1", name: "Basil" }]
+        );
+        const screen = render(<PersonalGrowsRoute />);
+        await screen.findByText("Free grow limit reached");
+
+        if (platform === "web") {
+          fireEvent.press(screen.getByRole("link", { name: "Compare plans" }));
+          expect(mockPush).toHaveBeenCalledWith("/offers");
+          expect(screen.queryByText("Manage Billing")).toBeNull();
+        } else {
+          expect(screen.queryByText("Compare plans")).toBeNull();
+          expect(screen.getByText("Manage Billing")).toBeTruthy();
+        }
+      } finally {
+        os.restore();
+      }
+    }
+  );
 
   it("uses the normal grows feed policy instead of the Home featured feed", async () => {
     const screen = render(<PersonalGrowsRoute />);

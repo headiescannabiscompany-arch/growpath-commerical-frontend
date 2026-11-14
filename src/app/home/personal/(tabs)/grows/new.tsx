@@ -702,6 +702,16 @@ export default function NewGrowScreen({
   }
 
   if (!canCreateGrow) {
+    const canComparePlans =
+      Platform.OS === "web" &&
+      workspace === "personal" &&
+      entitlements.ready &&
+      !entitlements.bootstrapError &&
+      entitlements.plan === "free" &&
+      hasCreateCapability &&
+      maxGrows === 1 &&
+      existingGrowCount >= maxGrows;
+
     return (
       <ScreenBoundary
         title="New Grow"
@@ -711,6 +721,8 @@ export default function NewGrowScreen({
       >
         <LockedScreen
           title={maxGrows === 1 ? "Free grow limit reached" : "Grow limit reached"}
+          actionLabel="Compare plans"
+          onAction={canComparePlans ? () => router.push("/offers") : undefined}
           message={
             maxGrows === 1
               ? "Free includes one active grow. Upgrade to Pro to create up to 10 active grows."
