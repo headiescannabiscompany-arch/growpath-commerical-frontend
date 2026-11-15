@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -8,7 +9,7 @@ import {
   useWindowDimensions,
   View
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import AppCard from "../../../components/layout/AppCard";
 import {
@@ -19,6 +20,7 @@ import {
 } from "../../../api/subscription";
 import { useAuth } from "../../../auth/AuthContext";
 import { PLAN_PRICING } from "../../../constants/pricing";
+import { useEntitlements } from "../../../entitlements";
 import { BILLING_PLANS, GIFTABLE_BILLING_PLANS, type BillingPlanKey } from "../planCopy";
 import GiftCheckoutReviewAction from "../GiftCheckoutReviewAction";
 import GiftCheckoutRecoveryAction from "../GiftCheckoutRecoveryAction";
@@ -111,6 +113,11 @@ export default function UpgradePlan() {
   const auth = useAuth();
   const billingToken = !auth.isHydrating && auth.user ? auth.token : null;
   const accountId = billingToken ? auth.user?.id ?? "" : "";
+  const router = useRouter();
+  const entitlements = useEntitlements();
+  const facilityUsesWorkspaceBilling = Platform.OS === "web";
+  const canOpenFacilityReview =
+    Boolean(billingToken && accountId) && entitlements.ready && !entitlements.bootstrapError;
   const { width } = useWindowDimensions();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createUpgradePlanStyles(palette), [palette]);
@@ -177,7 +184,11 @@ export default function UpgradePlan() {
 
   async function startCheckout(plan: BillingPlanKey) {
     const selected = BILLING_PLANS.find((item) => item.key === plan);
-    if (giftMode || !access.canOpenCheckout) {
+    if (
+      (facilityUsesWorkspaceBilling && plan === "facility") ||
+      giftMode ||
+      !access.canOpenCheckout
+    ) {
       return;
     }
 
@@ -471,6 +482,7 @@ export default function UpgradePlan() {
         {purchasablePlans.map((plan) => {
           const loading = loadingPlan === plan.key;
           const featured = requestedPlan === plan.key;
+          const facilityPlan = facilityUsesWorkspaceBilling && plan.key === "facility";
           const priceQuote = verifiedRecurringPriceQuote(
             catalogQuotes,
             plan.key,
@@ -516,7 +528,9 @@ export default function UpgradePlan() {
               <Text style={styles.sectionText}>
                 {giftMode
                   ? "GrowPath first loads the current one-time total from the server. Stripe opens only after you review the bound recipient details and explicitly confirm that total."
-                  : plan.billingNext}
+                  : facilityPlan
+                    ? "Choose the Facility workspace to review. Its owner can select monthly or yearly billing there."
+                    : plan.billingNext}
               </Text>
 
               <View style={styles.bullets}>
@@ -542,6 +556,27 @@ export default function UpgradePlan() {
                   onFeedback={handleGiftFeedback}
                   openCheckoutUrl={openExternalUrl}
                 />
+              ) : facilityPlan ? (
+                <Pressable
+                  onPress={() => {
+                    if (!canOpenFacilityReview) return;
+                    router.push(
+                      entitlements.mode === "facility"
+                        ? "/home/facility/select?reviewBilling=1"
+                        : "/onboarding/create-facility?reviewBilling=1"
+                    );
+                  }}
+                  disabled={!canOpenFacilityReview}
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: !canOpenFacilityReview }}
+                  style={[
+                    styles.button,
+                    styles.facilityReviewButton,
+                    !canOpenFacilityReview && styles.buttonDisabled
+                  ]}
+                >
+                  <Text style={styles.buttonText}>Choose or create a Facility</Text>
+                </Pressable>
               ) : access.canOpenCheckout ? (
                 <Pressable
                   onPress={() => void startCheckout(plan.key)}
@@ -736,5 +771,6 @@ export const createUpgradePlanStyles = (palette: ThemePalette) =>
       minHeight: 44,
       paddingHorizontal: 14
     },
+    facilityReviewButton: { minHeight: 44, justifyContent: "center" },
     buttonText: { color: palette.accentText, fontWeight: "900" }
   });

@@ -194,6 +194,12 @@ Facility invitation acceptance is also a read-after-write boundary. After creati
 
 Facility subscription cancellation is selected-Facility scoped and schedules provider cancellation at the current period end. Preserve active or trialing Facility entitlement through `currentPeriodEnd`, show the paid-through date instead of claiming another renewal, and remove repeat cancellation controls after confirmation. Checkout, Stripe billing management, and cancellation require the owner membership for that exact Facility workspace. Staff, viewers, Facility administrators, and platform administrators may read status when otherwise authorized, but their titles alone do not grant billing mutation or subscriber acceptance.
 
+The web Profile upgrade screen sends Facility shoppers through the existing
+Facility selector or setup with billing review requested. Wait for a
+settled signed-in workspace before allowing the handoff. Facility owners
+choose the interval and review verified prices on the selected workspace’s
+billing page. Opening the handoff does not create a workspace or start a payment.
+
 Facility AI credits belong to the selected Facility subscription. Balance display, provider-work reservation, failed-call refund, and the weekly usage ledger must all resolve the same authorized Facility identifier. A Facility AI request must fail when Facility context is missing or unauthorized and must never fall back to displaying, debiting, or refunding the individual member's Personal or Commercial credit balance. Personal and Commercial credit balances remain individual-account scoped outside Facility mode.
 
 The shared AI-credit widget distinguishes checking, unavailable, and no-selected-Facility

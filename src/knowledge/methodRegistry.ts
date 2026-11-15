@@ -1499,6 +1499,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "exact selected-row server alias reconciliation for Facility course scope",
       "published Facility course/session calendar items with requester-verified RSVP reminders and Facility-safe source links",
       "selected-Facility renewal cancellation with active paid access through the recorded current period end",
+      "Web Profile Facility upgrades open the existing Facility setup or selector after signed-in workspace access settles; the selected Facility owner chooses the interval and reviews verified pricing on workspace billing.",
       "selected-Facility AI balance, reservation, refund, and weekly usage ledger",
       "Shared AI-credit widget separates checking, unavailable and no-selected-Facility states from returned balances; preserve numeric zero and show the meter/low styling only for readable current and allowance values, without changing scoped reads, refresh, plans or credits",
       "legacy missing-balance materialization from an effective owner Facility entitlement",

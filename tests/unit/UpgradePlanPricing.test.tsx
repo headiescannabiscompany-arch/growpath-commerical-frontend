@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import {
   createCheckoutSession,
@@ -18,6 +19,11 @@ import { openExternalUrl } from "../../src/utils/openExternalUrl";
 
 let mockSearchParams: Record<string, string> = {};
 const mockPush = jest.fn();
+let mockWorkspace: {
+  mode: "personal" | "facility";
+  ready: boolean;
+  bootstrapError: string | null;
+};
 const originalWindow = (globalThis as any).window;
 const originalSessionStorageDescriptor = originalWindow
   ? Object.getOwnPropertyDescriptor(originalWindow, "sessionStorage")
@@ -122,12 +128,17 @@ jest.mock("../../src/utils/openExternalUrl", () => ({
   openExternalUrl: jest.fn()
 }));
 
+jest.mock("../../src/entitlements", () => ({
+  useEntitlements: () => mockWorkspace
+}));
+
 describe("UpgradePlan pricing", () => {
   beforeEach(async () => {
     installAttemptSessionStorage();
     await clearGiftCheckoutAttemptWhenAllowed(true);
     jest.clearAllMocks();
     mockSearchParams = {};
+    mockWorkspace = { mode: "personal", ready: true, bootstrapError: null };
     (createCheckoutSession as jest.Mock).mockImplementation(async (request) =>
       request?.giftMode
         ? {
@@ -256,6 +267,49 @@ describe("UpgradePlan pricing", () => {
     expect(screen.getByLabelText("Choose Pro Grower monthly checkout")).toBeEnabled();
     fireEvent.press(screen.getByLabelText("Choose Commercial monthly checkout"));
     expect(createCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["personal", "/onboarding/create-facility?reviewBilling=1"],
+    ["facility", "/home/facility/select?reviewBilling=1"]
+  ] as const)("routes the web Facility card from %s through workspace review", async (mode, route) => {
+    const platform = jest.replaceProperty(Platform, "OS", "web");
+    try {
+      mockWorkspace.mode = mode;
+      mockSearchParams = { plan: "facility" };
+      (getSubscription as jest.Mock).mockResolvedValueOnce({
+        plan: "pro",
+        subscriptionStatus: "active",
+        source: "stripe"
+      });
+      const screen = render(<UpgradePlan />);
+      await screen.findByText("Paid access already active");
+      const action = screen.getByRole("button", { name: "Choose or create a Facility" });
+      expect(action).toBeEnabled();
+      expect(screen.queryByLabelText("Choose Facility monthly checkout")).toBeNull();
+      fireEvent.press(action);
+      expect(mockPush).toHaveBeenCalledWith(route);
+      expect(createCheckoutSession).not.toHaveBeenCalled();
+      expect(openExternalUrl).not.toHaveBeenCalled();
+    } finally {
+      platform.restore();
+    }
+  });
+
+  it("keeps the web handoff disabled if workspace access could not be checked", async () => {
+    const platform = jest.replaceProperty(Platform, "OS", "web");
+    try {
+      mockWorkspace.bootstrapError = "Workspace access unavailable";
+      const screen = render(<UpgradePlan />);
+      await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
+      const action = screen.getByRole("button", { name: "Choose or create a Facility" });
+      expect(action).toBeDisabled();
+      fireEvent.press(action);
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(createCheckoutSession).not.toHaveBeenCalled();
+    } finally {
+      platform.restore();
+    }
   });
 
   it("keeps active and cancel-scheduled access out of self checkout", async () => {
