@@ -32,6 +32,13 @@ Public plan copy may describe existing workflows, but proposed provider changes,
 tips and course gifting remain explicitly planned until their own acceptance and
 release. Do not publish an unformed company or unapproved bank as the operator.
 
+Profile’s Upgrade Account screen treats plan setup and subscription status
+as independent reads for the signed-in session. A failed read offers
+read-only Retry and preserves the selected billing interval and successful
+read. Discard another session's results. Only existing verified price and
+access controls can expose self checkout, and Retry cannot start a
+checkout or a gift quote.
+
 ## Standard Feed campaign withdrawal
 
 Your campaigns is an explicitly opened, authenticated owner list for standard Feed

@@ -196,6 +196,47 @@ describe("UpgradePlan pricing", () => {
     expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
   });
 
+  it.each([
+    { setupFails: true, subscriptionFails: false },
+    { setupFails: false, subscriptionFails: true },
+    { setupFails: true, subscriptionFails: true }
+  ])(
+    "retries only failed plan reads with Yearly retained ($setupFails, $subscriptionFails)",
+    async ({ setupFails, subscriptionFails }) => {
+      if (setupFails) {
+        (getSubscriptionSetupStatus as jest.Mock).mockRejectedValueOnce(
+          new Error("Plan setup unavailable")
+        );
+      }
+      if (subscriptionFails) {
+        (getSubscription as jest.Mock).mockRejectedValueOnce(
+          new Error("Subscription status unavailable")
+        );
+      }
+
+      const screen = render(<UpgradePlan />);
+      const retry = await screen.findByLabelText("Retry plan details");
+      fireEvent.press(screen.getByLabelText("Yearly billing"));
+      const checkout = "Choose Pro Grower yearly checkout";
+      if (subscriptionFails) {
+        expect(screen.queryByLabelText(checkout)).toBeNull();
+      } else {
+        expect(screen.getByLabelText(checkout)).toBeDisabled();
+      }
+      fireEvent.press(retry);
+
+      await waitFor(() => expect(screen.getByLabelText(checkout)).toBeEnabled());
+      expect(screen.getByText("Checkout $100/year")).toBeTruthy();
+      expect(screen.queryByLabelText("Retry plan details")).toBeNull();
+      expect(getSubscriptionSetupStatus).toHaveBeenCalledTimes(setupFails ? 2 : 1);
+      expect(getSubscription).toHaveBeenCalledTimes(subscriptionFails ? 2 : 1);
+      expect(createCheckoutSession).not.toHaveBeenCalled();
+      expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+      expect(openExternalUrl).not.toHaveBeenCalled();
+      expect(mockPush).not.toHaveBeenCalled();
+    }
+  );
+
   it("disables only a plan whose exact recurring quote is invalid", async () => {
     const quotes = recurringQuotes();
     quotes.commercial.monthly = {

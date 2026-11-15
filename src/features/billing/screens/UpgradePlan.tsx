@@ -15,8 +15,7 @@ import {
   createCheckoutSession,
   getSubscription,
   getSubscriptionSetupStatus,
-  parseRecurringPriceQuotes,
-  type RecurringPriceQuotes
+  parseRecurringPriceQuotes
 } from "../../../api/subscription";
 import { useAuth } from "../../../auth/AuthContext";
 import { PLAN_PRICING } from "../../../constants/pricing";
@@ -34,8 +33,59 @@ import {
 } from "../recurringPriceQuotes";
 
 type BillingInterval = "monthly" | "yearly";
-type CheckoutMode = "live" | "test" | "unknown";
 type FeedbackTone = "info" | "success" | "error";
+
+type PlanRead<T> = {
+  token: string;
+  accountId: string;
+} & ({ status: "failed" | "retrying" } | { status: "ready"; value: T });
+
+function usePlanRead<T>(load: () => Promise<T>, token: string | null, accountId: string) {
+  const [result, setResult] = useState<PlanRead<T> | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const current =
+    result?.token === token && result.accountId === accountId ? result : null;
+
+  useEffect(() => {
+    if (!token || !accountId) {
+      setResult(null);
+      return;
+    }
+
+    let mounted = true;
+    setResult((previous) =>
+      previous?.token === token &&
+      previous.accountId === accountId &&
+      previous.status === "retrying"
+        ? previous
+        : null
+    );
+    load().then(
+      (value) => {
+        if (mounted) setResult({ token, accountId, status: "ready", value });
+      },
+      () => {
+        if (mounted) setResult({ token, accountId, status: "failed" });
+      }
+    );
+    return () => {
+      mounted = false;
+    };
+  }, [load, token, accountId, attempt]);
+
+  function retry() {
+    if (current?.status !== "failed") return;
+    setResult({ token: current.token, accountId, status: "retrying" });
+    setAttempt((previous) => previous + 1);
+  }
+
+  return {
+    value: current?.status === "ready" ? current.value : null,
+    failed: current?.status === "failed",
+    retrying: current?.status === "retrying",
+    retry
+  };
+}
 
 function normalizePlanKey(value: unknown): BillingPlanKey | null {
   const raw = String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
@@ -59,6 +109,8 @@ function checkoutUrlFromResponse(response: any) {
 
 export default function UpgradePlan() {
   const auth = useAuth();
+  const billingToken = !auth.isHydrating && auth.user ? auth.token : null;
+  const accountId = billingToken ? auth.user?.id ?? "" : "";
   const { width } = useWindowDimensions();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createUpgradePlanStyles(palette), [palette]);
@@ -82,15 +134,20 @@ export default function UpgradePlan() {
   const [loadingPlan, setLoadingPlan] = useState<BillingPlanKey | null>(null);
   const [feedback, setFeedback] = useState("");
   const [feedbackTone, setFeedbackTone] = useState<FeedbackTone>("info");
-  const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
-  const [giftCheckoutConfigured, setGiftCheckoutConfigured] = useState(false);
-  const [catalogQuotes, setCatalogQuotes] = useState<RecurringPriceQuotes>({});
   const [giftMode, setGiftMode] = useState(false);
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
   const [giftRecipientName, setGiftRecipientName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
-  const [subscription, setSubscription] = useState<any>(null);
-  const [subscriptionLoaded, setSubscriptionLoaded] = useState(false);
+  const setupRead = usePlanRead(getSubscriptionSetupStatus, billingToken, accountId);
+  const subscriptionRead = usePlanRead(getSubscription, billingToken, accountId);
+  const checkoutMode = String(setupRead.value?.mode ?? "unknown").toLowerCase();
+  const giftCheckoutConfigured = setupRead.value?.giftCheckoutConfigured === true;
+  const catalogQuotes = useMemo(
+    () => parseRecurringPriceQuotes(setupRead.value?.quotes),
+    [setupRead.value]
+  );
+  const subscription = subscriptionRead.value;
+  const subscriptionLoaded = subscription !== null;
   const access = useMemo(
     () =>
       resolveSubscriptionSafety(
@@ -111,32 +168,12 @@ export default function UpgradePlan() {
   }, []);
 
   useEffect(() => {
-    let mounted = true;
-
-    Promise.allSettled([getSubscriptionSetupStatus(), getSubscription()]).then(
-      ([setupResult, subscriptionResult]) => {
-        const status = setupResult.status === "fulfilled" ? setupResult.value : null;
-        const mode = String(status?.mode || "unknown").toLowerCase();
-        if (mounted && ["live", "test", "unknown"].includes(mode)) {
-          setCheckoutMode(mode as CheckoutMode);
-        }
-        if (mounted) {
-          setGiftCheckoutConfigured(status?.giftCheckoutConfigured === true);
-          setCatalogQuotes(parseRecurringPriceQuotes(status?.quotes));
-          setSubscription(
-            subscriptionResult.status === "fulfilled"
-              ? subscriptionResult.value || {}
-              : null
-          );
-          setSubscriptionLoaded(subscriptionResult.status === "fulfilled");
-        }
-      }
-    );
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    setGiftMode(false);
+    setGiftRecipientEmail("");
+    setGiftRecipientName("");
+    setGiftMessage("");
+    setFeedback("");
+  }, [billingToken, accountId]);
 
   async function startCheckout(plan: BillingPlanKey) {
     const selected = BILLING_PLANS.find((item) => item.key === plan);
@@ -257,17 +294,48 @@ export default function UpgradePlan() {
             ? "Stripe checkout is live. Real cards can be charged."
             : checkoutMode === "test"
               ? "Stripe checkout is in test mode. Test card payments are not real charges."
-              : "Stripe checkout mode is being checked before payment."}
+              : setupRead.failed
+                ? "Plan pricing could not be loaded."
+                : "Stripe checkout mode is being checked before payment."}
         </Text>
       </View>
+
+      {setupRead.failed || subscriptionRead.failed ? (
+        <View style={[styles.feedback, styles.feedbackError]}>
+          <Text style={styles.feedbackText} accessibilityRole="alert">
+            {setupRead.failed && subscriptionRead.failed
+              ? "We couldn’t load plan prices or check your subscription."
+              : setupRead.failed
+                ? "Retry to load current plan prices."
+                : "We couldn’t check your subscription. Try again."}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry plan details"
+            style={[styles.button, styles.retryButton]}
+            onPress={() => {
+              setupRead.retry();
+              subscriptionRead.retry();
+            }}
+          >
+            <Text style={styles.buttonText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : setupRead.retrying || subscriptionRead.retrying ? (
+        <Text accessibilityLiveRegion="polite" style={styles.helper}>
+          Checking plan details again…
+        </Text>
+      ) : null}
 
       <AppCard style={styles.giftCard}>
         <Text style={styles.eyebrow}>Prepaid subscription gift</Text>
         <Text style={styles.cardTitle}>Buy for someone else</Text>
         <Text style={styles.cardDesc}>
-          {giftCheckoutConfigured
-            ? "Give one prepaid month or year of Pro or Commercial access. Access starts when the recipient claims it and does not renew. Facility billing stays tied to one selected workspace."
-            : "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."}
+          {!setupRead.value
+            ? "Gift availability will appear after plan details load."
+            : giftCheckoutConfigured
+              ? "Give one prepaid month or year of Pro or Commercial access. Access starts when the recipient claims it and does not renew. Facility billing stays tied to one selected workspace."
+              : "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."}
         </Text>
         <View style={styles.segment}>
           {(
@@ -361,13 +429,13 @@ export default function UpgradePlan() {
               begins on a successful claim and ends after the selected month or year.
             </Text>
           </>
-        ) : (
+        ) : setupRead.value ? (
           <Text style={styles.helper}>
             {giftCheckoutConfigured
               ? "Switch to gift mode when you want the checkout tied to another email address."
               : "Buy for me remains available. Gift controls will open only after the recipient handoff is ready."}
           </Text>
-        )}
+        ) : null}
       </AppCard>
 
       <GiftCheckoutRecoveryAction visible={!giftMode} />
@@ -494,8 +562,10 @@ export default function UpgradePlan() {
               ) : (
                 <Text style={styles.sectionText}>
                   {subscriptionLoaded
-                    ? "Self checkout is unavailable while this account has paid access. Open Billing to review how this access is managed."
-                    : "Checking current access before enabling checkout."}
+                    ? access.message
+                    : subscriptionRead.failed
+                      ? "Subscription status is unavailable."
+                      : "Checking current access before enabling checkout."}
                 </Text>
               )}
             </AppCard>
@@ -660,5 +730,11 @@ export const createUpgradePlanStyles = (palette: ThemePalette) =>
       paddingVertical: 12
     },
     buttonDisabled: { opacity: 0.55 },
+    retryButton: {
+      alignSelf: "flex-start",
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 14
+    },
     buttonText: { color: palette.accentText, fontWeight: "900" }
   });
