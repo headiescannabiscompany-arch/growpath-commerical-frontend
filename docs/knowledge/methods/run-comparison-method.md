@@ -57,6 +57,12 @@ A save without a confirmed plant identity requires a fresh read of the same
 grow’s plants before another submission. The user reviews the saved list and
 chooses whether to retry. Only a confirmed save clears the draft.
 
+New Grow keeps a confirmed creation when the subsequent photo update
+is unavailable or does not confirm the submitted photos on that grow.
+Report the photo uncertainty separately and let the grower open the
+saved grow by its returned ID. Do not offer another create submission
+or automatically resend the photo update for a confirmed grow.
+
 Saved ToolRun history distinguishes loading, unavailable reads and confirmed empty
 collections. Offer single-flight read-only Refresh/Retry, label retained same-query
 snapshots, and discard prior results after account/session, workspace, Facility or

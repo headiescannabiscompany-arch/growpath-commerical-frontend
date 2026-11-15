@@ -355,6 +355,39 @@ describe("NewGrowScreen access", () => {
     }
   );
 
+  it("keeps the saved grow available when its photo update fails", async () => {
+    const photo = "/uploads/synthetic-grow-setup.jpg";
+    mockPersistImageUris.mockResolvedValueOnce([photo]);
+    mockAppendGrowPhotos.mockRejectedValueOnce(new Error("Photo update unavailable"));
+
+    render(<NewGrowScreen />);
+    await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Grow name"), "Patio seedlings");
+    chooseDate(screen, "Anchor date", "2026-01-01");
+    fireEvent.changeText(screen.getByLabelText("Grow photo URL"), photo);
+    fireEvent.press(screen.getByLabelText("Add grow photo URL"));
+    fireEvent.press(screen.getByLabelText("Create grow"));
+
+    await waitFor(() =>
+      expect(screen.getByText("Grow created: Patio seedlings")).toBeTruthy()
+    );
+    expect(mockAppendGrowPhotos).toHaveBeenCalledWith("grow-bruce-banner", [photo]);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "We couldn’t confirm the photo update. Open the Grow Dashboard to check your photos."
+    );
+    expect(screen.queryByText("Photo update unavailable")).toBeNull();
+
+    fireEvent.press(screen.getByRole("button", { name: "Open Grow Dashboard" }));
+    expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows/grow-bruce-banner");
+    expect(screen.getByLabelText("Create grow")).toBeDisabled();
+    fireEvent.press(screen.getByLabelText("Create grow"));
+    expect(
+      mockApiRequest.mock.calls.filter(
+        ([path, options]) => path === "/api/personal/grows" && options?.method === "POST"
+      )
+    ).toHaveLength(1);
+  });
+
   it("keeps the created-grow popup available when navigation fails immediately", async () => {
     render(<NewGrowScreen />);
     await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());

@@ -22,6 +22,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { INTEREST_TIERS } from "@/config/interests";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { getRowId } from "@/features/grows/routeUtils";
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
@@ -64,6 +65,13 @@ type SelectedPhoto = {
   height?: number | null;
   mimeType?: string | null;
   sizeBytes?: number | null;
+};
+
+type CreatedGrow = {
+  id: string;
+  name: string;
+  photoUpdateUnconfirmed: boolean;
+  showNextSteps: boolean;
 };
 
 const CANNABIS_ONLY_INTERESTS = new Set([
@@ -253,7 +261,9 @@ export default function NewGrowScreen({
   const [limitCheckAttempt, setLimitCheckAttempt] = React.useState(0);
   const [existingGrowCount, setExistingGrowCount] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
-  const [createdGrowId, setCreatedGrowId] = React.useState("");
+  const [createdGrow, setCreatedGrow] = React.useState<CreatedGrow | null>(null);
+  const createSubmitted = React.useRef(false);
+  const createdGrowId = createdGrow?.id ?? "";
 
   const cropSpecificSetup = Boolean(cropCommonName.trim() || scientificName.trim());
   const explicitCannabisCrop = /cannabis|hemp/i.test(
@@ -477,18 +487,21 @@ export default function NewGrowScreen({
   }, [photoUrl]);
 
   const onCreate = React.useCallback(async () => {
+    if (!canCreateGrow || createSubmitted.current) return;
     if (!isValid) {
       setError("Name and anchor date are required.");
       return;
     }
 
+    createSubmitted.current = true;
     setSaving(true);
     setError(null);
+    const submittedName = name.trim();
     try {
       const uploadedPhotos = await persistImageUris(photos.map((photo) => photo.uri));
       const growTags = flattenTierSelections(growInterestSelections);
       const created = await createWorkspaceGrow(workspace, {
-        name: name.trim(),
+        name: submittedName,
         growTags,
         growInterests: growInterestSelections,
         cropTypes: growInterestSelections.crops || [],
@@ -559,16 +572,33 @@ export default function NewGrowScreen({
         notes: notes.trim() || undefined
       });
 
-      const createdId = String((created as any)?._id || created?.id || "");
-      if (createdId && uploadedPhotos.length) {
-        await appendWorkspaceGrowPhotos(workspace, createdId, uploadedPhotos);
-      }
-      if (createdId) {
-        setCreatedGrowId(createdId);
-      } else {
+      const createdId = getRowId(created);
+      if (!createdId) {
         router.replace(`${basePath}/grows?r=${Date.now()}` as any);
+        return;
       }
+
+      let photoUpdateUnconfirmed = false;
+      if (uploadedPhotos.length) {
+        try {
+          const updated = await appendWorkspaceGrowPhotos(workspace, createdId, uploadedPhotos);
+          const updatedPhotos = updated?.photos;
+          photoUpdateUnconfirmed =
+            getRowId(updated) !== createdId ||
+            !Array.isArray(updatedPhotos) ||
+            !uploadedPhotos.every((url) => updatedPhotos.includes(url));
+        } catch {
+          photoUpdateUnconfirmed = true;
+        }
+      }
+      setCreatedGrow({
+        id: createdId,
+        name: submittedName,
+        photoUpdateUnconfirmed,
+        showNextSteps: true
+      });
     } catch (err: any) {
+      createSubmitted.current = false;
       setError(err?.message ?? "Failed to create grow.");
     } finally {
       setSaving(false);
@@ -576,6 +606,7 @@ export default function NewGrowScreen({
   }, [
     anchorDate,
     anchorDateType,
+    canCreateGrow,
     cultivar,
     commonNames,
     cropCommonName,
@@ -617,10 +648,12 @@ export default function NewGrowScreen({
   ]);
 
   function openCreated(path: string) {
-    if (!createdGrowId) return;
+    if (!createdGrow?.showNextSteps) return;
     router.replace(path as any);
-    setCreatedGrowId("");
+    setCreatedGrow({ ...createdGrow, showNextSteps: false });
   }
+
+  const saveDisabled = saving || Boolean(createdGrow) || !isValid;
 
   function DateInput({
     label,
@@ -1589,7 +1622,7 @@ export default function NewGrowScreen({
         <Pressable
           testID="btn-save-grow"
           onPress={onCreate}
-          disabled={saving || !isValid}
+          disabled={saveDisabled}
           accessibilityRole="button"
           accessibilityLabel="Create grow"
           style={{
@@ -1600,7 +1633,7 @@ export default function NewGrowScreen({
             borderColor: palette.accent,
             borderRadius: radius.card,
             backgroundColor: palette.accent,
-            opacity: saving || !isValid ? 0.6 : 1,
+            opacity: saveDisabled ? 0.6 : 1,
             alignSelf: "flex-start"
           }}
         >
@@ -1617,7 +1650,7 @@ export default function NewGrowScreen({
           routeKey="personal_new_grow"
           longContent
         />
-        <Modal visible={Boolean(createdGrowId)} transparent animationType="fade">
+        <Modal visible={createdGrow?.showNextSteps === true} transparent animationType="fade">
           <View
             style={{
               flex: 1,
@@ -1651,8 +1684,16 @@ export default function NewGrowScreen({
               }}
             >
               <Text style={{ fontSize: 20, fontWeight: "900", color: palette.text }}>
-                Grow created: {name.trim()}
+                Grow created: {createdGrow?.name}
               </Text>
+              {createdGrow?.photoUpdateUnconfirmed ? (
+                <Text
+                  accessibilityRole="alert"
+                  style={{ color: palette.text, lineHeight: 20 }}
+                >
+                  We couldn’t confirm the photo update. Open the Grow Dashboard to check your photos.
+                </Text>
+              ) : null}
               <Text style={{ color: palette.textMuted, lineHeight: 20 }}>
                 Choose the next step so this grow immediately has plants, logs, tasks, or
                 AI context attached.

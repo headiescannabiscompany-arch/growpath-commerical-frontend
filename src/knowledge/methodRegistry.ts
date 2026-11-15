@@ -808,6 +808,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Grow Automation verifies policies and recent events independently. A failed collection shows a read error with same-grow Retry and keeps the other verified collection visible. Empty states and policy actions require successful reads of their respective collections.",
       "Grow Plants verifies the list before showing an empty state or calculating the Free plant allowance. Read-only Retry reloads the same grow and retains open draft inputs while saving waits for the verified list.",
       "Add Plant preserves the draft after rejection. Unconfirmed saves require a verified read of the same grow before another submission. Clear the draft only after a confirmed save for that grow.",
+      "New Grow reports photo update uncertainty separately from confirmed creation. Open the saved grow by its returned ID and prevent another create submission after confirmation.",
       "Do not rank an overall best run with hidden weights.",
       "Do not compare unlike stages without an explicit limitation.",
       "Do not claim causation from an observational run comparison.",
