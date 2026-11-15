@@ -179,6 +179,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     live: "Subscription and Facility checkout, purchase recovery, protected digital delivery and refund/seller-allocation handling are released. Financial test notes retain their original limits. The production runtime received its reviewed security update.",
     next: "Sandbox acceptance does not certify a real bank payout or every future payment use. Course gifting, creator tips and other separately gated commerce additions are not included in this completed milestone.",
     entryIds: [
+      "mobile-plan-review-and-grow-setup",
       "subscription-checkout",
       "facility-billing",
       "commerce-checkout",

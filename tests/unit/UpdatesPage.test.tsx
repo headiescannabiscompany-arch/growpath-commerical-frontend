@@ -52,6 +52,7 @@ describe("public Updates page", () => {
   );
   it("November catch-up keeps new histories reachable and excludes private release data", () => {
     const ids = [
+      "mobile-plan-review-and-grow-setup",
       "mobile-grow-plans-and-automation",
       "mobile-grow-recovery-and-forum-reporting",
       "personal-home-grow-journal-shortcuts",
@@ -75,7 +76,16 @@ describe("public Updates page", () => {
     }
     expect(PUBLIC_UPDATES_REVIEWED).toBe("November 14, 2026");
     const now = new Date(2026, 10, 14, 12);
-    const growNote = recentPublicReleases(now)[0];
+    const [mobileNote, growNote] = recentPublicReleases(now);
+    expect(mobileNote.id).toBe("mobile-plan-review-and-grow-setup");
+    expect(mobileNote.summary).toContain("tap Retry on plan review or in Profile → Upgrade Plans");
+    expect(mobileNote.summary).toContain("Your billing interval stays selected");
+    expect(mobileNote.summary).toContain("Choose or create a Facility to reach workspace billing");
+    expect(mobileNote.summary).toContain("can’t confirm the photo update");
+    expect(mobileNote.summary).toContain("open the Grow Dashboard to check your photos");
+    const billingGroup = PUBLIC_UPDATE_GROUPS.find(group => group.id === "billing")!;
+    expect(updateGroupSections(billingGroup)[0].entries[0]).toBe(mobileNote);
+    expect(latestGroupRelease(billingGroup, now)).toBe("November 14, 2026");
     expect(growNote.id).toBe("mobile-grow-plans-and-automation");
     expect(growNote.summary).toContain("Compare plans in Grows or New Grow");
     expect(growNote.summary).toContain("the list that loaded stays visible");
@@ -791,6 +801,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "mobile-plan-review-and-grow-setup",
       "mobile-grow-plans-and-automation",
       "mobile-grow-recovery-and-forum-reporting",
       "personal-home-grow-journal-shortcuts",

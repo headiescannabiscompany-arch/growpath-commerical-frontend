@@ -9,6 +9,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     emptyMessage: "No published releases yet.",
     entries: [
       {
+        id: "mobile-plan-review-and-grow-setup",
+        title: "Plan review and grow setup on the mobile website",
+        date: "November 14, 2026",
+        dateLabel: "Released",
+        summary:
+          "If plan prices or subscription status fail to load, tap Retry on plan review or in Profile → Upgrade Plans. Your billing interval stays selected. From Upgrade Plans, tap Choose or create a Facility to reach workspace billing, where the owner chooses Monthly or Yearly. If New Grow saves your grow but can’t confirm the photo update, you can still open the Grow Dashboard to check your photos."
+      },
+      {
         id: "mobile-grow-plans-and-automation",
         title: "Compare plans and retry Automation on the mobile website",
         date: "November 14, 2026",
