@@ -20,6 +20,10 @@ jest.mock("@/api/grows", () => ({
   listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "user-1" }, token: "session-1", isHydrating: false })
+}));
+
 jest.mock("expo-router", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -91,17 +95,22 @@ describe("GrowToolsScreen", () => {
     ]);
   });
 
-  it("does not turn an unavailable run read into empty history or an unhandled rejection", async () => {
+  it("retries unavailable recent runs in the same grow without reloading grow metadata", async () => {
     mockListToolRuns.mockRejectedValueOnce(new Error("read unavailable"));
     const screen = render(<GrowToolsScreen />);
     expect(screen.queryByText("No saved runs yet.")).toBeNull();
-    await waitFor(() =>
-      expect(
-        screen.getByText("Recent tool runs are unavailable. Open Saved runs to retry.")
-      ).toBeTruthy()
-    );
+    await screen.findByText("Recent tool runs are unavailable.");
     expect(screen.queryByText("No saved runs yet.")).toBeNull();
     expect(screen.getByText("Harvest readiness calculator")).toBeTruthy();
+
+    fireEvent.press(screen.getByRole("button", { name: "Retry recent tool runs" }));
+
+    await screen.findByText("dew_point_guard | 2026-06-30");
+    expect(screen.queryByText("Recent tool runs are unavailable.")).toBeNull();
+    const scope = { growId: "grow-1", workspaceType: "personal" };
+    expect(mockListToolRuns.mock.calls).toEqual([[scope], [scope]]);
+    expect(mockListPersonalGrows).toHaveBeenCalledTimes(1);
+    expect(mockGetToolRun).not.toHaveBeenCalled();
     expect(mockSaveToolRunToLog).not.toHaveBeenCalled();
     expect(mockCreateTaskFromToolRun).not.toHaveBeenCalled();
   });

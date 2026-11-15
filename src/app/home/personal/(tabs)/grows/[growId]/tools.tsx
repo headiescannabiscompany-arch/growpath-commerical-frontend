@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Link, useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -10,8 +10,15 @@ import {
   saveToolRunToLog,
   type ToolRun
 } from "@/api/toolRuns";
+import type { PersonalGrow } from "@/api/grows";
+import { useAuth } from "@/auth/AuthContext";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
-import { coerceParam, findGrowById, isCannabisGrow } from "@/features/grows/routeUtils";
+import {
+  coerceParam,
+  findGrowById,
+  getRowId,
+  isCannabisGrow
+} from "@/features/grows/routeUtils";
 import { radius } from "@/theme/theme";
 import ToolResultSurface, {
   type ToolResultAction,
@@ -70,6 +77,8 @@ export const createGrowToolsStyles = (palette: ThemePalette) =>
       paddingVertical: 7,
       paddingHorizontal: 10
     },
+    retry: { minHeight: 44, minWidth: 44, justifyContent: "center" },
+    disabledAction: { opacity: 0.5 },
     recentTitle: { marginTop: 12, fontWeight: "700", color: palette.text },
     recentRow: { marginTop: 6, fontSize: 12, color: palette.textMuted },
     recentContext: {
@@ -249,15 +258,46 @@ function toolRunSummary(run: ToolRun | null) {
     : "Review this saved grow intelligence result.";
 }
 
+type FocusedGrowTools = {
+  loadingRuns: boolean;
+  detailRequest: symbol | null;
+};
+
 export default function GrowToolsScreen({
   workspace = "personal"
 }: {
   workspace?: GrowWorkspace;
 } = {}) {
+  const { user, token, isHydrating } = useAuth();
+  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
+  const growId = coerceParam(rawGrowId).trim();
+  // A replacement session must not inherit the previous session's cached history.
+  const [session, setSession] = useState({ token, generation: 0 });
+  if (session.token !== token) {
+    setSession({ token, generation: session.generation + 1 });
+  }
+
+  if (isHydrating || !token || !user?.id) return null;
+  if (!growId) return <Text>Select a grow to view its tools.</Text>;
+
+  return (
+    <GrowToolsContent
+      key={JSON.stringify([user.id, session.generation, workspace, growId])}
+      growId={growId}
+      workspace={workspace}
+    />
+  );
+}
+
+function GrowToolsContent({
+  growId,
+  workspace
+}: {
+  growId: string;
+  workspace: GrowWorkspace;
+}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowToolsStyles(palette), [palette]);
-  const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
-  const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const basePath = growWorkspaceBasePath(workspace);
   const [recent, setRecent] = useState<ToolRun[]>([]);
   const [recentState, setRecentState] = useState<"loading" | "ready" | "error">(
@@ -266,33 +306,59 @@ export default function GrowToolsScreen({
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
   const [loadingRunId, setLoadingRunId] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [cannabisGrow, setCannabisGrow] = useState(false);
+  const [grow, setGrow] = useState<PersonalGrow | null>(null);
+  const focusedTools = useRef<FocusedGrowTools | null>(null);
+  const cannabisGrow = isCannabisGrow(grow, recentState === "ready" ? recent : []);
+
+  const loadRecent = useCallback(async () => {
+    const focus = focusedTools.current;
+    if (!focus || focus.loadingRuns) return;
+
+    focus.loadingRuns = true;
+    setRecentState("loading");
+    try {
+      const rows = await listToolRuns({ growId, workspaceType: workspace });
+      if (focusedTools.current !== focus) return;
+      if (
+        !Array.isArray(rows) ||
+        rows.some((run) => run?.growId !== growId || !getRowId(run))
+      ) {
+        setRecentState("error");
+        return;
+      }
+      setRecent(rows);
+      setRecentState("ready");
+    } catch {
+      if (focusedTools.current === focus) setRecentState("error");
+    } finally {
+      focus.loadingRuns = false;
+    }
+  }, [growId, workspace]);
 
   useFocusEffect(
     useCallback(() => {
-      let mounted = true;
-      setRecentState("loading");
-      setRecent([]);
-      setCannabisGrow(false);
-      (async () => {
-        const [runsResult, growsResult] = await Promise.allSettled([
-          listToolRuns({ growId, workspaceType: workspace }),
-          listWorkspaceGrows(workspace)
-        ]);
-        if (!mounted) return;
-        const rows = runsResult.status === "fulfilled" ? runsResult.value : [];
-        const grows = growsResult.status === "fulfilled" ? growsResult.value : [];
-        setRecent(Array.isArray(rows) ? rows.slice(0, 4) : []);
-        setRecentState(runsResult.status === "fulfilled" ? "ready" : "error");
-        setCannabisGrow(isCannabisGrow(findGrowById(grows, growId), rows));
+      const focus: FocusedGrowTools = { loadingRuns: false, detailRequest: null };
+      focusedTools.current = focus;
+      setGrow(null);
+      setSelectedRun(null);
+      setLoadingRunId("");
+      setFeedback("");
+      void loadRecent();
+      void (async () => {
+        try {
+          const grows = await listWorkspaceGrows(workspace);
+          if (focusedTools.current === focus) setGrow(findGrowById(grows, growId));
+        } catch {
+          // Run history can load even when grow metadata is unavailable.
+        }
       })();
       return () => {
-        mounted = false;
+        if (focusedTools.current === focus) focusedTools.current = null;
       };
-    }, [growId, workspace])
+    }, [growId, loadRecent, workspace])
   );
 
-  const selectedRunId = String(selectedRun?._id || selectedRun?.id || "");
+  const selectedRunId = getRowId(selectedRun);
   const selectedActions: ToolResultAction[] = selectedRunId
     ? [
         {
@@ -363,13 +429,18 @@ export default function GrowToolsScreen({
     : [];
 
   async function viewRun(run: ToolRun) {
-    const id = String(run?._id || run?.id || "");
-    if (!id) return;
+    const id = getRowId(run);
+    const focus = focusedTools.current;
+    if (!id || !focus || focus.loadingRuns || recentState !== "ready") return;
+    const request = Symbol();
+    focus.detailRequest = request;
     setLoadingRunId(id);
     setFeedback("");
     const fullRun = await getToolRun(id, { workspaceType: workspace });
-    setSelectedRun(fullRun || run);
-    setFeedback(fullRun ? "" : "Unable to reload this run; showing cached list data.");
+    if (focusedTools.current !== focus || focus.detailRequest !== request) return;
+    const matches = fullRun?.growId === growId && getRowId(fullRun) === id;
+    setSelectedRun(matches ? fullRun : run);
+    setFeedback(matches ? "" : "Unable to reload this run. Showing saved list details.");
     setLoadingRunId("");
   }
 
@@ -431,38 +502,52 @@ export default function GrowToolsScreen({
           );
         })}
         <Text style={styles.recentTitle}>Recent tool runs</Text>
-        {recentState !== "ready" ? (
-          <Text style={styles.recentRow}>
-            {recentState === "loading"
-              ? "Loading recent tool runs..."
-              : "Recent tool runs are unavailable. Open Saved runs to retry."}
-          </Text>
-        ) : recent.length === 0 ? (
-          <Text style={styles.recentRow}>No saved runs yet.</Text>
-        ) : (
-          recent.map((run, index) => (
-            <View
-              key={String(run?._id || run?.id || `${run?.toolType || "tool"}-${index}`)}
+        {recentState === "loading" ? (
+          <Text style={styles.recentRow}>Loading recent tool runs...</Text>
+        ) : null}
+        {recentState === "error" ? (
+          <>
+            <Text style={styles.recentRow} accessibilityRole="alert">
+              Recent tool runs are unavailable.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry recent tool runs"
+              onPress={loadRecent}
+              style={[styles.inlineAction, styles.retry]}
             >
-              <Text style={styles.recentRow}>
-                {run?.toolType || run?.toolName || "tool"} |{" "}
-                {String(run?.createdAt || "").slice(0, 10)}
+              <Text style={styles.actionText}>Retry</Text>
+            </Pressable>
+          </>
+        ) : null}
+        {recentState !== "ready" && recent.length > 0 ? (
+          <Text style={styles.recentRow}>Showing previously loaded results.</Text>
+        ) : null}
+        {recentState === "ready" && recent.length === 0 ? (
+          <Text style={styles.recentRow}>No saved runs yet.</Text>
+        ) : null}
+        {recent.slice(0, 4).map((run) => (
+          <View key={getRowId(run)}>
+            <Text style={styles.recentRow}>
+              {run?.toolType || run?.toolName || "tool"} |{" "}
+              {String(run?.createdAt || "").slice(0, 10)}
+            </Text>
+            <Text style={styles.recentContext}>{toolRunContextLabel(run)}</Text>
+            <Pressable
+              accessibilityRole="button"
+              disabled={recentState !== "ready"}
+              onPress={() => viewRun(run)}
+              style={[
+                styles.inlineAction,
+                recentState !== "ready" && styles.disabledAction
+              ]}
+            >
+              <Text style={styles.actionText}>
+                {loadingRunId === getRowId(run) ? "Loading..." : "View result"}
               </Text>
-              <Text style={styles.recentContext}>{toolRunContextLabel(run)}</Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => viewRun(run)}
-                style={styles.inlineAction}
-              >
-                <Text style={styles.actionText}>
-                  {loadingRunId === String(run?._id || run?.id || "")
-                    ? "Loading..."
-                    : "View result"}
-                </Text>
-              </Pressable>
-            </View>
-          ))
-        )}
+            </Pressable>
+          </View>
+        ))}
       </View>
 
       <PersonalFeedPlacement

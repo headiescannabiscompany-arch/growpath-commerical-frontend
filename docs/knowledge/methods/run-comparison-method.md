@@ -46,6 +46,13 @@ state only after its collection loads successfully. Policy actions require a
 verified policy list. Ignore late reads after leaving the screen or changing
 account, workspace or grow.
 
+Grow Tools offers read-only Retry beside Recent tool runs for the same grow and
+workspace. Previously loaded rows stay visible and labeled while the list is
+unavailable or reloading. Opening results requires a verified list, and an empty
+list requires a successful read. A change of grow, workspace, account or session
+discards prior rows; leaving the screen invalidates in-flight reads. Crop
+metadata loads independently of run history.
+
 The grow’s Plants screen verifies the plant list before showing an empty
 state or calculating the Free plant allowance. A failed read offers read-only
 Retry for the same grow. An open draft keeps its inputs while the screen
