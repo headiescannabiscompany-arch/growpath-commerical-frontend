@@ -209,6 +209,38 @@ describe("Offers billing safety", () => {
     (globalThis as any).window = originalWindow;
   });
 
+  it.each(["pricing", "subscription", "both"] as const)(
+    "retries failed %s reads without starting checkout or changing the chosen interval",
+    async (failed) => {
+      const pricingFailed = failed !== "subscription";
+      const subscriptionFailed = failed !== "pricing";
+      if (pricingFailed) {
+        (getSubscriptionSetupStatus as jest.Mock).mockRejectedValueOnce(new Error("503"));
+      }
+      if (subscriptionFailed) {
+        (getSubscription as jest.Mock).mockRejectedValueOnce(new Error("503"));
+      }
+
+      const screen = render(<Offers />);
+      const retry = await screen.findByRole("button", { name: "Retry plan details" });
+      fireEvent.press(screen.getByRole("button", { name: "Yearly billing" }));
+      const paidReview = screen.queryByLabelText("Review paid Pro Grower checkout");
+      if (paidReview) expect(paidReview).toBeDisabled();
+      expect(createCheckoutSession).not.toHaveBeenCalled();
+
+      fireEvent.press(retry);
+      const review = await screen.findByLabelText("Review paid Pro Grower checkout");
+      await waitFor(() => expect(review).toBeEnabled());
+      expect(getSubscriptionSetupStatus).toHaveBeenCalledTimes(pricingFailed ? 2 : 1);
+      expect(getSubscription).toHaveBeenCalledTimes(subscriptionFailed ? 2 : 1);
+      expect(screen.getByRole("button", { name: "Yearly billing" }).props.accessibilityState.selected).toBe(true);
+      expect(screen.queryByRole("button", { name: "Retry plan details" })).toBeNull();
+      expect(createCheckoutSession).not.toHaveBeenCalled();
+      expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+      expect(mockRetryMe).not.toHaveBeenCalled();
+    }
+  );
+
   it("shows saved self-checkout recovery without opening or starting another purchase", async () => {
     (getSubscription as jest.Mock).mockResolvedValue({
       plan: "free",

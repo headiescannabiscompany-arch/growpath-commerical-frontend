@@ -51,6 +51,14 @@ import {
 type BillingInterval = "monthly" | "yearly";
 type CheckoutMode = "live" | "test" | "unknown";
 type FeedbackTone = "info" | "success" | "error";
+type ReadStatus = "loading" | "ready" | "failed";
+type SubscriptionRead = {
+  token: string;
+  accountId: string;
+} & (
+  | { status: "loading" | "failed" }
+  | { status: "ready"; value: Awaited<ReturnType<typeof getSubscription>> }
+);
 
 function isLikelyEmail(value: string) {
   const next = value.trim();
@@ -90,6 +98,8 @@ async function openCheckoutUrl(url: string) {
 export default function Offers() {
   const auth = useAuth();
   const authenticated = Boolean(!auth.isHydrating && auth.token && auth.user);
+  const subscriptionToken = authenticated ? auth.token : null;
+  const subscriptionAccountId = authenticated ? String(auth.user?.id ?? "") : "";
   const router = useRouter();
   const ent = useEntitlements();
   const { palette } = useAppTheme();
@@ -111,7 +121,8 @@ export default function Offers() {
   const [trialEnabled, setTrialEnabled] = useState(true);
   const [trialDays, setTrialDays] = useState(30);
   const [giftCheckoutConfigured, setGiftCheckoutConfigured] = useState(false);
-  const [giftSetupLoaded, setGiftSetupLoaded] = useState(false);
+  const [setupReadStatus, setSetupReadStatus] = useState<ReadStatus>("loading");
+  const [setupAttempt, setSetupAttempt] = useState(0);
   const [catalogQuotes, setCatalogQuotes] = useState<RecurringPriceQuotes>({});
   const [pendingImmediatePlan, setPendingImmediatePlan] = useState<BillingPlanKey | null>(
     null
@@ -124,8 +135,22 @@ export default function Offers() {
   const [giftRecipientName, setGiftRecipientName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
   const [showPaymentHelp, setShowPaymentHelp] = useState(false);
-  const [subscription, setSubscription] = useState<any>(null);
-  const [subscriptionLoaded, setSubscriptionLoaded] = useState(!authenticated);
+  const [subscriptionRead, setSubscriptionRead] = useState<SubscriptionRead | null>(null);
+  const [subscriptionAttempt, setSubscriptionAttempt] = useState(0);
+
+  const currentRead = subscriptionRead &&
+    subscriptionRead.token === subscriptionToken &&
+    subscriptionRead.accountId === subscriptionAccountId
+    ? subscriptionRead
+    : null;
+  const subscription = currentRead?.status === "ready" ? currentRead.value : null;
+  const subscriptionLoaded = !authenticated || currentRead?.status === "ready";
+  const subscriptionReadFailed = currentRead?.status === "failed";
+  const setupReadFailed = setupReadStatus === "failed";
+  const giftSetupLoaded = setupReadStatus === "ready";
+  const retryingPlanReads =
+    (setupAttempt > 0 && setupReadStatus === "loading") ||
+    (subscriptionAttempt > 0 && currentRead?.status === "loading");
 
   const activePlan = useMemo(() => String(ent.plan || "free"), [ent.plan]);
   const subscriptionActive = ["active", "trial", "trialing"].includes(
@@ -226,7 +251,7 @@ export default function Offers() {
         if (mounted) {
           setGiftCheckoutConfigured(status?.giftCheckoutConfigured === true);
           setCatalogQuotes(parseRecurringPriceQuotes(status?.quotes));
-          setGiftSetupLoaded(true);
+          setSetupReadStatus("ready");
         }
       })
       .catch(() => {
@@ -234,42 +259,54 @@ export default function Offers() {
           setCheckoutMode("unknown");
           setGiftCheckoutConfigured(false);
           setCatalogQuotes({});
-          setGiftSetupLoaded(true);
+          setSetupReadStatus("failed");
         }
       });
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [setupAttempt]);
 
   useEffect(() => {
     let mounted = true;
-    if (!authenticated) {
-      setSubscription(null);
-      setSubscriptionLoaded(true);
-      return () => {
-        mounted = false;
-      };
+    setPendingImmediatePlan(null);
+    if (!subscriptionToken) {
+      setSubscriptionRead(null);
+      return;
     }
-    setSubscriptionLoaded(false);
+    const account = { token: subscriptionToken, accountId: subscriptionAccountId };
+    setSubscriptionRead({ ...account, status: "loading" });
     getSubscription()
       .then((next) => {
         if (mounted) {
-          setSubscription(next || {});
-          setSubscriptionLoaded(true);
+          setSubscriptionRead({ ...account, status: "ready", value: next || {} });
         }
       })
       .catch(() => {
         if (mounted) {
-          setSubscription(null);
-          setSubscriptionLoaded(false);
+          setSubscriptionRead({ ...account, status: "failed" });
         }
       });
     return () => {
       mounted = false;
     };
-  }, [authenticated]);
+  }, [subscriptionToken, subscriptionAccountId, subscriptionAttempt]);
+
+  function retryPlanReads() {
+    if (setupReadFailed) {
+      setSetupReadStatus("loading");
+      setSetupAttempt((attempt) => attempt + 1);
+    }
+    if (subscriptionReadFailed && subscriptionToken) {
+      setSubscriptionRead({
+        token: subscriptionToken,
+        accountId: subscriptionAccountId,
+        status: "loading"
+      });
+      setSubscriptionAttempt((attempt) => attempt + 1);
+    }
+  }
 
   useEffect(() => {
     if (!authenticated || (giftSetupLoaded && !giftCheckoutConfigured)) {
@@ -364,6 +401,8 @@ export default function Offers() {
               ? "Choose or create the Facility workspace you want to subscribe. Its owner can review the price and continue to Stripe from Facility billing."
               : subscription?.checkoutBlockedReason === "protected_identity"
               ? access.message
+              : setupReadStatus !== "ready" || !subscriptionLoaded
+                ? "Choose a billing interval to compare plans. Trial and billing terms depend on verified plan information."
               : eligibleTrialPlanTitles.length > 0
                 ? `This account has one ${trialDays}-day introductory trial. Choose which plan to try; using it consumes the account's only trial. Stripe requires a payment method and paid billing begins after the trial unless canceled.`
                 : trialEnabled
@@ -431,9 +470,35 @@ export default function Offers() {
             ? "Stripe checkout is live. Real cards can be charged."
             : checkoutMode === "test"
               ? "Stripe checkout is in test mode. Test card payments are not real charges."
+            : setupReadFailed
+              ? "Plan pricing could not be loaded."
               : "Stripe checkout mode is being checked before payment."}
         </Text>
       </View>
+
+      {setupReadFailed || subscriptionReadFailed ? (
+        <View style={styles.feedback}>
+          <Text style={styles.feedbackText} accessibilityRole="alert">
+            {setupReadFailed && subscriptionReadFailed
+              ? "We couldn’t load plan prices or check your subscription."
+              : setupReadFailed
+                ? "Retry to load current plan prices."
+                : "We couldn’t check your subscription. Try again."}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry plan details"
+            onPress={retryPlanReads}
+            style={[styles.helpButton, styles.retryButton]}
+          >
+            <Text style={styles.helpButtonTitle}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : retryingPlanReads ? (
+        <Text accessibilityLiveRegion="polite" style={styles.helper}>
+          Checking plan details again…
+        </Text>
+      ) : null}
 
       <Pressable
         accessibilityRole="button"
@@ -768,9 +833,11 @@ export default function Offers() {
                 </Pressable>
               ) : (
                 <Text style={styles.helper}>
-                  {subscriptionLoaded
-                    ? access.message
-                    : "Checking current access before enabling another checkout."}
+                  {subscriptionReadFailed
+                    ? "Subscription status is unavailable."
+                    : subscriptionLoaded
+                      ? access.message
+                      : "Checking current access before enabling another checkout."}
                 </Text>
               )}
             </AppCard>
@@ -841,6 +908,7 @@ const createStyles = (palette: ThemePalette) =>
       padding: 12
     },
     helpButtonTitle: { color: palette.accent, fontWeight: "900" },
+    retryButton: { alignSelf: "flex-start", justifyContent: "center", minHeight: 44, marginTop: 8 },
     helpButtonText: { color: palette.textMuted, fontSize: 12, marginTop: 3 },
     historyButton: {
       backgroundColor: palette.surface,
