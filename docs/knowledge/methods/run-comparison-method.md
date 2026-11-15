@@ -7,6 +7,13 @@ history reads, reopening, log saving and reviewed task creation. Keep normal
 owner/workspace authorization and separate record collections; never recover a
 wrong-scope request by searching another workspace.
 
+Run Comparison verifies the saved-grow list before showing it as empty or
+counting any selected grow, including a grow from the entry link. If the read
+fails, offer read-only Retry in the same workspace. Keep the form draft and any
+reference verified by the recovered list. Comparing requires two to five
+verified selections. Discard late reads on a change of session, account,
+workspace or entry grow.
+
 Journal reference dates are calendar days. Preserve their saved day when rendered
 from date-only or UTC-midnight storage, rather than shifting them into the previous
 local day. Genuine event timestamps retain their normal local-time semantics.

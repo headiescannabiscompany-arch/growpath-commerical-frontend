@@ -17,6 +17,7 @@ import {
   type RunComparisonScope,
   type ToolRun
 } from "@/api/toolRuns";
+import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { hasLocalPaidPreviewOverride } from "@/utils/localPaidPreview";
@@ -31,6 +32,10 @@ type RunComparisonWorkspaceProps = {
   showIntro?: boolean;
   workspace?: GrowWorkspace;
 };
+
+type SavedGrowRead =
+  | { status: "loading" | "failed" }
+  | { status: "ready"; grows: PersonalGrow[] };
 
 const SCOPES: Array<{
   value: RunComparisonScope;
@@ -223,13 +228,45 @@ export default function RunComparisonWorkspace({
   showIntro = true,
   workspace = "personal"
 }: RunComparisonWorkspaceProps) {
+  const entitlements = useEntitlements();
+  const { user, token, isHydrating } = useAuth();
+  // A replacement session must not inherit a previous session's verified grows.
+  const [session, setSession] = useState({ token, generation: 0 });
+  if (session.token !== token) {
+    setSession({ token, generation: session.generation + 1 });
+  }
+  const locked =
+    !hasLocalPaidPreviewOverride() &&
+    String(entitlements.plan || "free").toLowerCase() === "free";
+
+  if (isHydrating) return null;
+  if (locked) {
+    return (
+      <LockedScreen
+        title="Run-To-Run Comparison is a Pro tool"
+        message="Upgrade to compare saved grow histories, evidence coverage, outcomes, and next-run decisions."
+      />
+    );
+  }
+  if (!token || !user?.id) return null;
+
+  return (
+    <RunComparisonContent
+      key={JSON.stringify([user.id, session.generation, workspace, initialGrowId])}
+      initialGrowId={initialGrowId}
+      showIntro={showIntro}
+      workspace={workspace}
+    />
+  );
+}
+
+function RunComparisonContent({
+  initialGrowId,
+  showIntro,
+  workspace
+}: Required<RunComparisonWorkspaceProps>) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createRunComparisonStyles(palette), [palette]);
-  const entitlements = useEntitlements();
-  const paidPreview = hasLocalPaidPreviewOverride();
-  const locked =
-    !paidPreview && String(entitlements.plan || "free").toLowerCase() === "free";
-  const [grows, setGrows] = useState<PersonalGrow[]>([]);
   const [selected, setSelected] = useState<string[]>(
     initialGrowId ? [initialGrowId] : []
   );
@@ -238,53 +275,41 @@ export default function RunComparisonWorkspace({
   const [objective, setObjective] = useState<RunComparisonObjective>("balanced_review");
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [growRead, setGrowRead] = useState<SavedGrowRead>({ status: "loading" });
+  const [growReadAttempt, setGrowReadAttempt] = useState(0);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState("");
   const [outputs, setOutputs] = useState<Record<string, any> | null>(null);
   const [toolRun, setToolRun] = useState<ToolRun | null>(null);
 
   useEffect(() => {
-    if (locked) return;
     let active = true;
-    setLoading(true);
-    listWorkspaceGrows(workspace)
+    listWorkspaceGrows(workspace, { verifyRecords: true })
       .then((rows) => {
         if (!active) return;
-        setGrows(rows);
+        const savedIds = new Set(rows.map(growIdOf));
+        setSelected((current) => current.filter((id) => savedIds.has(id)));
+        setReferenceGrowId((current) => (savedIds.has(current) ? current : ""));
+        setGrowRead({ status: "ready", grows: rows });
       })
       .catch(() => {
-        if (active) setError("Unable to load saved grows.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
+        if (active) setGrowRead({ status: "failed" });
       });
     return () => {
       active = false;
     };
-  }, [locked, workspace]);
+  }, [growReadAttempt, workspace]);
 
-  useEffect(() => {
-    if (!initialGrowId) return;
-    setSelected((current) =>
-      current.includes(initialGrowId) ? current : [initialGrowId, ...current].slice(0, 5)
-    );
-    setReferenceGrowId((current) => current || initialGrowId);
-  }, [initialGrowId]);
-
-  const selectedGrows = useMemo(
-    () =>
-      selected.map((id) => grows.find((grow) => growIdOf(grow) === id)).filter(Boolean),
-    [grows, selected]
+  const grows = growRead.status === "ready" ? growRead.grows : [];
+  const verifiedSelection = selected.filter((id) =>
+    grows.some((grow) => growIdOf(grow) === id)
   );
+  const canCompare = verifiedSelection.length >= 2 && !running;
 
-  if (locked) {
-    return (
-      <LockedScreen
-        title="Run-To-Run Comparison is a Pro tool"
-        message="Upgrade to compare saved grow histories, evidence coverage, outcomes, and next-run decisions."
-      />
-    );
+  function retrySavedGrows() {
+    if (growRead.status !== "failed") return;
+    setGrowRead({ status: "loading" });
+    setGrowReadAttempt(growReadAttempt + 1);
   }
 
   function resetResult() {
@@ -313,17 +338,15 @@ export default function RunComparisonWorkspace({
   }
 
   async function runComparison() {
-    if (running) return;
-    if (selected.length < 2) {
-      setError("Select at least two saved grows.");
-      return;
-    }
-    const reference = selected.includes(referenceGrowId) ? referenceGrowId : selected[0];
+    if (!canCompare) return;
+    const reference = verifiedSelection.includes(referenceGrowId)
+      ? referenceGrowId
+      : verifiedSelection[0];
     setRunning(true);
     setError("");
     try {
       const response = await compareSavedGrows({
-        growIds: selected,
+        growIds: verifiedSelection,
         referenceGrowId: reference,
         scope,
         objective,
@@ -438,8 +461,28 @@ export default function RunComparisonWorkspace({
           Select 2–5 grows. Mark the run you want to use as the reference—not an automatic
           winner.
         </Text>
-        {loading ? <ActivityIndicator color={palette.accent} /> : null}
-        {!loading && !grows.length ? (
+        {growRead.status === "loading" ? (
+          <View style={styles.loadingGrows}>
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.sectionHelp}>Loading saved grows...</Text>
+          </View>
+        ) : null}
+        {growRead.status === "failed" ? (
+          <>
+            <Text accessibilityRole="alert" style={styles.errorText}>
+              Unable to load saved grows.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading saved grows"
+              onPress={retrySavedGrows}
+              style={[styles.referenceButton, styles.retryButton]}
+            >
+              <Text style={styles.retryText}>Retry</Text>
+            </Pressable>
+          </>
+        ) : null}
+        {growRead.status === "ready" && !grows.length ? (
           <Text style={styles.emptyText}>
             No saved grows are available yet. Create and track at least two grows first.
           </Text>
@@ -490,10 +533,14 @@ export default function RunComparisonWorkspace({
             </View>
           );
         })}
-        <Text style={styles.selectionCount}>
-          {selectedGrows.length || selected.length} selected ·{" "}
-          {referenceGrowId ? "reference chosen" : "choose a reference"}
-        </Text>
+        {growRead.status === "ready" && grows.length > 0 ? (
+          <Text style={styles.selectionCount}>
+            {verifiedSelection.length} selected ·{" "}
+            {verifiedSelection.includes(referenceGrowId)
+              ? "reference chosen"
+              : "choose a reference"}
+          </Text>
+        ) : null}
       </View>
 
       <View style={styles.sectionCard}>
@@ -568,17 +615,14 @@ export default function RunComparisonWorkspace({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Compare saved grow histories"
-        disabled={selected.length < 2 || running}
+        disabled={!canCompare}
         onPress={runComparison}
-        style={[
-          styles.runButton,
-          (selected.length < 2 || running) && styles.disabledButton
-        ]}
+        style={[styles.runButton, !canCompare && styles.disabledButton]}
       >
         <Text style={styles.runButtonText}>
           {running
             ? "Comparing saved evidence..."
-            : `Compare ${selected.length} saved grows`}
+            : `Compare ${verifiedSelection.length} saved grows`}
         </Text>
       </Pressable>
       {error ? (
@@ -705,6 +749,7 @@ export const createRunComparisonStyles = (palette: ThemePalette) =>
     },
     sectionTitle: { color: palette.text, fontSize: 17, fontWeight: "800" },
     sectionHelp: { color: palette.textMuted, lineHeight: 19 },
+    loadingGrows: { flexDirection: "row", alignItems: "center", gap: 8 },
     growCard: {
       borderRadius: radius.card,
       borderWidth: 1,
@@ -737,6 +782,8 @@ export const createRunComparisonStyles = (palette: ThemePalette) =>
     },
     referenceButtonText: { color: palette.link, fontSize: 12, fontWeight: "800" },
     referenceButtonTextOn: { color: palette.link },
+    retryButton: { minHeight: 44, minWidth: 44, justifyContent: "center" },
+    retryText: { color: palette.link, fontWeight: "800" },
     selectionCount: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
     optionCard: {
       borderRadius: radius.card,

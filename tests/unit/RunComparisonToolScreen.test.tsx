@@ -37,6 +37,10 @@ jest.mock("@/entitlements", () => ({
   })
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "user-1" }, token: "session-1", isHydrating: false })
+}));
+
 jest.mock("@/utils/localPaidPreview", () => ({
   hasLocalPaidPreviewOverride: () => false
 }));
@@ -60,8 +64,10 @@ jest.mock("@/api/toolRuns", () => ({
 }));
 
 jest.mock("@/features/grows/workspaceData", () => ({
-  listWorkspaceGrows: (workspace: string) =>
-    workspace === "commercial" ? mockListCommercialGrows() : mockListPersonalGrows()
+  listWorkspaceGrows: (workspace: string, options: unknown) =>
+    workspace === "commercial"
+      ? mockListCommercialGrows(options)
+      : mockListPersonalGrows(options)
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
@@ -255,6 +261,41 @@ describe("RunComparisonToolRoute", () => {
     for (const source of sources) {
       expect(source).not.toMatch(/#[0-9a-f]{3,8}|rgba?\(/i);
     }
+  });
+
+  it("retries failed Personal grow reads without comparing or clearing the draft", async () => {
+    mockListPersonalGrows.mockRejectedValueOnce(new Error("read unavailable"));
+    const screen = render(<RunComparisonToolRoute />);
+
+    await screen.findByText("Unable to load saved grows.");
+    expect(screen.queryByText(/No saved grows are available/)).toBeNull();
+    expect(screen.getByLabelText("Compare saved grow histories")).toBeDisabled();
+    fireEvent.changeText(screen.getByLabelText("Run comparison report title"), "My draft");
+    fireEvent.press(screen.getByRole("button", { name: "Retry loading saved grows" }));
+
+    const grow = await screen.findByLabelText("Compare saved grow Comparison grow");
+    expect(screen.queryByText("Unable to load saved grows.")).toBeNull();
+    expect(screen.getByLabelText("Use Reference grow as reference run")).toBeChecked();
+    expect(screen.getByDisplayValue("My draft")).toBeTruthy();
+    expect(mockListPersonalGrows.mock.calls).toEqual([
+      [{ verifyRecords: true }],
+      [{ verifyRecords: true }]
+    ]);
+    expect(mockListCommercialGrows).not.toHaveBeenCalled();
+    fireEvent.press(grow);
+    expect(screen.getByLabelText("Compare saved grow histories")).toBeEnabled();
+    expect(mockCompareSavedGrows).not.toHaveBeenCalled();
+  });
+
+  it("excludes a route grow missing from the verified workspace list", async () => {
+    const screen = render(<RunComparisonWorkspace initialGrowId="missing-grow" />);
+
+    const grow = await screen.findByLabelText("Compare saved grow Comparison grow");
+    expect(screen.getByText("0 selected · choose a reference")).toBeTruthy();
+    fireEvent.press(grow);
+    expect(screen.getByText("1 selected · reference chosen")).toBeTruthy();
+    expect(screen.getByLabelText("Compare saved grow histories")).toBeDisabled();
+    expect(mockCompareSavedGrows).not.toHaveBeenCalled();
   });
 
   it("compares selected owned saved grows without demo rows and creates linked actions", async () => {
