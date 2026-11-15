@@ -496,6 +496,7 @@ function RunComparisonContent({
               <Pressable
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: active }}
+                aria-checked={active}
                 accessibilityLabel={`Compare saved grow ${grow.name || id}`}
                 onPress={() => toggleGrow(id)}
                 style={styles.growToggle}
@@ -513,6 +514,7 @@ function RunComparisonContent({
                 <Pressable
                   accessibilityRole="radio"
                   accessibilityState={{ checked: reference }}
+                  aria-checked={reference}
                   accessibilityLabel={`Use ${grow.name || id} as reference run`}
                   onPress={() => {
                     resetResult();

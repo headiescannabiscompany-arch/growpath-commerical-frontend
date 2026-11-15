@@ -14,6 +14,10 @@ reference verified by the recovered list. Comparing requires two to five
 verified selections. Discard late reads on a change of session, account,
 workspace or entry grow.
 
+Expose checked states for the saved-grow choices and reference controls on
+web and native. Selecting or deselecting a grow or changing the reference
+updates the accessible state together with the visible selection.
+
 Journal reference dates are calendar days. Preserve their saved day when rendered
 from date-only or UTC-midnight storage, rather than shifting them into the previous
 local day. Genuine event timestamps retain their normal local-time semantics.

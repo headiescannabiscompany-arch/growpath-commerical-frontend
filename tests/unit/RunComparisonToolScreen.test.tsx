@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Pressable } from "react-native";
 
 import RunComparisonToolRoute, {
   createRunComparisonRouteStyles
@@ -295,6 +296,41 @@ describe("RunComparisonToolRoute", () => {
     fireEvent.press(grow);
     expect(screen.getByText("1 selected · reference chosen")).toBeTruthy();
     expect(screen.getByLabelText("Compare saved grow histories")).toBeDisabled();
+    expect(mockCompareSavedGrows).not.toHaveBeenCalled();
+  });
+
+  it("exposes the checked state of saved grows and their reference controls on web", async () => {
+    const screen = render(<RunComparisonWorkspace initialGrowId="grow-1" />);
+    const firstGrow = "Compare saved grow Reference grow";
+    const secondGrow = "Compare saved grow Comparison grow";
+    const firstReference = "Use Reference grow as reference run";
+    const secondReference = "Use Comparison grow as reference run";
+
+    function expectChecked(label: string, checked: boolean) {
+      const control = screen.UNSAFE_getAllByType(Pressable).find(
+        (node) => node.props.accessibilityLabel === label
+      );
+      expect(control?.props["aria-checked"]).toBe(checked);
+      expect(control?.props.accessibilityState?.checked).toBe(checked);
+    }
+
+    await screen.findByRole("checkbox", { name: secondGrow });
+    expectChecked(firstGrow, true);
+    expectChecked(secondGrow, false);
+    expectChecked(firstReference, true);
+
+    fireEvent.press(screen.getByRole("checkbox", { name: secondGrow }));
+    expectChecked(secondGrow, true);
+    expectChecked(secondReference, false);
+
+    fireEvent.press(screen.getByRole("radio", { name: secondReference }));
+    expectChecked(firstReference, false);
+    expectChecked(secondReference, true);
+
+    fireEvent.press(screen.getByRole("checkbox", { name: secondGrow }));
+    expectChecked(secondGrow, false);
+    expectChecked(firstReference, true);
+    expect(screen.queryByRole("radio", { name: secondReference })).toBeNull();
     expect(mockCompareSavedGrows).not.toHaveBeenCalled();
   });
 
