@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 13, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 14, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "mobile-grow-plans-and-automation",
+        title: "Compare plans and retry Automation on the mobile website",
+        date: "November 14, 2026",
+        dateLabel: "Released",
+        summary:
+          "If you’ve reached the Free Personal one-grow limit, tap Compare plans in Grows or New Grow to review your options. In Grow Automation, if policies or recent events fail to load, the list that loaded stays visible. Tap Retry to reload both lists for the same grow."
+      },
       {
         id: "mobile-grow-recovery-and-forum-reporting",
         title: "Pick up where you left off on the mobile website",

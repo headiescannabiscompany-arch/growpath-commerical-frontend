@@ -6,6 +6,7 @@ import {
   PUBLIC_UPDATE_GROUPS,
   UPDATE_STATUS_LABELS,
   latestGroupRelease,
+  recentPublicReleases,
   updateGroupSections
 } from "@/config/publicUpdateGroups";
 import { getThemePalette } from "@/theme/appTheme";
@@ -51,6 +52,7 @@ describe("public Updates page", () => {
   );
   it("November catch-up keeps new histories reachable and excludes private release data", () => {
     const ids = [
+      "mobile-grow-plans-and-automation",
       "mobile-grow-recovery-and-forum-reporting",
       "personal-home-grow-journal-shortcuts",
       "assistant-photo-privacy",
@@ -71,7 +73,16 @@ describe("public Updates page", () => {
       expect(PUBLIC_UPDATE_GROUPS.filter(g => g.entryIds.includes(id))).toHaveLength(1);
       expect(notes[0].summary).not.toMatch(/qa\.invalid|@gmail|dep-|srv-|operatorApprovalReference|policyId|[a-f0-9]{24}/);
     }
-    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 13, 2026");
+    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 14, 2026");
+    const now = new Date(2026, 10, 14, 12);
+    const growNote = recentPublicReleases(now)[0];
+    expect(growNote.id).toBe("mobile-grow-plans-and-automation");
+    expect(growNote.summary).toContain("Compare plans in Grows or New Grow");
+    expect(growNote.summary).toContain("the list that loaded stays visible");
+    expect(growNote.summary).toContain("reload both lists for the same grow");
+    const growsGroup = PUBLIC_UPDATE_GROUPS.find(group => group.id === "journals")!;
+    expect(updateGroupSections(growsGroup)[0].entries[0]).toBe(growNote);
+    expect(latestGroupRelease(growsGroup, now)).toBe("November 14, 2026");
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.find(e => e.id === "course-documents-delivery-check")?.dateLabel).toBe("Verified");
   });
 
@@ -780,6 +791,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "mobile-grow-plans-and-automation",
       "mobile-grow-recovery-and-forum-reporting",
       "personal-home-grow-journal-shortcuts",
       "assistant-photo-privacy",
