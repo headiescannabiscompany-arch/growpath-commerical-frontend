@@ -47,6 +47,14 @@ export default function AdminPasskeySecurity({
         title: { color: palette.text, fontWeight: "800", fontSize: 15 },
         text: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
         feedback: { color: palette.text, fontSize: 13 },
+        success: {
+          gap: 4,
+          padding: 10,
+          borderWidth: 1,
+          borderColor: palette.link,
+          borderRadius: radius.card,
+          backgroundColor: palette.surface
+        },
         input: {
           color: palette.text,
           backgroundColor: palette.surface,
@@ -123,7 +131,7 @@ export default function AdminPasskeySecurity({
     };
   }, [expanded, identityEpoch]);
 
-  async function run(action: () => Promise<unknown>, success: string) {
+  async function run(action: () => Promise<unknown>, success = "") {
     const isCurrentIdentity = () =>
       mounted.current && identityEpoch === getAdminSecurityIdentityEpoch();
     if (busy || !isCurrentIdentity()) return;
@@ -131,9 +139,11 @@ export default function AdminPasskeySecurity({
     setMessage("");
     // Keep passwords out of rendered state throughout the device ceremony.
     setPassword("");
+    let actionCompleted = false;
     try {
       await action();
       if (!isCurrentIdentity()) return;
+      actionCompleted = true;
       setMessage(success);
       setRevokeId("");
       setConfirmation("");
@@ -141,6 +151,12 @@ export default function AdminPasskeySecurity({
       if (isCurrentIdentity()) setStatus(next);
     } catch (error: any) {
       if (!isCurrentIdentity()) return;
+      if (actionCompleted) {
+        const refreshMessage =
+          "Passkey details could not be refreshed. Reopen Admin security to try again.";
+        setMessage(success ? `${success} ${refreshMessage}` : refreshMessage);
+        return;
+      }
       setMessage(
         verificationOnly
           ? "Passkey verification could not be confirmed. Check Admin security before continuing."
@@ -168,16 +184,35 @@ export default function AdminPasskeySecurity({
     );
   }
 
+  const verifiedUntil = expiresAt && Date.parse(expiresAt) > Date.now() ? expiresAt : null;
+  const showEnrollment = !verificationOnly && status?.enrollmentEnabled && supported;
+  const savedStatus = status?.enrolled && !verificationOnly ? (
+    <View role="status" accessibilityLiveRegion="polite" style={styles.success}>
+      <Text style={styles.title}>{status.passkeys.length > 1 ? "Passkeys saved" : "Passkey saved"}</Text>
+      {!verifiedUntil ? (
+        <Text style={styles.feedback}>Select Verify passkey to start a verified Admin session.</Text>
+      ) : null}
+    </View>
+  ) : null;
+
   return (
     <View style={styles.panel} accessibilityLabel="Admin passkey security">
       <Text style={styles.title}>Admin security</Text>
-      <Text style={styles.text}>
-        {expiresAt
-          ? `Verified until ${new Date(expiresAt).toLocaleTimeString()}. Existing role and review restrictions still apply.`
-          : verificationOnly
+      {verifiedUntil ? (
+        <View role="status" accessibilityLiveRegion="polite" style={styles.success}>
+          <Text style={styles.title}>Passkey verified</Text>
+          <Text style={styles.feedback}>
+            Verified until {new Date(verifiedUntil).toLocaleTimeString()}. Existing role and review restrictions still apply.
+          </Text>
+        </View>
+      ) : (
+        <Text style={styles.text}>
+          {verificationOnly
             ? "Verify your existing passkey. Enrollment and credential changes are not available in this review."
             : "Set up and verify your own passkey here. Open this section to check whether passkey enforcement is enabled."}
-      </Text>
+        </Text>
+      )}
+      {!verifiedUntil && (!expanded || !showEnrollment) ? savedStatus : null}
       {button(
         expanded
           ? "Hide Admin security"
@@ -218,11 +253,7 @@ export default function AdminPasskeySecurity({
           <View style={styles.row}>
             {button(
               "Verify passkey",
-              () =>
-                void run(
-                  verifyAdminPasskey,
-                  "Passkey verified for a short Admin session."
-                ),
+              () => void run(verifyAdminPasskey),
               !supported || !status?.enrolled
             )}
             {button(
@@ -235,7 +266,7 @@ export default function AdminPasskeySecurity({
               !expiresAt
             )}
           </View>
-          {!verificationOnly && status?.enrollmentEnabled && supported ? (
+          {showEnrollment ? (
             <>
               <Text style={styles.text}>
                 Add your own device only. Keep a second passkey as backup. Adding another
@@ -275,16 +306,13 @@ export default function AdminPasskeySecurity({
               />
               {button(
                 "Add a passkey",
-                () =>
-                  void run(
-                    () => registerAdminPasskey(password, label.trim()),
-                    "Passkey added. Verify it before using restricted controls."
-                  ),
+                () => void run(() => registerAdminPasskey(password, label.trim())),
                 !password ||
                   label.trim().length < 2 ||
                   status.passkeys.length >= 5 ||
                   (status.enrolled && !expiresAt)
               )}
+              {savedStatus}
             </>
           ) : null}
           {!verificationOnly &&

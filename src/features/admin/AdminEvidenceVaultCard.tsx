@@ -35,6 +35,7 @@ import AdminPasskeySecurity from "@/features/admin/AdminPasskeySecurity";
 import AdminArchiveAudit from "@/features/admin/AdminArchiveAudit";
 import AdminArchiveAccess from "@/features/admin/AdminArchiveAccess";
 import AdminArchiveRetention from "@/features/admin/AdminArchiveRetention";
+import RestrictedCasePreservation from "@/features/admin/RestrictedCasePreservation";
 import { useAdminSecurityEpoch } from "@/features/admin/useAdminSecurity";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -902,6 +903,10 @@ export default function AdminEvidenceVaultCard({
               {selectedCaseId ? (
                 <View style={styles.review}>
                   <Text style={styles.rowTitle}>Restricted case {selectedCaseId}</Text>
+                  <Text style={styles.meta}>
+                    Unsaved case notes and report details clear when your Admin security
+                    session changes or verification ends.
+                  </Text>
                   {caseRecords.map((record) => (
                     <Text key={record.id} style={styles.meta}>
                       {dateLabel(record.createdAt)} ·{" "}
@@ -909,6 +914,11 @@ export default function AdminEvidenceVaultCard({
                       {record.data.note || record.data.summary || "encrypted record"}
                     </Text>
                   ))}
+                  <RestrictedCasePreservation
+                    key={`${selectedCaseId}:${securityEpoch}`}
+                    caseId={selectedCaseId}
+                    securityEpoch={securityEpoch}
+                  />
                   <TextInput
                     accessibilityLabel="Restricted case note"
                     multiline

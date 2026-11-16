@@ -1,5 +1,5 @@
 import { ApiError } from "@/api/apiRequest";
-import { adminVaultRequest as apiRequest } from "@/api/adminPasskeys";
+import { adminVaultRequest as apiRequest, getAdminStepUpExpiry } from "@/api/adminPasskeys";
 
 const BASE = "/api/admin/evidence-vault";
 
@@ -320,6 +320,61 @@ export type RestrictedCaseRecord = {
   };
 };
 
+export type RestrictedPreservationTarget = { targetType: string; targetId: string };
+
+export type RestrictedPreservationInput = RestrictedPreservationTarget & {
+  requesterName: string;
+  requesterEmail: string;
+  authorityDescription: string;
+  scope: string;
+};
+
+export type RestrictedPreservationReceipt = {
+  caseId: string;
+  evidenceRequestId: string;
+  preservationHold: boolean;
+  status: string;
+  createdAt: string;
+  replayed: boolean;
+  externalTransmissionPerformed: false;
+};
+
+const RESTRICTED_CASE_ID = /^[a-f0-9]{24}$/i;
+const RESTRICTED_TARGET_TYPES = new Set([
+  "post",
+  "forumPost",
+  "comment",
+  "course",
+  "commercialPost",
+  "feedItem",
+  "storefrontProduct",
+  "video",
+  "videoComment",
+  "liveSession",
+  "liveChatMessage",
+  "growTimelinePublicCopy",
+  "user"
+]);
+const PRESERVATION_STATUSES = new Set([
+  "received",
+  "identity_review",
+  "legal_review",
+  "preserved",
+  "approved",
+  "rejected",
+  "disclosed",
+  "closed"
+]);
+
+function requireRestrictedPreservationProof(caseId: string) {
+  if (typeof caseId !== "string" || !RESTRICTED_CASE_ID.test(caseId)) {
+    throw new Error("Select a valid restricted case.");
+  }
+  if (!(Date.parse(getAdminStepUpExpiry() || "") > Date.now())) {
+    throw new Error("Verify your passkey in Admin security before this restricted action.");
+  }
+}
+
 export async function getEvidenceVaultCapabilities() {
   const response = await apiRequest<{ ok: true } & EvidenceVaultCapabilities>(
     `${BASE}/capabilities`,
@@ -464,6 +519,130 @@ export async function listRestrictedCases() {
     throw new Error("GrowPath returned an invalid restricted-case list.");
   }
   return response.cases;
+}
+
+export async function loadRestrictedPreservationTargets(
+  caseId: string
+): Promise<RestrictedPreservationTarget[]> {
+  requireRestrictedPreservationProof(caseId);
+  const response = record(
+    await apiRequest<unknown>(`${BASE}/restricted-cases/${encodeURIComponent(caseId)}`, {
+      cache: "no-store"
+    })
+  );
+  const review = record(response.case);
+  const evidence = record(review.evidence);
+  const handling = record(evidence.handling);
+  if (
+    response.ok !== true ||
+    review._id !== caseId ||
+    review.restricted !== true ||
+    review.caseKind !== "restricted_severe_harm" ||
+    handling.minimumNecessary !== true ||
+    handling.snapshotMode !== "metadata_only" ||
+    handling.rawMediaIncluded !== false ||
+    handling.storageLocationsIncluded !== false ||
+    handling.objectKeysIncluded !== false ||
+    handling.secretsIncluded !== false ||
+    !Array.isArray(evidence.targetHistory)
+  ) {
+    throw new Error("GrowPath returned an invalid restricted-case review.");
+  }
+
+  const subjectId = text(review.subjectUserId);
+  if (!RESTRICTED_CASE_ID.test(subjectId)) return [];
+
+  const targets = new Map<string, RestrictedPreservationTarget>();
+  for (const value of evidence.targetHistory) {
+    const target = record(value);
+    if (
+      target.subjectUserId !== subjectId ||
+      typeof target.targetType !== "string" ||
+      !RESTRICTED_TARGET_TYPES.has(target.targetType) ||
+      typeof target.targetId !== "string" ||
+      !RESTRICTED_CASE_ID.test(target.targetId)
+    ) {
+      continue;
+    }
+    const { targetType, targetId } = target;
+    targets.set(`${targetType}:${targetId}`, { targetType, targetId });
+  }
+  return Array.from(targets.values());
+}
+
+export async function recordRestrictedPreservation(
+  caseId: string,
+  input: RestrictedPreservationInput
+): Promise<RestrictedPreservationReceipt> {
+  requireRestrictedPreservationProof(caseId);
+  const { targetType, targetId } = input;
+  if (
+    !RESTRICTED_TARGET_TYPES.has(targetType) ||
+    typeof targetId !== "string" ||
+    !RESTRICTED_CASE_ID.test(targetId)
+  ) {
+    throw new Error("Select a retained target for this restricted case.");
+  }
+
+  const requesterName = text(input.requesterName);
+  const requesterEmail = text(input.requesterEmail).toLowerCase();
+  const authorityDescription = text(input.authorityDescription);
+  const scope = text(input.scope);
+  if (
+    !requesterName ||
+    requesterName.length > 300 ||
+    !requesterEmail ||
+    requesterEmail.length > 500 ||
+    !authorityDescription ||
+    authorityDescription.length > 5000 ||
+    !scope ||
+    scope.length > 4000
+  ) {
+    throw new Error("Enter the requester, authority and scope in the allowed field lengths.");
+  }
+
+  const response = record(
+    await apiRequest<unknown>(`/api/admin/moderation-cases/${encodeURIComponent(caseId)}/preserve-restricted-target`, {
+      method: "POST",
+      cache: "no-store",
+      body: {
+        requestType: "preservation",
+        targetType,
+        targetId,
+        requesterName,
+        requesterEmail,
+        authorityDescription,
+        scope
+      }
+    })
+  );
+  const receipt = record(response.receipt);
+  const { evidenceRequestId, preservationHold, status, createdAt, replayed } = receipt;
+  if (
+    response.ok !== true ||
+    receipt.caseId !== caseId ||
+    typeof evidenceRequestId !== "string" ||
+    !RESTRICTED_CASE_ID.test(evidenceRequestId) ||
+    typeof preservationHold !== "boolean" ||
+    typeof status !== "string" ||
+    !PRESERVATION_STATUSES.has(status) ||
+    typeof createdAt !== "string" ||
+    !Number.isFinite(Date.parse(createdAt)) ||
+    typeof replayed !== "boolean" ||
+    receipt.externalTransmissionPerformed !== false
+  ) {
+    throw new Error("GrowPath returned an invalid restricted preservation receipt.");
+  }
+
+  return {
+    caseId,
+    evidenceRequestId,
+    preservationHold,
+    status,
+    createdAt,
+    replayed,
+    externalTransmissionPerformed: false
+  };
 }
 
 export async function listRestrictedCaseRecords(caseId: string) {
