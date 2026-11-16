@@ -154,6 +154,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     live: "Larger journal-photo handling, adding photos to older entries, clearer grow limits, duplicate-looking timeline cleanup, visual multi-point/photo sharing, Personal web PDFs with saved photos, portable HTML downloads, phone headings and safe return paths are live. Personal Home on the website brings grow setup and active-grow shortcuts above the feed and gives you a way to retry or sign in again when needed.",
     next: "Separate follow-ups remain for reported date mismatches, longer timelines, native PDF checks, Commercial exports and additional sharing destinations. They do not reopen the completed fixes above.",
     entryIds: [
+      "mobile-grow-tools-and-run-comparison",
       "mobile-grow-plans-and-automation",
       "mobile-grow-recovery-and-forum-reporting",
       "personal-home-grow-journal-shortcuts",
@@ -252,7 +253,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     title: "Gift a course",
     status: "progress",
     scope: "Buying a course for another person, separate from subscription gifts.",
-    live: "Course gifts are not available to customers. Development and the recorded synthetic staging purchase, invitation, claim, refund and renewal journeys are complete; production controls remain off.",
+    live: "Course gifts are unavailable to customers. Staging checks covered purchase, invitation, claim, refund and renewal with test data. Production gifting is off.",
     next: "Finish applicable seller, policy and data-disposition requirements, a legitimate positive support case and reviewed production activation. Preserve completed acceptance; existing subscription gifts remain separate.",
     entryIds: ["course-gifting"]
   },

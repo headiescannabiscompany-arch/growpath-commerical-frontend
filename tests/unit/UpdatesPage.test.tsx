@@ -52,6 +52,7 @@ describe("public Updates page", () => {
   );
   it("November catch-up keeps new histories reachable and excludes private release data", () => {
     const ids = [
+      "mobile-grow-tools-and-run-comparison",
       "mobile-plan-review-and-grow-setup",
       "mobile-grow-plans-and-automation",
       "mobile-grow-recovery-and-forum-reporting",
@@ -74,7 +75,7 @@ describe("public Updates page", () => {
       expect(PUBLIC_UPDATE_GROUPS.filter(g => g.entryIds.includes(id))).toHaveLength(1);
       expect(notes[0].summary).not.toMatch(/qa\.invalid|@gmail|dep-|srv-|operatorApprovalReference|policyId|[a-f0-9]{24}/);
     }
-    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 14, 2026");
+    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 16, 2026");
     const now = new Date(2026, 10, 14, 12);
     const [mobileNote, growNote] = recentPublicReleases(now);
     expect(mobileNote.id).toBe("mobile-plan-review-and-grow-setup");
@@ -91,8 +92,18 @@ describe("public Updates page", () => {
     expect(growNote.summary).toContain("the list that loaded stays visible");
     expect(growNote.summary).toContain("reload both lists for the same grow");
     const growsGroup = PUBLIC_UPDATE_GROUPS.find(group => group.id === "journals")!;
-    expect(updateGroupSections(growsGroup)[0].entries[0]).toBe(growNote);
     expect(latestGroupRelease(growsGroup, now)).toBe("November 14, 2026");
+    const reviewedDay = new Date(2026, 10, 16, 12);
+    const [comparisonNote, previousMobileNote, previousGrowNote] = recentPublicReleases(reviewedDay);
+    expect(comparisonNote.id).toBe("mobile-grow-tools-and-run-comparison");
+    expect(comparisonNote.date).toBe("November 15, 2026");
+    expect(comparisonNote.summary).toContain("tap View result to reopen a saved run for that grow");
+    expect(comparisonNote.summary).toContain("keeping your draft and reference grow");
+    expect(comparisonNote.summary).toContain("In Safari on iPhone, VoiceOver announces which grows are selected");
+    expect(previousMobileNote).toBe(mobileNote);
+    expect(previousGrowNote).toBe(growNote);
+    expect(updateGroupSections(growsGroup)[0].entries.slice(0, 2)).toEqual([comparisonNote, growNote]);
+    expect(latestGroupRelease(growsGroup, reviewedDay)).toBe("November 15, 2026");
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.find(e => e.id === "course-documents-delivery-check")?.dateLabel).toBe("Verified");
   });
 
@@ -801,6 +812,7 @@ describe("public Updates page", () => {
       "final-web-acceptance"
     ]);
     expect(PUBLIC_UPDATE_SECTIONS[0].entries.map((entry) => entry.id)).toEqual([
+      "mobile-grow-tools-and-run-comparison",
       "mobile-plan-review-and-grow-setup",
       "mobile-grow-plans-and-automation",
       "mobile-grow-recovery-and-forum-reporting",

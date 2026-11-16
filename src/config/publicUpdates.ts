@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 14, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 16, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,16 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "mobile-grow-tools-and-run-comparison",
+        title: "Retry recent runs and compare grows on the mobile website",
+        date: "November 15, 2026",
+        dateLabel: "Released",
+        summary:
+          "In Grow Tools, tap Retry if recent tool runs fail to load. Once the list returns, tap View result to reopen a saved run for that grow. " +
+          "In Run Comparison, Retry reloads the saved grow list while keeping your draft and reference grow. " +
+          "In Safari on iPhone, VoiceOver announces which grows are selected and which grow is the reference."
+      },
       {
         id: "mobile-plan-review-and-grow-setup",
         title: "Plan review and grow setup on the mobile website",
