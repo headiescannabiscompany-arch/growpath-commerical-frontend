@@ -12,7 +12,7 @@ import {
   type RetentionProposal,
   type RetentionReceipt
 } from "@/api/adminArchiveRetention";
-import { getAdminSecurityEpoch } from "@/api/adminPasskeys";
+import { getAdminSecurityEpoch, getAdminStepUpExpiry } from "@/api/adminPasskeys";
 import { useAdminSecurityEpoch } from "./useAdminSecurity";
 import { useAppTheme } from "@/theme/appTheme";
 
@@ -118,8 +118,9 @@ function RetentionSession({ epoch }: { epoch: number }) {
     }
   }
   const ready = proposal();
+  const needsProof = action === "reject" && !(Date.parse(getAdminStepUpExpiry() || "") > Date.now());
   async function run(save: boolean) {
-    if (pending.current || submittedOnce || epoch !== getAdminSecurityEpoch()) return;
+    if (pending.current || submittedOnce || needsProof || epoch !== getAdminSecurityEpoch()) return;
     const input = save ? prepared?.proposal : ready;
     if (
       !input ||
@@ -259,6 +260,7 @@ function RetentionSession({ epoch }: { epoch: number }) {
             <Picker.Item label="Select an action" value="" />
             <Picker.Item label="Apply reviewed hold" value="apply" />
             <Picker.Item label="Renew existing 2703(f) hold" value="renew" />
+            <Picker.Item label="Reject request and keep hold" value="reject" />
             <Picker.Item label="Release reviewed hold" value="release" />
           </Picker>
           <Text style={{ color: palette.text }}>Reviewed preservation authority</Text>
@@ -317,10 +319,16 @@ function RetentionSession({ epoch }: { epoch: number }) {
               first.
             </Text>
           ) : null}
+          {action === "reject" ? (
+            <Text style={{ color: palette.warning }}>
+              Rejecting this request blocks scoped access under it. The hold and its expiry stay in place.
+              {needsProof ? " Verify your passkey in Admin security to continue." : ""}
+            </Text>
+          ) : null}
           {button(
-            busy ? "Checking…" : "Prepare hold confirmation",
+            busy ? "Checking…" : action === "reject" ? "Prepare request rejection" : "Prepare hold confirmation",
             () => void run(false),
-            disabled || !ready
+            disabled || !ready || needsProof
           )}
           {prepared ? (
             <View style={{ gap: 8 }}>
@@ -348,7 +356,7 @@ function RetentionSession({ epoch }: { epoch: number }) {
                 Type exactly: {prepared.phrase}
               </Text>
               <TextInput
-                accessibilityLabel="Exact hold confirmation"
+                accessibilityLabel={action === "reject" ? "Exact request rejection confirmation" : "Exact hold confirmation"}
                 value={confirmation}
                 onChangeText={setConfirmation}
                 autoCorrect={false}
@@ -357,15 +365,16 @@ function RetentionSession({ epoch }: { epoch: number }) {
                 style={inputStyle}
               />
               {button(
-                "Confirm hold change",
+                action === "reject" ? "Confirm request rejection" : "Confirm hold change",
                 () => void run(true),
-                busy || !acknowledged || confirmation !== prepared.phrase
+                busy || needsProof || !acknowledged || confirmation !== prepared.phrase
               )}
             </View>
           ) : null}
           {receipt ? (
-            <Text style={{ color: palette.text }}>
+            <Text style={{ color: palette.text }} accessibilityLiveRegion="polite">
               Saved for archive {receipt.archiveId}:{" "}
+              {receipt.requestStatus === "rejected" ? "request rejected, " : ""}
               {receipt.preservationHold
                 ? `hold active (${receipt.authority})`
                 : "hold released"}
@@ -375,8 +384,10 @@ function RetentionSession({ epoch }: { epoch: number }) {
                 : receipt.preservationHold
                   ? "no fixed expiry"
                   : "none — hold released"}
-              . Renewal count: {receipt.renewalCount}. No external transmission. Legal
-              request status was not approved or disclosed by this action.
+              . Renewal count: {receipt.renewalCount}. No external transmission.
+              {receipt.requestStatus !== "rejected"
+                ? " Legal request status was not approved or disclosed by this action."
+                : ""}
             </Text>
           ) : null}
           {message ? (
