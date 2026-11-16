@@ -198,6 +198,74 @@ describe("ClaimComplimentaryAccessScreen", () => {
     expect(screen.queryByLabelText("Activate complimentary access")).toBeNull();
   });
 
+  it("explains paid time and routes renewal changes to Billing without claiming or losing the token", async () => {
+    mockToken = "signed-in-token";
+    mockPreview.mockResolvedValue({ ...summary, startMode: "after_paid_period" });
+    const screen = render(<ClaimComplimentaryAccessScreen />);
+    expect(
+      await screen.findByText(/You keep the time you already paid for/)
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Activate complimentary access")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Open Billing to manage renewal"));
+    expect(mockPush).toHaveBeenCalledWith("/account/billing");
+    expect(mockClaim).not.toHaveBeenCalled();
+    expect(mockLogout).not.toHaveBeenCalled();
+    await expect(readComplimentaryClaimToken()).resolves.toBe("complimentary-token-1");
+    expect(JSON.stringify(mockPush.mock.calls)).not.toContain("complimentary-token-1");
+  });
+
+  it("keeps a renewal-blocked invitation for an explicit retry after Billing", async () => {
+    mockToken = "signed-in-token";
+    mockPreview.mockResolvedValue({ ...summary, startMode: "after_paid_period" });
+    const error = new ApiError("COMPLIMENTARY_RENEWAL_CANCELLATION_REQUIRED", 409);
+    mockClaim.mockRejectedValueOnce(error).mockResolvedValueOnce({
+      plan: "commercial",
+      scheduled: true,
+      startsAt: "2026-10-15T22:15:22.000Z"
+    });
+    const screen = render(<ClaimComplimentaryAccessScreen />);
+    fireEvent.press(await screen.findByLabelText("Schedule complimentary access"));
+    expect(await screen.findByText(/Stop renewal in Billing, then return/)).toBeTruthy();
+    expect(screen.queryByLabelText("Schedule complimentary access")).toBeNull();
+    await expect(readComplimentaryClaimToken()).resolves.toBe("complimentary-token-1");
+    fireEvent.press(screen.getByLabelText("Open Billing to manage renewal"));
+    expect(mockPush).toHaveBeenCalledWith("/account/billing");
+    expect(mockClaim).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByLabelText("Check again after stopping renewal"));
+    await waitFor(() => expect(mockClaim).toHaveBeenCalledTimes(2));
+    expect(
+      await screen.findByText(/Your complimentary commercial gift is scheduled/)
+    ).toBeTruthy();
+    expect(mockLogout).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])(
+    "shows scheduled success, never active access, including refresh failure %s",
+    async (refreshFails) => {
+      mockToken = "signed-in-token";
+      mockPreview.mockResolvedValue({ ...summary, startMode: "after_paid_period" });
+      const startsAt = "2026-10-15T22:15:22.000Z";
+      mockClaim.mockResolvedValue({ plan: "commercial", scheduled: true, startsAt });
+      if (refreshFails)
+        mockRetryMe.mockRejectedValueOnce(new Error("Refresh unavailable"));
+      const screen = render(<ClaimComplimentaryAccessScreen />);
+      fireEvent.press(await screen.findByLabelText("Schedule complimentary access"));
+      await waitFor(() => expect(mockRetryMe).toHaveBeenCalledTimes(1));
+      expect(
+        screen.getByText(/Your complimentary commercial gift is scheduled/).props.children
+      ).toContain(new Date(startsAt).toLocaleString());
+      expect(
+        screen.getByText(/Your complimentary commercial gift is scheduled/).props.children
+      ).toContain("will not renew automatically");
+      expect(screen.queryByText(/access is active/)).toBeNull();
+      expect(screen.queryByLabelText("Schedule complimentary access")).toBeNull();
+      expect(screen.queryByLabelText("Open Billing to manage renewal")).toBeNull();
+      await expect(readComplimentaryClaimToken()).resolves.toBe("");
+      fireEvent.press(screen.getByText("View access details"));
+      expect(mockReplace).toHaveBeenCalledWith("/account/billing");
+    }
+  );
+
   it("offers a safe account switch for a recipient email mismatch", async () => {
     mockToken = "wrong-account-token";
     const mismatch = new ApiError("COMPLIMENTARY_RECIPIENT_EMAIL_MISMATCH", 403);

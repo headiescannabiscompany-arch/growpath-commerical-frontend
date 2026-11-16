@@ -17,6 +17,23 @@ describe("GrowPath knowledge registries", () => {
     expect(rules).toContain("explicitly selected, non-excluded grow records");
     expect(rules).toContain("not an immediate RSS-reclamation guarantee");
   });
+  it("records paid-period gifts without implying deployment or paid cancellation authority", () => {
+    const entry = getMethod("complimentary-access");
+    expect(entry?.documentPath).toBe(
+      "docs/knowledge/methods/complimentary-access-method.md"
+    );
+    expect(entry?.warnings).toContain(
+      "An invitation never cancels renewal; the recipient uses existing Billing controls before scheduling."
+    );
+    expect(entry?.warnings).toContain(
+      "The approved allowlisted protected-recipient exception is annual Pro only, bound to an immutable recipient ID; it never changes Admin, identity protection or Vault permissions."
+    );
+    expect(getSourceEntry("stripe-subscription-cancellation-docs")).toMatchObject({
+      reliabilityTier: "B",
+      trustedFor: ["subscription_billing"],
+      requiresCrossCheck: true
+    });
+  });
   it.each(["commercial-workflow", "facility-workflow"])(
     "keeps %s campaign timing explicit without changing other schedulers",
     (methodId) => {

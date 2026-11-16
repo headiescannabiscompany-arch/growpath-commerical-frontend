@@ -26,7 +26,8 @@ export type SourceUseCase =
   | "photo_quality_guidance"
   | "platform_data_access"
   | "plant_identification"
-  | "crop_lifecycle";
+  | "crop_lifecycle"
+  | "subscription_billing";
 
 export type SourceType =
   | "university_extension"
@@ -82,6 +83,19 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     notes: "Supports the reported selection from Bulgarian village-grown pink tomatoes. Cross-check cultivar identity against Bulgaria's official list and keep Sakata's separately registered hybrid distinct. No named parent lines or plant-level identity evidence.",
     requiresCrossCheck: true,
     lastReviewedAt: "2026-11-09"
+  },
+  {
+    id: "stripe-subscription-cancellation-docs",
+    name: "Stripe subscription cancellation documentation",
+    domain: "docs.stripe.com",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["subscription_billing"],
+    notTrustedFor: ["legal_regulatory", "consumer_review"],
+    notes:
+      "Authority for cancel_at_period_end and subscription lifecycle semantics only. It does not prove a recipient's live billing status, authorize cancellation, grant access, waive protected identities, or establish that GrowPath scheduling is released. Cross-check the exact authenticated provider state and app ledger.",
+    requiresCrossCheck: true,
+    lastReviewedAt: "2026-10-12"
   },
   {
     id: "missouri-botanical-garden-plant-finder",

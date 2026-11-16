@@ -2,6 +2,7 @@ import { apiRequest } from "./apiRequest";
 
 export type ComplimentaryGrantPlan = "pro" | "commercial" | "facility";
 export type ComplimentaryGrantDuration = "month" | "year";
+export type ComplimentaryGrantStartMode = "on_claim" | "after_paid_period";
 
 export type ComplimentaryFacilityWorkspace = {
   facilityId: string;
@@ -17,7 +18,10 @@ export type ComplimentaryGrant = {
   plan: ComplimentaryGrantPlan;
   duration: ComplimentaryGrantDuration;
   facilityId: string | null;
-  status: "pending" | "active" | "expired" | "revoked";
+  startMode?: ComplimentaryGrantStartMode;
+  status: "pending" | "scheduled" | "active" | "expired" | "revoked";
+  scheduledStartsAt?: string | null;
+  scheduledBlockCode?: string | null;
   reason: string;
   issuedAt: string | null;
   claimExpiresAt: string | null;
@@ -43,6 +47,7 @@ export type ComplimentaryClaimSummary = {
   recipientName: string;
   plan: ComplimentaryGrantPlan;
   duration: ComplimentaryGrantDuration;
+  startMode?: ComplimentaryGrantStartMode;
   facilityId: string | null;
   message: string;
   complimentary: true;
@@ -55,16 +60,24 @@ export type ComplimentaryClaimResult = {
   plan: ComplimentaryGrantPlan;
   duration: ComplimentaryGrantDuration;
   facilityId: string | null;
-  expiresAt: string;
   complimentary: true;
   paymentState: "nonpaid";
   renews: false;
   nextPath: "/account/billing";
-};
+} & (
+  | { scheduled?: false; expiresAt: string }
+  | {
+      scheduled: true;
+      plan: "pro" | "commercial";
+      facilityId: null;
+      startsAt: string;
+      expiresAt: null;
+    }
+);
 
 const GRANT_PLANS = new Set<ComplimentaryGrantPlan>(["pro", "commercial", "facility"]);
 const GRANT_DURATIONS = new Set<ComplimentaryGrantDuration>(["month", "year"]);
-const GRANT_STATUSES = new Set(["pending", "active", "expired", "revoked"]);
+const GRANT_STATUSES = new Set(["pending", "scheduled", "active", "expired", "revoked"]);
 const DELIVERY_STATUSES = new Set(["pending", "sending", "sent", "failed", "canceled"]);
 const FAILURE_KINDS = new Set(["retryable", "ambiguous", "permanent"]);
 
@@ -109,6 +122,22 @@ function validDuration(value: unknown): value is ComplimentaryGrantDuration {
   return GRANT_DURATIONS.has(value as ComplimentaryGrantDuration);
 }
 
+function validStartMode(plan: ComplimentaryGrantPlan, value: unknown) {
+  return (
+    value === undefined ||
+    value === "on_claim" ||
+    (value === "after_paid_period" && plan !== "facility")
+  );
+}
+
+function validIsoDate(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) &&
+    Number.isFinite(Date.parse(value))
+  );
+}
+
 function checkedGrant(value: unknown): ComplimentaryGrant {
   const grant = record(value);
   const delivery = record(grant?.emailDelivery);
@@ -122,8 +151,19 @@ function checkedGrant(value: unknown): ComplimentaryGrant {
     typeof grant.message !== "string" ||
     !validPlan(grant.plan) ||
     !validDuration(grant.duration) ||
+    !validStartMode(grant.plan, grant.startMode) ||
     !validFacilityBinding(grant.plan, grant.facilityId, true) ||
     !GRANT_STATUSES.has(grant.status) ||
+    !(
+      grant.scheduledStartsAt === undefined ||
+      grant.scheduledStartsAt === null ||
+      validIsoDate(grant.scheduledStartsAt)
+    ) ||
+    !(grant.scheduledBlockCode === undefined || stringOrNull(grant.scheduledBlockCode)) ||
+    (grant.status === "scheduled" &&
+      (grant.startMode !== "after_paid_period" ||
+        !validIsoDate(grant.scheduledStartsAt) ||
+        grant.entitlementEndsAt !== null)) ||
     typeof grant.reason !== "string" ||
     !stringOrNull(grant.issuedAt) ||
     !stringOrNull(grant.claimExpiresAt) ||
@@ -157,6 +197,7 @@ function checkedClaimSummary(value: unknown): ComplimentaryClaimSummary {
     typeof summary.recipientName !== "string" ||
     !validPlan(summary.plan) ||
     !validDuration(summary.duration) ||
+    !validStartMode(summary.plan, summary.startMode) ||
     !validFacilityBinding(summary.plan, summary.facilityId, true) ||
     typeof summary.message !== "string" ||
     summary.complimentary !== true ||
@@ -176,12 +217,26 @@ function checkedClaimResult(value: unknown): ComplimentaryClaimResult {
     !validPlan(result.plan) ||
     !validDuration(result.duration) ||
     !validFacilityBinding(result.plan, result.facilityId, true) ||
-    typeof result.expiresAt !== "string" ||
-    !result.expiresAt.trim() ||
     result.complimentary !== true ||
     result.paymentState !== "nonpaid" ||
     result.renews !== false ||
     result.nextPath !== "/account/billing"
+  ) {
+    return invalidResponse();
+  }
+  if (result.scheduled === true) {
+    if (
+      result.plan === "facility" ||
+      result.facilityId !== null ||
+      !validIsoDate(result.startsAt) ||
+      result.expiresAt !== null
+    ) {
+      return invalidResponse();
+    }
+  } else if (
+    (result.scheduled !== undefined && result.scheduled !== false) ||
+    typeof result.expiresAt !== "string" ||
+    !result.expiresAt.trim()
   ) {
     return invalidResponse();
   }
@@ -215,7 +270,11 @@ export async function listComplimentaryGrants({
 }: {
   limit?: number;
   cursor?: string | null;
-} = {}): Promise<{ grants: ComplimentaryGrant[]; nextCursor: string | null }> {
+} = {}): Promise<{
+  grants: ComplimentaryGrant[];
+  nextCursor: string | null;
+  paidPeriodGiftsEnabled: boolean;
+}> {
   const response = await apiRequest("/api/admin/complimentary-grants", {
     method: "GET",
     cache: "no-store",
@@ -226,9 +285,15 @@ export async function listComplimentaryGrants({
   if (!(payload?.nextCursor === null || typeof payload?.nextCursor === "string")) {
     return invalidResponse();
   }
+  if (
+    payload.paidPeriodGiftsEnabled !== undefined &&
+    typeof payload.paidPeriodGiftsEnabled !== "boolean"
+  )
+    return invalidResponse();
   return {
     grants: payload.grants.map(checkedGrant),
-    nextCursor: payload.nextCursor
+    nextCursor: payload.nextCursor,
+    paidPeriodGiftsEnabled: payload.paidPeriodGiftsEnabled === true
   };
 }
 
@@ -238,11 +303,13 @@ export async function issueComplimentaryGrant(input: {
   message?: string;
   plan: ComplimentaryGrantPlan;
   duration: ComplimentaryGrantDuration;
+  startMode?: ComplimentaryGrantStartMode;
   facilityId?: string;
   reason: string;
 }): Promise<{ grant: ComplimentaryGrant; deliveryAccepted: boolean }> {
   const expectedFacilityId = input.plan === "facility" ? input.facilityId : null;
   if (
+    !validStartMode(input.plan, input.startMode) ||
     !validFacilityBinding(input.plan, expectedFacilityId, false) ||
     (input.plan !== "facility" && input.facilityId !== undefined)
   ) {
@@ -260,6 +327,7 @@ export async function issueComplimentaryGrant(input: {
   if (
     grant.plan !== input.plan ||
     grant.duration !== input.duration ||
+    (grant.startMode ?? "on_claim") !== (input.startMode ?? "on_claim") ||
     normalizedEmail(grant.recipientEmail) !== normalizedEmail(input.recipientEmail) ||
     grant.facilityId !== expectedFacilityId
   ) {

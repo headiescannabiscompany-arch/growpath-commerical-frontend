@@ -18,7 +18,8 @@ import {
   type ComplimentaryGrant,
   type ComplimentaryGrantDuration,
   type ComplimentaryFacilityWorkspace,
-  type ComplimentaryGrantPlan
+  type ComplimentaryGrantPlan,
+  type ComplimentaryGrantStartMode
 } from "@/api/complimentaryGrants";
 import AppCard from "@/components/layout/AppCard";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -49,6 +50,8 @@ export default function ComplimentaryGrantsAdminCard() {
   const [message, setMessage] = useState("");
   const [plan, setPlan] = useState<ComplimentaryGrantPlan>("pro");
   const [duration, setDuration] = useState<ComplimentaryGrantDuration>("month");
+  const [paidPeriodGiftsEnabled, setPaidPeriodGiftsEnabled] = useState(false);
+  const [startMode, setStartMode] = useState<ComplimentaryGrantStartMode>("on_claim");
   const [facilityId, setFacilityId] = useState("");
   const [facilityWorkspaces, setFacilityWorkspaces] = useState<
     ComplimentaryFacilityWorkspace[]
@@ -65,7 +68,11 @@ export default function ComplimentaryGrantsAdminCard() {
     (facilityLookupEmail === recipientEmail.trim().toLowerCase() &&
       facilityWorkspaces.some((workspace) => workspace.facilityId === facilityId));
   const canIssue =
-    !busy && validEmail(recipientEmail) && reason.trim().length >= 8 && facilityReady;
+    !busy &&
+    validEmail(recipientEmail) &&
+    reason.trim().length >= 8 &&
+    facilityReady &&
+    (startMode === "on_claim" || (paidPeriodGiftsEnabled && plan !== "facility"));
 
   const load = useCallback(async (cursor: string | null = null) => {
     setLoading(true);
@@ -81,6 +88,8 @@ export default function ComplimentaryGrantsAdminCard() {
         return Array.from(byId.values());
       });
       setNextCursor(page.nextCursor);
+      setPaidPeriodGiftsEnabled(page.paidPeriodGiftsEnabled === true);
+      if (!page.paidPeriodGiftsEnabled) setStartMode("on_claim");
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Unable to load grants.");
     } finally {
@@ -148,7 +157,7 @@ export default function ComplimentaryGrantsAdminCard() {
   }
 
   async function issue() {
-    if (busy) return;
+    if (!canIssue) return;
     setBusy("issue");
     setFeedback("");
     try {
@@ -158,6 +167,7 @@ export default function ComplimentaryGrantsAdminCard() {
         message: message.trim(),
         plan,
         duration,
+        ...(startMode === "after_paid_period" ? { startMode } : {}),
         ...(plan === "facility" ? { facilityId } : {}),
         reason: reason.trim()
       });
@@ -189,7 +199,11 @@ export default function ComplimentaryGrantsAdminCard() {
     try {
       if (action === "revoke") {
         replaceGrant(await revokeComplimentaryGrant(grant.id, actionReason));
-        setFeedback("Complimentary access was revoked. No Stripe action was taken.");
+        setFeedback(
+          grant.status === "scheduled"
+            ? "The scheduled gift was canceled. Stripe renewal was not restarted."
+            : "Complimentary access was revoked. No Stripe action was taken."
+        );
       } else {
         const result = await resendComplimentaryGrant(grant.id, actionReason);
         replaceGrant(result.grant);
@@ -214,8 +228,9 @@ export default function ComplimentaryGrantsAdminCard() {
       subtitle="Grant one non-renewing month or year by email. This never creates a Stripe Customer, Checkout Session, Subscription, Invoice, or PaymentIntent."
     >
       <Text style={styles.warning}>
-        Only eligible Free recipients can claim. Paid, gift, app-store, protected,
-        unresolved, and open-Checkout accounts are blocked.
+        {paidPeriodGiftsEnabled
+          ? "Start when claimed is for eligible Free recipients. After current paid period is only for an existing paid Stripe subscription on the same Personal Pro or Commercial plan. Gift, app-store, protected, unresolved, and open-Checkout accounts remain blocked."
+          : "Only eligible Free recipients can claim. Paid, gift, app-store, protected, unresolved, and open-Checkout accounts are blocked."}
       </Text>
       <View style={styles.form}>
         <TextInput
@@ -257,6 +272,7 @@ export default function ComplimentaryGrantsAdminCard() {
                 facilityLookupGeneration.current += 1;
                 currentPlan.current = nextPlan;
                 setPlan(nextPlan);
+                if (nextPlan === "facility") setStartMode("on_claim");
                 setFacilityId("");
                 setFacilityWorkspaces([]);
                 setFacilityLookupEmail("");
@@ -280,6 +296,33 @@ export default function ComplimentaryGrantsAdminCard() {
             </Picker>
           </View>
         </View>
+        {paidPeriodGiftsEnabled && plan !== "facility" ? (
+          <>
+            <View style={styles.pickerWrap}>
+              <Picker
+                accessibilityLabel="Complimentary start timing"
+                selectedValue={startMode}
+                style={styles.picker}
+                onValueChange={(value) =>
+                  setStartMode(value as ComplimentaryGrantStartMode)
+                }
+              >
+                <Picker.Item label="Start when claimed" value="on_claim" />
+                <Picker.Item
+                  label="After current paid period"
+                  value="after_paid_period"
+                />
+              </Picker>
+            </View>
+            {startMode === "after_paid_period" ? (
+              <Text style={styles.warning}>
+                The invitation does not stop renewal. The recipient must stop renewal in
+                their existing Billing page, then return to the invitation to schedule the
+                gift. They keep their paid time. The free gift will not renew.
+              </Text>
+            ) : null}
+          </>
+        ) : null}
         {plan === "facility" ? (
           <View style={styles.facilityPickerSection}>
             <Text style={styles.meta}>
@@ -387,7 +430,7 @@ export default function ComplimentaryGrantsAdminCard() {
         <Text style={styles.meta}>No complimentary grants are recorded.</Text>
       ) : null}
       {grants.map((grant) => {
-        const actionable = grant.status === "pending" || grant.status === "active";
+        const actionable = ["pending", "scheduled", "active"].includes(grant.status);
         const resendable = grant.status === "pending";
         const actionReasonReady =
           String(actionReasons[grant.id] || "").trim().length >= 8;
@@ -406,9 +449,24 @@ export default function ComplimentaryGrantsAdminCard() {
             </Text>
             <Text style={styles.meta}>
               {grant.status === "pending"
-                ? `Claim by: ${dateLabel(grant.claimExpiresAt)} · Access starts when claimed for one ${grant.duration}`
-                : `Access ends: ${dateLabel(grant.entitlementEndsAt)}`}
+                ? `Claim by: ${dateLabel(grant.claimExpiresAt)} · ${
+                    grant.startMode === "after_paid_period"
+                      ? `Gift starts after the current paid period for one ${grant.duration}; recipient must stop renewal before scheduling`
+                      : `Access starts when claimed for one ${grant.duration}`
+                  }`
+                : grant.status === "scheduled"
+                  ? `Estimated gift start: ${dateLabel(grant.scheduledStartsAt ?? null)} · One ${grant.duration}, no automatic renewal`
+                  : `Access ends: ${dateLabel(grant.entitlementEndsAt)}`}
             </Text>
+            {grant.status === "scheduled" ? (
+              <Text style={styles.meta}>
+                Paid access continues until its paid period ends. The gift is not active
+                yet. Canceling this gift does not restart Stripe renewal.
+                {grant.scheduledBlockCode
+                  ? ` Scheduling needs review: ${grant.scheduledBlockCode}.`
+                  : ""}
+              </Text>
+            ) : null}
             <Text style={styles.meta}>Audit reason: {grant.reason}</Text>
             {grant.plan === "facility" ? (
               <Text style={styles.meta}>
@@ -463,7 +521,11 @@ export default function ComplimentaryGrantsAdminCard() {
                     ]}
                   >
                     <Text style={styles.dangerText}>
-                      {grant.status === "pending" ? "Cancel invitation" : "Revoke access"}
+                      {grant.status === "pending"
+                        ? "Cancel invitation"
+                        : grant.status === "scheduled"
+                          ? "Cancel scheduled gift"
+                          : "Revoke access"}
                     </Text>
                   </Pressable>
                 </View>
