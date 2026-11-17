@@ -20,6 +20,7 @@ import {
   restoreQuarantinedAccount,
   reviewAccountRemoval,
   reviewAccountRestore,
+  submitSyntheticRestrictedReport,
   type AccountRemovalCategory,
   type AccountRemovalInput,
   type AccountRemovalReview,
@@ -29,6 +30,7 @@ import {
   type RestrictedCaseRecord,
   type RestrictedCaseSummary
 } from "@/api/adminEvidenceVault";
+import { getAdminSecurityEpoch, getAdminStepUpExpiry } from "@/api/adminPasskeys";
 import AppCard from "@/components/layout/AppCard";
 import { AdminEvidenceApprovalWorkspace } from "@/features/admin/AdminEvidenceApprovalPanel";
 import AdminPasskeySecurity from "@/features/admin/AdminPasskeySecurity";
@@ -45,7 +47,12 @@ export type AdminEvidenceVaultUser = {
   email: string;
   label?: string;
   role?: string;
+  plan?: string;
+  accountStatus?: string;
+  syntheticCleanupApproved?: boolean;
 };
+
+type SyntheticReportOutcome = "submitting" | "unconfirmed" | { reportId: string };
 
 const REMOVAL_CATEGORIES: Array<{ label: string; value: AccountRemovalCategory }> = [
   { label: "Test-account cleanup", value: "test_cleanup" },
@@ -116,6 +123,8 @@ export default function AdminEvidenceVaultCard({
   const removalReviewGeneration = useRef(0);
   const [removalReview, setRemovalReview] = useState<AccountRemovalReview | null>(null);
   const [removalConfirmation, setRemovalConfirmation] = useState("");
+  const [syntheticReports, setSyntheticReports] = useState<Record<string, SyntheticReportOutcome>>({});
+  const attemptedSyntheticReports = useRef(new Set<string>());
 
   const [restoreArchiveId, setRestoreArchiveId] = useState("");
   const restoreReviewGeneration = useRef(0);
@@ -520,6 +529,54 @@ export default function AdminEvidenceVaultCard({
     removalConfirmation === removalReview.nextConfirmation &&
     !busy;
   const selectedRemovalUser = users.find((user) => user.id === targetUserId);
+  const syntheticReview =
+    capabilities?.accountRemovalOwner &&
+    removalInput.removalCategory === "test_cleanup" &&
+    selectedRemovalUser?.syntheticCleanupApproved === true &&
+    selectedRemovalUser.role === "user" &&
+    selectedRemovalUser.plan === "free" &&
+    selectedRemovalUser.accountStatus === "active" &&
+    removalReview?.allowed === true &&
+    removalReview.target.id === selectedRemovalUser.id &&
+    removalReview.target.email.toLowerCase() === selectedRemovalUser.email.toLowerCase() &&
+    removalInput.expectedEmail.toLowerCase() === selectedRemovalUser.email.toLowerCase() &&
+    removalReview.advisories.facilityOwnership === 0 &&
+    removalReview.advisories.courseOwnership === 0 &&
+    removalReview.advisories.storefrontOwnership === 0
+      ? removalReview
+      : null;
+  const syntheticReport = syntheticReview ? syntheticReports[syntheticReview.target.id] : undefined;
+  const passkeyVerified = Boolean(syntheticReview) && Date.parse(getAdminStepUpExpiry() || "") > Date.now();
+  const syntheticReviewCurrent = Date.parse(syntheticReview?.reviewExpiresAt || "") > Date.now();
+  const syntheticReviewGeneration = removalReviewGeneration.current;
+  const canSubmitSyntheticReport = passkeyVerified && syntheticReviewCurrent && !syntheticReport && !busy;
+
+  async function createSyntheticReport() {
+    if (
+      !syntheticReview ||
+      !canSubmitSyntheticReport ||
+      securityEpoch !== getAdminSecurityEpoch() ||
+      syntheticReviewGeneration !== removalReviewGeneration.current
+    ) return;
+    const userId = syntheticReview.target.id;
+    if (attemptedSyntheticReports.current.has(userId)) return;
+    if (!(Date.parse(syntheticReview.reviewExpiresAt || "") > Date.now())) {
+      setFeedback("The safety review expired. Review the same QA account again to continue.");
+      return;
+    }
+
+    attemptedSyntheticReports.current.add(userId);
+    setBusy("synthetic-report");
+    setSyntheticReports((reports) => ({ ...reports, [userId]: "submitting" }));
+    try {
+      const reportId = await submitSyntheticRestrictedReport(userId, removalInput.caseReference);
+      setSyntheticReports((reports) => ({ ...reports, [userId]: { reportId } }));
+    } catch {
+      setSyntheticReports((reports) => ({ ...reports, [userId]: "unconfirmed" }));
+    } finally {
+      setBusy("");
+    }
+  }
 
   return (
     <AppCard
@@ -747,6 +804,48 @@ export default function AdminEvidenceVaultCard({
                   ) : null}
                 </View>
               ) : null}
+            </View>
+          ) : null}
+
+          {syntheticReview ? (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Synthetic restricted case</Text>
+              <Text style={styles.meta}>
+                QA account: {syntheticReview.target.email} · Test reference: {removalInput.caseReference}
+              </Text>
+              <Text style={styles.meta}>
+                Creates one labeled QA report for this account. Admin receives the standard
+                restricted notification and email. The restricted reviewer can see the QA label.
+              </Text>
+              {typeof syntheticReport === "object" ? (
+                <Text accessibilityLiveRegion="polite" style={styles.success}>
+                  Restricted report accepted. Report reference {syntheticReport.reportId}.
+                </Text>
+              ) : syntheticReport === "unconfirmed" ? (
+                <Text accessibilityLiveRegion="polite" style={styles.warning}>
+                  The report outcome is unconfirmed. Check the restricted queue with the
+                  reviewer before submitting another report.
+                </Text>
+              ) : (
+                <>
+                  {!passkeyVerified ? (
+                    <Text style={styles.meta}>Verify your passkey in Admin security to continue.</Text>
+                  ) : !syntheticReviewCurrent ? (
+                    <Text style={styles.meta}>Review the same QA account again to refresh the expired review.</Text>
+                  ) : null}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: !canSubmitSyntheticReport }}
+                    disabled={!canSubmitSyntheticReport}
+                    onPress={() => void createSyntheticReport()}
+                    style={[styles.secondaryButton, !canSubmitSyntheticReport && styles.disabled]}
+                  >
+                    <Text style={styles.secondaryText}>
+                      {syntheticReport === "submitting" ? "Submitting QA report…" : "Create synthetic restricted case"}
+                    </Text>
+                  </Pressable>
+                </>
+              )}
             </View>
           ) : null}
 

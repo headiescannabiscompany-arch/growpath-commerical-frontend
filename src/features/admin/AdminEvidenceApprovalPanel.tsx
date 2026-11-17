@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
 import {
   ActivityIndicator,
@@ -20,6 +20,8 @@ import {
   type LegalEvidenceApprovalReview,
   type LegalEvidenceArchiveScope
 } from "@/api/adminEvidenceVault";
+import { getAdminSecurityEpoch, getAdminStepUpExpiry } from "@/api/adminPasskeys";
+import { useAdminSecurityEpoch } from "@/features/admin/useAdminSecurity";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -57,6 +59,8 @@ type EvidenceApprovalRequest = {
 type ApprovalReviewState = {
   receipt: LegalEvidenceApprovalReview;
   proposal: LegalEvidenceApprovalProposal;
+  generation: number;
+  securityEpoch: number;
 };
 
 const NOTICE_OPTIONS = ["permitted", "delayed", "prohibited", "sent"] as const;
@@ -84,6 +88,10 @@ function holdIsActive(request: EvidenceApprovalRequest) {
   if (!request.preservationExpiresAt) return true;
   const expiresAt = new Date(request.preservationExpiresAt);
   return !Number.isNaN(expiresAt.getTime()) && expiresAt.getTime() > Date.now();
+}
+
+function hasCurrentExportApprovalProof() {
+  return Date.parse(getAdminStepUpExpiry() || "") > Date.now();
 }
 
 function errorText(error: unknown, fallback: string) {
@@ -235,6 +243,7 @@ function EvidenceApprovalWorkflow({
     ""
   );
   const [scopes, setScopes] = useState<LegalEvidenceArchiveScope[]>([]);
+  const [allowArchiveExport, setAllowArchiveExport] = useState(false);
   const [approvalReason, setApprovalReason] = useState("");
   const [approverName, setApproverName] = useState("");
   const [approverEmail, setApproverEmail] = useState("");
@@ -242,8 +251,12 @@ function EvidenceApprovalWorkflow({
   const [approverReference, setApproverReference] = useState("");
   const [approvalReview, setApprovalReview] = useState<ApprovalReviewState | null>(null);
   const [confirmation, setConfirmation] = useState("");
+  const approvalReviewGeneration = useRef(0);
+  const securityEpoch = useAdminSecurityEpoch();
+  const exportProofCurrent = hasCurrentExportApprovalProof();
 
   function invalidateApprovalReview() {
+    approvalReviewGeneration.current += 1;
     setApprovalReview(null);
     setConfirmation("");
   }
@@ -321,6 +334,7 @@ function EvidenceApprovalWorkflow({
     prerequisitesReady;
   const proposalReady =
     scopes.length > 0 &&
+    (!allowArchiveExport || exportProofCurrent) &&
     approvalReason.trim().length >= 8 &&
     approverName.trim() &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(approverEmail.trim()) &&
@@ -332,6 +346,7 @@ function EvidenceApprovalWorkflow({
       targetUserId: exactTargetId,
       scopes: [...scopes].sort(),
       reason: approvalReason.trim(),
+      ...(allowArchiveExport ? { allowArchiveExport: true } : {}),
       legalReview: {
         decision: "approve",
         approverName: approverName.trim(),
@@ -344,17 +359,27 @@ function EvidenceApprovalWorkflow({
 
   async function reviewApproval() {
     if (busy || !approvalGateOpen || !proposalReady) return;
+    const reviewedProposal = proposal();
+    if (
+      reviewedProposal.allowArchiveExport &&
+      (!hasCurrentExportApprovalProof() || securityEpoch !== getAdminSecurityEpoch())
+    ) return;
+    invalidateApprovalReview();
+    const generation = approvalReviewGeneration.current;
     setBusy("approval-review");
     setFeedback("");
-    setApprovalReview(null);
-    setConfirmation("");
-    const reviewedProposal = proposal();
     try {
       const receipt = await reviewLegalEvidenceApproval(request._id, reviewedProposal);
-      setApprovalReview({ receipt, proposal: reviewedProposal });
+      if (
+        generation !== approvalReviewGeneration.current ||
+        (reviewedProposal.allowArchiveExport && securityEpoch !== getAdminSecurityEpoch())
+      ) return;
+      setApprovalReview({ receipt, proposal: reviewedProposal, generation, securityEpoch });
       setFeedback("Approval review passed. No data was disclosed or transmitted.");
     } catch {
-      setFeedback("Legal approval review failed closed. No data was disclosed.");
+      if (generation === approvalReviewGeneration.current) {
+        setFeedback("Legal approval review failed closed. No data was disclosed.");
+      }
     } finally {
       setBusy("");
     }
@@ -364,24 +389,47 @@ function EvidenceApprovalWorkflow({
     if (
       busy ||
       !approvalReview ||
+      approvalReview.generation !== approvalReviewGeneration.current ||
       confirmation !== approvalReview.receipt.nextConfirmation
     ) {
       return;
     }
+    const exportApproved = approvalReview.proposal.allowArchiveExport === true;
+    if (exportApproved !== allowArchiveExport) return;
+    if (
+      exportApproved &&
+      (!hasCurrentExportApprovalProof() || approvalReview.securityEpoch !== getAdminSecurityEpoch())
+    ) return;
     setBusy("approval");
     setFeedback("");
+    if (exportApproved) invalidateApprovalReview();
     try {
       await approveLegalEvidenceRequest(request._id, {
         ...approvalReview.proposal,
         reviewToken: approvalReview.receipt.reviewToken,
         confirmation
       });
-      setApprovalReview(null);
-      setConfirmation("");
-      setFeedback("Evidence request approved. No data was disclosed or transmitted.");
-      await onUpdated();
+      invalidateApprovalReview();
+      setFeedback(
+        exportApproved
+          ? "Evidence request and scoped JSON export approved. File preparation and external delivery are separate steps."
+          : "Evidence request approved. No data was disclosed or transmitted."
+      );
+      if (exportApproved) {
+        try {
+          await onUpdated();
+        } catch {
+          setFeedback("Scoped JSON export approved. Refresh the request list to see its saved approval.");
+        }
+      } else {
+        await onUpdated();
+      }
     } catch {
-      setFeedback("Legal approval failed closed. No data was disclosed.");
+      setFeedback(
+        exportApproved
+          ? "Export approval could not be confirmed. Check the saved request before trying again."
+          : "Legal approval failed closed. No data was disclosed."
+      );
     } finally {
       setBusy("");
     }
@@ -400,6 +448,8 @@ function EvidenceApprovalWorkflow({
     minimumScope.trim() &&
     noticeStatus &&
     legalReason.trim().length >= 8;
+  const reviewedArchiveExport = approvalReview?.proposal.allowArchiveExport === true;
+  const exportToggleDisabled = Boolean(busy) || (!allowArchiveExport && !exportProofCurrent);
 
   return (
     <View style={styles.workflow}>
@@ -625,6 +675,30 @@ function EvidenceApprovalWorkflow({
               <Text style={styles.secondaryText}>{scope} · remove</Text>
             </Pressable>
           ))}
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityLabel="Allow legal JSON export of selected scopes"
+            accessibilityState={{ checked: allowArchiveExport, disabled: exportToggleDisabled }}
+            disabled={exportToggleDisabled}
+            onPress={() => {
+              if (busy || (!allowArchiveExport && !hasCurrentExportApprovalProof())) return;
+              invalidateApprovalReview();
+              setAllowArchiveExport(!allowArchiveExport);
+              setFeedback("");
+            }}
+            style={[styles.secondaryButton, exportToggleDisabled && styles.disabled]}
+          >
+            <Text style={styles.secondaryText}>
+              {allowArchiveExport ? "☑" : "☐"} Allow legal JSON export of selected scopes
+            </Text>
+          </Pressable>
+          <Text style={styles.meta}>
+            Export approval permits the evidence-access operator to prepare a local JSON file.
+            External delivery requires a separate legal release.
+          </Text>
+          {!exportProofCurrent ? (
+            <Text style={styles.meta}>Verify your passkey to allow export.</Text>
+          ) : null}
           <TextInput
             accessibilityLabel="Legal approval reason"
             multiline
@@ -689,6 +763,9 @@ function EvidenceApprovalWorkflow({
               <Text style={styles.meta}>
                 Type exactly: {approvalReview.receipt.nextConfirmation}
               </Text>
+              {reviewedArchiveExport ? (
+                <Text style={styles.meta}>This review includes local JSON export of the selected scopes.</Text>
+              ) : null}
               <TextInput
                 accessibilityLabel="Exact legal approval confirmation"
                 autoCapitalize="none"
@@ -701,16 +778,27 @@ function EvidenceApprovalWorkflow({
               />
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Approve evidence request without disclosure"
+                accessibilityLabel={
+                  reviewedArchiveExport
+                    ? "Approve evidence request and allow legal JSON export"
+                    : "Approve evidence request without disclosure"
+                }
                 disabled={
                   Boolean(busy) ||
-                  confirmation !== approvalReview.receipt.nextConfirmation
+                  confirmation !== approvalReview.receipt.nextConfirmation ||
+                  reviewedArchiveExport !== allowArchiveExport ||
+                  (reviewedArchiveExport &&
+                    (!exportProofCurrent || approvalReview.securityEpoch !== securityEpoch))
                 }
                 onPress={() => void executeApproval()}
                 style={styles.primaryButton}
               >
                 <Text style={styles.primaryText}>
-                  {busy === "approval" ? "Approving…" : "Approve request only"}
+                  {busy === "approval"
+                    ? "Approving…"
+                    : reviewedArchiveExport
+                      ? "Approve request and allow JSON export"
+                      : "Approve request only"}
                 </Text>
               </Pressable>
             </View>

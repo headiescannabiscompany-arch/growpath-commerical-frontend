@@ -1,5 +1,6 @@
 import { ApiError } from "@/api/apiRequest";
 import { adminVaultRequest as apiRequest, getAdminStepUpExpiry } from "@/api/adminPasskeys";
+import apiRoutes from "./routes.js";
 
 const BASE = "/api/admin/evidence-vault";
 
@@ -77,6 +78,7 @@ export type AdminEvidenceRequestView = {
   minimumNecessaryScope?: string;
   userNoticeStatus?: string;
   approvedArchiveScopes?: string[];
+  approvedArchiveExport?: boolean;
   legalReview?: Record<string, unknown> | null;
   approvedAt?: string | null;
   approvedBy?: string | null;
@@ -100,6 +102,7 @@ export type LegalEvidenceApprovalProposal = {
   targetUserId: string;
   scopes: LegalEvidenceArchiveScope[];
   reason: string;
+  allowArchiveExport?: true;
   legalReview: {
     decision: "approve";
     approverName: string;
@@ -113,6 +116,7 @@ export type LegalEvidenceApprovalReview = {
   evidenceRequestId: string;
   targetUserId: string;
   scopes: LegalEvidenceArchiveScope[];
+  allowArchiveExport?: boolean;
   reviewToken: string;
   reviewExpiresAt: string;
   nextConfirmation: string;
@@ -124,6 +128,7 @@ export type LegalEvidenceApprovalReceipt = {
   targetUserId: string;
   status: "approved";
   approvedArchiveScopes: LegalEvidenceArchiveScope[];
+  approvedArchiveExport?: boolean;
   approvedAt: string;
   approvedBy: string;
   externalTransmissionPerformed: false;
@@ -189,6 +194,9 @@ export function normalizeAdminEvidenceRequest(value: unknown): AdminEvidenceRequ
     approvedArchiveScopes: Array.isArray(source.approvedArchiveScopes)
       ? source.approvedArchiveScopes.map(text).filter(Boolean)
       : [],
+    ...(typeof source.approvedArchiveExport === "boolean"
+      ? { approvedArchiveExport: source.approvedArchiveExport }
+      : {}),
     legalReview: source.legalReview || null,
     approvedAt: source.approvedAt || null,
     approvedBy: referenceId(source.approvedBy),
@@ -373,6 +381,44 @@ function requireRestrictedPreservationProof(caseId: string) {
   if (!(Date.parse(getAdminStepUpExpiry() || "") > Date.now())) {
     throw new Error("Verify your passkey in Admin security before this restricted action.");
   }
+}
+
+export async function submitSyntheticRestrictedReport(userId: string, caseReference: string) {
+  if (!RESTRICTED_CASE_ID.test(userId) || !caseReference.trim()) {
+    throw new Error("Select a reviewed QA account and enter its test reference.");
+  }
+  if (!(Date.parse(getAdminStepUpExpiry() || "") > Date.now())) {
+    throw new Error("Verify your passkey in Admin security before creating a test case.");
+  }
+
+  const category = "repeated_hard_drug_sales";
+  const receipt = await apiRequest<{
+    _id?: string;
+    restricted?: boolean;
+    contentType?: string;
+    category?: string;
+    status?: string;
+  }>(apiRoutes.REPORTS.SUBMIT, {
+    method: "POST",
+    auth: true,
+    body: {
+      contentType: "user",
+      contentId: userId,
+      category,
+      reason: `SYNTHETIC INTERNAL QA ${caseReference}. Restricted routing test for a designated QA account. No actual allegation, media, emergency, or outside report.`
+    }
+  });
+  if (
+    receipt?.restricted !== true ||
+    receipt.contentType !== "user" ||
+    receipt.category !== category ||
+    receipt.status !== "open" ||
+    typeof receipt._id !== "string" ||
+    !RESTRICTED_CASE_ID.test(receipt._id)
+  ) {
+    throw new Error("GrowPathAI returned an unexpected report receipt.");
+  }
+  return receipt._id;
 }
 
 export async function getEvidenceVaultCapabilities() {
@@ -741,10 +787,21 @@ export async function updateLegalEvidenceRequestReview(
   return normalizeAdminEvidenceRequest(response.request);
 }
 
+function requireArchiveExportApprovalProof(input: LegalEvidenceApprovalProposal) {
+  if (input.allowArchiveExport === true && !(Date.parse(getAdminStepUpExpiry() || "") > Date.now())) {
+    throw new Error("Verify your passkey before allowing a legal JSON export.");
+  }
+}
+
+function matchesArchiveExportApproval(requested: true | undefined, returned: unknown) {
+  return requested === true ? returned === true : returned === undefined || returned === false;
+}
+
 export async function reviewLegalEvidenceApproval(
   evidenceRequestId: string,
   input: LegalEvidenceApprovalProposal
 ) {
+  requireArchiveExportApprovalProof(input);
   const response = await apiRequest<{ ok: true; review: LegalEvidenceApprovalReview }>(
     `${BASE}/evidence-requests/${encodeURIComponent(evidenceRequestId)}/approval-review`,
     { method: "POST", body: input, cache: "no-store" }
@@ -759,6 +816,7 @@ export async function reviewLegalEvidenceApproval(
     !Array.isArray(response.review.scopes) ||
     response.review.scopes.length !== input.scopes.length ||
     response.review.scopes.some((scope, index) => scope !== input.scopes[index]) ||
+    !matchesArchiveExportApproval(input.allowArchiveExport, response.review.allowArchiveExport) ||
     Number.isNaN(new Date(response.review.reviewExpiresAt).getTime()) ||
     new Date(response.review.reviewExpiresAt).getTime() <= Date.now() ||
     response.review.externalTransmissionPerformed !== false
@@ -775,6 +833,7 @@ export async function approveLegalEvidenceRequest(
     confirmation: string;
   }
 ) {
+  requireArchiveExportApprovalProof(input);
   const response = await apiRequest<{
     ok: true;
     approval: LegalEvidenceApprovalReceipt;
@@ -793,6 +852,7 @@ export async function approveLegalEvidenceRequest(
     response.approval.approvedArchiveScopes.some(
       (scope, index) => scope !== input.scopes[index]
     ) ||
+    !matchesArchiveExportApproval(input.allowArchiveExport, response.approval.approvedArchiveExport) ||
     response.approval.externalTransmissionPerformed !== false
   ) {
     throw new Error("GrowPath returned an invalid legal-approval receipt.");

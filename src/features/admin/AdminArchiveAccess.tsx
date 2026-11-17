@@ -14,15 +14,19 @@ import {
   reviewArchiveAccess,
   type ArchiveAccessProposal,
   type ArchiveAccessReceipt,
-  type ArchiveAccessReview
+  type ArchiveAccessReview,
+  type LegalArchiveExportReceipt,
+  type LegalArchivePackage
 } from "@/api/adminArchiveAccess";
 import {
   LEGAL_EVIDENCE_ARCHIVE_SCOPES,
   type LegalEvidenceArchiveScope
 } from "@/api/adminEvidenceVault";
-import { getAdminSecurityEpoch } from "@/api/adminPasskeys";
+import { getAdminSecurityEpoch, getAdminStepUpExpiry } from "@/api/adminPasskeys";
 import { useAdminSecurityEpoch } from "./useAdminSecurity";
 import { useAppTheme } from "@/theme/appTheme";
+
+type SavedExport = Pick<LegalArchivePackage, "filename" | "sha256" | "auditEventId">;
 
 /** Closed by default; no request, archive content, or one-use token is persisted. */
 export default function AdminArchiveAccess({ authorized }: { authorized: boolean }) {
@@ -37,31 +41,43 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
   const [requestId, setRequestId] = useState("");
   const [purpose, setPurpose] = useState("");
   const [scopes, setScopes] = useState<LegalEvidenceArchiveScope[]>([]);
+  const [prepareExport, setPrepareExport] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
   const [confirmation, setConfirmation] = useState("");
   const [secondConfirmation, setSecondConfirmation] = useState("");
   const [review, setReview] = useState<ArchiveAccessReview | null>(null);
-  const [receipt, setReceipt] = useState<ArchiveAccessReceipt | null>(null);
+  const [receipt, setReceipt] = useState<ArchiveAccessReceipt | LegalArchiveExportReceipt | null>(null);
+  const [download, setDownload] = useState<SavedExport | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const generation = useRef(0);
   const pending = useRef(false);
   const token = useRef<ArchiveAccessReview | null>(null);
-  const expected = archiveAccessConfirmation(archiveId, requestId);
+  const preparedFile = useRef<LegalArchivePackage | null>(null);
+  const expected = archiveAccessConfirmation(archiveId, requestId, prepareExport);
+  const browserExportAvailable = Platform.OS === "web" &&
+    typeof document !== "undefined" &&
+    typeof globalThis.crypto?.subtle?.digest === "function" &&
+    typeof URL.createObjectURL === "function";
+  const exportCanProceed = !prepareExport ||
+    (browserExportAvailable && Date.parse(getAdminStepUpExpiry() || "") > Date.now());
   const ready =
     /^[a-f0-9]{24}$/.test(archiveId) &&
     /^[a-f0-9]{24}$/.test(requestId) &&
     purpose.trim().length >= 8 &&
     scopes.length > 0 &&
     acknowledged &&
+    exportCanProceed &&
     confirmation === expected;
 
   function clearSensitive() {
     generation.current += 1;
     pending.current = false;
     token.current = null;
+    preparedFile.current = null;
     setReview(null);
     setReceipt(null);
+    setDownload(null);
     setSecondConfirmation("");
     setBusy(false);
     setMessage("");
@@ -72,6 +88,7 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
       clearSensitive();
       setExpanded(false);
       setPurpose("");
+      setPrepareExport(false);
       setConfirmation("");
       setAcknowledged(false);
     }
@@ -86,6 +103,7 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
     return () => {
       generation.current += 1;
       token.current = null;
+      preparedFile.current = null;
       subscription?.remove();
       if (Platform.OS === "web" && typeof document !== "undefined")
         document.removeEventListener("visibilitychange", onVisibility);
@@ -120,7 +138,8 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
       purpose: purpose.trim(),
       scopes: [...scopes].sort(),
       minimumNecessaryAcknowledged: true,
-      confirmation: expected
+      confirmation: expected,
+      ...(prepareExport ? { prepareExport: true } : {})
     };
   }
 
@@ -140,6 +159,8 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
     setBusy(true);
     setMessage("");
     setReceipt(null);
+    setDownload(null);
+    preparedFile.current = null;
     // Consume local state before I/O. A failed/uncertain read must never reuse the token.
     token.current = null;
     setReview(null);
@@ -149,7 +170,10 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
     try {
       if (open) {
         const result = await openArchiveAccess(input, currentReview!);
-        if (current()) setReceipt(result);
+        if (current()) {
+          if ("exportPackage" in result) preparedFile.current = result.exportPackage;
+          setReceipt(result);
+        }
       } else {
         const result = await reviewArchiveAccess(input);
         if (current()) {
@@ -161,7 +185,11 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
       if (current())
         setMessage(
           open
-            ? "Archive access was not confirmed. Nothing is displayed. Review again; this token will not be retried."
+            ? prepareExport
+              ? "The export outcome is unconfirmed. Check the request audit before starting another review."
+              : "Archive access was not confirmed. Nothing is displayed. Review again; this token will not be retried."
+            : prepareExport
+              ? "Export review is unavailable. Check the current passkey, matching archive hold, and explicit export approval for these scopes."
             : "Review unavailable. Verify your passkey and the independently approved request, active hold, IDs and scopes. No archive data was opened."
         );
     } finally {
@@ -169,6 +197,38 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
         pending.current = false;
         setBusy(false);
       }
+    }
+  }
+
+  function savePreparedExport() {
+    const file = preparedFile.current;
+    if (
+      !file ||
+      !browserExportAvailable ||
+      document.hidden ||
+      epoch !== getAdminSecurityEpoch() ||
+      !(Date.parse(getAdminStepUpExpiry() || "") > Date.now())
+    ) return;
+
+    // Consume the local save action before asking the browser to persist the file.
+    preparedFile.current = null;
+    setReceipt(null);
+    const { filename, sha256, auditEventId, content } = file;
+    try {
+      const anchor = document.createElement("a");
+      const url = URL.createObjectURL(new Blob([content], { type: "application/json;charset=utf-8" }));
+      try {
+        anchor.href = url;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        setDownload({ filename, sha256, auditEventId });
+      } finally {
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+    } catch {
+      setMessage(`The server prepared package ${auditEventId}, but the browser could not request the download. Check the audit before a new review.`);
     }
   }
 
@@ -221,17 +281,36 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
         clearSensitive();
         setExpanded(!expanded);
         setPurpose("");
+        setPrepareExport(false);
         setConfirmation("");
         setAcknowledged(false);
       })}
       {expanded ? (
         <View style={{ gap: 10 }}>
           <Text style={{ color: palette.textMuted }}>
-            Restricted in-app review only. Requires an active hold, an independently
-            approved legal request, minimum-necessary scopes and Admin verification. This
-            does not approve a request or send data. Only enter IDs from an authorized
-            case. No archive is opened by filling this form.
+            Requires an active hold, an independently approved legal request and the
+            minimum necessary scopes. Enter only the IDs from that case.
           </Text>
+          {browserExportAvailable ? (
+            <Pressable
+              accessibilityRole="checkbox"
+              accessibilityLabel="Prepare approved legal JSON export"
+              accessibilityState={{ checked: prepareExport }}
+              onPress={() => change(() => setPrepareExport(!prepareExport))}
+            >
+              <Text style={{ color: palette.text }}>
+                {prepareExport ? "☑" : "☐"} Prepare approved legal JSON export
+              </Text>
+            </Pressable>
+          ) : null}
+          {prepareExport ? (
+            <Text style={{ color: palette.textMuted }}>
+              Requires explicit export approval from the independent reviewer and your
+              current passkey. The JSON file saves to this device for handling under the
+              approved request.
+              {!exportCanProceed ? " Verify your passkey in Admin security to continue." : ""}
+            </Text>
+          ) : null}
           {field(
             "Archive ID",
             archiveId,
@@ -302,18 +381,19 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
             100
           )}
           {button(
-            busy ? "Checking…" : "Review scoped access",
+            busy ? "Checking…" : prepareExport ? "Review legal export" : "Review scoped access",
             () => void run(false),
             !ready || busy
           )}
           {review ? (
             <View style={{ gap: 8 }}>
               <Text style={{ color: palette.text }}>
-                Scope review passed; no archive data opened. Review expires{" "}
+                {prepareExport ? "Export review passed. " : "Scope review passed; no archive data opened. "}
+                Review expires{" "}
                 {new Date(review.reviewExpiresAt).toLocaleString()}.
               </Text>
               <Text style={{ color: palette.textMuted }}>
-                To open the selected data once, type again: {review.nextConfirmation}
+                {prepareExport ? "To prepare the legal file once" : "To open the selected data once"}, type again: {review.nextConfirmation}
               </Text>
               {field(
                 "Second archive access confirmation",
@@ -322,7 +402,7 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
                 100
               )}
               {button(
-                "Open selected archive data once",
+                prepareExport ? "Prepare approved legal JSON once" : "Open selected archive data once",
                 () => void run(true),
                 busy || secondConfirmation !== expected
               )}
@@ -333,7 +413,7 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
               {message}
             </Text>
           ) : null}
-          {receipt ? (
+          {receipt && "data" in receipt ? (
             <View style={{ gap: 8 }}>
               <Text style={{ color: palette.text }}>
                 Private scoped data — not exported or sent. Clears when closed,
@@ -356,6 +436,24 @@ function ArchiveAccessSession({ epoch }: { epoch: number }) {
               ))}
               <ScopedDataView data={receipt.data} />
               {button("Clear private data", clearSensitive)}
+            </View>
+          ) : null}
+          {receipt && "exportPackage" in receipt ? (
+            <View style={{ gap: 8 }}>
+              <Text style={{ color: palette.text }}>Legal JSON package prepared and audited.</Text>
+              <Text style={{ color: palette.textMuted }}>{receipt.exportPackage.filename}</Text>
+              <Text style={{ color: palette.textMuted }}>SHA-256 {receipt.exportPackage.sha256}</Text>
+              <Text style={{ color: palette.textMuted }}>Audit reference {receipt.exportPackage.auditEventId}</Text>
+              {button("Save approved legal JSON once", savePreparedExport, !exportCanProceed)}
+              {button("Clear prepared package", clearSensitive)}
+            </View>
+          ) : null}
+          {download ? (
+            <View style={{ gap: 8 }} accessibilityLiveRegion="polite">
+              <Text style={{ color: palette.text }}>Browser download requested for {download.filename}.</Text>
+              <Text style={{ color: palette.textMuted }}>SHA-256 {download.sha256}</Text>
+              <Text style={{ color: palette.textMuted }}>Audit reference {download.auditEventId}</Text>
+              {button("Clear export receipt", clearSensitive)}
             </View>
           ) : null}
         </View>

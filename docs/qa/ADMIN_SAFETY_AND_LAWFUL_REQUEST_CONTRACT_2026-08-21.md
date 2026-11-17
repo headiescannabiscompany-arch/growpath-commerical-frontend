@@ -191,3 +191,11 @@ safe synthetic-live acceptance. A-01/A-02/A-03/A-05 retain only their specifical
 provider, representative-content, and cross-account/final-candidate gates. Approval and
 disclosure remain unavailable pending the reviewed legal operating procedure and an authentic
 legally approved request.
+
+## Scoped legal JSON package candidate
+
+An independent reviewer can explicitly approve preparation of a local JSON file for the selected archive scopes. Ordinary approval remains available for in-app viewing. Export approval requires the reviewer's current passkey and is bound to the exact reviewed proposal and one-use confirmation.
+
+The access operator reviews the exact held archive, approved request, purpose, and selected scopes. The `EXPORT` confirmation and token are separate from `ACCESS`. The server checks the matching hold and independent export approval, applies the existing date and field restrictions, then records the preparation with the file's SHA-256 digest before returning the package. Preparing the file requires the access operator's current passkey.
+
+The app verifies the returned file hash and keeps the package temporarily in memory. An explicit browser save uses the exact verified bytes. Lock, navigation, or session expiration clears the prepared data. A browser download request does not record delivery to a recipient. Actual delivery and its evidence remain separate steps. A previously approved view-only request must use its original scope. Test only with a request that truthfully authorizes synthetic export.
