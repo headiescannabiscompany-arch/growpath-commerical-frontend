@@ -56,6 +56,8 @@ export type AdminEvidenceRequestView = {
   requestType: string;
   status: string;
   preservationHold: boolean;
+  legacyReviewAllowed?: boolean;
+  canCloseCasePreservation?: boolean;
   targetBound: boolean;
   restricted: boolean;
   detailsAvailable: boolean;
@@ -167,6 +169,10 @@ export function normalizeAdminEvidenceRequest(value: unknown): AdminEvidenceRequ
     requestType: text(source.requestType) || "restricted_request",
     status: text(source.status) || "unknown",
     preservationHold: source.preservationHold === true,
+    ...(typeof source.legacyReviewAllowed === "boolean"
+      ? { legacyReviewAllowed: source.legacyReviewAllowed }
+      : {}),
+    ...(source.canCloseCasePreservation === true ? { canCloseCasePreservation: true } : {}),
     targetBound: source.targetBound === true || Boolean(targetUserId),
     restricted: source.restricted !== false,
     detailsAvailable,

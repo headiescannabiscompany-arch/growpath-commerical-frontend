@@ -12,6 +12,7 @@ import PlatformAdminRoute, {
   moderationTargetHref,
   supportsModerationActions
 } from "@/app/admin";
+import * as adminPasskeys from "@/api/adminPasskeys";
 import { getThemePalette } from "@/theme/appTheme";
 import AdminEvidenceVaultCard from "@/features/admin/AdminEvidenceVaultCard";
 
@@ -1434,6 +1435,103 @@ describe("PlatformAdminRoute", () => {
           options?.body?.status === "approved" || options?.body?.status === "disclosed"
       )
     ).toBe(false);
+  });
+
+  const ownerCaseHoldRequest = {
+    id: "000000000000000000000021",
+    requestType: "preservation",
+    status: "received",
+    preservationHold: true,
+    legacyReviewAllowed: false,
+    canCloseCasePreservation: true,
+    requester: { name: "Synthetic case preservation" },
+    targetUserId: "000000000000000000000022",
+    scope: "Internal QA preservation."
+  };
+  const closeCaseHoldLabel = "Close without disclosure and release hold";
+
+  it("offers the Owner only case-hold closure and requires a verified passkey", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/admin/evidence-requests") {
+        return Promise.resolve({
+          requests: [
+            ownerCaseHoldRequest,
+            {
+              ...ownerCaseHoldRequest,
+              id: "000000000000000000000023",
+              requestType: "other",
+              status: "identity_review",
+              preservationHold: false,
+              canCloseCasePreservation: false
+            }
+          ]
+        });
+      }
+      return defaultAdminApi(path);
+    });
+
+    const screen = render(<PlatformAdminRoute />);
+    const close = await screen.findByRole("button", { name: closeCaseHoldLabel });
+    expect(close).toBeDisabled();
+    expect(screen.getByText("Verify your passkey in Admin security to release this hold.")).toBeVisible();
+    for (const name of [
+      "Begin identity review",
+      "Send to legal review",
+      "Place preservation hold",
+      "Reject request",
+      "Reject request and release hold",
+      "Close without disclosure"
+    ]) {
+      expect(screen.queryByRole("button", { name })).toBeNull();
+    }
+  });
+
+  it.each([
+    { matches: true, message: "Request closed. Preservation hold released." },
+    { matches: false, message: "Refresh this request to confirm whether the preservation hold was released." }
+  ])("checks the exact case-hold closure receipt (matching request: $matches)", async ({ matches, message }) => {
+    const proof = jest.spyOn(adminPasskeys, "getAdminStepUpExpiry").mockReturnValue(
+      new Date(Date.now() + 60_000).toISOString()
+    );
+    try {
+      let savedRequest = ownerCaseHoldRequest;
+      const path = `/api/admin/evidence-requests/${ownerCaseHoldRequest.id}`;
+      mockApiRequest.mockImplementation((url: string) => {
+        if (url === "/api/admin/evidence-requests") {
+          return Promise.resolve({ requests: [savedRequest] });
+        }
+        if (url === path) {
+          const closed = { ...ownerCaseHoldRequest, status: "closed", preservationHold: false, canCloseCasePreservation: false };
+          if (matches) savedRequest = closed;
+          return Promise.resolve({ ok: true, request: matches ? closed : { ...closed, id: "another-request" } });
+        }
+        return defaultAdminApi(url);
+      });
+
+      const screen = render(<PlatformAdminRoute />);
+      const close = await screen.findByRole("button", { name: closeCaseHoldLabel });
+      expect(close).toBeEnabled();
+      const reason = "Close the completed synthetic case hold without disclosure.";
+      fireEvent.changeText(screen.getByLabelText("Review reason for preservation request"), reason);
+      fireEvent.press(close);
+
+      const feedback = await screen.findByText(message);
+      expect(mockApiRequest).toHaveBeenCalledWith(path, expect.objectContaining({
+        method: "PATCH",
+        body: { status: "closed", reason, preservationHold: false }
+      }));
+      if (matches) {
+        expect(feedback).toHaveProp("accessibilityLiveRegion", "polite");
+        expect(screen.getByText("preservation · closed")).toBeVisible();
+        expect(screen.queryByRole("button", { name: closeCaseHoldLabel })).toBeNull();
+      } else {
+        expect(feedback).toHaveProp("accessibilityRole", "alert");
+        expect(screen.getByText("preservation · received")).toBeVisible();
+        expect(screen.queryByText("Request closed. Preservation hold released.")).toBeNull();
+      }
+    } finally {
+      proof.mockRestore();
+    }
   });
 
   it("releases an active hold with a rejected disposition and hides new holds afterward", async () => {

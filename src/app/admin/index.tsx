@@ -16,6 +16,7 @@ import { normalizeAdminEvidenceRequests } from "@/api/adminEvidenceVault";
 import {
   adminVaultRequest,
   getAdminSecurityEpoch,
+  getAdminStepUpExpiry,
   subscribeAdminSecurity
 } from "@/api/adminPasskeys";
 import type { AccountBillingReadModel, AccountBillingSource } from "@/api/auth";
@@ -415,6 +416,8 @@ type EvidenceRequest = {
   scope: string;
   status: string;
   preservationHold: boolean;
+  legacyReviewAllowed?: boolean;
+  canCloseCasePreservation?: boolean;
   preservationExpiresAt?: string | null;
   userNoticeStatus?: string;
   dateFrom?: string | null;
@@ -847,6 +850,9 @@ export default function PlatformAdminRoute() {
   >({});
   const [supportCaseNotes, setSupportCaseNotes] = useState<Record<string, string>>({});
   const [evidenceReasons, setEvidenceReasons] = useState<Record<string, string>>({});
+  const [evidenceFeedback, setEvidenceFeedback] = useState<
+    Record<string, { error?: string; success?: string }>
+  >({});
   const [evidenceAudit, setEvidenceAudit] = useState<
     Record<string, { loading: boolean; error: string; events: AdminAuditEvent[] }>
   >({});
@@ -1566,15 +1572,20 @@ export default function PlatformAdminRoute() {
   async function updateEvidenceStatus(item: EvidenceRequest, status: string) {
     const reason = String(evidenceReasons[item._id] || "").trim();
     if (!reason) {
-      setError("A typed review reason is required before changing request status.");
+      setEvidenceFeedback((current) => ({
+        ...current,
+        [item._id]: { error: "Enter the review reason for this request." }
+      }));
       return;
     }
     setBusyId(item._id);
-    setError("");
+    setEvidenceFeedback((current) => ({ ...current, [item._id]: {} }));
     try {
       const releasesPreservationHold =
         item.preservationHold && ["rejected", "closed"].includes(status);
-      await adminVaultRequest(`/api/admin/evidence-requests/${item._id}`, {
+      const result = await adminVaultRequest<{
+        request?: { id?: string; status?: string; preservationHold?: boolean };
+      }>(`/api/admin/evidence-requests/${item._id}`, {
         method: "PATCH",
         body: {
           status,
@@ -1582,10 +1593,28 @@ export default function PlatformAdminRoute() {
           ...(releasesPreservationHold ? { preservationHold: false } : {})
         }
       });
+      if (releasesPreservationHold && status === "closed") {
+        const saved = result?.request;
+        if (saved?.id !== item._id || saved.status !== "closed" || saved.preservationHold !== false) {
+          throw new Error("Refresh this request to confirm whether the preservation hold was released.");
+        }
+        setEvidenceRequests((current) => current.map((request) => (
+          request._id === item._id
+            ? { ...request, status: "closed", preservationHold: false, canCloseCasePreservation: false }
+            : request
+        )));
+        setEvidenceFeedback((current) => ({
+          ...current,
+          [item._id]: { success: "Request closed. Preservation hold released." }
+        }));
+      }
       setEvidenceReasons((current) => ({ ...current, [item._id]: "" }));
       await load();
     } catch (err: any) {
-      setError(err?.message || "Evidence request review failed.");
+      setEvidenceFeedback((current) => ({
+        ...current,
+        [item._id]: { error: err?.message || "Unable to update this request." }
+      }));
     } finally {
       setBusyId("");
     }
@@ -3516,21 +3545,20 @@ export default function PlatformAdminRoute() {
                 />
               );
             }
-            const canBeginIdentity = item.status === "received";
-            const canSendLegal = ["identity_review", "preserved"].includes(item.status);
-            const canRejectOrClose = [
+            const legacyReviewAllowed = item.legacyReviewAllowed !== false;
+            const ownerCanClose = item.canCloseCasePreservation === true && item.preservationHold;
+            const ownerNeedsPasskey = ownerCanClose && !(Date.parse(getAdminStepUpExpiry() || "") > Date.now());
+            const canBeginIdentity = legacyReviewAllowed && item.status === "received";
+            const canSendLegal = legacyReviewAllowed && ["identity_review", "preserved"].includes(item.status);
+            const canReviewStatus = [
               "received",
               "identity_review",
               "legal_review",
               "preserved"
             ].includes(item.status);
-            const canClose = canRejectOrClose;
-            const canPlaceHold = [
-              "received",
-              "identity_review",
-              "legal_review",
-              "preserved"
-            ].includes(item.status);
+            const canReject = legacyReviewAllowed && canReviewStatus;
+            const canClose = canReject || ownerCanClose;
+            const feedback = evidenceFeedback[item._id];
             return (
               <View
                 key={item._id}
@@ -3609,7 +3637,7 @@ export default function PlatformAdminRoute() {
                       ))}
                     </View>
                   ) : null}
-                  <TextInput
+                  {canClose || canSendLegal || canBeginIdentity ? <TextInput
                     {...inputThemeProps}
                     accessibilityLabel={`Review reason for ${item.requestType} request`}
                     value={evidenceReasons[item._id] || ""}
@@ -3622,12 +3650,20 @@ export default function PlatformAdminRoute() {
                     placeholder="Required preservation or review reason"
                     multiline
                     style={styles.input}
-                  />
+                  /> : null}
+                  {ownerNeedsPasskey ? (
+                    <Text style={styles.meta}>Verify your passkey in Admin security to release this hold.</Text>
+                  ) : null}
+                  {feedback?.error ? (
+                    <Text accessibilityRole="alert" style={styles.error}>{feedback.error}</Text>
+                  ) : feedback?.success ? (
+                    <Text accessibilityLiveRegion="polite" style={styles.secondaryText}>{feedback.success}</Text>
+                  ) : null}
                   <View style={styles.actions}>
-                    {canPlaceHold ? (
+                    {canReject || item.preservationHold ? (
                       <Pressable
                         accessibilityRole="button"
-                        disabled={busyId === item._id || item.preservationHold}
+                        disabled={!canReject || busyId === item._id || item.preservationHold}
                         style={
                           item.preservationHold
                             ? styles.secondaryButton
@@ -3668,7 +3704,7 @@ export default function PlatformAdminRoute() {
                         <Text style={styles.secondaryText}>Send to legal review</Text>
                       </Pressable>
                     ) : null}
-                    {canRejectOrClose ? (
+                    {canReject ? (
                       <Pressable
                         accessibilityRole="button"
                         disabled={busyId === item._id}
@@ -3685,12 +3721,14 @@ export default function PlatformAdminRoute() {
                     {canClose ? (
                       <Pressable
                         accessibilityRole="button"
-                        disabled={busyId === item._id}
+                        disabled={busyId === item._id || ownerNeedsPasskey}
                         style={styles.secondaryButton}
                         onPress={() => void updateEvidenceStatus(item, "closed")}
                       >
                         <Text style={styles.secondaryText}>
-                          {item.preservationHold
+                          {busyId === item._id && ownerCanClose
+                            ? "Closing request…"
+                            : item.preservationHold
                             ? "Close without disclosure and release hold"
                             : "Close without disclosure"}
                         </Text>
