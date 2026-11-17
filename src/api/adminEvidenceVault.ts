@@ -1,5 +1,6 @@
 import { ApiError } from "@/api/apiRequest";
-import { adminVaultRequest as apiRequest } from "@/api/adminPasskeys";
+import { adminVaultRequest as apiRequest, getAdminStepUpExpiry } from "@/api/adminPasskeys";
+import apiRoutes from "./routes.js";
 
 const BASE = "/api/admin/evidence-vault";
 
@@ -77,6 +78,7 @@ export type AdminEvidenceRequestView = {
   minimumNecessaryScope?: string;
   userNoticeStatus?: string;
   approvedArchiveScopes?: string[];
+  approvedArchiveExport?: boolean;
   legalReview?: Record<string, unknown> | null;
   approvedAt?: string | null;
   approvedBy?: string | null;
@@ -100,6 +102,7 @@ export type LegalEvidenceApprovalProposal = {
   targetUserId: string;
   scopes: LegalEvidenceArchiveScope[];
   reason: string;
+  allowArchiveExport?: true;
   legalReview: {
     decision: "approve";
     approverName: string;
@@ -113,6 +116,7 @@ export type LegalEvidenceApprovalReview = {
   evidenceRequestId: string;
   targetUserId: string;
   scopes: LegalEvidenceArchiveScope[];
+  allowArchiveExport?: boolean;
   reviewToken: string;
   reviewExpiresAt: string;
   nextConfirmation: string;
@@ -124,6 +128,7 @@ export type LegalEvidenceApprovalReceipt = {
   targetUserId: string;
   status: "approved";
   approvedArchiveScopes: LegalEvidenceArchiveScope[];
+  approvedArchiveExport?: boolean;
   approvedAt: string;
   approvedBy: string;
   externalTransmissionPerformed: false;
@@ -189,6 +194,9 @@ export function normalizeAdminEvidenceRequest(value: unknown): AdminEvidenceRequ
     approvedArchiveScopes: Array.isArray(source.approvedArchiveScopes)
       ? source.approvedArchiveScopes.map(text).filter(Boolean)
       : [],
+    ...(typeof source.approvedArchiveExport === "boolean"
+      ? { approvedArchiveExport: source.approvedArchiveExport }
+      : {}),
     legalReview: source.legalReview || null,
     approvedAt: source.approvedAt || null,
     approvedBy: referenceId(source.approvedBy),
@@ -319,6 +327,99 @@ export type RestrictedCaseRecord = {
     summary?: string;
   };
 };
+
+export type RestrictedPreservationTarget = { targetType: string; targetId: string };
+
+export type RestrictedPreservationInput = RestrictedPreservationTarget & {
+  requesterName: string;
+  requesterEmail: string;
+  authorityDescription: string;
+  scope: string;
+};
+
+export type RestrictedPreservationReceipt = {
+  caseId: string;
+  evidenceRequestId: string;
+  preservationHold: boolean;
+  status: string;
+  createdAt: string;
+  replayed: boolean;
+  externalTransmissionPerformed: false;
+};
+
+const RESTRICTED_CASE_ID = /^[a-f0-9]{24}$/i;
+const RESTRICTED_TARGET_TYPES = new Set([
+  "post",
+  "forumPost",
+  "comment",
+  "course",
+  "commercialPost",
+  "feedItem",
+  "storefrontProduct",
+  "video",
+  "videoComment",
+  "liveSession",
+  "liveChatMessage",
+  "growTimelinePublicCopy",
+  "user"
+]);
+const PRESERVATION_STATUSES = new Set([
+  "received",
+  "identity_review",
+  "legal_review",
+  "preserved",
+  "approved",
+  "rejected",
+  "disclosed",
+  "closed"
+]);
+
+function requireRestrictedPreservationProof(caseId: string) {
+  if (typeof caseId !== "string" || !RESTRICTED_CASE_ID.test(caseId)) {
+    throw new Error("Select a valid restricted case.");
+  }
+  if (!(Date.parse(getAdminStepUpExpiry() || "") > Date.now())) {
+    throw new Error("Verify your passkey in Admin security before this restricted action.");
+  }
+}
+
+export async function submitSyntheticRestrictedReport(userId: string, caseReference: string) {
+  if (!RESTRICTED_CASE_ID.test(userId) || !caseReference.trim()) {
+    throw new Error("Select a reviewed QA account and enter its test reference.");
+  }
+  if (!(Date.parse(getAdminStepUpExpiry() || "") > Date.now())) {
+    throw new Error("Verify your passkey in Admin security before creating a test case.");
+  }
+
+  const category = "repeated_hard_drug_sales";
+  const receipt = await apiRequest<{
+    _id?: string;
+    restricted?: boolean;
+    contentType?: string;
+    category?: string;
+    status?: string;
+  }>(apiRoutes.REPORTS.SUBMIT, {
+    method: "POST",
+    auth: true,
+    body: {
+      contentType: "user",
+      contentId: userId,
+      category,
+      reason: `SYNTHETIC INTERNAL QA ${caseReference}. Restricted routing test for a designated QA account. No actual allegation, media, emergency, or outside report.`
+    }
+  });
+  if (
+    receipt?.restricted !== true ||
+    receipt.contentType !== "user" ||
+    receipt.category !== category ||
+    receipt.status !== "open" ||
+    typeof receipt._id !== "string" ||
+    !RESTRICTED_CASE_ID.test(receipt._id)
+  ) {
+    throw new Error("GrowPathAI returned an unexpected report receipt.");
+  }
+  return receipt._id;
+}
 
 export async function getEvidenceVaultCapabilities() {
   const response = await apiRequest<{ ok: true } & EvidenceVaultCapabilities>(
@@ -466,6 +567,130 @@ export async function listRestrictedCases() {
   return response.cases;
 }
 
+export async function loadRestrictedPreservationTargets(
+  caseId: string
+): Promise<RestrictedPreservationTarget[]> {
+  requireRestrictedPreservationProof(caseId);
+  const response = record(
+    await apiRequest<unknown>(`${BASE}/restricted-cases/${encodeURIComponent(caseId)}`, {
+      cache: "no-store"
+    })
+  );
+  const review = record(response.case);
+  const evidence = record(review.evidence);
+  const handling = record(evidence.handling);
+  if (
+    response.ok !== true ||
+    review._id !== caseId ||
+    review.restricted !== true ||
+    review.caseKind !== "restricted_severe_harm" ||
+    handling.minimumNecessary !== true ||
+    handling.snapshotMode !== "metadata_only" ||
+    handling.rawMediaIncluded !== false ||
+    handling.storageLocationsIncluded !== false ||
+    handling.objectKeysIncluded !== false ||
+    handling.secretsIncluded !== false ||
+    !Array.isArray(evidence.targetHistory)
+  ) {
+    throw new Error("GrowPath returned an invalid restricted-case review.");
+  }
+
+  const subjectId = text(review.subjectUserId);
+  if (!RESTRICTED_CASE_ID.test(subjectId)) return [];
+
+  const targets = new Map<string, RestrictedPreservationTarget>();
+  for (const value of evidence.targetHistory) {
+    const target = record(value);
+    if (
+      target.subjectUserId !== subjectId ||
+      typeof target.targetType !== "string" ||
+      !RESTRICTED_TARGET_TYPES.has(target.targetType) ||
+      typeof target.targetId !== "string" ||
+      !RESTRICTED_CASE_ID.test(target.targetId)
+    ) {
+      continue;
+    }
+    const { targetType, targetId } = target;
+    targets.set(`${targetType}:${targetId}`, { targetType, targetId });
+  }
+  return Array.from(targets.values());
+}
+
+export async function recordRestrictedPreservation(
+  caseId: string,
+  input: RestrictedPreservationInput
+): Promise<RestrictedPreservationReceipt> {
+  requireRestrictedPreservationProof(caseId);
+  const { targetType, targetId } = input;
+  if (
+    !RESTRICTED_TARGET_TYPES.has(targetType) ||
+    typeof targetId !== "string" ||
+    !RESTRICTED_CASE_ID.test(targetId)
+  ) {
+    throw new Error("Select a retained target for this restricted case.");
+  }
+
+  const requesterName = text(input.requesterName);
+  const requesterEmail = text(input.requesterEmail).toLowerCase();
+  const authorityDescription = text(input.authorityDescription);
+  const scope = text(input.scope);
+  if (
+    !requesterName ||
+    requesterName.length > 300 ||
+    !requesterEmail ||
+    requesterEmail.length > 500 ||
+    !authorityDescription ||
+    authorityDescription.length > 5000 ||
+    !scope ||
+    scope.length > 4000
+  ) {
+    throw new Error("Enter the requester, authority and scope in the allowed field lengths.");
+  }
+
+  const response = record(
+    await apiRequest<unknown>(`/api/admin/moderation-cases/${encodeURIComponent(caseId)}/preserve-restricted-target`, {
+      method: "POST",
+      cache: "no-store",
+      body: {
+        requestType: "preservation",
+        targetType,
+        targetId,
+        requesterName,
+        requesterEmail,
+        authorityDescription,
+        scope
+      }
+    })
+  );
+  const receipt = record(response.receipt);
+  const { evidenceRequestId, preservationHold, status, createdAt, replayed } = receipt;
+  if (
+    response.ok !== true ||
+    receipt.caseId !== caseId ||
+    typeof evidenceRequestId !== "string" ||
+    !RESTRICTED_CASE_ID.test(evidenceRequestId) ||
+    typeof preservationHold !== "boolean" ||
+    typeof status !== "string" ||
+    !PRESERVATION_STATUSES.has(status) ||
+    typeof createdAt !== "string" ||
+    !Number.isFinite(Date.parse(createdAt)) ||
+    typeof replayed !== "boolean" ||
+    receipt.externalTransmissionPerformed !== false
+  ) {
+    throw new Error("GrowPath returned an invalid restricted preservation receipt.");
+  }
+
+  return {
+    caseId,
+    evidenceRequestId,
+    preservationHold,
+    status,
+    createdAt,
+    replayed,
+    externalTransmissionPerformed: false
+  };
+}
+
 export async function listRestrictedCaseRecords(caseId: string) {
   const response = await apiRequest<{ ok: true; records: RestrictedCaseRecord[] }>(
     `${BASE}/restricted-cases/${encodeURIComponent(caseId)}/records`,
@@ -562,10 +787,21 @@ export async function updateLegalEvidenceRequestReview(
   return normalizeAdminEvidenceRequest(response.request);
 }
 
+function requireArchiveExportApprovalProof(input: LegalEvidenceApprovalProposal) {
+  if (input.allowArchiveExport === true && !(Date.parse(getAdminStepUpExpiry() || "") > Date.now())) {
+    throw new Error("Verify your passkey before allowing a legal JSON export.");
+  }
+}
+
+function matchesArchiveExportApproval(requested: true | undefined, returned: unknown) {
+  return requested === true ? returned === true : returned === undefined || returned === false;
+}
+
 export async function reviewLegalEvidenceApproval(
   evidenceRequestId: string,
   input: LegalEvidenceApprovalProposal
 ) {
+  requireArchiveExportApprovalProof(input);
   const response = await apiRequest<{ ok: true; review: LegalEvidenceApprovalReview }>(
     `${BASE}/evidence-requests/${encodeURIComponent(evidenceRequestId)}/approval-review`,
     { method: "POST", body: input, cache: "no-store" }
@@ -580,6 +816,7 @@ export async function reviewLegalEvidenceApproval(
     !Array.isArray(response.review.scopes) ||
     response.review.scopes.length !== input.scopes.length ||
     response.review.scopes.some((scope, index) => scope !== input.scopes[index]) ||
+    !matchesArchiveExportApproval(input.allowArchiveExport, response.review.allowArchiveExport) ||
     Number.isNaN(new Date(response.review.reviewExpiresAt).getTime()) ||
     new Date(response.review.reviewExpiresAt).getTime() <= Date.now() ||
     response.review.externalTransmissionPerformed !== false
@@ -596,6 +833,7 @@ export async function approveLegalEvidenceRequest(
     confirmation: string;
   }
 ) {
+  requireArchiveExportApprovalProof(input);
   const response = await apiRequest<{
     ok: true;
     approval: LegalEvidenceApprovalReceipt;
@@ -614,6 +852,7 @@ export async function approveLegalEvidenceRequest(
     response.approval.approvedArchiveScopes.some(
       (scope, index) => scope !== input.scopes[index]
     ) ||
+    !matchesArchiveExportApproval(input.allowArchiveExport, response.approval.approvedArchiveExport) ||
     response.approval.externalTransmissionPerformed !== false
   ) {
     throw new Error("GrowPath returned an invalid legal-approval receipt.");

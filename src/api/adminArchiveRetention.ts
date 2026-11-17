@@ -1,4 +1,4 @@
-import { adminVaultRequest } from "@/api/adminPasskeys";
+import { adminVaultRequest, getAdminStepUpExpiry } from "@/api/adminPasskeys";
 
 const BASE = "/api/admin/evidence-vault";
 export const RETENTION_AUTHORITIES = [
@@ -8,7 +8,7 @@ export const RETENTION_AUTHORITIES = [
   "emergency"
 ] as const;
 export type RetentionAuthority = (typeof RETENTION_AUTHORITIES)[number];
-export type RetentionAction = "apply" | "renew" | "release";
+export type RetentionAction = "apply" | "renew" | "reject" | "release";
 export type RetentionProposal = {
   archiveId: string;
   evidenceRequestId: string;
@@ -27,9 +27,13 @@ export type RetentionReceipt = {
   expiresAt: string | null;
   renewalCount: number;
   externalTransmissionPerformed: false;
+  requestStatus?: "rejected";
 };
 
 export function retentionConfirmation(input: RetentionProposal) {
+  if (input.action === "reject") {
+    return `REJECT REQUEST ${input.evidenceRequestId} FOR ${input.archiveId}`;
+  }
   const prefix =
     input.action === "release"
       ? "RELEASE HOLD"
@@ -43,7 +47,7 @@ export function validateRetentionProposal(input: RetentionProposal) {
   const valid =
     /^[a-f0-9]{24}$/.test(input.archiveId) &&
     /^[a-f0-9]{24}$/.test(input.evidenceRequestId) &&
-    ["apply", "renew", "release"].includes(input.action) &&
+    ["apply", "renew", "reject", "release"].includes(input.action) &&
     RETENTION_AUTHORITIES.includes(input.authority) &&
     (input.action !== "renew" || input.authority === "2703f") &&
     input.reason.trim().length >= 8 &&
@@ -83,9 +87,16 @@ export function validateRetentionProposal(input: RetentionProposal) {
   };
 }
 
+function requireRejectionProof(input: RetentionProposal) {
+  if (input.action === "reject" && !(Date.parse(getAdminStepUpExpiry() || "") > Date.now())) {
+    throw new Error("Verify your passkey in Admin security before rejecting an archive request.");
+  }
+}
+
 /** This endpoint supplies a phrase, not an eligibility decision or dry run. */
 export async function prepareRetentionConfirmation(input: RetentionProposal) {
   const proposal = validateRetentionProposal(input);
+  requireRejectionProof(proposal);
   const query = new URLSearchParams({
     archiveId: proposal.archiveId,
     evidenceRequestId: proposal.evidenceRequestId,
@@ -106,6 +117,7 @@ export async function changeArchiveRetention(
   confirmation: string
 ): Promise<RetentionReceipt> {
   const proposal = validateRetentionProposal(input);
+  requireRejectionProof(proposal);
   if (confirmation !== retentionConfirmation(proposal))
     throw new Error("Exact retention confirmation required.");
   const { archiveId, ...body } = proposal;
@@ -126,6 +138,7 @@ export async function changeArchiveRetention(
     receipt.renewalCount < 0 ||
     receipt.renewalCount > 1 ||
     (input.action === "renew" && receipt.renewalCount !== 1) ||
+    (input.action === "reject" && receipt.requestStatus !== "rejected") ||
     receipt.externalTransmissionPerformed !== false ||
     (releasing || input.authority === "legal_hold"
       ? receipt.expiresAt !== null
@@ -142,6 +155,7 @@ export async function changeArchiveRetention(
     authority: receipt.authority,
     expiresAt: receipt.expiresAt,
     renewalCount: receipt.renewalCount,
-    externalTransmissionPerformed: false
+    externalTransmissionPerformed: false,
+    ...(input.action === "reject" ? { requestStatus: "rejected" as const } : {})
   };
 }

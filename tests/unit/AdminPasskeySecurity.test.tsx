@@ -99,9 +99,10 @@ test("keeps the current registration flow, clears its password, and refreshes th
   await waitFor(() => expect(mockRegister).toHaveBeenCalledWith("A-password", "A phone"));
   await waitFor(() => expect(screen.getByText(/A device 0 · added/)).toBeTruthy());
   expect(screen.getByLabelText(PASSWORD_LABEL).props.value).toBe("");
-  expect(
-    screen.getByText("Passkey added. Verify it before using restricted controls.")
-  ).toBeTruthy();
+  expect(screen.getByText("Passkey saved")).toBeTruthy();
+  expect(screen.queryByText("Passkey verified")).toBeNull();
+  fireEvent.press(screen.getByText("Hide Admin security"));
+  expect(screen.getByText("Passkey saved")).toBeTruthy();
 });
 
 test("labels enrollment preparation when server-side enforcement is disabled", async () => {
@@ -163,9 +164,7 @@ test("switching accounts clears prior device metadata, removal selection, drafts
   const screen = await openPanel();
   await waitFor(() => expect(screen.getByText(/A device 0 · added/)).toBeTruthy());
   fireEvent.press(screen.getByText("Verify passkey"));
-  await waitFor(() =>
-    expect(screen.getByText("Passkey verified for a short Admin session.")).toBeTruthy()
-  );
+  await waitFor(() => expect(screen.getByText("Passkey verified")).toBeTruthy());
   await waitFor(() => expect(screen.getByText("Verify passkey")).not.toBeDisabled());
   fireEvent.press(screen.getByText("Review removal of A device 0"));
   fireEvent.changeText(
@@ -184,7 +183,7 @@ test("switching accounts clears prior device metadata, removal selection, drafts
 
   expect(screen.queryByText(/A device 0 · added/)).toBeNull();
   expect(screen.queryByLabelText("Confirm passkey removal")).toBeNull();
-  expect(screen.queryByText("Passkey verified for a short Admin session.")).toBeNull();
+  expect(screen.queryByText("Passkey verified")).toBeNull();
   expect(screen.queryByText(/Verified until/)).toBeNull();
   await act(async () => nextStatus.resolve(statusFor("B")));
   await waitFor(() => expect(screen.getByText(/B device 0 · added/)).toBeTruthy());
@@ -240,15 +239,11 @@ test.each(["success", "error"])(
     expect(mockStatus).toHaveBeenCalledTimes(2);
     expect(screen.getByText("Add a passkey")).toBeDisabled();
     expect(screen.queryByText("A action failed")).toBeNull();
-    expect(
-      screen.queryByText("Passkey added. Verify it before using restricted controls.")
-    ).toBeNull();
+    expect(screen.queryByText("Passkey saved")).toBeNull();
     mockStatus.mockResolvedValue(statusFor("B", 1));
     await act(async () => currentAction.resolve({ ok: true }));
     await waitFor(() => expect(screen.getByText(/B device 0 · added/)).toBeTruthy());
-    expect(
-      screen.getByText("Passkey added. Verify it before using restricted controls.")
-    ).toBeTruthy();
+    expect(screen.getByText("Passkey saved")).toBeTruthy();
   }
 );
 
@@ -273,9 +268,7 @@ test.each(["success", "error"])(
 
     expect(screen.queryByText(/A device 0 · added/)).toBeNull();
     expect(screen.queryByText("A refresh failed")).toBeNull();
-    expect(
-      screen.queryByText("Passkey added. Verify it before using restricted controls.")
-    ).toBeNull();
+    expect(screen.queryByText("Passkey saved")).toBeNull();
     expect(screen.getByText(/B device 0 · added/)).toBeTruthy();
   }
 );
@@ -292,6 +285,7 @@ test("ordinary proof changes do not reset metadata or interrupt the current devi
   act(() => notifySecurity());
 
   expect(screen.getByText("Verify passkey")).toBeDisabled();
+  expect(screen.queryByText("Passkey verified")).toBeNull();
   expect(screen.getByText(/A device 0 · added/)).toBeTruthy();
   expect(screen.getByLabelText("Admin passkey label").props.value).toBe(
     "My backup device"
@@ -301,12 +295,29 @@ test("ordinary proof changes do not reset metadata or interrupt the current devi
     notifySecurity({ expiry: VERIFIED_UNTIL });
     authentication.resolve(VERIFIED_UNTIL);
   });
-  await waitFor(() =>
-    expect(screen.getByText("Passkey verified for a short Admin session.")).toBeTruthy()
-  );
+  await waitFor(() => expect(screen.getByText("Passkey verified")).toBeTruthy());
   expect(screen.getByText(/Verified until/)).toBeTruthy();
   expect(screen.getByText(/A device 0 · added/)).toBeTruthy();
   expect(mockStatus).toHaveBeenCalledTimes(2);
+});
+
+test("verification remains visible until the proof expires even if refreshing details fails", async () => {
+  mockStatus.mockImplementation(async () => statusFor("A", 1));
+  mockVerify.mockImplementation(async () => notifySecurity({ expiry: VERIFIED_UNTIL }));
+  const screen = render(<AdminPasskeySecurity verificationOnly />);
+  fireEvent.press(screen.getByText("Verify existing Admin passkey"));
+  await waitFor(() => expect(screen.getByText("Verify passkey")).not.toBeDisabled());
+  mockStatus.mockRejectedValueOnce(new Error("Refresh unavailable"));
+  fireEvent.press(screen.getByText("Verify passkey"));
+  await waitFor(() => expect(screen.getByText("Passkey verified")).toBeTruthy());
+  await waitFor(() => expect(screen.getByText(/Passkey details could not be refreshed/)).toBeTruthy());
+  expect(screen.queryByText(/Passkey verification could not be confirmed/)).toBeNull();
+  fireEvent.press(screen.getByText("Hide Admin security"));
+  expect(screen.getByText("Passkey verified")).toBeTruthy();
+  expect(screen.queryByText("Add a passkey")).toBeNull();
+  act(() => notifySecurity());
+  expect(screen.queryByText("Passkey verified")).toBeNull();
+  expect(screen.getByText("Verify existing Admin passkey")).toBeTruthy();
 });
 
 test("a current registration failure remains visible and retry succeeds", async () => {

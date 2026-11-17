@@ -2727,7 +2727,10 @@ export default function PlatformAdminRoute() {
           id: item._id,
           email: item.email,
           label: item.displayName || item.name || item.email,
-          role: item.role
+          role: item.role,
+          plan: item.plan,
+          accountStatus: item.accountStatus,
+          syntheticCleanupApproved: item.syntheticCleanupApproved
         }))}
       />
 
