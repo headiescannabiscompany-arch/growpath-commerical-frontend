@@ -79,6 +79,9 @@ function publicMarketingMarkup(route) {
         (page === "pricing" && i === 1
           ? "<p><strong>Recommended for growing beyond Free</strong></p>"
           : "") +
+        (page === "home" && i === 0
+          ? '<p class="primary-path-label">' + escape(marketing.homePrimaryPathLabel) + "</p>"
+          : "") +
         "<h2>" +
         escape(section.title) +
         "</h2>" +
@@ -99,6 +102,9 @@ function publicMarketingMarkup(route) {
         "<p>" +
         escape(section.body) +
         "</p>" +
+        (page === "home" && i === 0
+          ? "<p>" + escape(marketing.homeAudienceBoundary) + "</p>"
+          : "") +
         (page === "about" && section.title === "Meet Jay" && marketing.founder.story
           ? "<p>" + escape(marketing.founder.story) + "</p>"
           : "") +
@@ -509,6 +515,7 @@ module.exports = {
   marketingCss:
     marketingCss +
     marketingTapTargetCss +
+    ".marketing-card.primary-path{background:#e9f6eb;border-color:#176537;border-inline-start-width:4px}.marketing .primary-path-label{color:#176537;font-size:14px;font-weight:800;margin:0}" +
     ".marketing-actions.with-reassurance{align-items:flex-start}.primary-action-group{display:flex;flex-direction:column;gap:8px;max-width:360px;min-width:0}.marketing .cta-reassurance{font-size:14px;line-height:21px;margin:0}@media(max-width:599px){.marketing-actions.with-reassurance{align-items:stretch}.primary-action-group{max-width:100%}}",
   marketing
 };

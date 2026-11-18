@@ -1,4 +1,6 @@
 {
+  "homePrimaryPathLabel": "Start here",
+  "homeAudienceBoundary": "If you only want to share plant photos, you don’t need a grow journal.",
   "pages": {
     "home": {
       "eyebrow": "A grow journal with AI help for personal growers",
@@ -168,7 +170,7 @@
         },
         {
           "title": "Environmental context",
-          "body": "Review imported controller history alongside the room and grow it belongs to. AC Infinity and Bluelab CSV history are import workflows, not a promise of live device control. Check supported provider setup before connecting equipment."
+          "body": "Review controller history alongside the room and grow it belongs to. Supported paths include read-only Pulse telemetry, AC Infinity history imports, and Bluelab CSV imports. ZENTRA and UbiBot use customer-managed read-only credentials. Availability depends on provider setup and runtime verification. GrowPathAI does not control devices live."
         },
         {
           "title": "Where METRC fits",

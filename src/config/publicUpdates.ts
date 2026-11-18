@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 16, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 17, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "website-grower-start-and-facility-hardware",
+        title: "A clearer starting point and Facility hardware information",
+        date: "November 17, 2026",
+        dateLabel: "Released",
+        summary:
+          "Home highlights Personal growers with Start here. Facility pages distinguish read-only Pulse telemetry, AC Infinity history imports and Bluelab CSV imports, and explain the provider setup and runtime verification needed for ZENTRA and UbiBot."
+      },
       {
         id: "mobile-grow-tools-and-run-comparison",
         title: "Retry recent runs and compare grows on the mobile website",

@@ -178,6 +178,9 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
               page === "pricing" && index === 1 && styles.recommendedCard
             ]}
           >
+            {page === "home" && index === 0 && (
+              <Text style={styles.recommendation}>{marketing.homePrimaryPathLabel}</Text>
+            )}
             {page === "pricing" && index === 1 && (
               <Text style={styles.recommendation}>
                 Recommended for growing beyond Free
@@ -192,6 +195,9 @@ export default function PublicLandingPage({ page }: { page: PublicPageKey }) {
             {page === "pricing" && index === 1 && <PaidOutputPreview />}
             {page === "about" && section.title === "Meet Jay" && <FounderPortrait />}
             <Text style={styles.cardBody}>{section.body}</Text>
+            {page === "home" && index === 0 && (
+              <Text style={styles.cardBody}>{marketing.homeAudienceBoundary}</Text>
+            )}
             {page === "about" &&
               section.title === "Meet Jay" &&
               marketing.founder.story && (
@@ -355,7 +361,12 @@ export function createPublicLandingStyles(palette: ThemePalette) {
       textDecorationLine: "none"
     },
     grid: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
-    primaryPath: { flexBasis: "100%" },
+    primaryPath: {
+      flexBasis: "100%",
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderStartWidth: 4
+    },
     recommendedCard: { borderColor: palette.accent, borderWidth: 2 },
     recommendation: { color: palette.link, fontWeight: "800", fontSize: 14 },
     card: {

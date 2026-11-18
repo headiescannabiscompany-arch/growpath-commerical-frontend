@@ -69,6 +69,16 @@ describe("PublicLandingPage", () => {
     }
   });
 
+  it("identifies the starting path and audience boundary on Home only", () => {
+    const message = "If you only want to share plant photos, you don’t need a grow journal.";
+    const screen = render(<PublicLandingPage page="home" />);
+    expect(screen.getAllByText("Start here")).toHaveLength(1);
+    expect(screen.getByText(message)).toBeTruthy();
+    screen.rerender(<PublicLandingPage page="pricing" />);
+    expect(screen.queryByText("Start here")).toBeNull();
+    expect(screen.queryByText(message)).toBeNull();
+  });
+
   it.each([
     ["Day", getThemePalette("day", "light")],
     ["Night", getThemePalette("night", "dark")]
