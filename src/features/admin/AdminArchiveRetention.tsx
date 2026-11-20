@@ -24,6 +24,7 @@ export default function AdminArchiveRetention({ authorized }: { authorized: bool
 function RetentionSession({ epoch }: { epoch: number }) {
   const { palette } = useAppTheme();
   const [expanded, setExpanded] = useState(false);
+  const [foreground, setForeground] = useState(true);
   const [archiveId, setArchiveId] = useState("");
   const [requestId, setRequestId] = useState("");
   const [action, setAction] = useState<RetentionAction | "">("");
@@ -55,10 +56,8 @@ function RetentionSession({ epoch }: { epoch: number }) {
     setMessage("");
     setAcknowledged(false);
   }, []);
-  const clearDraft = useCallback(() => {
+  const clearReviewDetails = useCallback(() => {
     clearReview();
-    setArchiveId("");
-    setRequestId("");
     setAction("");
     setAuthority("");
     setReason("");
@@ -66,28 +65,37 @@ function RetentionSession({ epoch }: { epoch: number }) {
     setAgency("");
     setSubmitted("");
   }, [clearReview]);
+  const clearDraft = useCallback(() => {
+    clearReviewDetails();
+    setArchiveId("");
+    setRequestId("");
+  }, [clearReviewDetails]);
   useEffect(() => {
     mounted.current = true;
-    function hide() {
-      clearDraft();
-      setExpanded(false);
+    function updateForeground(active: boolean) {
+      setForeground(active);
+      if (!active) {
+        clearReviewDetails();
+        // Keep only complete IDs in this mounted Admin security session.
+        setArchiveId((value) => (/^[a-f0-9]{24}$/.test(value) ? value : ""));
+        setRequestId((value) => (/^[a-f0-9]{24}$/.test(value) ? value : ""));
+      }
     }
-    const subscription = AppState.addEventListener("change", (state) => {
-      if (state !== "active") hide();
-    });
-    const onVisibility = () => {
-      if (document.hidden) hide();
-    };
-    if (Platform.OS === "web" && typeof document !== "undefined")
-      document.addEventListener("visibilitychange", onVisibility);
+    const browserDocument =
+      Platform.OS === "web" && typeof document !== "undefined" ? document : null;
+    const onVisibility = () => updateForeground(!browserDocument?.hidden);
+    const subscription = browserDocument
+      ? null
+      : AppState.addEventListener("change", (state) => updateForeground(state === "active"));
+    browserDocument?.addEventListener("visibilitychange", onVisibility);
+    if (browserDocument?.hidden) updateForeground(false);
     return () => {
       mounted.current = false;
       generation.current += 1;
       subscription?.remove();
-      if (Platform.OS === "web" && typeof document !== "undefined")
-        document.removeEventListener("visibilitychange", onVisibility);
+      browserDocument?.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [clearDraft]);
+  }, [clearReviewDetails]);
   useEffect(() => {
     if (!prepared) return;
     const timer = setTimeout(() => {
@@ -120,7 +128,13 @@ function RetentionSession({ epoch }: { epoch: number }) {
   const ready = proposal();
   const needsProof = action === "reject" && !(Date.parse(getAdminStepUpExpiry() || "") > Date.now());
   async function run(save: boolean) {
-    if (pending.current || submittedOnce || needsProof || epoch !== getAdminSecurityEpoch()) return;
+    if (
+      !foreground ||
+      pending.current ||
+      submittedOnce ||
+      needsProof ||
+      epoch !== getAdminSecurityEpoch()
+    ) return;
     const input = save ? prepared?.proposal : ready;
     if (
       !input ||
@@ -213,16 +227,33 @@ function RetentionSession({ epoch }: { epoch: number }) {
       </View>
     );
   }
+  const toggleLabel = expanded
+    ? "Close archive retention controls"
+    : "Open archive retention / holds";
   return (
     <View style={{ gap: 8 }}>
-      {button(
-        expanded ? "Close archive retention controls" : "Archive retention / holds",
-        () => {
-          clearDraft();
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded }}
+        onPress={() => {
+          if (expanded) clearReview();
           setExpanded(!expanded);
-        }
-      )}
-      {expanded ? (
+        }}
+        style={{
+          alignSelf: "flex-start",
+          minHeight: 44,
+          justifyContent: "center",
+          borderColor: palette.border,
+          borderWidth: 1,
+          borderRadius: 8,
+          backgroundColor: palette.surface,
+          paddingHorizontal: 12,
+          paddingVertical: 10
+        }}
+      >
+        <Text style={{ color: palette.link, fontWeight: "700" }}>{toggleLabel}</Text>
+      </Pressable>
+      {expanded && foreground ? (
         <View style={{ gap: 10 }}>
           <Text style={{ color: palette.textMuted }}>
             Independent approvers only. Preservation is not disclosure or legal approval.
@@ -242,6 +273,10 @@ function RetentionSession({ epoch }: { epoch: number }) {
             (value) => setRequestId(value.trim().toLowerCase()),
             24
           )}
+          <Text style={{ color: palette.textMuted }}>
+            Switching apps keeps these two IDs during this Admin session and clears
+            the other review fields and confirmation.
+          </Text>
           <Text style={{ color: palette.text }}>Hold action</Text>
           <Picker
             accessibilityLabel="Hold action"
@@ -401,6 +436,12 @@ function RetentionSession({ epoch }: { epoch: number }) {
                 Check the saved request and retention audit before another change,
                 especially if the result was interrupted.
               </Text>
+              {receipt?.requestStatus === "rejected" && receipt.preservationHold ? (
+                <Text style={{ color: palette.textMuted }}>
+                  After checking the audit, clear this form and choose Release reviewed hold
+                  if the hold can be released.
+                </Text>
+              ) : null}
               {button(
                 "Clear form for a new reviewed change",
                 () => {

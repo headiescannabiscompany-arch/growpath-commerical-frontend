@@ -207,8 +207,8 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     status: "partial",
     scope:
       "Account-management, complimentary access, private case controls and stronger recovery protection.",
-    live: "Account-management and complimentary-access controls, private case-management tools and passkey setup are available. Complimentary Facility invitations now check the verified recipient before workspace ownership and offer clearer account-switching recovery. Ownership requirements are unchanged. Completed synthetic checks remain recorded as completed; individual invitation activation still needs its own confirmation.",
-    next: "Independent administrator acceptance, two-person sensitive-access checks and production recovery integration and verification remain unfinished. Tested recovery code is not a production activation.",
+    live: "Account-management and complimentary-access controls, private case-management tools and passkey setup are available. Complimentary Facility invitations now check the verified recipient before workspace ownership and offer clearer account-switching recovery. Ownership requirements are unchanged. Individual invitations still require confirmation. A live test verified independent approval, an identity-only local export and account restoration.",
+    next: "Production recovery integration and verification remain open.",
     entryIds: [
       "account-admin-controls",
       "admin-case-management",

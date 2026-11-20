@@ -510,7 +510,7 @@ function EvidenceApprovalWorkflow({
               setIdentityReason(value);
               invalidateApprovalReview();
             }}
-            placeholder="Specific typed review reason"
+            placeholder="Reason for verifying identity and authority"
             placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={identityReason}
@@ -530,6 +530,9 @@ function EvidenceApprovalWorkflow({
       {request.status === "legal_review" ? (
         <View style={styles.stack}>
           <Text style={styles.sectionTitle}>Legal prerequisites</Text>
+          {prerequisitesReady ? (
+            <Text style={styles.meta}>The prerequisite reviews are saved.</Text>
+          ) : null}
           <TextInput
             accessibilityLabel="Reviewed jurisdiction"
             onChangeText={(value) => {
@@ -599,7 +602,7 @@ function EvidenceApprovalWorkflow({
               setLegalReason(value);
               invalidateApprovalReview();
             }}
-            placeholder="Specific typed review reason"
+            placeholder="Reason for recording legal prerequisites"
             placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={legalReason}
@@ -631,6 +634,9 @@ function EvidenceApprovalWorkflow({
         <View style={styles.stack}>
           <Text style={styles.sectionTitle}>Independent approval</Text>
           <Text style={styles.meta}>Exact target: {exactTargetId}</Text>
+          <Text style={styles.meta}>
+            Choose a scope and click Add scope. The list below shows what this approval includes.
+          </Text>
           <View style={styles.pickerWrap}>
             <Picker
               accessibilityLabel="Archive scope to add"
@@ -697,7 +703,10 @@ function EvidenceApprovalWorkflow({
             External delivery requires a separate legal release.
           </Text>
           {!exportProofCurrent ? (
-            <Text style={styles.meta}>Verify your passkey to allow export.</Text>
+            <Text style={styles.meta}>
+              Verify your passkey in Admin security in this tab before filling this form for JSON export.
+              Verification resets the form.
+            </Text>
           ) : null}
           <TextInput
             accessibilityLabel="Legal approval reason"

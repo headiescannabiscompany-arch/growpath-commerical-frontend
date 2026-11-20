@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 17, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 20, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "admin-passkey-protection",
+        title: "Two-admin evidence export and account restoration verified",
+        date: "November 20, 2026",
+        dateLabel: "Status confirmed",
+        summary:
+          "In a live check with a test account, one administrator approved an export and a second saved a local JSON file limited to account identity. The request was closed, the hold was released and the restored test account was confirmed active."
+      },
       {
         id: "website-grower-start-and-facility-hardware",
         title: "A clearer starting point and Facility hardware information",
@@ -536,7 +544,7 @@ export const PUBLIC_UPDATE_SECTIONS = [
         date: "September 22, 2026",
         dateLabel: "Status confirmed",
         summary:
-          "The existing private Admin interface includes case notes, restricted reporting, and reviewed evidence controls. Synthetic reporting and notification checks are complete. Remaining recovery and independent-access acceptance are listed below; this does not announce public evidence access or automatic reporting."
+          "The existing private Admin interface includes case notes, restricted reporting, and reviewed evidence controls. Synthetic reporting and notification checks are complete. The later two-admin export check is recorded in this milestone."
       },
       {
         id: "timeline-mobile-heading",
@@ -662,14 +670,6 @@ export const PUBLIC_UPDATE_SECTIONS = [
         dateLabel: "Progress reviewed",
         summary:
           "The recovery improvements have passed automated checks and staging verification. Production integration, a fresh backup and isolated restore check, and release verification remain unfinished. Staging success is not a live release; completed tests are not being listed as unfinished features."
-      },
-      {
-        id: "admin-passkey-protection",
-        title: "Passkeys for sensitive Admin actions",
-        date: "September 22, 2026",
-        dateLabel: "Progress reviewed",
-        summary:
-          "Admin passkey setup and clearer security fields are available, and automated checks are complete. Remaining independent administrator setup and two-person access acceptance are not yet complete. Ordinary sign-in and the existing page layout stay the same."
       },
       {
         id: "final-web-acceptance",

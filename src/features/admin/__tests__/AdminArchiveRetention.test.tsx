@@ -1,5 +1,5 @@
 import React from "react";
-import { AppState } from "react-native";
+import { AppState, Platform } from "react-native";
 import { act, fireEvent, render } from "@testing-library/react-native";
 import AdminArchiveRetention from "../AdminArchiveRetention";
 import {
@@ -32,7 +32,7 @@ const archiveId = "64b000000000000000000006";
 const requestId = "64b000000000000000000007";
 type Screen = ReturnType<typeof render>;
 function fill(screen: Screen, action = "apply", authority = "legal_hold") {
-  fireEvent.press(screen.getByText("Archive retention / holds"));
+  fireEvent.press(screen.getByText("Open archive retention / holds"));
   fireEvent.changeText(screen.getByLabelText("Retention archive ID"), archiveId);
   fireEvent.changeText(screen.getByLabelText("Retention evidence request ID"), requestId);
   fireEvent(screen.getByLabelText("Hold action"), "valueChange", action);
@@ -76,10 +76,17 @@ afterEach(() => jest.useRealTimers());
 
 it("is hidden without independent approval permission, closed by default and inert", () => {
   const screen = render(<AdminArchiveRetention authorized={false} />);
-  expect(screen.queryByText("Archive retention / holds")).toBeNull();
+  expect(screen.queryByText("Open archive retention / holds")).toBeNull();
   screen.rerender(<AdminArchiveRetention authorized />);
   expect(screen.queryByLabelText("Retention archive ID")).toBeNull();
-  fireEvent.press(screen.getByText("Archive retention / holds"));
+  fireEvent.press(screen.getByRole("button", {
+    name: "Open archive retention / holds",
+    expanded: false
+  }));
+  expect(screen.getByRole("button", {
+    name: "Close archive retention controls",
+    expanded: true
+  })).toBeTruthy();
   fireEvent.press(screen.getByText("Prepare hold confirmation"));
   expect(prepare).not.toHaveBeenCalled();
   expect(save).not.toHaveBeenCalled();
@@ -113,20 +120,75 @@ it.each(["draft", "close", "security", "role", "background"])(
         screen.getByLabelText("Retention change reason"),
         "Different reason"
       );
-    if (change === "close")
+    if (change === "close") {
       fireEvent.press(screen.getByText("Close archive retention controls"));
+      expect(screen.queryByLabelText("Retention archive ID")).toBeNull();
+      fireEvent.press(screen.getByText("Open archive retention / holds"));
+      expect(screen.getByLabelText("Retention archive ID").props.value).toBe(archiveId);
+      expect(screen.getByLabelText("Retention evidence request ID").props.value).toBe(requestId);
+      expect(screen.getByLabelText("Retention change reason").props.value).toBe(
+        "Synthetic reviewed change"
+      );
+      expect(screen.queryByLabelText("Exact hold confirmation")).toBeNull();
+    }
     if (change === "security") act(() => clearAdminStepUp());
     if (change === "role") screen.rerender(<AdminArchiveRetention authorized={false} />);
-    if (change === "background")
-      act(() =>
-        (AppState.addEventListener as jest.Mock).mock.calls.find(
-          ([event]) => event === "change"
-        )![1]("background")
-      );
+    if (change === "background") {
+      const [, onAppState] = (AppState.addEventListener as jest.Mock).mock.calls.find(
+        ([event]) => event === "change"
+      )!;
+      act(() => onAppState("background"));
+      expect(screen.queryByLabelText("Retention archive ID")).toBeNull();
+      act(() => onAppState("active"));
+      expect(screen.getByLabelText("Retention archive ID").props.value).toBe(archiveId);
+      expect(screen.getByLabelText("Retention evidence request ID").props.value).toBe(requestId);
+      expect(screen.getByLabelText("Retention change reason").props.value).toBe("");
+    }
     expect(screen.queryByLabelText("Exact hold confirmation")).toBeNull();
     expect(save).not.toHaveBeenCalled();
   }
 );
+
+it("keeps the first ID when mobile Safari switches away to copy the second", () => {
+  const originalDocument = Object.getOwnPropertyDescriptor(globalThis, "document");
+  const platform = jest.replaceProperty(Platform, "OS", "web");
+  const browserDocument = {
+    hidden: false,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn()
+  };
+  Object.defineProperty(globalThis, "document", {
+    value: browserDocument,
+    configurable: true
+  });
+  try {
+    const screen = render(<AdminArchiveRetention authorized />);
+    fireEvent.press(screen.getByText("Open archive retention / holds"));
+    fireEvent.changeText(screen.getByLabelText("Retention archive ID"), archiveId);
+    const [[event, onVisibility]] = browserDocument.addEventListener.mock.calls;
+    expect(event).toBe("visibilitychange");
+    browserDocument.hidden = true;
+    act(() => onVisibility());
+    expect(screen.queryByLabelText("Retention archive ID")).toBeNull();
+    browserDocument.hidden = false;
+    act(() => onVisibility());
+    expect(screen.getByLabelText("Retention archive ID").props.value).toBe(archiveId);
+    fireEvent.changeText(screen.getByLabelText("Retention evidence request ID"), requestId);
+    expect(screen.getByLabelText("Retention evidence request ID").props.value).toBe(requestId);
+    expect(prepare).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
+    act(() => clearAdminStepUp());
+    expect(screen.queryByLabelText("Retention archive ID")).toBeNull();
+    fireEvent.press(screen.getByText("Open archive retention / holds"));
+    expect(screen.getByLabelText("Retention archive ID").props.value).toBe("");
+    expect(screen.getByLabelText("Retention evidence request ID").props.value).toBe("");
+    screen.unmount();
+  } finally {
+    platform.restore();
+    if (originalDocument) Object.defineProperty(globalThis, "document", originalDocument);
+    else Reflect.deleteProperty(globalThis, "document");
+  }
+});
 it("requires agency and completed report date for covered-report preservation", async () => {
   const screen = render(<AdminArchiveRetention authorized />);
   fill(screen, "apply", "2258a");
@@ -158,7 +220,7 @@ it("discards delayed preparation after target changes", async () => {
   fireEvent.press(screen.getByText("Prepare hold confirmation"));
   fireEvent.press(screen.getByText("Close archive retention controls"));
   await act(async () => resolve("old phrase"));
-  fireEvent.press(screen.getByText("Archive retention / holds"));
+  fireEvent.press(screen.getByText("Open archive retention / holds"));
   expect(screen.queryByLabelText("Exact hold confirmation")).toBeNull();
 });
 it("never retries an uncertain mutation and hides server payloads", async () => {
@@ -196,7 +258,7 @@ it("locks duplicate submissions and ignores a late result after close", async ()
   await act(async () =>
     resolve({ archiveId, preservationHold: true, expiresAt: null, renewalCount: 0 })
   );
-  fireEvent.press(screen.getByText("Archive retention / holds"));
+  fireEvent.press(screen.getByText("Open archive retention / holds"));
   expect(screen.queryByText(/Saved for archive/)).toBeNull();
   expect(screen.getByText(/Check the saved request and retention audit/)).toBeTruthy();
 });

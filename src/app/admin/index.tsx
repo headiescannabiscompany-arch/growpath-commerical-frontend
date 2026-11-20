@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
 import {
   ActivityIndicator,
@@ -828,6 +828,7 @@ export default function PlatformAdminRoute() {
     changeNote: "Initial governance review"
   });
   const [query, setQuery] = useState("");
+  const userSearchInput = useRef<TextInput>(null);
   const [showComplimentaryAccess, setShowComplimentaryAccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -1810,6 +1811,13 @@ export default function PlatformAdminRoute() {
             <Pressable
               accessibilityRole="button"
               style={styles.secondaryButton}
+              onPress={() => userSearchInput.current?.focus()}
+            >
+              <Text style={styles.secondaryText}>Find users</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              style={styles.secondaryButton}
               onPress={() => router.push("/account/workspace" as never)}
             >
               <Text style={styles.secondaryText}>Switch workspace</Text>
@@ -2716,6 +2724,7 @@ export default function PlatformAdminRoute() {
         <View style={styles.searchRow}>
           <TextInput
             {...inputThemeProps}
+            ref={userSearchInput}
             accessibilityLabel="Search users"
             placeholder="Email or display name"
             value={query}
