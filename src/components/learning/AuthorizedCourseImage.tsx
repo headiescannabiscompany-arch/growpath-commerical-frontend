@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Image, type ImageProps } from "react-native";
 
-import { getCourseMediaAccessUrl } from "@/api/uploads";
+import { courseMediaAccessPath, getCourseMediaAccessUrl } from "@/api/uploads";
+import { useAuth } from "@/auth/AuthContext";
 import { resolveImageUri } from "@/utils/photoUploads";
-
-function protectedCourseMediaUrl(value: string) {
-  return /(?:^|\/api\/)(?:uploads\/)?course-media\/[a-f0-9]{24}\/file(?:\?.*)?$/i.test(
-    value
-  );
-}
 
 type Props = Omit<ImageProps, "source"> & {
   uri: string;
@@ -16,37 +11,34 @@ type Props = Omit<ImageProps, "source"> & {
 
 /** Resolves protected Facility course covers before React Native requests them. */
 export default function AuthorizedCourseImage({ uri, ...props }: Props) {
+  const { token } = useAuth();
   const rawUri = String(uri || "").trim();
-  const [authorizedUri, setAuthorizedUri] = useState(() =>
-    protectedCourseMediaUrl(rawUri) ? "" : resolveImageUri(rawUri)
-  );
+  const requiresAccess = Boolean(courseMediaAccessPath(rawUri));
+  const [authorized, setAuthorized] = useState<{
+    rawUri: string;
+    token: typeof token;
+    url: string;
+  } | null>(null);
 
   useEffect(() => {
     let active = true;
-    if (!rawUri) {
-      setAuthorizedUri("");
-      return () => {
-        active = false;
-      };
-    }
-    if (!protectedCourseMediaUrl(rawUri)) {
-      setAuthorizedUri(resolveImageUri(rawUri));
-      return () => {
-        active = false;
-      };
-    }
-    setAuthorizedUri("");
+    if (!requiresAccess) return;
     getCourseMediaAccessUrl(rawUri)
       .then((url) => {
-        if (active) setAuthorizedUri(resolveImageUri(url));
+        if (active) setAuthorized({ rawUri, token, url });
       })
       .catch(() => {
-        if (active) setAuthorizedUri("");
+        if (active) setAuthorized(null);
       });
     return () => {
       active = false;
     };
-  }, [rawUri]);
+  }, [rawUri, requiresAccess, token]);
 
+  const authorizedUri = requiresAccess
+    ? authorized?.rawUri === rawUri && authorized.token === token
+      ? resolveImageUri(authorized.url)
+      : ""
+    : resolveImageUri(rawUri);
   return authorizedUri ? <Image {...props} source={{ uri: authorizedUri }} /> : null;
 }

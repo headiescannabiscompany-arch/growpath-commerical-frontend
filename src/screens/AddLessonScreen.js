@@ -20,7 +20,6 @@ import { deleteCourseMediaAsset, uploadCourseMedia } from "@/api/uploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useEntitlements } from "@/entitlements";
 import { getLearningAccess } from "@/features/learning/learningAccess";
-import { persistImageUris } from "@/utils/photoUploads";
 import { radius } from "../theme/theme";
 import { useAppTheme } from "../theme/appTheme";
 import { buildEmptyTierSelection, flattenTierSelections } from "../utils/growInterests";
@@ -214,18 +213,16 @@ export default function AddLessonScreen({ route, navigation, facilityWorkspace =
       const [imageUrls, uploadedVideo, uploadedPdf, uploadedAudio] =
         await waitForFacilityUploadBatch(
           [
-            facilityMode
-              ? waitForFacilityUploadBatch(
-                  images.map(async (image) => {
-                    const uploaded = await uploadTracked(image);
-                    if (!uploaded?.url) {
-                      throw new Error("Image upload did not return a URL.");
-                    }
-                    return uploaded.url;
-                  }),
-                  true
-                )
-              : persistImageUris(images.map((image) => image.uri)),
+            waitForFacilityUploadBatch(
+              images.map(async (image) => {
+                const uploaded = await uploadTracked(image);
+                if (!uploaded?.url) {
+                  throw new Error("Image upload did not return a URL.");
+                }
+                return uploaded.url;
+              }),
+              facilityMode
+            ),
             videoFile && !facilityMode
               ? uploadCourseMedia(videoFile, { purpose: "video" })
               : Promise.resolve(null),

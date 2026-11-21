@@ -232,19 +232,18 @@ export async function deleteCourseMediaAsset(assetId) {
   });
 }
 
-function protectedCourseMediaPath(value) {
+export function courseMediaAccessPath(value) {
   const raw = String(value || "").trim();
   if (!raw || !API_URL) return "";
   try {
     const apiOrigin = new URL(API_URL).origin;
     const parsed = new URL(raw, `${apiOrigin}/`);
     if (parsed.origin !== apiOrigin) return "";
-    if (
-      !/^\/api\/(?:uploads\/)?course-media\/[0-9a-f]{24}\/file$/i.test(parsed.pathname)
-    ) {
-      return "";
+    if (/^\/api\/(?:uploads\/)?course-media\/[0-9a-f]{24}\/file$/i.test(parsed.pathname)) {
+      return parsed.pathname.replace(/\/file$/, "/access");
     }
-    return `${parsed.pathname}${parsed.search}`;
+    const legacy = /^\/uploads\/([A-Za-z0-9_-]+\.[A-Za-z0-9]+)$/.exec(parsed.pathname);
+    return legacy ? `/api/course-media/legacy/${encodeURIComponent(legacy[1])}/access` : "";
   } catch {
     return "";
   }
@@ -255,9 +254,8 @@ function protectedCourseMediaPath(value) {
  * resource URL, then opens that URL without exposing the account bearer token.
  */
 export async function getCourseMediaAccessUrl(url) {
-  const protectedPath = protectedCourseMediaPath(url);
-  if (!protectedPath) return String(url || "");
-  const accessPath = protectedPath.replace(/\/file(?:\?.*)?$/, "/access");
+  const accessPath = courseMediaAccessPath(url);
+  if (!accessPath) return String(url || "");
   const result = await apiRequest(accessPath, { invalidateOn401: false });
   const accessUrl = String(result?.url || "");
   if (!accessUrl) throw new Error("Course media access could not be verified.");

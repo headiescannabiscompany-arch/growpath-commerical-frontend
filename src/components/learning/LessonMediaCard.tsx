@@ -16,6 +16,7 @@ import {
   normalizeLessonMediaDraft
 } from "@/features/learning/lessonMedia";
 import { getVideoPlayback, VideoWorkspaceType } from "@/api/videos";
+import { courseMediaAccessPath, getCourseMediaAccessUrl } from "@/api/uploads";
 import { useEntitlements } from "@/entitlements";
 import { useAuth } from "@/auth/AuthContext";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -108,26 +109,30 @@ function LessonMediaSession({ lesson, compact = false, context = "lesson" }: Pro
       "/api/videos/uploads/"
     )
   );
+  const uploadUrl = String(media?.canonicalUrl || media?.originalUrl || "");
+  const courseUploadUrl = media?.sourceType === "growpath_upload" &&
+    courseMediaAccessPath(uploadUrl) ? uploadUrl : "";
+  const requiresPlaybackAccess = protectedGrowPathMedia || Boolean(courseUploadUrl);
 
   useEffect(() => {
     let active = true;
     setProtectedPlaybackError("");
     setProtectedPlaybackUrl("");
-    if (!protectedGrowPathMedia) {
+    if (!requiresPlaybackAccess) {
       setProtectedPlaybackUrl("");
       setProtectedPlaybackLoading(false);
       return () => {
         active = false;
       };
     }
-    if (suppliedPlaybackUrl) {
+    if (protectedGrowPathMedia && suppliedPlaybackUrl) {
       setProtectedPlaybackUrl(suppliedPlaybackUrl);
       setProtectedPlaybackLoading(false);
       return () => {
         active = false;
       };
     }
-    if (!videoAssetId) {
+    if (!videoAssetId && !courseUploadUrl) {
       setProtectedPlaybackUrl("");
       setProtectedPlaybackLoading(false);
       setProtectedPlaybackError(
@@ -139,7 +144,8 @@ function LessonMediaSession({ lesson, compact = false, context = "lesson" }: Pro
     }
     setProtectedPlaybackLoading(true);
     Promise.resolve()
-      .then(() =>
+      .then(async () =>
+        courseUploadUrl ? { playbackUrl: await getCourseMediaAccessUrl(courseUploadUrl) } :
         getVideoPlayback(
           videoAssetId,
           entitlements.mode as VideoWorkspaceType,
@@ -167,7 +173,9 @@ function LessonMediaSession({ lesson, compact = false, context = "lesson" }: Pro
   }, [
     entitlements.facilityId,
     entitlements.mode,
+    courseUploadUrl,
     protectedGrowPathMedia,
+    requiresPlaybackAccess,
     suppliedPlaybackUrl,
     videoAssetId,
     playbackAttempt
@@ -175,7 +183,7 @@ function LessonMediaSession({ lesson, compact = false, context = "lesson" }: Pro
 
   if (!media) return null;
 
-  const sourceUrl = protectedGrowPathMedia
+  const sourceUrl = requiresPlaybackAccess
     ? protectedPlaybackUrl
     : resolveImageUri(
         media.externalLinkFallback || media.canonicalUrl || media.originalUrl
@@ -188,7 +196,7 @@ function LessonMediaSession({ lesson, compact = false, context = "lesson" }: Pro
     media.availabilityStatus === "available" &&
     (media.embedCapability === "native" ||
       (media.embedCapability === "supported" && media.allowEmbed && media.embedUrl));
-  const playerUrl = protectedGrowPathMedia
+  const playerUrl = requiresPlaybackAccess
     ? protectedPlaybackUrl
     : resolveImageUri(
         media.embedCapability === "native" ? media.canonicalUrl : media.embedUrl
