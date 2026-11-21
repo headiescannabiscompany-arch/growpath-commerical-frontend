@@ -39,7 +39,7 @@ import {
 } from "@/features/learning/lessonMedia";
 import { radius } from "@/theme/theme";
 import { useAppTheme } from "@/theme/appTheme";
-import { persistImageUri, persistImageUris, resolveImageUri } from "@/utils/photoUploads";
+import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 import { buildEmptyTierSelection, flattenTierSelections } from "@/utils/growInterests";
 
 function toPriceCents(input) {
@@ -680,16 +680,14 @@ export default function CreateCourseScreen({
         }),
         facilityMode
       );
-      const persistedCourseImageUrls = facilityMode
-        ? await waitForFacilityUploadBatch(
-            mediaImages.map(async (asset) => {
-              const uploaded = await uploadTracked(asset);
-              if (!uploaded?.url) throw new Error("Image upload did not return a URL.");
-              return uploaded.url;
-            }),
-            true
-          )
-        : await persistImageUris(mediaImages.map((asset) => asset.uri));
+      const persistedCourseImageUrls = await waitForFacilityUploadBatch(
+        mediaImages.map(async (asset) => {
+          const uploaded = await uploadTracked(asset);
+          if (!uploaded?.url) throw new Error("Image upload did not return a URL.");
+          return uploaded.url;
+        }),
+        facilityMode
+      );
       const uploadedCourseImages = mediaImages.map((asset, index) =>
         uploadedMediaRecord(asset, { url: persistedCourseImageUrls[index] }, "image")
       );
