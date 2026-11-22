@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 20, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 22, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,22 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "private-course-draft-files",
+        title: "Draft lesson files require authorized access",
+        date: "November 21, 2026",
+        dateLabel: "Released",
+        summary:
+          "Course authors can open their draft lesson files after signing in. Signed-out visitors cannot open protected draft files from a direct link. This applies to new lesson uploads and older files tracked as course media."
+      },
+      {
+        id: "private-field-study-and-saved-run-locations",
+        title: "Private locations in Field Studies and Facility Saved Runs",
+        date: "November 20, 2026",
+        dateLabel: "Released",
+        summary:
+          "In shared Field Studies, private device coordinates on an observation are visible to the member who captured them. In Facility Plant ID Saved Runs, only the member who saved a private location can see it."
+      },
       {
         id: "admin-passkey-protection",
         title: "Two-admin evidence export and account restoration verified",

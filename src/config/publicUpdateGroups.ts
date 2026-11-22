@@ -73,6 +73,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     live: "Course discovery and sign-in returns, saved lesson editing safeguards, video switching and Retry, course-list recovery, analytics and builder navigation are live. Verified signup retains the course across browsers; choosing Pro offers a separate course return without activating paid access. Personal More groups existing courses, videos and Live Studio as Creator tools, without a separate signup or new permissions; eligible seller-payout setup stays separate. Personal creator profiles keep private drafts separate from reviewed publication, with withdrawal and clean sharing links. The course-to-discussion handoff passed a separate-learner staging check, including reload and test-course cleanup; discussion access rules are unchanged.",
     next: "Free and paid-Pro creator-profile checks, the recorded LinkedIn/Bluesky composers and bounded protected-document delivery are complete. General public document activation, accounts confirmed to have no prior videos, native devices and posted-recipient checks remain separate. Course gifting has its own launch review.",
     entryIds: [
+      "private-course-draft-files",
       "course-media-playback-recovery",
       "course-lesson-authoring-guards",
       "course-analytics-readiness",
@@ -242,6 +243,7 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     live: "Finished corrections are grouped in their own milestones. Grow-interest choices now report their checked state and support Space-key selection. Existing passed tests are reused rather than treating every feature as unfinished again.",
     next: "Finish the genuinely uncovered journeys, responsive and accessibility checks, role boundaries and final owner walkthrough. This is not a claim that the whole app is complete.",
     entryIds: [
+      "private-field-study-and-saved-run-locations",
       "facility-dashboard-readiness",
       "video-library-readiness",
       "forum-share-readiness",
