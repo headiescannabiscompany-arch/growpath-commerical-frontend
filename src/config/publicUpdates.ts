@@ -739,10 +739,10 @@ export const PUBLIC_UPDATE_SECTIONS = [
       {
         id: "live-native-backstage",
         title: "Join a Live and wait backstage inside GrowPath",
-        date: "October 30, 2026",
+        date: "November 22, 2026",
         dateLabel: "Development reviewed",
         summary:
-          "Guest joining, private backstage, source/receiver routing and program-view controls have local implementation and focused checks. One private generated-media preview passed; remaining talkback, program output, cleanup and real-device/six-person acceptance are incomplete. The feature is not available to customers. It does not replace OBS or promise an entirely self-hosted video system."
+          "In private rehearsals with generated media, we verified that hosts could stop talkback and play a guest's audio and video after admission. We confirmed that every media session created for the playback rehearsal closed or expired. Backstage is still in development and unavailable to customers. Staging, physical-device and six-person checks are still pending."
       },
       {
         id: "live-host-safety",
