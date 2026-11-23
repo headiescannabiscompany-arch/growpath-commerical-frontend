@@ -18,6 +18,7 @@ import { initMonitoring, wrapWithMonitoring } from "@/utils/monitoring";
 import { useNotificationDeepLinks } from "@/notifications/useNotificationDeepLinks";
 import { applyPublicRouteMetadata } from "@/seo/publicRouteMetadata";
 import { PreparedStagingCourseGiftWebBoundary as CourseGiftWebBoundary } from "@/components/courseGifts/PreparedStagingCourseGiftWebBoundary";
+import { isCleanStagingProgramPath } from "@/features/lives/liveBackstageStagingWeb";
 
 enableScreens(true);
 initUnauthorizedHandler();
@@ -31,10 +32,15 @@ const queryClient = new QueryClient({
   }
 });
 
+function NotificationDeepLinks() {
+  useNotificationDeepLinks();
+  return null;
+}
+
 function RootShell() {
   const pathname = usePathname();
   const { palette } = useAppTheme();
-  useNotificationDeepLinks();
+  const cleanProgram = isCleanStagingProgramPath(pathname);
   useEffect(() => {
     applyPublicRouteMetadata(pathname);
   }, [pathname]);
@@ -57,13 +63,14 @@ function RootShell() {
 
   return (
     <ThemeProvider value={navigationTheme}>
+      {!cleanProgram && <NotificationDeepLinks />}
       <View
         style={{
           flex: 1,
           backgroundColor: pathname === "/live-overlay" ? "transparent" : palette.page
         }}
       >
-        {pathname === "/live-overlay" ? (
+        {pathname === "/live-overlay" || cleanProgram ? (
           <Slot />
         ) : (
           <>
