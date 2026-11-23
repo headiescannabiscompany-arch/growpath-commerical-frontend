@@ -266,8 +266,8 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     title: "In-app guests and creator tools",
     status: "progress",
     scope: "Guest/backstage development and separately deferred creator tools.",
-    live: "Guest/backstage controls are in development and unavailable to customers. Local checks and one private generated-media preview are recorded; existing hosted Live playback remains its own completed milestone.",
-    next: "Resolve provider cleanup and finish the remaining talkback, program output and real-device/OBS/XSplit checks before release. Broader creator-growth tools and tips remain later work; tips require provider eligibility and reviewed terms.",
+    live: "Backstage is still in development and unavailable to customers. Private rehearsals with generated media verified talkback shutdown, guest playback after admission, and cleanup for the playback rehearsal. Existing Live hosting and replay are available.",
+    next: "Finish staging verification, the remaining provider cleanup, and checks on physical devices, in six-person sessions, and with OBS and XSplit. Broader creator tools and tips remain planned. Tips require provider eligibility and reviewed terms.",
     entryIds: [
       "live-native-backstage",
       "live-host-safety",
