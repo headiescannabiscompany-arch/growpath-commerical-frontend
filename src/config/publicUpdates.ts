@@ -1,5 +1,5 @@
 // Curated public release notes only. Never import the private project TODO here.
-export const PUBLIC_UPDATES_REVIEWED = "November 22, 2026";
+export const PUBLIC_UPDATES_REVIEWED = "November 24, 2026";
 
 export const PUBLIC_UPDATE_SECTIONS = [
   {
@@ -8,6 +8,14 @@ export const PUBLIC_UPDATE_SECTIONS = [
     description: "Released changes and completed checks. Each note states its scope.",
     emptyMessage: "No published releases yet.",
     entries: [
+      {
+        id: "assistant-soil-water-lab-reports",
+        title: "Clearer soil and irrigation-water lab reports",
+        date: "November 24, 2026",
+        dateLabel: "Released",
+        summary:
+          "Paste readings or attach a photo of a soil or irrigation-water lab report in Personal Assistant. The Assistant keeps values and units with their report sections and explains when readings cannot be compared. If a number or note you ask about is cut off, it tells you what it can read and asks for a clearer photo of the missing parts."
+      },
       {
         id: "private-course-draft-files",
         title: "Draft lesson files require authorized access",

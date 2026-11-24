@@ -52,6 +52,7 @@ describe("public Updates page", () => {
   );
   it("November catch-up keeps new histories reachable and excludes private release data", () => {
     const ids = [
+      "assistant-soil-water-lab-reports",
       "mobile-grow-tools-and-run-comparison",
       "mobile-plan-review-and-grow-setup",
       "mobile-grow-plans-and-automation",
@@ -75,7 +76,7 @@ describe("public Updates page", () => {
       expect(PUBLIC_UPDATE_GROUPS.filter(g => g.entryIds.includes(id))).toHaveLength(1);
       expect(notes[0].summary).not.toMatch(/qa\.invalid|@gmail|dep-|srv-|operatorApprovalReference|policyId|[a-f0-9]{24}/);
     }
-    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 22, 2026");
+    expect(PUBLIC_UPDATES_REVIEWED).toBe("November 24, 2026");
     const now = new Date(2026, 10, 14, 12);
     const [mobileNote, growNote] = recentPublicReleases(now);
     expect(mobileNote.id).toBe("mobile-plan-review-and-grow-setup");

@@ -93,9 +93,9 @@ export const PUBLIC_UPDATE_GROUPS: UpdateGroup[] = [
     title: "Assistant photos and mobile recovery",
     status: "partial",
     scope: "Photo-request reliability, recoverable drafts, mobile scrolling and relevant answers.",
-    live: "Mobile scrolling reaches Send. Failed requests retain the question and photos and explain uncertain credit outcomes. Ordinary photo answers use bounded image handling and clearer evidence instructions, without unrelated task or grow-builder shortcuts.",
+    live: "Mobile scrolling reaches Send. Failed requests retain the question and photos and explain uncertain credit outcomes. Ordinary photo answers use bounded image handling and clearer evidence instructions, without unrelated task or grow-builder shortcuts. Personal Assistant can read pasted lab results and report photos, preserve separate report sections, and ask for a clearer view of cropped readings.",
     next: "Verify remaining live answer-quality and memory-recovery examples within an agreed request limit. Local safeguards do not establish physical-device behavior or universal image accuracy.",
-    entryIds: ["assistant-photo-privacy", "assistant-photo-recovery"]
+    entryIds: ["assistant-soil-water-lab-reports", "assistant-photo-privacy", "assistant-photo-recovery"]
   },
   {
     id: "plant-id",
