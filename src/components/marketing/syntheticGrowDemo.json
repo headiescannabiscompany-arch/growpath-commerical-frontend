@@ -1,6 +1,6 @@
 {
-  "title": "Explore GrowPathAI before you sign up",
-  "description": "Explore Free, Pro, Commercial and Facility highlights with real interface screenshots, then try five example journal entries. No account needed. All example records are synthetic.",
+  "title": "When did I last water this basil?",
+  "description": "September 4, 250 mL. Open a date in this sample journal to see the photo, care note or follow-up from that day.",
   "disclosure": "Synthetic demo — not a customer grow. Dates, notes and readings are invented examples. The basil image is AI-generated, not evidence of a real plant or result.",
   "growTitle": "Greenhouse basil — sample journal",
   "photo": "/images/synthetic-basil-demo.png",
@@ -50,5 +50,6 @@
       "summary": "Example review: the starting photo, observation, watering note and follow-up are in one dated sequence. Select any earlier point to read it again. In your own account, you decide what to record and what to share.",
       "highlights": ["Five connected entries", "No claimed outcome"]
     }
-  ]
+  ],
+  "featuredEventId": "demo-watering"
 }

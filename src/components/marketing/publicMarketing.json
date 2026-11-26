@@ -6,6 +6,10 @@
       "eyebrow": "A grow journal with AI help for personal growers",
       "title": "The grow journal that remembers every run.",
       "intro": "Stop piecing together phone photos, feeding notes, and calendar reminders. Keep a grow history you can use to repeat what worked — the way serious growers do. Get AI help when you need it. Free to start.",
+      "primaryAction": {
+        "href": "/register?plan=free",
+        "label": "Start my free plant journal"
+      },
       "sections": [
         {
           "title": "Personal growers",

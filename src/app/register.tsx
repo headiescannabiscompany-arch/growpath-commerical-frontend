@@ -98,7 +98,7 @@ export default function RegisterScreen() {
   // Pricing can suggest a choice. Existing claim and shopper links own their flow.
   const pricingChoice =
     next === undefined && typeof plan === "string"
-      ? ACCOUNT_CHOICES.find((item) => item.key !== "free" && item.key === plan)
+      ? ACCOUNT_CHOICES.find((item) => item.key === plan)
       : undefined;
   return (
     <RegisterForm
@@ -133,6 +133,8 @@ function RegisterForm({
   const [choice, setChoice] = useState<AccountChoice>(
     pricingChoice ?? ACCOUNT_CHOICES[0]
   );
+  const freeSignupLink = pricingChoice?.key === "free";
+  const [showPlanChoices, setShowPlanChoices] = useState(!freeSignupLink);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -262,34 +264,60 @@ function RegisterForm({
       keyboardShouldPersistTaps="handled"
     >
       <AuthAutofillStyle />
-      <View style={[styles.shell, isWide ? styles.shellWide : null]}>
-        <View style={styles.planPanel}>
-          <Text style={styles.kicker}>
-            {claimNext
-              ? "Gift recipient"
-              : isComplimentaryClaim
-                ? "Complimentary access recipient"
-                : "Choose account"}
-          </Text>
+      <View
+        style={[
+          styles.shell,
+          freeSignupLink ? styles.shellCompact : isWide && styles.shellWide
+        ]}
+      >
+        <View style={!freeSignupLink && styles.planPanel}>
+          {!freeSignupLink && (
+            <Text style={styles.kicker}>
+              {claimNext
+                ? "Gift recipient"
+                : isComplimentaryClaim
+                  ? "Complimentary access recipient"
+                  : "Choose account"}
+            </Text>
+          )}
           <Text accessibilityRole="header" aria-level={1} style={styles.title}>
-            Create account
+            {freeSignupLink ? `Create your ${choice.label} account` : "Create account"}
           </Text>
           <Text style={styles.subtitle}>
-            {claimNext
-              ? "Create a free personal account first. The paid gift activates only after you verify and claim it with the recipient email."
-              : isComplimentaryClaim
-                ? "Create a free personal account first. Complimentary access activates only after you verify and claim it with the recipient email."
-                : "Pick the workflow you need now. You can still change plans as the account grows."}
+            {freeSignupLink
+              ? choice.key === "free"
+                ? "Track 1 grow and 1 plant in your free grow journal. No payment card required."
+                : choice.description
+              : claimNext
+                ? "Create a free personal account first. The paid gift activates only after you verify and claim it with the recipient email."
+                : isComplimentaryClaim
+                  ? "Create a free personal account first. Complimentary access activates only after you verify and claim it with the recipient email."
+                  : "Pick the workflow you need now. You can still change plans as the account grows."}
           </Text>
 
-          {!entitlementClaimNext ? (
+          {freeSignupLink && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ expanded: showPlanChoices }}
+              onPress={() => setShowPlanChoices((visible) => !visible)}
+              style={styles.changePlan}
+            >
+              <Text style={styles.linkText}>
+                {showPlanChoices ? "Hide plans" : "Change plan"}
+              </Text>
+            </Pressable>
+          )}
+          {!entitlementClaimNext && showPlanChoices ? (
             <View style={styles.choiceGrid}>
               {ACCOUNT_CHOICES.map((item) => {
                 const active = choice.key === item.key;
                 return (
                   <Pressable
                     key={item.key}
-                    onPress={() => setChoice(item)}
+                    onPress={() => {
+                      setChoice(item);
+                      if (freeSignupLink) setShowPlanChoices(false);
+                    }}
                     accessibilityRole="button"
                     accessibilityLabel={`Select ${item.label} account`}
                     accessibilityState={{ selected: active }}
@@ -312,17 +340,21 @@ function RegisterForm({
           ) : null}
         </View>
 
-        <View style={[styles.formCard, isWide ? styles.formCardWide : null]}>
-          <Text style={styles.formTitle}>
-            {entitlementClaimNext ? giftSignupChoice.title : choice.title}
-          </Text>
-          <Text style={styles.formSub}>
-            {entitlementClaimNext ? giftSignupChoice.description : choice.description}
-          </Text>
+        <View style={[styles.formCard, isWide && !freeSignupLink && styles.formCardWide]}>
+          {!freeSignupLink && (
+            <>
+              <Text style={styles.formTitle}>
+                {entitlementClaimNext ? giftSignupChoice.title : choice.title}
+              </Text>
+              <Text style={styles.formSub}>
+                {entitlementClaimNext ? giftSignupChoice.description : choice.description}
+              </Text>
+            </>
+          )}
           {pricingChoice && choice.key !== "free" ? (
             <Text style={styles.formSub}>
-              Creating an account does not charge you. You can review the price and
-              choose whether to subscribe after signing in.
+              Creating an account does not charge you. You can review the price and choose
+              whether to subscribe after signing in.
             </Text>
           ) : null}
 
@@ -466,6 +498,7 @@ export const createRegisterStyles = (palette: ThemePalette) =>
       padding: 16
     },
     shell: { gap: 14, maxWidth: 1120, width: "100%" },
+    shellCompact: { maxWidth: 520 },
     shellWide: { alignItems: "flex-start", flexDirection: "row", gap: 24 },
     planPanel: { flex: 1, minWidth: 0 },
     kicker: {
@@ -485,6 +518,7 @@ export const createRegisterStyles = (palette: ThemePalette) =>
       maxWidth: 640
     },
     choiceGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    changePlan: { alignSelf: "flex-start", justifyContent: "center", minHeight: 44 },
     choice: {
       backgroundColor: palette.surface,
       borderColor: palette.border,

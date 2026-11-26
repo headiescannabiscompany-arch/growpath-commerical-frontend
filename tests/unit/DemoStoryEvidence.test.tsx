@@ -32,7 +32,7 @@ describe("reviewed audience story evidence", () => {
         story.scenes.length
       );
       expect([
-        "/register",
+        "/register?plan=free",
         "/pricing",
         "/grow-stores",
         "/creators-educators",

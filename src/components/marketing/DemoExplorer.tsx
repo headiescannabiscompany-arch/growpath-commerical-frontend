@@ -46,7 +46,7 @@ export default function DemoExplorer({
       <Text style={styles.cardBody}>
         Choose the work you want to do. Five stories use four account types: sellers and
         creators both use Commercial. These are guided highlights with screenshots, not
-        signed-in workspaces. The interactive sample journal follows below.
+        signed-in workspaces.
       </Text>
       <View style={styles.actions}>
         {storyChoices.map((item) => (

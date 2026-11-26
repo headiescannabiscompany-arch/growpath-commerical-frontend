@@ -3,9 +3,9 @@
     "id": "free",
     "title": "Keep one plant's story together",
     "description": "A photo in your camera roll does not tell you when you watered. Keep the picture, the note and the date in one journal.",
-    "result": "The starting photo, care note and later review stay in the same dated sequence. Try the interactive five-entry journal below.",
+    "result": "The photo, watering note and follow-up each have a date, so you can see what happened between checks.",
     "limits": "Free tracks 1 grow and 1 plant, with 5 AI credits per week. Available plant-care tools can help with other household plants, but they do not add unlimited tracked records or AI use. No payment card required.",
-    "ctaHref": "/register",
+    "ctaHref": "/register?plan=free",
     "ctaLabel": "Start your free plant journal",
     "scenes": [
       {

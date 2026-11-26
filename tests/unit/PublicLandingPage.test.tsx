@@ -70,7 +70,8 @@ describe("PublicLandingPage", () => {
   });
 
   it("identifies the starting path and audience boundary on Home only", () => {
-    const message = "If you only want to share plant photos, you don’t need a grow journal.";
+    const message =
+      "If you only want to share plant photos, you don’t need a grow journal.";
     const screen = render(<PublicLandingPage page="home" />);
     expect(screen.getAllByText("Start here")).toHaveLength(1);
     expect(screen.getByText(message)).toBeTruthy();
@@ -290,7 +291,7 @@ describe("PublicLandingPage", () => {
           "Courses",
           "Forum",
           "Sign in",
-          "Create free account",
+          "Start my free plant journal",
           "Try the sample journal",
           "Compare GrowTrackr",
           "Grow journal app"
@@ -303,7 +304,9 @@ describe("PublicLandingPage", () => {
             );
         }
         const actions = links.filter((link) =>
-          ["Create free account", "Try the sample journal"].includes(link.props.children)
+          ["Start my free plant journal", "Try the sample journal"].includes(
+            link.props.children
+          )
         );
         if (width < 600)
           for (const action of actions)
