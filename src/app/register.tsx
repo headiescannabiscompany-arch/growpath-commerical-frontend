@@ -286,7 +286,7 @@ function RegisterForm({
           <Text style={styles.subtitle}>
             {freeSignupLink
               ? choice.key === "free"
-                ? "Track 1 grow and 1 plant in your free grow journal. No payment card required."
+                ? "Track one grow with one plant in your free journal, and get care advice for all your houseplants. No payment card required."
                 : choice.description
               : claimNext
                 ? "Create a free personal account first. The paid gift activates only after you verify and claim it with the recipient email."

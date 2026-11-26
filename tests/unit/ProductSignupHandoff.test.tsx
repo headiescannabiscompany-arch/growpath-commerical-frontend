@@ -88,7 +88,8 @@ describe("registration from a Free plan link", () => {
 
   it("shows the Free limits and submits directly to personal onboarding", async () => {
     const screen = render(<RegisterScreen />);
-    expect(screen.getByText(/Track 1 grow and 1 plant/)).toBeTruthy();
+    expect(screen.getByText(/Track one grow with one plant/)).toBeTruthy();
+    expect(screen.getByText(/care advice for all your houseplants/)).toBeTruthy();
     expect(screen.queryByLabelText("Select Pro account")).toBeNull();
     fillSignup(screen);
     fireEvent.press(screen.getByLabelText("Create Free account"));
@@ -109,7 +110,7 @@ describe("registration from a Free plan link", () => {
       selected: true
     });
     fireEvent.press(screen.getByLabelText("Select Commercial account"));
-    expect(screen.queryByText(/Track 1 grow and 1 plant/)).toBeNull();
+    expect(screen.queryByText(/care advice for all your houseplants/)).toBeNull();
     expect(screen.getByLabelText("Register name")).toHaveProp("value", "Shopper User");
     fireEvent.press(screen.getByLabelText("Create Commercial account"));
     await waitFor(() =>
