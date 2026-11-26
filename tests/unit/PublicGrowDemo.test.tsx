@@ -75,6 +75,8 @@ describe("public synthetic grow demo", () => {
     expect(screen.getByText(demo.disclosure)).toBeTruthy();
     expect(screen.getByText("5 points")).toBeTruthy();
     expect(screen.getByText(demo.title).props["aria-level"]).toBe(1);
+    const watering = demo.events.find((event) => event.id === demo.featuredEventId)!;
+    expect(screen.getByText(watering.summary)).toBeTruthy();
     demo.events.forEach((event, i) => {
       fireEvent.press(
         screen.getByLabelText(`Open timeline entry ${i + 1}: ${event.title}`)
@@ -83,7 +85,9 @@ describe("public synthetic grow demo", () => {
     });
     expect(screen.queryByText("Edit Entry")).toBeNull();
     expect(
-      screen.UNSAFE_getAllByType(Link).some((link) => link.props.href === "/register")
+      screen
+        .UNSAFE_getAllByType(Link)
+        .some((link) => link.props.href === "/register?plan=free")
     ).toBe(true);
   });
   it("provides a vertical reading alternative without losing entries", async () => {

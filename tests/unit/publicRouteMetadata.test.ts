@@ -35,21 +35,27 @@ describe("public route metadata", () => {
       "https://growpathai.com/field-observations"
     );
   });
-  it("shares the synthetic demo screenshot and clears it when leaving the demo", () => {
+  it("shares the sample watering entry on Open Graph and Twitter and clears it when leaving the demo", () => {
     document.head.innerHTML = "";
     applyPublicRouteMetadata("/demo?growId=private#token");
     expect(document.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(
       "https://growpathai.com/demo"
     );
-    expect(
-      document.querySelector('meta[property="og:image"]')?.getAttribute("content")
-    ).toBe("https://growpathai.com/images/synthetic-timeline-ui.jpg");
+    const imageUrl = "https://growpathai.com/images/sample-basil-watering-share.jpg";
+    for (const selector of ['meta[property="og:image"]', 'meta[name="twitter:image"]']) {
+      expect(document.querySelector(selector)?.getAttribute("content")).toBe(imageUrl);
+    }
     expect(
       document.querySelector('meta[name="twitter:card"]')?.getAttribute("content")
     ).toBe("summary_large_image");
-    expect(
-      document.querySelector('meta[property="og:image:alt"]')?.getAttribute("content")
-    ).toContain("synthetic");
+    for (const selector of [
+      'meta[property="og:image:alt"]',
+      'meta[name="twitter:image:alt"]'
+    ]) {
+      expect(document.querySelector(selector)?.getAttribute("content")).toContain(
+        "synthetic September 4 watering entry recording 250 mL"
+      );
+    }
     applyPublicRouteMetadata("/about");
     expect(
       document.querySelector('meta[property="og:image"]')?.getAttribute("content")

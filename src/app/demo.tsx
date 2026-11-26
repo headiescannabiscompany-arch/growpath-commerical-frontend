@@ -61,11 +61,30 @@ export default function PublicGrowDemo() {
           (section) => section.href === `/register?plan=${plan}`
         )
       : undefined;
-  const signupLink = planSignup?.href && planSignup.linkLabel ? (
-    <Link href={planSignup.href as never} style={styles.primary}>
-      {planSignup.linkLabel}
-    </Link>
-  ) : null;
+  const signupLink =
+    planSignup?.href && planSignup.linkLabel ? (
+      <Link href={planSignup.href as never} style={styles.primary}>
+        {planSignup.linkLabel}
+      </Link>
+    ) : null;
+
+  const storyWalkthrough = (
+    <>
+      <DemoExplorer story={story} onStoryChange={selectStory} showScreenshot={false} />
+      <DemoWalkthrough story={walkthrough as DemoWalkthroughStory} />
+      {story !== "free" && (
+        <View style={styles.actions}>
+          {signupLink}
+          <Link
+            href={walkthrough.ctaHref as never}
+            style={signupLink ? styles.secondary : styles.primary}
+          >
+            {walkthrough.ctaLabel}
+          </Link>
+        </View>
+      )}
+    </>
+  );
 
   function selectStory(nextStory: DemoStoryId) {
     if (nextStory === story) return;
@@ -112,27 +131,30 @@ export default function PublicGrowDemo() {
         </View>
       </View>
       <View style={[styles.hero, compact && styles.heroCompact]}>
-        <Text style={styles.eyebrow}>Read-only product demo</Text>
+        <Text style={styles.eyebrow}>
+          {story === "free" ? "Sample plant journal" : "Read-only product demo"}
+        </Text>
         <Text
           accessibilityRole="header"
           aria-level={1}
           style={[styles.title, compact && styles.titleCompact]}
         >
-          {demo.title}
+          {story === "free" ? demo.title : "Explore GrowPathAI before you sign up"}
         </Text>
-        <Text style={styles.intro}>{demo.description}</Text>
+        <Text style={styles.intro}>
+          {story === "free"
+            ? demo.description
+            : "Choose a walkthrough to see how this plan works. Each story uses sample records and screenshots from the app."}
+        </Text>
+        {story === "free" && (
+          <View style={styles.actions}>
+            <Link href={walkthrough.ctaHref as never} style={styles.primary}>
+              {walkthrough.ctaLabel}
+            </Link>
+          </View>
+        )}
       </View>
-      <DemoExplorer story={story} onStoryChange={selectStory} showScreenshot={false} />
-      <DemoWalkthrough story={walkthrough as DemoWalkthroughStory} />
-      <View style={styles.actions}>
-        {signupLink}
-        <Link
-          href={walkthrough.ctaHref as never}
-          style={signupLink ? styles.secondary : styles.primary}
-        >
-          {walkthrough.ctaLabel}
-        </Link>
-      </View>
+      {story !== "free" && storyWalkthrough}
       <View
         testID="demo-journal-card"
         style={[styles.card, { flexBasis: "auto", flexGrow: 0 }]}
@@ -181,7 +203,10 @@ export default function PublicGrowDemo() {
           </View>
         ))
       ) : (
-        <GrowTimelineFlow events={events} />
+        <GrowTimelineFlow
+          events={events}
+          initialEventId={story === "free" ? demo.featuredEventId : undefined}
+        />
       )}
       <View
         testID="demo-next-step-card"
@@ -222,6 +247,7 @@ export default function PublicGrowDemo() {
           Demo address: growpathai.com{storyPath}
         </Link>
       </View>
+      {story === "free" && storyWalkthrough}
       <PublicTestimonials />
       <View style={styles.footer}>
         <Link href="/privacy" style={styles.navigationLink}>

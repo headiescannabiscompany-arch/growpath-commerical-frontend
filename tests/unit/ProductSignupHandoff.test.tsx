@@ -78,6 +78,65 @@ function pressHandler(screen: ReturnType<typeof render>, label: string) {
   )[0].props.onPress;
 }
 
+describe("registration from a Free plan link", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    mockParams = { plan: "free" };
+    mockAuthState = { signup: mockSignup };
+    mockSignup.mockResolvedValue({ token: "new-session" });
+  });
+
+  it("shows the Free limits and submits directly to personal onboarding", async () => {
+    const screen = render(<RegisterScreen />);
+    expect(screen.getByText(/Track 1 grow and 1 plant/)).toBeTruthy();
+    expect(screen.queryByLabelText("Select Pro account")).toBeNull();
+    fillSignup(screen);
+    fireEvent.press(screen.getByLabelText("Create Free account"));
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith({
+        pathname: "/onboarding/guilds",
+        params: { next: "/home/personal", mode: "personal", plan: "free" }
+      })
+    );
+    expect(mockSignup).toHaveBeenCalledWith(expect.objectContaining({ plan: "free" }));
+  });
+
+  it("lets a grower change plans without discarding the form", async () => {
+    const screen = render(<RegisterScreen />);
+    fillSignup(screen);
+    fireEvent.press(screen.getByRole("button", { name: "Change plan" }));
+    expect(screen.getByLabelText("Select Free account")).toHaveAccessibilityState({
+      selected: true
+    });
+    fireEvent.press(screen.getByLabelText("Select Commercial account"));
+    expect(screen.queryByText(/Track 1 grow and 1 plant/)).toBeNull();
+    expect(screen.getByLabelText("Register name")).toHaveProp("value", "Shopper User");
+    fireEvent.press(screen.getByLabelText("Create Commercial account"));
+    await waitFor(() =>
+      expect(mockSignup).toHaveBeenCalledWith(
+        expect.objectContaining({ plan: "commercial", mode: "commercial" })
+      )
+    );
+  });
+
+  it.each([{}, { plan: "pro" }, { plan: "free", next: PRODUCT_PATH }])(
+    "retains the full plan chooser for other entry paths: %p",
+    (params) => {
+      mockParams = params as Record<string, string>;
+      const screen = render(<RegisterScreen />);
+      expect(screen.queryByRole("button", { name: "Change plan" })).toBeNull();
+      for (const label of ["Free", "Pro", "Commercial", "Facility"]) {
+        expect(screen.getByLabelText(`Select ${label} account`)).toBeTruthy();
+      }
+      if (params.plan === "pro") {
+        expect(screen.getByLabelText("Select Pro account")).toHaveAccessibilityState({
+          selected: true
+        });
+      }
+    }
+  );
+});
+
 describe.each([
   ["product", PRODUCT_PATH],
   ["shared course", "/courses?courseId=6aa2f5c5d339157652995f10"],

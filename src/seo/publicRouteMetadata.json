@@ -136,10 +136,10 @@
       "description": "Both keep grow records and offer AI help. Choose by your plant count, day-to-day logging, export needs, and whether you also need courses, storefront work, or a facility workspace."
     },
     "demo": {
-      "title": "Explore Free, Pro, Commercial and Facility — no signup | GrowPathAI",
-      "description": "Choose your account type to explore GrowPathAI highlights and labeled screenshots. Try the five-entry sample journal before creating an account. All demo records are synthetic.",
-      "image": "/images/synthetic-timeline-ui.jpg",
-      "imageAlt": "Actual GrowPathAI timeline with synthetic demo data, not a customer grow"
+      "title": "When did I last water this basil? | GrowPathAI sample journal",
+      "description": "Open the September 4 watering note in a five-entry sample plant journal. Try the real GrowPathAI timeline before you sign up.",
+      "image": "/images/sample-basil-watering-share.jpg",
+      "imageAlt": "GrowPathAI sample plant journal with an AI-generated basil photo and a synthetic September 4 watering entry recording 250 mL."
     },
     "grow-journal-app": {
       "title": "Grow journal app: keep the details you will want next run | GrowPathAI",

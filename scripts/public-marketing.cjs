@@ -351,7 +351,7 @@ function demoExplorerMarkup() {
 }
 function demoStoriesMarkup() {
   return (
-    "<section><h2>Explore by story</h2><p>Choose the work you want to do. Five stories use four account types: sellers and creators both use Commercial. These are guided highlights with screenshots, not signed-in workspaces. The interactive sample journal follows below.</p>" +
+    "<section><h2>Explore by story</h2><p>Choose the work you want to do. Five stories use four account types: sellers and creators both use Commercial. These are guided highlights with screenshots, not signed-in workspaces.</p>" +
     '<nav aria-label="Demo stories">' +
     demoStoryIds
       .map(
@@ -364,7 +364,7 @@ function demoStoriesMarkup() {
       .map((id) => {
         const story = demoStories[id];
         // Only these bundled enum keys construct destinations; no incoming URL data.
-        const storyPath = id === "free" ? "/demo" : "/demo?story=" + id;
+        const storyPath = id === "free" ? "#sample-journal" : "/demo?story=" + id;
         return (
           '<section class="marketing-card" id="demo-story-' +
           id +
@@ -413,7 +413,11 @@ function demoStoriesMarkup() {
           escape(story.ctaLabel) +
           '</a><a class="secondary" href="' +
           storyPath +
-          '">Open this story in the interactive demo</a></div></section>'
+          '">' +
+          (id === "free"
+            ? "Read the five journal entries"
+            : "Open this story in the interactive demo") +
+          "</a></div></section>"
         );
       })
       .join("") +
@@ -422,25 +426,23 @@ function demoStoriesMarkup() {
 }
 function publicDemoMarkup() {
   return (
-    '<main id="seo-content" class="marketing"><nav aria-label="GrowPathAI public pages"><a class="brand" href="/">GrowPathAI</a>' +
+    '<main id="seo-content" class="marketing public-demo"><nav aria-label="GrowPathAI public pages"><a class="brand" href="/">GrowPathAI</a>' +
     links.map(anchor).join(" ") +
     '</nav><header class="marketing-hero"><p>Read-only product demo</p><h1>' +
     escape(demo.title) +
     "</h1><p>" +
     escape(demo.description) +
     "</p></header>" +
-    demoStoriesMarkup() +
-    demoExplorerMarkup() +
-    '<section class="marketing-card"><h2>' +
+    '<section id="sample-journal" aria-labelledby="sample-journal-title"><h2 id="sample-journal-title">' +
     escape(demo.growTitle) +
     "</h2><p>" +
     escape(demo.disclosure) +
-    "</p><p>This sample cannot be edited and does not run AI tools or change your account. Open any entry below. The visual timeline is available with JavaScript.</p></section>" +
+    "</p><p>This sample cannot be edited and does not run AI tools or change your account. Open any entry below. The visual timeline is available with JavaScript.</p>" +
     demo.events
       .map(
-        (event, index) =>
+        (event) =>
           '<details class="marketing-card"' +
-          (index === 0 ? " open" : "") +
+          (event.id === demo.featuredEventId ? " open" : "") +
           '><summary style="min-height:44px;cursor:pointer"><strong>' +
           escape(event.title) +
           "</strong> — " +
@@ -465,7 +467,13 @@ function publicDemoMarkup() {
           "</details>"
       )
       .join("") +
-    '<section class="marketing-card"><h2>Ready to start your own journal?</h2><p>Free account. No payment card required.</p><div class="marketing-actions"><a class="primary" href="/register">Create free account</a><a href="/demo">Demo address: growpathai.com/demo</a></div></section>' +
+    '<div class="marketing-actions"><a class="primary" href="' +
+    escape(demoStories.free.ctaHref) +
+    '">' +
+    escape(demoStories.free.ctaLabel) +
+    "</a><p>Free account. No payment card required.</p></div></section>" +
+    demoStoriesMarkup() +
+    demoExplorerMarkup() +
     "<footer>" +
     footer.map(anchor).join(" ") +
     "</footer></main>"
@@ -514,6 +522,7 @@ module.exports = {
   marketingSchema,
   marketingCss:
     marketingCss +
+    "body:has(#root > .public-demo){overflow-y:auto}#root:has(> .public-demo){display:block;height:auto;min-height:100%}" +
     marketingTapTargetCss +
     ".marketing-card.primary-path{background:#e9f6eb;border-color:#176537;border-inline-start-width:4px}.marketing .primary-path-label{color:#176537;font-size:14px;font-weight:800;margin:0}" +
     ".marketing-actions.with-reassurance{align-items:flex-start}.primary-action-group{display:flex;flex-direction:column;gap:8px;max-width:360px;min-width:0}.marketing .cta-reassurance{font-size:14px;line-height:21px;margin:0}@media(max-width:599px){.marketing-actions.with-reassurance{align-items:stretch}.primary-action-group{max-width:100%}}",

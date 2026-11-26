@@ -30,12 +30,13 @@ for (const page of ["", "about"]) {
 }
 
 test("W10 puts truthful payment reassurance directly after the home/pricing signup CTA", () => {
-  for (const page of ["", "pricing"]) {
+  for (const [page, signup] of [
+    ["", '<a class="primary" href="/register?plan=free">Start my free plant journal'],
+    ["pricing", '<a class="primary" href="/register">Create free account']
+  ]) {
     const html = publicMarketingMarkup(page);
     assert.ok(
-      html.includes(
-        'Create free account</a><p class="cta-reassurance">' + marketing.ctaReassurance
-      )
+      html.includes(signup + '</a><p class="cta-reassurance">' + marketing.ctaReassurance)
     );
     assert.equal((html.match(/class="cta-reassurance"/g) || []).length, 1);
     assert.ok(html.indexOf(marketing.ctaReassurance) < html.indexOf('class="secondary"'));
@@ -154,6 +155,26 @@ test("no-signup demo includes all synthetic entries without JavaScript or privat
     /growId=|token=|api\/grows|customer testimonial/i
   );
 });
+test("the static demo opens the watering entry and offers free signup before the walkthroughs", () => {
+  const html = publicMarketingMarkup("demo");
+  const journal = html.match(/<section id="sample-journal"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(journal);
+  const opened = [
+    ...journal.matchAll(/<details class="marketing-card" open>([\s\S]*?)<\/details>/g)
+  ];
+  assert.equal(opened.length, 1);
+  assert.match(opened[0][1], /Sep 4, 2026/);
+  assert.match(opened[0][1], /250 mL/);
+  assert.match(
+    journal,
+    /href="\/register\?plan=free">Start your free plant journal<\/a>/
+  );
+  assert.ok(html.indexOf(journal) < html.indexOf("<h2>Explore by story</h2>"));
+  assert.ok(
+    html.indexOf(journal) < html.indexOf("<h2>More account-type highlights</h2>")
+  );
+  assert.match(html, /href="#sample-journal">Read the five journal entries<\/a>/);
+});
 test("all demo roles have readable static highlights, labeled images and no baked testimonials", () => {
   const html = publicMarketingMarkup("demo");
   const escaped = (value) => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
@@ -256,7 +277,6 @@ test("story links use only fixed public enums and keep one demo document", () =>
   assert.deepEqual(
     [...new Set(storyLinks)],
     [
-      "/demo",
       "/demo?story=pro",
       "/demo?story=seller",
       "/demo?story=creator",
@@ -272,7 +292,7 @@ test("story links use only fixed public enums and keep one demo document", () =>
   for (const story of Object.values(demoStories)) {
     assert.ok(
       [
-        "/register",
+        "/register?plan=free",
         "/pricing",
         "/grow-stores",
         "/creators-educators",

@@ -35,9 +35,11 @@ function readableDate(value: string) {
 
 export default function GrowTimelineFlow({
   events,
+  initialEventId,
   emptyText = "No milestones are available for this visual timeline."
 }: {
   events: GrowTimelineFlowEvent[];
+  initialEventId?: string;
   emptyText?: string;
 }) {
   const { palette } = useAppTheme();
@@ -51,7 +53,12 @@ export default function GrowTimelineFlow({
       ),
     [events]
   );
-  const [selectedId, setSelectedId] = useState(chronological[0]?.id || "");
+  const [selectedId, setSelectedId] = useState(
+    () =>
+      chronological.find((event) => event.id === initialEventId)?.id ??
+      chronological[0]?.id ??
+      ""
+  );
 
   useEffect(() => {
     if (!chronological.some((event) => event.id === selectedId)) {
