@@ -190,21 +190,32 @@ export function createBackstageDeviceController(sessionId: string, dependencies:
         acquired = stream.getTracks();
         for (const track of acquired) track.enabled = false;
         if (!valid() || acquired.length !== 1 || acquired[0].kind !== kind || acquired[0].readyState !== "live") throw new Error("Device unavailable");
-        const confirmGuestRoom = async () => {
+        const confirmGuestRoom = async (minimumRemainingMs = 0) => {
           // Discard a background read started before this check. It cannot
           // replace a newer room decision after the publisher starts.
           preparingGuestRevision = null;
           readSequence += 1;
-          const requestedAt = clock();
-          const fresh = await dependencies.read();
-          if (!valid() || fresh.role !== "guest" || fresh.revision !== input.expectedRevision) throw new Error("Guest access changed");
-          accept(fresh, requestedAt);
-          if (!valid() || status !== "ready") throw new Error("Guest connection expired");
-          preparingGuestRevision = fresh.revision;
+          // A read can return the same five-second acknowledgment with less
+          // time left. Give the room reconciler a chance to issue a new one
+          // before activation occupies its lane. The existing expiry timer
+          // keeps running and can cancel this attempt at any point.
+          for (let read = 0; read < 12 && valid(); read++) {
+            const requestedAt = clock();
+            const fresh = await dependencies.read();
+            if (!valid() || fresh.role !== "guest" || fresh.revision !== input.expectedRevision) throw new Error("Guest access changed");
+            accept(fresh, requestedAt);
+            if (!valid() || status !== "ready") throw new Error("Guest connection expired");
+            if (deadline - clock() >= minimumRemainingMs) {
+              preparingGuestRevision = fresh.revision;
+              return;
+            }
+            await new Promise<void>(resolve => setTimeout(resolve, 250));
+          }
+          throw new Error("Fresh guest authorization unavailable");
         };
         if (!talkback) await confirmGuestRoom();
         try {
-          source = await dependencies.openSource(kind, acquired[0], talkback ? undefined : confirmGuestRoom);
+          source = await dependencies.openSource(kind, acquired[0], talkback ? undefined : () => confirmGuestRoom(4000));
         } finally {
           // A read started during negotiation must not override the command reply.
           preparingGuestRevision = null;
