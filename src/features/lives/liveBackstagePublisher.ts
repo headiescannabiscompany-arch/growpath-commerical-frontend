@@ -109,7 +109,7 @@ export function createBackstagePublisher({ liveId, transport, createPeerConnecti
     return value?.liveId === liveId && value.kind === kind && typeof value.connected === "boolean" &&
       typeof value.peerId === "string" && /^[a-f0-9]{64}$/.test(value.peerId) && (!peerId || value.peerId === peerId);
   }
-  async function openSource(kind: Kind, track: DeviceTrack) {
+  async function openSource(kind: Kind, track: DeviceTrack, beforeActivate?: () => Promise<void>) {
     if (stopped || !["audio", "video"].includes(kind) || track.kind !== kind || track.enabled ||
         track.readyState !== "live" || entries.has(kind)) throw unavailable();
     let reject!: (error: Error) => void;
@@ -153,6 +153,13 @@ export function createBackstagePublisher({ liveId, transport, createPeerConnecti
       // A fresh browser cannot adopt a previous connected source without its SDP.
       if (prepared.connected) throw unavailable();
       endpoint.registerSource(prepared.peerId, kind, track as MediaStreamTrack);
+      // Room reads queue behind activation on staging. Check the guest's
+      // current room lease after reservation, while that lane is still free.
+      if (beforeActivate) {
+        startNextPhase();
+        await beforeActivate();
+        current();
+      }
       startNextPhase();
       const activated = await transport.activateSource({ endpointId, peerId: prepared.peerId });
       current();

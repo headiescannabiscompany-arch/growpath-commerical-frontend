@@ -16,7 +16,7 @@ export type BackstageDeviceDependencies = {
   send(command: BackstageCommand): Promise<ConnectedBackstageView>;
   // Publication adapter must register a disabled source to this authenticated
   // session; it must never accept arbitrary receiver/publisher IDs from the UI.
-  openSource(kind: Kind, track: DeviceTrack): Promise<Source>;
+  openSource(kind: Kind, track: DeviceTrack, beforeActivate?: () => Promise<void>): Promise<Source>;
   stopPendingSources?(): void;
   waitForSourceClosures?(): Promise<void>;
   subscribeSourceInvalidation?(listener: () => void): () => void;
@@ -190,18 +190,21 @@ export function createBackstageDeviceController(sessionId: string, dependencies:
         acquired = stream.getTracks();
         for (const track of acquired) track.enabled = false;
         if (!valid() || acquired.length !== 1 || acquired[0].kind !== kind || acquired[0].readyState !== "live") throw new Error("Device unavailable");
-        if (!talkback) {
-          // A join acknowledgment may already be several seconds old when the
-          // guest opens a device. Renew from the authenticated room before SDP.
+        const confirmGuestRoom = async () => {
+          // Discard a background read started before this check. It cannot
+          // replace a newer room decision after the publisher starts.
+          preparingGuestRevision = null;
+          readSequence += 1;
           const requestedAt = clock();
           const fresh = await dependencies.read();
           if (!valid() || fresh.role !== "guest" || fresh.revision !== input.expectedRevision) throw new Error("Guest access changed");
           accept(fresh, requestedAt);
           if (!valid() || status !== "ready") throw new Error("Guest connection expired");
           preparingGuestRevision = fresh.revision;
-        }
+        };
+        if (!talkback) await confirmGuestRoom();
         try {
-          source = await dependencies.openSource(kind, acquired[0]);
+          source = await dependencies.openSource(kind, acquired[0], talkback ? undefined : confirmGuestRoom);
         } finally {
           // A read started during negotiation must not override the command reply.
           preparingGuestRevision = null;
