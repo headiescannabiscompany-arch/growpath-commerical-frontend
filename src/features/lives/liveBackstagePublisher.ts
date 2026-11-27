@@ -116,8 +116,17 @@ export function createBackstagePublisher({ liveId, transport, createPeerConnecti
     const cancelled = new Promise<never>((_, no) => { reject = no; });
     const entry: Entry = { kind, track, ready: false, closing: false, cancel: () => reject(unavailable()) };
     entries.set(kind, entry);
-    const deadline = now() + 5000;
-    const timer = setTimeout(fail, 5000);
+    const phaseTimeoutMs = 5000;
+    let deadline = now() + phaseTimeoutMs;
+    let timer = setTimeout(fail, phaseTimeoutMs);
+    // Registration, reservation and activation are separate authenticated calls.
+    // A successful call starts the next call's budget. Room and endpoint leases
+    // continue running and can stop the disabled source during any phase.
+    function startNextPhase() {
+      clearTimeout(timer);
+      deadline = now() + phaseTimeoutMs;
+      timer = setTimeout(fail, phaseTimeoutMs);
+    }
     const current = () => {
       if (stopped || entry.closing || entries.get(kind) !== entry || now() >= deadline ||
           track.enabled || track.readyState !== "live") throw unavailable();
@@ -135,6 +144,7 @@ export function createBackstagePublisher({ liveId, transport, createPeerConnecti
       const requestId = newRequestId();
       if (!/^[A-Za-z0-9_-]{16,128}$/.test(requestId) || requestIds.has(requestId) || requestIds.size >= 64) throw unavailable();
       requestIds.add(requestId);
+      startNextPhase();
       const prepared = await transport.prepareSource({ endpointId, kind, requestId });
       if (!exact(prepared, kind)) throw unavailable();
       entry.peerId = prepared.peerId;
@@ -143,6 +153,7 @@ export function createBackstagePublisher({ liveId, transport, createPeerConnecti
       // A fresh browser cannot adopt a previous connected source without its SDP.
       if (prepared.connected) throw unavailable();
       endpoint.registerSource(prepared.peerId, kind, track as MediaStreamTrack);
+      startNextPhase();
       const activated = await transport.activateSource({ endpointId, peerId: prepared.peerId });
       current();
       if (!exact(activated, kind, prepared.peerId) || !activated.connected || !endpoint.sourceReady(prepared.peerId, kind)) throw unavailable();
