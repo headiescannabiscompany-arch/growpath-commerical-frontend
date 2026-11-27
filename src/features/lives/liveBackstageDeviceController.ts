@@ -37,6 +37,7 @@ export function createBackstageDeviceController(sessionId: string, dependencies:
   let closed = false;
   let epoch = 0;
   let busy = false;
+  let preparingGuestRevision: number | null = null;
   let reading = false;
   let readSequence = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -132,13 +133,18 @@ export function createBackstageDeviceController(sessionId: string, dependencies:
     notify();
   }
   async function refresh() {
-    if (closed || busy || reading) return;
+    if (closed || (busy && preparingGuestRevision === null) || reading) return;
     reading = true;
     const sequence = ++readSequence;
     const requestedAt = clock();
     try {
       const next = await dependencies.read();
-      if (!closed && !busy && sequence === readSequence) accept(next, requestedAt);
+      if (closed || sequence !== readSequence) return;
+      if (busy && (next.role !== "guest" || next.revision !== preparingGuestRevision)) {
+        uncertain();
+        return;
+      }
+      accept(next, requestedAt);
     } catch { if (!closed && sequence === readSequence) uncertain(); }
     finally { reading = false; }
   }
@@ -184,7 +190,23 @@ export function createBackstageDeviceController(sessionId: string, dependencies:
         acquired = stream.getTracks();
         for (const track of acquired) track.enabled = false;
         if (!valid() || acquired.length !== 1 || acquired[0].kind !== kind || acquired[0].readyState !== "live") throw new Error("Device unavailable");
-        source = await dependencies.openSource(kind, acquired[0]);
+        if (!talkback) {
+          // A join acknowledgment may already be several seconds old when the
+          // guest opens a device. Renew from the authenticated room before SDP.
+          const requestedAt = clock();
+          const fresh = await dependencies.read();
+          if (!valid() || fresh.role !== "guest" || fresh.revision !== input.expectedRevision) throw new Error("Guest access changed");
+          accept(fresh, requestedAt);
+          if (!valid() || status !== "ready") throw new Error("Guest connection expired");
+          preparingGuestRevision = fresh.revision;
+        }
+        try {
+          source = await dependencies.openSource(kind, acquired[0]);
+        } finally {
+          // A read started during negotiation must not override the command reply.
+          preparingGuestRevision = null;
+          readSequence += 1;
+        }
         if (!valid()) throw new Error("Device request ended");
       }
       const requestedAt = clock();
