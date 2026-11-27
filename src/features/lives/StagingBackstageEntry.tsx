@@ -31,7 +31,7 @@ function bindScope(scope: Scope, isCurrent: () => boolean) {
   const createPeerConnection = () => {
     if (!current()) throw unavailable();
     for (const peer of peers) if (peer.connectionState === "closed") peers.delete(peer);
-    const peer = new RTCPeerConnection({ iceServers: [], bundlePolicy: "max-bundle" });
+    const peer = new RTCPeerConnection({ iceServers: [], bundlePolicy: "max-bundle", iceCandidatePoolSize: 1 });
     peers.add(peer);
     return peer;
   };

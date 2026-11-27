@@ -18,6 +18,7 @@ type PublisherConnection = {
 };
 type Entry = {
   kind: Kind; track: DeviceTrack; connection?: PublisherConnection; peerId?: string;
+  gatheringPeer?: RTCPeerConnection;
   ready: boolean; closing: boolean; serverStopExpected?: boolean; closePromise?: Promise<void>; cancel(): void;
 };
 const unavailable = () => new Error("Guest media was not confirmed. Local devices are stopped; reconnect to check access again.");
@@ -36,7 +37,14 @@ export function createBackstagePublisher({ liveId, transport, createPeerConnecti
   function getConnection() {
     if (connection) return connection;
     const endpoint = createBackstagePeerEndpoint({
-      liveId, purpose: "publisher", createPeerConnection, now,
+      liveId, purpose: "publisher", now,
+      createPeerConnection: kind => {
+        const entry = entries.get(kind);
+        if (!entry?.gatheringPeer || entry.closing) throw unavailable();
+        const pc = entry.gatheringPeer;
+        entry.gatheringPeer = undefined;
+        return pc;
+      },
       failed: () => { if (connection === current) fail(); },
       sourceClosed: id => {
         if (connection !== current) return;
@@ -68,6 +76,8 @@ export function createBackstagePublisher({ liveId, transport, createPeerConnecti
   function stopTrack(track: DeviceTrack) { track.enabled = false; track.stop(); }
   function close(entry: Entry): Promise<void> {
     entry.closing = true; entry.cancel(); stopTrack(entry.track);
+    entry.gatheringPeer?.close();
+    entry.gatheringPeer = undefined;
     if (entry.peerId) entry.connection?.endpoint.stopPeer(entry.peerId);
     // A late prepare reply can still supply its exact handle for one cleanup.
     const id = entry.connection?.endpointId;
@@ -115,6 +125,9 @@ export function createBackstagePublisher({ liveId, transport, createPeerConnecti
     const work = async () => {
       const transportConnection = getConnection();
       entry.connection = transportConnection;
+      // Gather local candidates while the private endpoint and source register.
+      // The disabled track is attached only after the server asks for its offer.
+      entry.gatheringPeer = createPeerConnection();
       transportConnection.registration ??= transportConnection.signaling.start();
       await transportConnection.registration; current();
       const { endpoint, endpointId } = transportConnection;

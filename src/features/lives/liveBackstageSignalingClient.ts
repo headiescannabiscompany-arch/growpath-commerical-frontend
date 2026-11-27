@@ -64,7 +64,9 @@ export function createBackstageSignalingClient({ liveId, purpose, transport, end
         if (stopped || generation !== epoch) return;
         if (ack?.accepted !== true || now() >= deadline) throw new Error("Private signaling reply uncertain");
       }
-      timer = setTimeout(() => { void poll(epoch, id); }, 250);
+      // The server can issue the next negotiation command as soon as it accepts
+      // the reply. Keep the backoff for idle polls.
+      timer = setTimeout(() => { void poll(epoch, id); }, result.command ? 0 : 250);
     } catch { if (generation === epoch) stop(); }
   }
   return {

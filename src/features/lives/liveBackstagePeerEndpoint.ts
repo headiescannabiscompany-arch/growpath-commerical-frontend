@@ -23,7 +23,7 @@ const unavailable = () => new Error("Private media negotiation stopped. Refresh 
 export function createBackstagePeerEndpoint({ liveId, purpose, createPeerConnection,
   now = () => performance.now(), failed = () => undefined, receiverClosed = () => undefined,
   sourceClosed = (_peerId: string) => undefined }: {
-  liveId: string; purpose: BackstagePeerPurpose; createPeerConnection: () => RTCPeerConnection;
+  liveId: string; purpose: BackstagePeerPurpose; createPeerConnection: (kind: "audio" | "video") => RTCPeerConnection;
   now?: () => number; failed?: () => void; receiverClosed?: () => void; sourceClosed?: (peerId: string) => void;
 }) {
   if (!validId(liveId) || !["publisher", "preview", "program"].includes(purpose) ||
@@ -90,7 +90,7 @@ export function createBackstagePeerEndpoint({ liveId, purpose, createPeerConnect
   }
   function newPeer(command: BackstagePeerCommand) {
     if (peers.has(command.peerId) || retired.has(command.peerId) || peers.size + retired.size >= 64) throw unavailable();
-    const pc = createPeerConnection();
+    const pc = createPeerConnection(command.kind);
     const peer: Peer = { id: command.peerId, operationId: command.operationId, kind: command.kind,
       pc, phase: "opening", tracks: new Set(), closed: false, cancel: new Set() };
     peers.set(peer.id, peer);
