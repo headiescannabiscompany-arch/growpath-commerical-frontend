@@ -6,7 +6,13 @@ import {
   type PersonalGrow,
   type PersonalGrowTimelineEvent
 } from "@/api/grows";
-import { createPersonalLog, listPersonalLogs, type PersonalLog } from "@/api/logs";
+import {
+  createPersonalLog,
+  getPersonalLog,
+  listPersonalLogs,
+  updatePersonalLog,
+  type PersonalLog
+} from "@/api/logs";
 import {
   createPersonalPlant,
   listPersonalPlants,
@@ -129,9 +135,10 @@ export async function getWorkspaceGrow(
     return null;
   }
   if (workspace === "personal") {
-    const rows = options.verifyRecords || options.notifyTransport === false
-      ? await listPersonalGrows(options)
-      : await listPersonalGrows();
+    const rows =
+      options.verifyRecords || options.notifyTransport === false
+        ? await listPersonalGrows(options)
+        : await listPersonalGrows();
     return rows.find((grow) => entityId(grow as any) === id) || null;
   }
   const response: any = await apiRequest(
@@ -260,7 +267,7 @@ function commercialLogs(grow: CommercialGrowChildContainer | null): PersonalLog[
         growId: String(log.growId || log.linkedGrowId || entityId(grow)),
         date: String(log.date || createdAt),
         title: String(log.title || "Journal entry"),
-        notes: String(log.notes || log.note || ""),
+        notes: String(log.notes ?? log.note ?? log.summary ?? ""),
         createdAt,
         updatedAt: String(log.updatedAt || createdAt),
         workspaceType: "commercial"
@@ -349,6 +356,44 @@ export async function listWorkspaceLogs(
     id: growId,
     logs: normalizeRows(response, ["logs"], options)
   });
+}
+
+export async function getWorkspaceTimelineLog(
+  workspace: GrowWorkspace,
+  growId: string,
+  logId: string
+): Promise<PersonalLog | null> {
+  const row =
+    workspace === "personal"
+      ? await getPersonalLog(logId)
+      : (await listWorkspaceLogs("commercial", growId, { verifyRecords: true })).find(
+          (log) => log.id === logId
+        );
+  return row?.id === logId && row.growId === growId ? row : null;
+}
+
+export async function updateWorkspaceTimelineLog(
+  workspace: GrowWorkspace,
+  growId: string,
+  logId: string,
+  patch: Parameters<typeof updatePersonalLog>[1]
+): Promise<PersonalLog | null> {
+  if (workspace === "personal") {
+    const row = await updatePersonalLog(logId, patch);
+    return row?.id === logId && row.growId === growId ? row : null;
+  }
+  const response = await apiRequest(commercialGrowChildPath(growId, "logs", logId), {
+    method: "PATCH",
+    // Older Commercial views read note or summary before notes.
+    body:
+      typeof patch.notes === "string"
+        ? { ...patch, note: patch.notes, summary: patch.notes }
+        : patch
+  });
+  const row = response?.log ?? response?.item ?? response?.data?.log;
+  if (response?.success === false || entityId(row) !== logId) return null;
+  const [updated] = commercialLogs({ id: growId, logs: [row] });
+  return updated?.growId === growId ? updated : null;
 }
 
 export async function createWorkspaceLog(

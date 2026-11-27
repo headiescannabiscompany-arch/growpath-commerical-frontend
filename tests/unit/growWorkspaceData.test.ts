@@ -13,6 +13,8 @@ jest.mock("@/api/grows", () => ({
 
 jest.mock("@/api/logs", () => ({
   createPersonalLog: jest.fn(),
+  getPersonalLog: jest.fn(),
+  updatePersonalLog: jest.fn(),
   listPersonalLogs: jest.fn()
 }));
 
@@ -90,6 +92,53 @@ describe("Commercial grow workspace data", () => {
       method: "POST",
       body: { name: "Basil", workspaceType: "commercial" }
     });
+  });
+
+  it("loads and updates the exact Commercial journal on its owning grow", async () => {
+    const {
+      getWorkspaceTimelineLog,
+      updateWorkspaceTimelineLog
+    } = require("@/features/grows/workspaceData");
+    const row = { id: "log-1", growId: "grow-1", notes: "Original" };
+    mockApiRequest
+      .mockResolvedValueOnce({ logs: [row] })
+      .mockResolvedValueOnce({ log: { ...row, notes: "" } });
+    expect(await getWorkspaceTimelineLog("commercial", "grow-1", "log-1")).toMatchObject(
+      row
+    );
+    await expect(
+      updateWorkspaceTimelineLog("commercial", "grow-1", "log-1", { notes: "" })
+    ).resolves.toMatchObject({ id: "log-1", notes: "" });
+    expect(mockApiRequest).toHaveBeenLastCalledWith(
+      "/api/commercial/grows/grow-1/logs/log-1",
+      { method: "PATCH", body: { note: "", notes: "", summary: "" } }
+    );
+    mockApiRequest
+      .mockResolvedValueOnce({ log: { id: "log-2", growId: "grow-1" } })
+      .mockResolvedValueOnce({ log: { id: "log-1", growId: "other" } });
+    await expect(
+      updateWorkspaceTimelineLog("commercial", "grow-1", "log-1", { title: "edit" })
+    ).resolves.toBeNull();
+    await expect(
+      updateWorkspaceTimelineLog("commercial", "grow-1", "log-1", { title: "edit" })
+    ).resolves.toBeNull();
+  });
+
+  it("rejects a Personal journal source outside the selected grow or a mismatched save receipt", async () => {
+    const {
+      getWorkspaceTimelineLog,
+      updateWorkspaceTimelineLog
+    } = require("@/features/grows/workspaceData");
+    const { getPersonalLog, updatePersonalLog } = require("@/api/logs");
+    getPersonalLog.mockResolvedValue({ id: "same", growId: "other" });
+    updatePersonalLog.mockResolvedValue({ id: "different", growId: "grow-1" });
+    await expect(
+      getWorkspaceTimelineLog("personal", "grow-1", "same")
+    ).resolves.toBeNull();
+    await expect(
+      updateWorkspaceTimelineLog("personal", "grow-1", "same", { notes: "edit" })
+    ).resolves.toBeNull();
+    expect(mockApiRequest).not.toHaveBeenCalled();
   });
 
   it("writes Commercial plants through the owner-scoped atomic child endpoint", async () => {

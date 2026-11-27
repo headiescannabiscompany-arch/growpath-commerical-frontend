@@ -203,6 +203,7 @@ export function isCanonicalLegacyCancelReturn(rawBrowserPath?: unknown): boolean
 export function parseSafeLoginReturnPath(value: unknown): string {
   return (
     courseGiftReturnPath(value) ||
+    parsePublicTimelineReturnPath(value) ||
     parsePublicProductReturnPath(value) ||
     parsePublicCourseReturnPath(value) ||
     parseVideoLoginReturnPath(value) ||
@@ -212,6 +213,14 @@ export function parseSafeLoginReturnPath(value: unknown): string {
     (value === CREATOR_PROFILE_EDITOR_PATH ? CREATOR_PROFILE_EDITOR_PATH : "") ||
     (value === COMPLIMENTARY_CLAIM_PATH ? COMPLIMENTARY_CLAIM_PATH : "")
   );
+}
+
+export function parsePublicTimelineReturnPath(value: unknown): string {
+  return typeof value === "string" &&
+    value === value.trim() &&
+    /^\/grow-timeline\/[A-Za-z0-9_-]{40,60}$/.test(value)
+    ? value
+    : "";
 }
 
 // Exact video detail only; login does not grant access or submit a discussion action.

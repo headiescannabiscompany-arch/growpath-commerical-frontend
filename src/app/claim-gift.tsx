@@ -11,6 +11,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
 import { claimGift, getGiftClaim, type GiftClaimSummary } from "@/api/subscription";
+import GuestGiftAcceptance from "@/components/GuestGiftAcceptance";
 import { useAuth } from "@/auth/AuthContext";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -32,6 +33,7 @@ type ClaimState =
   | "claiming"
   | "claimed"
   | "preview-error"
+  | "guest-accepted"
   | "blocked"
   | "terminal";
 type MessageTone = "info" | "success" | "error";
@@ -47,12 +49,15 @@ export default function ClaimGiftScreen() {
   const queryToken = useMemo(() => normalizeGiftClaimToken(params.token), [params.token]);
   const [token, setToken] = useState("");
   const [tokenReady, setTokenReady] = useState(false);
+  const [previewedToken, setPreviewedToken] = useState("");
   const returnPath = buildClaimReturnPath(token);
   const [state, setState] = useState<ClaimState>("loading");
   const [gift, setGift] = useState<GiftClaimSummary | null>(null);
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState<MessageTone>("info");
   const [accountMismatch, setAccountMismatch] = useState(false);
+  const guestRecovery =
+    Boolean(auth.token) && (accountMismatch || state === "guest-accepted");
   const [retryNonce, setRetryNonce] = useState(0);
   const [switchingAccount, setSwitchingAccount] = useState(false);
 
@@ -108,6 +113,7 @@ export default function ClaimGiftScreen() {
         if (!mounted) return;
         if (!result) throw new Error("This gift link did not return gift details.");
         setGift(result);
+        setPreviewedToken(token);
         setState("ready");
       } catch (error: unknown) {
         const terminal =
@@ -155,7 +161,11 @@ export default function ClaimGiftScreen() {
       }
     } catch (error: unknown) {
       const code = error instanceof ApiError ? error.code : "";
-      if (code === "GIFT_RECIPIENT_EMAIL_MISMATCH" || code === "UNAUTHENTICATED") {
+      if (
+        code === "GIFT_RECIPIENT_EMAIL_MISMATCH" ||
+        code === "UNAUTHENTICATED" ||
+        (error instanceof ApiError && error.status === 401)
+      ) {
         setState("ready");
         setAccountMismatch(true);
       } else if (TERMINAL_CLAIM_CODES.has(code)) {
@@ -214,8 +224,8 @@ export default function ClaimGiftScreen() {
               <Text style={styles.note}>&ldquo;{gift.message}&rdquo;</Text>
             ) : null}
             <Text style={styles.helper}>
-              This prepaid access starts when the gift is successfully claimed. Sign in or
-              create a personal account with the recipient email above.
+              This prepaid gift applies to an eligible account with the verified recipient
+              email.
             </Text>
           </View>
         ) : null}
@@ -234,32 +244,26 @@ export default function ClaimGiftScreen() {
           </Text>
         ) : null}
 
-        {gift && state === "ready" && !auth.token ? (
-          <View style={styles.actions}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Sign in to claim gift"
-              onPress={() =>
-                router.push({ pathname: "/login", params: { next: returnPath } } as any)
-              }
-              style={styles.primaryButton}
-            >
-              <Text style={styles.primaryText}>Sign in to claim</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Create account to claim gift"
-              onPress={() =>
-                router.push({
-                  pathname: "/register",
-                  params: { next: returnPath }
-                } as any)
-              }
-              style={styles.secondaryButton}
-            >
-              <Text style={styles.secondaryText}>Create personal account</Text>
-            </Pressable>
-          </View>
+        {gift &&
+        ((state === "ready" && !auth.token) || guestRecovery) &&
+        !auth.isHydrating &&
+        previewedToken === token &&
+        (!queryToken || queryToken === token) ? (
+          <GuestGiftAcceptance
+            key={token}
+            kind="prepaid"
+            token={token}
+            claimPath={returnPath}
+            onAcceptForInvitedAddress={
+              guestRecovery
+                ? () => {
+                    setAccountMismatch(false);
+                    setMessage("");
+                    setState("guest-accepted");
+                  }
+                : undefined
+            }
+          />
         ) : null}
 
         {gift &&

@@ -253,7 +253,9 @@ export async function bulkIngestTelemetryPoints(
   const res = await apiRequest(TELEMETRY_ROUTES.POINTS_BULK, { method: "POST", body });
   const data = unwrapData(res);
 
+  const acknowledged = data?.acknowledged ?? data?.data?.acknowledged;
   return {
+    ...(Number.isSafeInteger(acknowledged) ? { acknowledged } : {}),
     ingested: Number(data?.ingested ?? data?.data?.ingested ?? 0),
     updated: Number(data?.updated ?? data?.data?.updated ?? 0),
     skipped: Number(data?.skipped ?? data?.data?.skipped ?? 0)

@@ -4,6 +4,8 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import GrowTimelineScreen from "@/app/home/personal/(tabs)/grows/[growId]/timeline";
 
 const mockGetWorkspaceGrowTimeline = jest.fn();
+const mockGetWorkspaceTimelineLog = jest.fn();
+const mockUpdateWorkspaceTimelineLog = jest.fn();
 let mockFocused = true;
 
 jest.mock("@/auth/AuthContext", () => ({
@@ -13,6 +15,8 @@ jest.mock("@/auth/AuthContext", () => ({
 
 jest.mock("@/features/grows/workspaceData", () => ({
   getWorkspaceGrowTimeline: (...args: any[]) => mockGetWorkspaceGrowTimeline(...args),
+  getWorkspaceTimelineLog: (...args: any[]) => mockGetWorkspaceTimelineLog(...args),
+  updateWorkspaceTimelineLog: (...args: any[]) => mockUpdateWorkspaceTimelineLog(...args),
   growWorkspaceBasePath: (workspace: string) => `/home/${workspace}`
 }));
 
@@ -151,6 +155,113 @@ describe("GrowTimelineScreen", () => {
     ]);
   });
 
+  it.each(["personal", "commercial"] as const)(
+    "edits the saved journal inside the %s timeline and retains the selected point",
+    async (workspace) => {
+      const initial = {
+        id: "GrowLog:log-7",
+        growId: "grow-1",
+        sourceModel: "GrowLog",
+        sourceId: "log-7",
+        title: "First watering",
+        summary: "Short preview",
+        timestamp: "2026-06-01T17:20:00.000Z",
+        type: "log_created",
+        payload: { photos: ["/uploads/basil.jpg"] }
+      };
+      const newer = {
+        ...initial,
+        id: "Tool:run-2",
+        sourceId: "run-2",
+        type: "tool_run_created",
+        sourceModel: "ToolRun",
+        title: "Newer result",
+        timestamp: "2026-06-04"
+      };
+      const stored = {
+        id: "log-7",
+        growId: "grow-1",
+        title: initial.title,
+        notes: "  Complete original notes\n",
+        date: initial.timestamp,
+        type: undefined,
+        tags: ["original, combined label", "  archived  "],
+        photos: ["/uploads/basil.jpg"]
+      };
+      mockGetWorkspaceGrowTimeline.mockResolvedValue([newer, initial]);
+      mockGetWorkspaceTimelineLog.mockResolvedValue(stored);
+      mockUpdateWorkspaceTimelineLog.mockResolvedValue({
+        ...stored,
+        title: "Corrected watering"
+      });
+      const screen = render(<GrowTimelineScreen workspace={workspace} />);
+      fireEvent.press(
+        await screen.findByLabelText("Open timeline entry 1: First watering")
+      );
+      fireEvent.press(
+        screen.getByRole("button", { name: "Edit journal entry: First watering" })
+      );
+      await screen.findByLabelText("Edit log notes");
+      expect(screen.getByLabelText("Edit log notes").props.value).toBe(stored.notes);
+      expect(mockGetWorkspaceTimelineLog).toHaveBeenCalledWith(
+        workspace,
+        "grow-1",
+        "log-7"
+      );
+      expect(screen.getByLabelText("Add photos to journal entry")).toBeTruthy();
+      fireEvent.changeText(screen.getByLabelText("Edit log title"), "Corrected watering");
+      mockGetWorkspaceGrowTimeline.mockResolvedValue([
+        newer,
+        { ...initial, title: "Corrected watering" }
+      ]);
+      fireEvent.press(screen.getByLabelText("Save log changes"));
+      await screen.findByLabelText("Selected timeline entry: Corrected watering");
+      expect(mockUpdateWorkspaceTimelineLog).toHaveBeenCalledWith(
+        workspace,
+        "grow-1",
+        "log-7",
+        { title: "Corrected watering" }
+      );
+      expect(screen.queryByLabelText("Edit log notes")).toBeNull();
+      expect(
+        screen.getByLabelText(
+          `Timeline source link /home/${workspace}/logs/new?growId=grow-1`
+        )
+      ).toBeTruthy();
+      fireEvent.press(screen.getByLabelText("Open timeline entry 2: Newer result"));
+      expect(screen.queryByLabelText("Edit journal entry: Newer result")).toBeNull();
+      expect(screen.getByText("Open Tool Source")).toBeTruthy();
+    }
+  );
+
+  it("preserves the detailed-list draft on a failed save and cancels without a write", async () => {
+    mockGetWorkspaceTimelineLog.mockResolvedValue({
+      id: "log-1",
+      growId: "grow-1",
+      title: "Watered blueberry",
+      notes: "Original",
+      date: "2026-06-30",
+      type: "watering",
+      tags: []
+    });
+    mockUpdateWorkspaceTimelineLog.mockRejectedValue(new Error("Temporary failure"));
+    const screen = render(<GrowTimelineScreen />);
+    await screen.findByLabelText("Visual grow timeline flowchart");
+    fireEvent.press(screen.getByText("Detailed List"));
+    fireEvent.press(screen.getByLabelText("Edit journal entry: Watered blueberry"));
+    await screen.findByLabelText("Edit log notes");
+    fireEvent.changeText(screen.getByLabelText("Edit log notes"), "Corrected quantity");
+    fireEvent.press(screen.getByLabelText("Save log changes"));
+    await screen.findByText(/Your changes are still here/);
+    expect(screen.getByLabelText("Edit log notes").props.value).toBe(
+      "Corrected quantity"
+    );
+    fireEvent.press(screen.getByLabelText("Cancel log editing"));
+    expect(screen.queryByLabelText("Edit log notes")).toBeNull();
+    expect(mockUpdateWorkspaceTimelineLog).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Added 500 ml.")).toBeTruthy();
+  });
+
   it("retries a failed timeline read for the same grow and preserves the selected view", async () => {
     const screen = render(<GrowTimelineScreen />);
     await screen.findByLabelText("Visual grow timeline flowchart");
@@ -161,9 +272,11 @@ describe("GrowTimelineScreen", () => {
     expect(screen.queryByText("VPD result saved")).toBeNull();
 
     let rejectRead!: (error: Error) => void;
-    mockGetWorkspaceGrowTimeline.mockReturnValueOnce(new Promise((_, reject) => {
-      rejectRead = reject;
-    }));
+    mockGetWorkspaceGrowTimeline.mockReturnValueOnce(
+      new Promise((_, reject) => {
+        rejectRead = reject;
+      })
+    );
     mockFocused = false;
     screen.rerender(<GrowTimelineScreen />);
     mockFocused = true;
@@ -182,8 +295,12 @@ describe("GrowTimelineScreen", () => {
     expect(screen.queryByText("Could not load this timeline")).toBeNull();
     expect(screen.getByText("Watered blueberry")).toBeTruthy();
     expect(screen.queryByText("VPD result saved")).toBeNull();
-    expect(screen.getByRole("button", { name: "Detailed List", selected: true })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Show timeline by Day", selected: true })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Detailed List", selected: true })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Show timeline by Day", selected: true })
+    ).toBeTruthy();
     expect(mockGetWorkspaceGrowTimeline.mock.calls).toEqual([
       ["personal", "grow-1", { verifyRecords: true }],
       ["personal", "grow-1", { verifyRecords: true }],
@@ -193,9 +310,11 @@ describe("GrowTimelineScreen", () => {
 
   it("shows the empty timeline only after a verified empty read", async () => {
     let resolveRead!: (events: unknown[]) => void;
-    mockGetWorkspaceGrowTimeline.mockReturnValueOnce(new Promise((resolve) => {
-      resolveRead = resolve;
-    }));
+    mockGetWorkspaceGrowTimeline.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRead = resolve;
+      })
+    );
     const screen = render(<GrowTimelineScreen />);
     expect(screen.queryByText(/No timeline events match this view/)).toBeNull();
 
@@ -374,6 +493,8 @@ describe("GrowTimelineScreen", () => {
       ).toHaveLength(2);
       expect(screen.queryByText("Photo added: first journal")).toBeNull();
       expect(screen.queryByText("Photo added: second journal")).toBeNull();
+      expect(screen.getByText("second distinct journal notes")).toBeTruthy();
+      fireEvent.press(screen.getByLabelText("Open timeline entry 1: Same-day journal"));
       expect(screen.getByText("first distinct journal notes")).toBeTruthy();
       expect(
         screen.getByLabelText("Photo 1 for Same-day journal").props.source.uri

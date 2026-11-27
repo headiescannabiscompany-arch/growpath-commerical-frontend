@@ -1,10 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { parseDisplayDate } from "@/features/grows/routeUtils";
+
+const POINT_WIDTH = 132;
+const POINT_MARGIN = 3;
+const FLOW_PADDING = 12;
 
 export type GrowTimelineFlowEvent = {
   id: string;
@@ -36,10 +40,12 @@ function readableDate(value: string) {
 export default function GrowTimelineFlow({
   events,
   initialEventId,
+  renderEntryActions,
   emptyText = "No milestones are available for this visual timeline."
 }: {
   events: GrowTimelineFlowEvent[];
   initialEventId?: string;
+  renderEntryActions?: (eventId: string) => React.ReactNode;
   emptyText?: string;
 }) {
   const { palette } = useAppTheme();
@@ -53,23 +59,34 @@ export default function GrowTimelineFlow({
       ),
     [events]
   );
-  const [selectedId, setSelectedId] = useState(
-    () =>
-      chronological.find((event) => event.id === initialEventId)?.id ??
-      chronological[0]?.id ??
-      ""
+  // An explicit choice stays anchored on refresh. An unpinned viewer follows new entries.
+  const [selectedId, setSelectedId] = useState(initialEventId);
+  const lastIndex = chronological.length - 1;
+  const requestedIndex = chronological.findIndex((event) => event.id === selectedId);
+  const selectedIndex = requestedIndex < 0 ? lastIndex : requestedIndex;
+  const selected = chronological[selectedIndex];
+
+  const rail = useRef<ScrollView>(null);
+  const [viewportWidth, setViewportWidth] = useState(0);
+  const [contentWidth, setContentWidth] = useState(0);
+  const revealPoint = useCallback(
+    (index: number) => {
+      if (index < 0 || viewportWidth <= 0 || contentWidth <= viewportWidth) return;
+      const pointCenter = FLOW_PADDING + (index + 0.5) * (POINT_WIDTH + 2 * POINT_MARGIN);
+      const x = Math.max(
+        0,
+        Math.min(contentWidth - viewportWidth, pointCenter - viewportWidth / 2)
+      );
+      rail.current?.scrollTo({ x, y: 0, animated: false });
+    },
+    [contentWidth, viewportWidth]
   );
-
   useEffect(() => {
-    if (!chronological.some((event) => event.id === selectedId)) {
-      setSelectedId(chronological[0]?.id || "");
-    }
-  }, [chronological, selectedId]);
+    revealPoint(selectedIndex);
+  }, [revealPoint, selectedIndex, selected?.id]);
 
-  if (!chronological.length) return <Text style={styles.empty}>{emptyText}</Text>;
+  if (!selected) return <Text style={styles.empty}>{emptyText}</Text>;
 
-  const selected =
-    chronological.find((event) => event.id === selectedId) || chronological[0];
   const highlights = (selected.highlights || []).filter(Boolean).slice(0, 8);
 
   return (
@@ -79,10 +96,28 @@ export default function GrowTimelineFlow({
           <Text style={styles.kicker}>VISUAL GROW STORY</Text>
           <Text style={styles.heading}>Select a point to open the full entry</Text>
         </View>
-        <Text style={styles.count}>{chronological.length} points</Text>
+        <View style={styles.endControls}>
+          <Text style={styles.count}>{chronological.length} points</Text>
+          {lastIndex > 0 ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Show latest timeline entry"
+              style={styles.latestButton}
+              onPress={() => {
+                setSelectedId(undefined);
+                revealPoint(lastIndex);
+              }}
+            >
+              <Text style={styles.latestText}>Latest</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
       <ScrollView
+        ref={rail}
         horizontal
+        onLayout={({ nativeEvent }) => setViewportWidth(nativeEvent.layout.width)}
+        onContentSizeChange={(width) => setContentWidth(width)}
         showsHorizontalScrollIndicator
         contentContainerStyle={styles.flow}
         accessibilityLabel="Chronological grow milestones"
@@ -97,7 +132,7 @@ export default function GrowTimelineFlow({
               accessibilityRole="button"
               accessibilityLabel={`Open timeline entry ${index + 1}: ${event.title}`}
               accessibilityState={{ selected: active }}
-              onPress={() => setSelectedId(event.id)}
+              onPress={() => setSelectedId(index === lastIndex ? undefined : event.id)}
               style={styles.pointWrap}
             >
               <Text numberOfLines={1} style={styles.date}>
@@ -142,7 +177,7 @@ export default function GrowTimelineFlow({
             <Text style={styles.detailTitle}>{selected.title}</Text>
             <Text style={styles.detailDate}>{readableDate(selected.timestamp)}</Text>
           </View>
-          <Text style={styles.openHint}>POINT {chronological.indexOf(selected) + 1}</Text>
+          <Text style={styles.openHint}>POINT {selectedIndex + 1}</Text>
         </View>
         {selected.summary ? <Text style={styles.summary}>{selected.summary}</Text> : null}
         {selected.photos?.length ? (
@@ -167,6 +202,7 @@ export default function GrowTimelineFlow({
             ))}
           </View>
         ) : null}
+        {renderEntryActions?.(selected.id)}
       </View>
     </View>
   );
@@ -199,9 +235,17 @@ const createStyles = (palette: ThemePalette) =>
     },
     heading: { color: palette.text, fontSize: 18, fontWeight: "900", marginTop: 3 },
     count: { color: palette.textMuted, fontSize: 12, fontWeight: "800", flexShrink: 0 },
+    endControls: { alignItems: "flex-end", flexShrink: 0 },
+    latestButton: {
+      minHeight: 44,
+      minWidth: 44,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    latestText: { color: palette.accent, fontWeight: "800" },
     flow: {
       minWidth: "100%",
-      paddingHorizontal: 12,
+      paddingHorizontal: FLOW_PADDING,
       paddingVertical: 20,
       position: "relative"
     },
@@ -213,7 +257,11 @@ const createStyles = (palette: ThemePalette) =>
       right: 12,
       top: 59
     },
-    pointWrap: { alignItems: "center", marginHorizontal: 3, width: 132 },
+    pointWrap: {
+      alignItems: "center",
+      marginHorizontal: POINT_MARGIN,
+      width: POINT_WIDTH
+    },
     date: { color: palette.textMuted, fontSize: 10, fontWeight: "800", marginBottom: 8 },
     node: {
       alignItems: "center",

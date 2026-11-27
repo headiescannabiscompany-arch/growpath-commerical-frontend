@@ -36,6 +36,7 @@ export type GrowTimelinePublicCopy = {
 };
 
 export type GrowTimelinePublicPreview = {
+  previewRevision?: string;
   title: string;
   description: string;
   presentation: "visual" | "list";
@@ -45,7 +46,15 @@ export type GrowTimelinePublicPreview = {
   cannabisSpecific: boolean;
 };
 
+export type GrowTimelineTextOverride = {
+  eventId: string;
+  title?: string;
+  summary?: string;
+};
+
 export type GrowTimelinePublicCopyInput = {
+  previewRevision?: string;
+  eventTextOverrides?: GrowTimelineTextOverride[];
   title: string;
   description?: string;
   presentation?: "visual" | "list";
@@ -71,7 +80,12 @@ export async function getCurrentGrowTimelineCopy(
     method: "GET",
     cache: "no-store"
   });
-  return copyFromResponse(response);
+  return copyFromResponse(response) as
+    | (GrowTimelinePublicCopy & {
+        ownerPhotoSources?: string[][];
+        ownerEventTextOverrides?: GrowTimelineTextOverride[];
+      })
+    | null;
 }
 
 export async function publishGrowTimelineCopy(

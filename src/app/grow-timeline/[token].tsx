@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { Link, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
@@ -13,9 +14,11 @@ import {
   getPublicGrowTimelineCopy,
   type GrowTimelinePublicCopy
 } from "@/api/growTimelineCopies";
+import { useAuth } from "@/auth/AuthContext";
+import { parsePublicTimelineReturnPath, safeLoginPath } from "@/utils/authReturnPath";
 import ReportModal from "@/components/ReportModal";
 import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
-import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
+import { fmtDate } from "@/features/grows/routeUtils";
 import { visualTimelineEvents } from "@/features/grows/timeline";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -27,7 +30,26 @@ import {
 
 export default function PublicGrowTimelineRoute() {
   const { token: rawToken } = useLocalSearchParams<{ token?: string | string[] }>();
-  const token = useMemo(() => coerceParam(rawToken), [rawToken]);
+  const auth = useAuth();
+  const path =
+    typeof rawToken === "string"
+      ? parsePublicTimelineReturnPath(`/grow-timeline/${rawToken}`)
+      : "";
+  if (auth.isHydrating)
+    return <ActivityIndicator accessibilityLabel="Opening shared timeline" />;
+  const signedIn = Boolean(auth.token);
+  const viewer = signedIn ? auth.user?.id || "signed-in" : "visitor";
+  return (
+    <SharedTimeline
+      key={JSON.stringify([path, viewer, auth.user?.cannabisVisibility])}
+      path={path}
+      signedIn={signedIn}
+    />
+  );
+}
+
+function SharedTimeline({ path, signedIn }: { path: string; signedIn: boolean }) {
+  const token = path.split("/").pop() || "";
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [copy, setCopy] = useState<GrowTimelinePublicCopy | null>(null);
@@ -36,31 +58,54 @@ export default function PublicGrowTimelineRoute() {
   const [reportVisible, setReportVisible] = useState(false);
   const [feedback, setFeedback] = useState("");
 
-  const load = useCallback(async () => {
-    if (!token) {
-      setError("This grow timeline is unavailable.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      setCopy(await getPublicGrowTimelineCopy(token));
-      setError("");
-    } catch {
+  const [attempt, setAttempt] = useState(0);
+  const [showSignIn, setShowSignIn] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
       setCopy(null);
-      setError(
-        "This grow timeline is unavailable, withdrawn, or restricted by your content settings."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+      setError("");
+      setShowSignIn(false);
+      if (!token) {
+        setError("This grow timeline link is incomplete.");
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      async function load() {
+        try {
+          const result = await getPublicGrowTimelineCopy(token);
+          if (!active) return;
+          if (!result || result.token !== token || result.status !== "published") {
+            setError(
+              "This grow timeline is unavailable, withdrawn, or restricted by your content settings."
+            );
+            setShowSignIn(true);
+          } else {
+            setCopy(result);
+          }
+        } catch (caught) {
+          if (!active) return;
+          const status = (caught as { status?: number } | null)?.status;
+          const unavailable =
+            status === 401 || status === 403 || status === 404 || status === 410;
+          setError(
+            unavailable
+              ? "This grow timeline is unavailable, withdrawn, or restricted by your content settings."
+              : "The shared timeline could not be loaded. Try again."
+          );
+          setShowSignIn(unavailable);
+        } finally {
+          if (active) setLoading(false);
+        }
+      }
+      void load();
+      return () => {
+        active = false;
+      };
+    }, [token, attempt])
+  );
 
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const path = token ? `/grow-timeline/${token}` : "";
   const shareDetails = copy
     ? { description: copy.description, socialPreviewUrl: copy.socialPreviewUrl }
     : {};
@@ -78,11 +123,24 @@ export default function PublicGrowTimelineRoute() {
           <Text accessibilityRole="alert" style={styles.error}>
             {error}
           </Text>
-          <Link href="/login" asChild>
-            <Pressable style={styles.primaryButton} accessibilityRole="link">
-              <Text style={styles.primaryText}>Sign In / Check Content Settings</Text>
+          {showSignIn && !signedIn ? (
+            <Link href={safeLoginPath("", path) as any} asChild>
+              <Pressable style={styles.primaryButton} accessibilityRole="link">
+                <Text style={styles.primaryText}>
+                  Sign in and return to this timeline
+                </Text>
+              </Pressable>
+            </Link>
+          ) : null}
+          {token ? (
+            <Pressable
+              style={styles.secondaryButton}
+              accessibilityRole="button"
+              onPress={() => setAttempt((n) => n + 1)}
+            >
+              <Text style={styles.secondaryText}>Try again</Text>
             </Pressable>
-          </Link>
+          ) : null}
         </View>
       ) : null}
 

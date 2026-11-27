@@ -68,6 +68,7 @@ export type RecurringPriceQuotes = Partial<
 export type SubscriptionSetupStatus = Record<string, unknown> & {
   mode?: "live" | "test" | "unknown";
   giftCheckoutConfigured?: boolean;
+  guestGiftCheckoutConfigured?: boolean;
   catalogReady: boolean;
   quotes: RecurringPriceQuotes;
   trial?: {
@@ -194,6 +195,7 @@ function invalidSubscriptionSetupStatus(): never {
 export async function getSubscriptionSetupStatus(): Promise<SubscriptionSetupStatus> {
   const res = await apiRequest("/api/subscription/status", {
     method: "GET",
+    auth: false,
     cache: "no-store"
   });
   const value = res?.data ?? res;
@@ -461,7 +463,7 @@ function isIsoDate(value: unknown): value is string {
   return typeof value === "string" && Number.isFinite(Date.parse(value));
 }
 
-function isGiftCheckoutQuote(value: unknown): value is GiftCheckoutQuote {
+export function isGiftCheckoutQuote(value: unknown): value is GiftCheckoutQuote {
   if (!value || typeof value !== "object") return false;
   const quote = value as Record<string, unknown>;
   return Boolean(

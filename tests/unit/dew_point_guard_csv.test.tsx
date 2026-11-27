@@ -2,7 +2,8 @@ import fs from "fs";
 import path from "path";
 import React from "react";
 import { Alert } from "react-native";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import DewPointGuard, {
   createDewPointGuardStyles
@@ -22,6 +23,11 @@ const mockSaveToolRunAndCreateTask = jest.fn(async () => ({
 }));
 const mockListPersonalPlants = jest.fn();
 const mockGetDocumentAsync = jest.fn();
+let mockCsvAccount = "csv-owner";
+jest.mock("@/auth/AuthContext", () => ({
+  ...jest.requireActual("@/auth/AuthContext"),
+  useOptionalAuth: () => ({ user: { id: mockCsvAccount }, token: "test-session" })
+}));
 const mockReadAsStringAsync = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -39,7 +45,8 @@ jest.mock("expo-file-system/legacy", () => ({
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
   getItem: jest.fn(async () => null),
-  setItem: jest.fn(async () => undefined)
+  setItem: jest.fn(async () => undefined),
+  removeItem: jest.fn(async () => undefined)
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
@@ -76,6 +83,17 @@ jest.mock("@/api/telemetry", () => ({
 describe("Dew Point Guard CSV flow", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockCsvAccount = "csv-owner";
+    const storage = new Map<string, string>();
+    jest
+      .mocked(AsyncStorage.getItem)
+      .mockImplementation(async (key) => storage.get(key) ?? null);
+    jest.mocked(AsyncStorage.setItem).mockImplementation(async (key, value) => {
+      storage.set(key, value);
+    });
+    jest.mocked(AsyncStorage.removeItem).mockImplementation(async (key) => {
+      storage.delete(key);
+    });
     mockGetDocumentAsync.mockResolvedValue({ canceled: true });
     mockReadAsStringAsync.mockResolvedValue("");
     mockSaveToolRunAndOpenJournal.mockResolvedValue({ ok: true, toolRunId: "tr1" });
@@ -135,11 +153,12 @@ describe("Dew Point Guard CSV flow", () => {
       points: []
     });
 
-    mockBulkIngestTelemetryPoints.mockResolvedValue({
-      ingested: 3,
+    mockBulkIngestTelemetryPoints.mockImplementation(async ({ points }) => ({
+      ingested: points.length,
       updated: 0,
-      skipped: 0
-    });
+      skipped: 0,
+      acknowledged: points.length
+    }));
     mockPullPulseWindow.mockResolvedValue({
       sourceId: "s-upload",
       pulled: 0,
@@ -161,19 +180,19 @@ describe("Dew Point Guard CSV flow", () => {
     });
   });
 
-  async function prepareReviewedGenericCsv(screen: ReturnType<typeof render>) {
+  async function prepareReviewedGenericCsv(
+    screen: ReturnType<typeof render>,
+    csv = [
+      "ts,tempF,rh",
+      "2026-02-27T05:00:00.000Z,70,60",
+      "2026-02-27T05:10:00.000Z,69,62"
+    ].join("\n")
+  ) {
     fireEvent.press(screen.getByTestId("dpg-mode-source"));
     fireEvent.press(screen.getByTestId("dpg-load-sources"));
     await waitFor(() => expect(mockListTelemetrySources).toHaveBeenCalled());
     fireEvent.changeText(screen.getByTestId("dpg-source-timezone"), "America/New_York");
-    fireEvent.changeText(
-      screen.getByTestId("dpg-csv-paste"),
-      [
-        "ts,tempF,rh",
-        "2026-02-27T05:00:00.000Z,70,60",
-        "2026-02-27T05:10:00.000Z,69,62"
-      ].join("\n")
-    );
+    fireEvent.changeText(screen.getByTestId("dpg-csv-paste"), csv);
     fireEvent.press(screen.getByTestId("dpg-csv-parse"));
     await waitFor(() => expect(screen.getByTestId("dpg-csv-preview-count")).toBeTruthy());
     fireEvent.changeText(screen.getByTestId("dpg-csv-room-name"), "Tent 1");
@@ -183,6 +202,174 @@ describe("Dew Point Guard CSV flow", () => {
     );
     await waitFor(() => expect(screen.getByTestId("dpg-csv-ingest")).not.toBeDisabled());
   }
+
+  function historyFixture(count: number) {
+    const start = Date.UTC(2026, 0, 1);
+    return [
+      "timestamp,tempF,rh",
+      ...Array.from(
+        { length: count },
+        (_, index) => new Date(start + index * 60_000).toISOString() + ",70,60"
+      )
+    ].join("\n");
+  }
+
+  it("imports the full reviewed 5,001 timestamps and counts duplicate and invalid rows", async () => {
+    const csv = historyFixture(5001) + "\n2026-01-01T00:00:00.000Z,78,62\nbad-date,90,60";
+    const screen = render(<DewPointGuard />);
+    await prepareReviewedGenericCsv(screen, csv);
+    expect(screen.getByTestId("dpg-csv-plan")).toHaveTextContent(
+      /5001 unique readings from 5003 rows/
+    );
+    expect(screen.getByTestId("dpg-csv-plan")).toHaveTextContent(/1 invalid/);
+    expect(screen.getByTestId("dpg-csv-plan")).toHaveTextContent(/1 duplicate/);
+    fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
+    await waitFor(
+      () =>
+        expect(screen.getByTestId("dpg-csv-progress")).toHaveTextContent(/5001 of 5001/),
+      { timeout: 5000 }
+    );
+    const calls = mockBulkIngestTelemetryPoints.mock.calls.map(([input]) => input);
+    expect(calls.map((input) => input.points.length)).toEqual([
+      ...Array(10).fill(500),
+      1
+    ]);
+    expect(calls[0].points[0].ts).toBe("2026-01-01T00:00:00.000Z");
+    expect(calls[0].points[0].rh).toBe(62);
+    expect(calls[10].points[0].ts).toBe(
+      new Date(Date.UTC(2026, 0, 1) + 5000 * 60000).toISOString()
+    );
+    expect(
+      new Set(calls.flatMap((input) => input.points.map((point: any) => point.ts))).size
+    ).toBe(5001);
+    const savedOffsets = jest
+      .mocked(AsyncStorage.setItem)
+      .mock.calls.filter(([key]) => key.startsWith("gp:history-csv:"));
+    expect(savedOffsets.map(([, value]) => value)).toEqual(
+      Array.from({ length: 10 }, (_, i) => String((i + 1) * 500))
+    );
+    expect(savedOffsets[0][0]).toMatch(/^gp:history-csv:v1:[0-9a-f]{64}$/);
+  });
+
+  it("resumes only confirmed readings after a failed batch, unmount and exact re-selection", async () => {
+    const csv = historyFixture(1001);
+    mockBulkIngestTelemetryPoints
+      .mockResolvedValueOnce({ acknowledged: 500, ingested: 500, updated: 0, skipped: 0 })
+      .mockRejectedValueOnce(new Error("temporary network failure"));
+    const first = render(<DewPointGuard />);
+    await prepareReviewedGenericCsv(first, csv);
+    fireEvent.press(first.getByTestId("dpg-csv-ingest"));
+    await waitFor(() => expect(first.getByText("Resume import")).toBeTruthy());
+    expect(first.getByTestId("dpg-csv-progress")).toHaveTextContent(/500 of 1001/);
+    first.unmount();
+
+    const resumed = render(<DewPointGuard />);
+    await prepareReviewedGenericCsv(resumed, csv);
+    expect(resumed.getByTestId("dpg-csv-progress")).toHaveTextContent(/500 of 1001/);
+    fireEvent.press(resumed.getByTestId("dpg-csv-ingest"));
+    await waitFor(() =>
+      expect(resumed.getByTestId("dpg-csv-progress")).toHaveTextContent(/1001 of 1001/)
+    );
+    const batches = mockBulkIngestTelemetryPoints.mock.calls.map(
+      ([input]) => input.points
+    );
+    expect(batches.map((points) => points.length)).toEqual([500, 500, 500, 1]);
+    expect(batches[1][0].ts).toBe(batches[2][0].ts);
+  });
+
+  it("starts at the first row for revised file contents even with the same file length, name and mapping", async () => {
+    const csv = historyFixture(501);
+    mockBulkIngestTelemetryPoints
+      .mockResolvedValueOnce({ acknowledged: 500, ingested: 500, updated: 0, skipped: 0 })
+      .mockRejectedValueOnce(new Error("disconnected"));
+    const screen = render(<DewPointGuard />);
+    await prepareReviewedGenericCsv(screen, csv);
+    fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
+    await waitFor(() => expect(screen.getByText("Resume import")).toBeTruthy());
+    const revised = csv.replace(",70,60", ",70,61");
+    fireEvent.changeText(screen.getByTestId("dpg-csv-paste"), revised);
+    expect(screen.queryByTestId("dpg-csv-review-confirmed")).toBeNull();
+    expect(screen.queryByTestId("dpg-csv-ingest")).toBeNull();
+    fireEvent.press(screen.getByTestId("dpg-csv-parse"));
+    fireEvent.press(screen.getByTestId("dpg-confirm-csv-review"));
+    await waitFor(() => expect(screen.getByTestId("dpg-csv-ingest")).not.toBeDisabled());
+    fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
+    await waitFor(() =>
+      expect(screen.getByTestId("dpg-csv-progress")).toHaveTextContent(/501 of 501/)
+    );
+    expect(mockBulkIngestTelemetryPoints.mock.calls[2][0].points[0]).toMatchObject({
+      ts: "2026-01-01T00:00:00.000Z",
+      rh: 61
+    });
+  });
+
+  it("pauses at an acknowledged boundary and prevents overlapping starts", async () => {
+    let resolveFirst!: (value: any) => void;
+    mockBulkIngestTelemetryPoints.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveFirst = resolve;
+        })
+    );
+    const screen = render(<DewPointGuard />);
+    await prepareReviewedGenericCsv(screen, historyFixture(501));
+    const button = screen.getByTestId("dpg-csv-ingest");
+    fireEvent.press(button);
+    fireEvent.press(button);
+    await waitFor(() => expect(screen.getByTestId("dpg-csv-pause")).toBeTruthy());
+    fireEvent.press(screen.getByTestId("dpg-csv-pause"));
+    await act(async () => {
+      resolveFirst({ acknowledged: 500, ingested: 500, updated: 0, skipped: 0 });
+    });
+    await waitFor(() => expect(screen.getByText("Resume import")).toBeTruthy());
+    expect(mockBulkIngestTelemetryPoints).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("dpg-csv-progress")).toHaveTextContent(/500 of 501/);
+    fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
+    await waitFor(() =>
+      expect(screen.getByTestId("dpg-csv-progress")).toHaveTextContent(/501 of 501/)
+    );
+  });
+
+  it("will not guess confirmation from an older response or send the next batch", async () => {
+    mockBulkIngestTelemetryPoints.mockResolvedValue({
+      ingested: 500,
+      updated: 0,
+      skipped: 0
+    });
+    const screen = render(<DewPointGuard />);
+    await prepareReviewedGenericCsv(screen, historyFixture(501));
+    fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
+    await waitFor(() => expect(screen.getByText("Resume import")).toBeTruthy());
+    expect(screen.getByTestId("dpg-csv-progress")).toHaveTextContent(/0 of 501/);
+    expect(mockBulkIngestTelemetryPoints).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(/Import complete/)).toBeNull();
+  });
+
+  it("stops sending after an in-flight request when the account or file changes", async () => {
+    let acknowledge!: (value: any) => void;
+    mockBulkIngestTelemetryPoints.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          acknowledge = resolve;
+        })
+    );
+    const screen = render(<DewPointGuard />);
+    await prepareReviewedGenericCsv(screen, historyFixture(501));
+    fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
+    await waitFor(() => expect(mockBulkIngestTelemetryPoints).toHaveBeenCalledTimes(1));
+    mockCsvAccount = "second-user";
+    screen.rerender(<DewPointGuard />);
+    fireEvent.changeText(
+      screen.getByTestId("dpg-csv-paste"),
+      "timestamp,tempF,rh\n2026-03-01T00:00:00Z,69,60"
+    );
+    await act(async () => {
+      acknowledge({ acknowledged: 500, ingested: 500, updated: 0, skipped: 0 });
+    });
+    expect(mockBulkIngestTelemetryPoints).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("dpg-csv-progress")).toBeNull();
+    expect(screen.queryByTestId("dpg-csv-review-confirmed")).toBeNull();
+  });
 
   it("themes every Dew Point Guard surface and input in Night and Day modes", () => {
     const nightPalette = getThemePalette("night", "dark");

@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useIsFocused } from "@react-navigation/native";
 import { Link } from "expo-router";
 import {
   ActivityIndicator,
@@ -174,6 +175,8 @@ export default function PersonalGrowsRoute({
   workspace?: GrowWorkspace;
 } = {}) {
   const ent = useEntitlements();
+  const isFocused = useIsFocused();
+  const latestRead = useRef(0);
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const basePath = `/home/${workspace}`;
@@ -199,6 +202,7 @@ export default function PersonalGrowsRoute({
   const maxGrows = Number(ent.limits?.maxGrows ?? 0);
 
   const load = useCallback(async () => {
+    const readId = ++latestRead.current;
     setGrowLoadState("loading");
     setError("");
     try {
@@ -208,10 +212,9 @@ export default function PersonalGrowsRoute({
           ? listPersonalGrows({ archived: true, throwOnError: true })
           : []
       ]);
+      if (latestRead.current !== readId) return;
       const nextItems = Array.isArray(activeRows) ? activeRows : [];
       const nextArchivedItems = Array.isArray(archivedRows) ? archivedRows : [];
-      setItems(nextItems);
-      setArchivedItems(nextArchivedItems);
 
       const rowsById = new Map<string, PersonalGrow>();
       [...nextItems, ...nextArchivedItems].forEach((grow) => {
@@ -228,21 +231,29 @@ export default function PersonalGrowsRoute({
           }
         })
       );
+      if (latestRead.current !== readId) return;
+      setItems(nextItems);
+      setArchivedItems(nextArchivedItems);
       setPhotoCounts(Object.fromEntries(countPairs));
       setGrowLoadState("ready");
     } catch (e) {
+      if (latestRead.current !== readId) return;
       setError(String((e as any)?.message || e || "Failed to load grows"));
       setItems([]);
       setPhotoCounts({});
       setGrowLoadState("error");
     } finally {
-      setRefreshing(false);
+      if (latestRead.current === readId) setRefreshing(false);
     }
   }, [workspace]);
 
   useEffect(() => {
+    if (!isFocused) return;
     void load();
-  }, [load]);
+    return () => {
+      latestRead.current += 1;
+    };
+  }, [isFocused, load]);
 
   const sortedGrows = useMemo(
     () => [...items].sort((left, right) => growTimestamp(right) - growTimestamp(left)),

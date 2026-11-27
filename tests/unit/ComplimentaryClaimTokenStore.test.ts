@@ -4,6 +4,7 @@ import {
   COMPLIMENTARY_CLAIM_CONTINUATION_STORAGE_KEY,
   COMPLIMENTARY_CLAIM_TOKEN_STORAGE_KEY,
   hasPendingComplimentaryClaimContinuation,
+  finishGuestClaimContinuation,
   normalizeComplimentaryClaimToken,
   readComplimentaryClaimToken,
   scrubComplimentaryClaimTokenFromUrl,
@@ -41,6 +42,24 @@ describe("complimentary claim token storage", () => {
     await clearComplimentaryClaimToken();
 
     await expect(readComplimentaryClaimToken()).resolves.toBe("");
+  });
+
+  it("ends only the accepted invitation’s cross-tab handoff and retains same-tab replay", async () => {
+    const storage = () => {
+      const values = new Map<string, string>();
+      return {
+        getItem: (key: string) => values.get(key) ?? null,
+        removeItem: (key: string) => values.delete(key),
+        setItem: (key: string, value: string) => values.set(key, value)
+      };
+    };
+    (globalThis as any).window = { localStorage: storage(), sessionStorage: storage() };
+    await writeComplimentaryClaimToken("invitation-B");
+    finishGuestClaimContinuation("invitation-A");
+    expect(hasPendingComplimentaryClaimContinuation()).toBe(true);
+    finishGuestClaimContinuation("invitation-B");
+    expect(hasPendingComplimentaryClaimContinuation()).toBe(false);
+    await expect(readComplimentaryClaimToken()).resolves.toBe("invitation-B");
   });
 
   it("reads a single fragment token and scrubs query and fragment secrets", async () => {

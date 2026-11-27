@@ -28,8 +28,11 @@ import {
   type BillingPlanKey
 } from "@/features/billing/planCopy";
 import GiftCheckoutReviewAction from "@/features/billing/GiftCheckoutReviewAction";
+import { GuestGiftOrder, GuestGiftStatus } from "@/features/billing/GuestGiftCheckout";
+import { loadGuestGiftReceipt, type GuestGiftPlan, type GuestGiftReceipt } from "@/features/billing/guestGiftCheckoutClient";
 import GiftCheckoutRecoveryAction from "@/features/billing/GiftCheckoutRecoveryAction";
 import { pendingSignupPlan } from "@/features/billing/pendingSignupPlan";
+import { isGiftCampaignLanding } from "@/features/billing/isGiftCampaignLanding";
 import SubscriptionCheckoutRecoveryAction from "@/features/billing/SubscriptionCheckoutRecoveryAction";
 import {
   formatVerifiedRecurringBillingNote,
@@ -44,6 +47,7 @@ import { FREE_POLICY } from "@/config/freePolicy";
 import {
   OFFERS_GIFT_RETURN_PATH,
   normalizeLiveGiftSessionId,
+  offersGiftReturnPath,
   resolveAuthReturnPath,
   safeLoginPath
 } from "@/utils/authReturnPath";
@@ -121,6 +125,13 @@ export default function Offers() {
   const [trialEnabled, setTrialEnabled] = useState(true);
   const [trialDays, setTrialDays] = useState(30);
   const [giftCheckoutConfigured, setGiftCheckoutConfigured] = useState(false);
+  const [guestConfigured, setGuestConfigured] = useState(false);
+  const [guestPlan, setGuestPlan] = useState<GuestGiftPlan>("pro");
+  const [guestReceipt, setGuestReceipt] = useState<GuestGiftReceipt | null>(null);
+  const [receiptChecked, setReceiptChecked] = useState(false);
+  const [receiptError, setReceiptError] = useState(false);
+  const [receiptRead, setReceiptRead] = useState(0);
+  const [retryGuestReceipt, setRetryGuestReceipt] = useState(false);
   const [setupReadStatus, setSetupReadStatus] = useState<ReadStatus>("loading");
   const [setupAttempt, setSetupAttempt] = useState(0);
   const [catalogQuotes, setCatalogQuotes] = useState<RecurringPriceQuotes>({});
@@ -206,11 +217,33 @@ export default function Offers() {
           )}${fragment}`
         : null
       : undefined;
-  const giftContinuationRequested = isExactOffersGiftContinuation(
-    searchParams as Record<string, string | string[] | undefined>,
-    fragment,
-    rawBrowserPath
-  );
+  const giftContinuationRequested =
+    isExactOffersGiftContinuation(searchParams, fragment, rawBrowserPath) ||
+    isGiftCampaignLanding(searchParams, fragment, rawBrowserPath);
+  useEffect(() => {
+    if (!giftContinuationRequested) {
+      setReceiptChecked(false);
+      setGuestReceipt(null);
+      setRetryGuestReceipt(false);
+      return;
+    }
+    let active = true;
+    setReceiptChecked(false);
+    setReceiptError(false);
+    loadGuestGiftReceipt()
+      .then((receipt) => {
+        if (active) setGuestReceipt(receipt);
+      })
+      .catch(() => {
+        if (active) setReceiptError(true);
+      })
+      .finally(() => {
+        if (active) setReceiptChecked(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [giftContinuationRequested, receiptRead]);
   const liveGiftSessionId = normalizeLiveGiftSessionId(
     Array.isArray(searchParams.liveSessionId) ? undefined : searchParams.liveSessionId
   );
@@ -250,6 +283,7 @@ export default function Offers() {
         }
         if (mounted) {
           setGiftCheckoutConfigured(status?.giftCheckoutConfigured === true);
+          setGuestConfigured(status?.guestGiftCheckoutConfigured === true);
           setCatalogQuotes(parseRecurringPriceQuotes(status?.quotes));
           setSetupReadStatus("ready");
         }
@@ -258,6 +292,7 @@ export default function Offers() {
         if (mounted) {
           setCheckoutMode("unknown");
           setGiftCheckoutConfigured(false);
+          setGuestConfigured(false);
           setCatalogQuotes({});
           setSetupReadStatus("failed");
         }
@@ -383,6 +418,175 @@ export default function Offers() {
     } finally {
       setLoadingPlan(null);
     }
+  }
+
+  if (giftContinuationRequested && guestReceipt && !retryGuestReceipt) {
+    return (
+      <AppPage routeKey="offers" backFallbackHref="/offers" railOverride={null}>
+        <GuestGiftStatus
+          receipt={guestReceipt}
+          onRetry={() => setRetryGuestReceipt(true)}
+          onNew={() => {
+            setGuestReceipt(null);
+            setRetryGuestReceipt(false);
+          }}
+          openCheckout={openCheckoutUrl}
+        />
+      </AppPage>
+    );
+  }
+  if (giftContinuationRequested && (!authenticated || guestReceipt || !receiptChecked)) {
+    const ready = giftSetupLoaded && giftCheckoutConfigured && !auth.isHydrating;
+    const guestPurchase = guestConfigured && checkoutMode !== "unknown" && !liveGiftSessionId;
+    const waiting = setupReadStatus === "loading" || auth.isHydrating || !receiptChecked;
+    return (
+      <AppPage routeKey="offers" backFallbackHref="/offers" railOverride={null}>
+        <View style={styles.header}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.headerTitle}>
+            Give a GrowPath subscription
+          </Text>
+          <Text style={styles.headerSubtitle}>
+            Give a grower one prepaid month or year. Their access starts when they accept
+            the gift and ends automatically.
+          </Text>
+          {checkoutMode === "test" && <Text style={styles.helper}>Test checkout · simulated payments only</Text>}
+          <View style={styles.segment}>
+            {(["monthly", "yearly"] as const).map((term) => (
+              <Pressable
+                key={term}
+                accessibilityRole="button"
+                accessibilityState={{ selected: term === interval }}
+                onPress={() => setInterval(term)}
+                style={[
+                  styles.segmentButton,
+                  term === interval && styles.segmentButtonActive
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.segmentText,
+                    term === interval && styles.segmentTextActive
+                  ]}
+                >
+                  {term === "yearly" ? "One year" : "One month"}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+        {waiting ? (
+          <Text accessibilityLiveRegion="polite" style={styles.cardDesc}>
+            Checking gift prices…
+          </Text>
+        ) : ready ? (
+          <>
+            <View style={[styles.planGrid, isWide && styles.planGridWide]}>
+              {GIFTABLE_BILLING_PLANS.map((plan) => {
+                const quote = verifiedRecurringPriceQuote(
+                  catalogQuotes,
+                  plan.key,
+                  interval
+                );
+                return (
+                  <AppCard key={plan.key} style={styles.planCard}>
+                    <Text accessibilityRole="header" style={styles.cardTitle}>
+                      {plan.title}
+                    </Text>
+                    <Text style={styles.cardDesc}>{plan.bullets[0]}</Text>
+                    <Text style={styles.priceMeta}>
+                      {quote
+                        ? `${formatVerifiedRecurringPrice(quote)} · one-time gift`
+                        : "Price unavailable for this term"}
+                    </Text>
+                    {guestPurchase && quote && plan.key !== "facility" ? (
+                      <Pressable
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: guestPlan === plan.key }}
+                        onPress={() => setGuestPlan(plan.key as GuestGiftPlan)}
+                        style={styles.helpButton}
+                      >
+                        <Text style={styles.helpButtonTitle}>
+                          {guestPlan === plan.key ? "Selected" : "Choose"} {plan.title}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                  </AppCard>
+                );
+              })}
+            </View>
+            {guestPurchase ? (
+              receiptError ? (
+                <View style={styles.details}>
+                  <Text accessibilityRole="alert" style={styles.cardDesc}>
+                    This browser could not read your gift receipt. Enable storage to
+                    continue securely.
+                  </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setReceiptRead((n) => n + 1)}
+                    style={styles.helpButton}
+                  >
+                    <Text style={styles.helpButtonTitle}>Retry receipt storage</Text>
+                  </Pressable>
+                </View>
+              ) : verifiedRecurringPriceQuote(catalogQuotes, guestPlan, interval) ? (
+                <GuestGiftOrder
+                  plan={guestPlan}
+                  interval={interval}
+                  previousReceipt={retryGuestReceipt ? guestReceipt : null}
+                  onReceipt={(receipt) => {
+                    setGuestReceipt(receipt);
+                    setRetryGuestReceipt(false);
+                  }}
+                  openCheckout={openCheckoutUrl}
+                />
+              ) : (
+                <Text style={styles.cardDesc}>
+                  Select a gift with an available price.
+                </Text>
+              )
+            ) : (
+              <>
+                <Text style={styles.cardDesc}>
+                  {liveGiftSessionId
+                    ? "Gift purchases linked to a Live chat use the purchasing account."
+                    : "Guest payment is currently unavailable. If you already have a GrowPath account, you can use it to buy a gift."}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() =>
+                    router.push(
+                      safeLoginPath("", offersGiftReturnPath(liveGiftSessionId)) as any
+                    )
+                  }
+                  style={styles.button}
+                >
+                  <Text style={styles.buttonText}>Buy with an existing account</Text>
+                </Pressable>
+              </>
+            )}
+          </>
+        ) : (
+          <View style={styles.details}>
+            <Text accessibilityRole="alert" style={styles.cardDesc}>
+              {setupReadFailed
+                ? "Gift prices could not be loaded."
+                : "Gift purchases are currently unavailable."}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                setSetupReadStatus("loading");
+                setSetupAttempt((value) => value + 1);
+              }}
+              style={styles.helpButton}
+            >
+              <Text style={styles.helpButtonTitle}>Check again</Text>
+            </Pressable>
+          </View>
+        )}
+      </AppPage>
+    );
   }
 
   return (
@@ -536,7 +740,7 @@ export default function Offers() {
                 disabled={item.key === "gift" && !giftCheckoutConfigured}
                 onPress={() => {
                   if (item.key === "gift" && !authenticated) {
-                    router.push(safeLoginPath("", OFFERS_GIFT_RETURN_PATH) as any);
+                    router.push(OFFERS_GIFT_RETURN_PATH as any);
                     return;
                   }
                   setGiftMode(item.key === "gift");
@@ -552,7 +756,7 @@ export default function Offers() {
                     ? giftCheckoutConfigured
                       ? authenticated
                         ? "Gift subscription mode"
-                        : "Sign in for gift subscription"
+                        : "Review prepaid gifts"
                       : "Gift subscriptions unavailable"
                     : "Buy for me mode"
                 }

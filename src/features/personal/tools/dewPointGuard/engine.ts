@@ -110,6 +110,19 @@ export function parseCsvText(csvText: string): ParsedCsv {
   return { headers, rows, metadata, provider, headerRowIndex, warnings };
 }
 
+function readTemperatureUnit(label: string): CsvMapping["tempUnit"] | undefined {
+  const unit = label.normalize("NFKC").trim().toLowerCase().match(
+    /^(?:°\s*|degrees?\s+)?(c(?:elsius)?|f(?:ahrenheit)?)$/
+  )?.[1];
+  if (!unit) return undefined;
+  return unit.startsWith("c") ? "C" : "F";
+}
+
+function temperatureUnitFromHeader(header: string): CsvMapping["tempUnit"] | undefined {
+  const suffix = header.trim().match(/temp(?:erature)?[\s_([/-]*(.+?)\s*[)\]]?$/i)?.[1];
+  return suffix ? readTemperatureUnit(suffix) : undefined;
+}
+
 export function suggestedTelemetryMapping(parsed: ParsedCsv): CsvMapping | null {
   const normalized = parsed.headers.map((header) => header.trim().toLowerCase());
   const find = (preferred: string[], fallback: RegExp) => {
@@ -120,16 +133,23 @@ export function suggestedTelemetryMapping(parsed: ParsedCsv): CsvMapping | null 
     return normalized.findIndex((value) => fallback.test(value));
   };
   const tsCol = find(["time", "timestamp"], /(?:^|\s)(?:time|timestamp)(?:$|\s)/);
-  const tempCol = find(
+  const standardTempCol = find(
     ["inside temperature", "air temperature", "temperature", "tempf", "tempc"],
     /temperature|(?:^|\s)temp(?:$|\s)/
   );
+  const tempCol =
+    standardTempCol >= 0
+      ? standardTempCol
+      : parsed.headers.findIndex((header) => temperatureUnitFromHeader(header) !== undefined);
   const rhCol = find(
     ["inside relative humidity", "relative humidity", "humidity", "rh"],
     /humidity|(?:^|\s)rh(?:$|\s)/
   );
   if ([tsCol, tempCol, rhCol].some((index) => index < 0)) return null;
-  const units = String(parsed.metadata?.["Temperature Units"] || "").toUpperCase();
+  const tempUnit =
+    readTemperatureUnit(parsed.metadata?.["Temperature Units"] || "") ??
+    temperatureUnitFromHeader(parsed.headers[tempCol]) ??
+    "F";
   const optionalExact = (...values: string[]) => {
     for (const value of values) {
       const index = normalized.indexOf(value);
@@ -146,7 +166,7 @@ export function suggestedTelemetryMapping(parsed: ParsedCsv): CsvMapping | null 
     tsCol,
     tempCol,
     rhCol,
-    tempUnit: units.includes("C") ? "C" : "F",
+    tempUnit,
     vpdCol: optionalExact("inside vpd", "vpd"),
     co2Col: optionalExact("co₂ (sensor 1)", "co2 (sensor 1)", "co₂", "co2"),
     luxCol,
@@ -166,17 +186,26 @@ export function suggestedTelemetryMapping(parsed: ParsedCsv): CsvMapping | null 
   };
 }
 
+// Controller exports typically use the same named timezone for every row.
+let wallFormatter: { zone: string; formatter: Intl.DateTimeFormat } | undefined;
+
 function timezoneWallParts(date: Date, timeZone: string) {
-  const entries = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hourCycle: "h23"
-  }).formatToParts(date);
+  if (wallFormatter?.zone !== timeZone) {
+    wallFormatter = {
+      zone: timeZone,
+      formatter: new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23"
+      })
+    };
+  }
+  const entries = wallFormatter.formatter.formatToParts(date);
   return Object.fromEntries(entries.map((part) => [part.type, part.value]));
 }
 
@@ -234,6 +263,7 @@ export function normalizeTelemetryTimestamp(
         Number(parts.minute),
         Number(parts.second)
       );
+      if (representedWallMs === desiredWallMs) break;
       guessMs += desiredWallMs - representedWallMs;
     }
   } catch {

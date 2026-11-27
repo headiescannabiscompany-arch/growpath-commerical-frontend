@@ -117,6 +117,7 @@ export type BulkIngestTelemetryPointsInput = {
 } & TelemetryWorkspaceScope;
 
 export type BulkIngestTelemetryPointsResult = {
+  acknowledged?: number;
   ingested: number;
   updated: number;
   skipped: number;

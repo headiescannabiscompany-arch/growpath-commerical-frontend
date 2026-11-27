@@ -11,6 +11,11 @@ const mockListPersonalGrows = jest.fn();
 const mockArchivePersonalGrow = jest.fn();
 const mockRestorePersonalGrow = jest.fn();
 const mockPush = jest.fn();
+let mockIsFocused = true;
+
+jest.mock("@react-navigation/native", () => ({
+  useIsFocused: () => mockIsFocused
+}));
 let mockEntitlements = {
   ready: true,
   plan: "pro",
@@ -112,6 +117,7 @@ describe("PersonalGrowsRoute", () => {
   });
 
   beforeEach(() => {
+    mockIsFocused = true;
     mockListPersonalGrows.mockReset();
     mockArchivePersonalGrow.mockReset();
     mockRestorePersonalGrow.mockReset();
@@ -174,6 +180,46 @@ describe("PersonalGrowsRoute", () => {
     expect(screen.getByTestId("feed-personal_grows-middle")).toBeTruthy();
     expect(screen.getByTestId("feed-personal_grows-bottom")).toBeTruthy();
     expect(screen.queryByText("Featured feed mock")).toBeNull();
+  });
+
+  it("opens the first grow’s journal on return to a previously empty mounted list", async () => {
+    mockEntitlements.plan = "free";
+    mockEntitlements.limits.maxGrows = 1;
+    const screen = render(<PersonalGrowsRoute />);
+    await screen.findByText("No grows yet");
+    fireEvent.press(screen.getByTestId("btn-new-grow"));
+    expect(mockPush).toHaveBeenCalledWith("/home/personal/grows/new");
+    mockIsFocused = false;
+    screen.rerender(<PersonalGrowsRoute />);
+    mockListPersonalGrows.mockImplementation(async (options?: { archived?: boolean }) =>
+      options?.archived ? [] : [{ id: "grow-basil", name: "Windowsill Basil" }]
+    );
+    mockIsFocused = true;
+    screen.rerender(<PersonalGrowsRoute />);
+    await screen.findByText("1 total");
+    expect(screen.queryByText("No grows yet")).toBeNull();
+    expect(screen.queryByTestId("btn-new-grow")).toBeNull();
+    fireEvent.press(screen.getAllByText("Journal")[0]);
+    expect(mockPush).toHaveBeenCalledWith("/home/personal/grows/grow-basil/journal");
+  });
+
+  it("ignores a late empty read from before the grower left the list", async () => {
+    const earlier = deferredRows();
+    mockListPersonalGrows.mockImplementation((options?: { archived?: boolean }) =>
+      options?.archived ? Promise.resolve([]) : earlier.promise
+    );
+    const screen = render(<PersonalGrowsRoute />);
+    mockIsFocused = false;
+    screen.rerender(<PersonalGrowsRoute />);
+    mockListPersonalGrows.mockImplementation(async (options?: { archived?: boolean }) =>
+      options?.archived ? [] : [{ id: "grow-basil", name: "Windowsill Basil" }]
+    );
+    mockIsFocused = true;
+    screen.rerender(<PersonalGrowsRoute />);
+    await screen.findByText("1 total");
+    await act(async () => earlier.resolve([]));
+    expect(screen.getByText("1 total")).toBeTruthy();
+    expect(screen.queryByText("No grows yet")).toBeNull();
   });
 
   it("waits for both grow lists before presenting an empty account", async () => {

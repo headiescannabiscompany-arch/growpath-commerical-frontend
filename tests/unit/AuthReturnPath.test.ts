@@ -377,3 +377,26 @@ describe("internal authentication return allowlist", () => {
     expect(safeLoginPath("", next)).toBe("/login");
   });
 });
+
+describe("public timeline login return", () => {
+  const token = "aB_-".repeat(10);
+  const timeline = "/grow-timeline/" + token;
+  it("allows the canonical reader and keeps it out of shopper signup", () => {
+    expect(parseSafeLoginReturnPath(timeline)).toBe(timeline);
+    expect(safeLoginPath("", timeline)).toBe(
+      "/login?next=" + encodeURIComponent(timeline)
+    );
+    expect(parseShopperSignupReturnPath(timeline)).toBe("");
+  });
+  it.each([
+    "/grow-timeline/short",
+    timeline + "/edit",
+    timeline + "?next=/admin",
+    timeline + "#edit",
+    timeline + "\n",
+    "https://example.com" + timeline,
+    "/grow-timeline/" + "a".repeat(61)
+  ])("rejects noncanonical reader destination %s", (value) => {
+    expect(parseSafeLoginReturnPath(value)).toBe("");
+  });
+});

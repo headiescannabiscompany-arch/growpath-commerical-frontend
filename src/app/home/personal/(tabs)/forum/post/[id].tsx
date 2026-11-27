@@ -40,6 +40,7 @@ import ForumReadinessBoundary from "@/components/forum/ForumReadinessBoundary";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { currentPublicUrl } from "@/utils/publicLinks";
 import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
 
 type CommentRow = {
@@ -206,6 +207,17 @@ function tagsOf(post: SocialPost | null) {
   );
 }
 
+// Older timeline posts carry the viewer link in ordinary forum text.
+function sharedTimelinePath(body: string): string | null {
+  const base = currentPublicUrl("/grow-timeline/");
+  for (const word of body.split(/\s+/)) {
+    if (!word.startsWith(base)) continue;
+    const token = word.slice(base.length);
+    if (/^[A-Za-z0-9_-]{40,60}$/.test(token)) return `/grow-timeline/${token}`;
+  }
+  return null;
+}
+
 function ForumImage({ uri, style, label }: { uri: string; style: any; label: string }) {
   return <ExpandableForumImage uri={uri} style={style} label={label} />;
 }
@@ -274,6 +286,7 @@ function ReadyForumPostDetailRoute() {
   }, []);
 
   const loadedId = useMemo(() => postId(post), [post]);
+  const sharedTimeline = useMemo(() => sharedTimelinePath(bodyOf(post)), [post]);
   const isPostOwner = useMemo(() => isOwnedBy(post, auth.user), [auth.user, post]);
   const canReportPost =
     auth.isAuthed && canView && !!loadedId && loadedId === id && !isPostOwner;
@@ -784,6 +797,13 @@ function ReadyForumPostDetailRoute() {
                 ) : bodyOf(post) ? (
                   <Text style={styles.body}>{bodyOf(post)}</Text>
                 ) : null}
+                {!editingPost && sharedTimeline ? (
+                  <Link href={sharedTimeline as any} asChild>
+                    <Pressable accessibilityRole="link" style={styles.secondaryBtn}>
+                      <Text style={styles.secondaryText}>Open shared grow timeline</Text>
+                    </Pressable>
+                  </Link>
+                ) : null}
                 {tagsOf(post).length ? (
                   <View style={styles.tagRow}>
                     {tagsOf(post).map((tag) => (
@@ -793,7 +813,8 @@ function ReadyForumPostDetailRoute() {
                     ))}
                   </View>
                 ) : null}
-                {(post as any).growId || (post as any).linkedGrowId ? (
+                {!sharedTimeline &&
+                ((post as any).growId || (post as any).linkedGrowId) ? (
                   <Text style={styles.contextText}>
                     Attached grow: {(post as any).growId || (post as any).linkedGrowId}
                   </Text>
@@ -907,7 +928,10 @@ function ReadyForumPostDetailRoute() {
                     <Pressable
                       disabled={!canReportPost || saving}
                       onPress={reportPost}
-                      style={[styles.dangerBtn, (!canReportPost || saving) && styles.disabled]}
+                      style={[
+                        styles.dangerBtn,
+                        (!canReportPost || saving) && styles.disabled
+                      ]}
                       accessibilityRole="button"
                       accessibilityLabel="Report forum post"
                     >

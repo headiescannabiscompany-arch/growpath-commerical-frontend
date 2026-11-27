@@ -179,6 +179,7 @@ describe("subscription billing response contract", () => {
     });
     expect(mockApiRequest).toHaveBeenCalledWith("/api/subscription/status", {
       method: "GET",
+      auth: false,
       cache: "no-store"
     });
   });

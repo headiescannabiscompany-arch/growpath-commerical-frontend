@@ -89,6 +89,7 @@ export async function listPersonalLogs(options?: {
 }
 
 export async function createPersonalLog(data: {
+  clientSaveKey?: string;
   growId: string;
   plantId?: string;
   linkedPlantId?: string;
@@ -106,18 +107,43 @@ export async function createPersonalLog(data: {
   rejectedTags?: string[];
   aiInsight?: PersonalLog["aiInsight"];
 }): Promise<PersonalLog | null> {
+  const { clientSaveKey, ...body } = data;
   try {
     const response: any = await apiRequest("/api/personal/logs", {
       method: "POST",
-      body: data
+      body,
+      ...(clientSaveKey ? { headers: { "Idempotency-Key": clientSaveKey } } : {})
     });
-    return (response?.created ??
-      response?.log ??
-      response?.data?.log ??
-      response) as PersonalLog;
-  } catch (_error) {
+    const row = response?.created ?? response?.log ?? response?.data?.log ?? response;
+    if (
+      clientSaveKey &&
+      !(typeof (row?.id ?? row?._id) === "string" && (row.id ?? row._id).length)
+    )
+      throw new Error("We couldn’t confirm this journal save. You can safely retry.");
+    return row as PersonalLog;
+  } catch (error) {
+    if (clientSaveKey) throw error;
     return null;
   }
+}
+
+export async function checkJournalSave(
+  growId: string,
+  key: string
+): Promise<{ status: "saved"; logId: string } | { status: "unconfirmed" | "removed" }> {
+  const result = await apiRequest(
+    `/api/personal/logs/save-status/${encodeURIComponent(key)}`,
+    { cache: "no-store", params: { growId } }
+  );
+  if (
+    result?.status === "saved" &&
+    typeof result.logId === "string" &&
+    /^[0-9a-f]{24}$/i.test(result.logId)
+  )
+    return { status: "saved", logId: result.logId };
+  if (result?.status === "unconfirmed" || result?.status === "removed")
+    return { status: result.status };
+  throw new Error("The previous save could not be checked. Try again.");
 }
 
 export async function getPersonalLog(id: string): Promise<PersonalLog | null> {

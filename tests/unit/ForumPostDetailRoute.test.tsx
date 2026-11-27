@@ -158,6 +158,36 @@ describe("ForumPostDetailRoute", () => {
     }));
   });
 
+  it("opens a timeline shared in Forum using its public viewer link and omits private grow context", async () => {
+    const token = "N".repeat(43);
+    mockGetForumPost.mockResolvedValue({
+      id: "post-1",
+      title: "Grow story",
+      body: `Explore the horizontal Visual Grow Story: https://growpathai.com/grow-timeline/${token}`,
+      linkedGrowId: "private-record",
+      author: "author-1"
+    });
+    const view = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(view.getByText("Open shared grow timeline")).toBeTruthy());
+    expect(view.getByTestId(`forum-link-/grow-timeline/${token}`).props.href).toBe(
+      `/grow-timeline/${token}`
+    );
+    expect(view.queryByText(/private-record/)).toBeNull();
+  });
+
+  it("keeps ordinary post links as text unless the destination is a genuine local timeline viewer", async () => {
+    const token = "N".repeat(43);
+    mockGetForumPost.mockResolvedValue({
+      id: "post-1",
+      title: "Ordinary forum post",
+      body: `https://growpathai.com.example/grow-timeline/${token} https://growpathai.com/grow-timeline/${token}/extra`,
+      author: "author-1"
+    });
+    const view = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(view.getByText("Ordinary forum post")).toBeTruthy());
+    expect(view.queryByText("Open shared grow timeline")).toBeNull();
+  });
+
   it("defers shared-discussion reads until access is ready, preserving genuine denial", () => {
     mockAccessReady = false;
     mockCanView = false;

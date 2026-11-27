@@ -13,7 +13,8 @@ describe("GrowTimelineFlow", () => {
       summary: `Saved detail ${index + 1}`
     }));
     const screen = render(<GrowTimelineFlow events={[...events].reverse()} />);
-    expect(screen.getAllByRole("button")).toHaveLength(100);
+    expect(screen.getAllByLabelText(/^Open timeline entry /)).toHaveLength(100);
+    expect(screen.getByText("Saved detail 100")).toBeTruthy();
     for (const point of [1, 50, 100]) {
       const button = screen.getByLabelText(
         `Open timeline entry ${point}: History ${point}`
@@ -26,13 +27,52 @@ describe("GrowTimelineFlow", () => {
     screen.rerender(<GrowTimelineFlow events={events.map((event) => ({ ...event }))} />);
     expect(screen.getByText("Saved detail 100")).toBeTruthy();
     screen.rerender(<GrowTimelineFlow events={events.slice(0, 99)} />);
-    expect(screen.getByText("Saved detail 1")).toBeTruthy();
+    expect(screen.getByText("Saved detail 99")).toBeTruthy();
     expect(screen.queryByText("Saved detail 100")).toBeNull();
     screen.rerender(<GrowTimelineFlow events={[]} />);
     expect(
       screen.getByText("No milestones are available for this visual timeline.")
     ).toBeTruthy();
     expect(screen.queryAllByRole("button")).toHaveLength(0);
+  });
+
+  it("follows the latest event until a grower selects an older one, and can resume following", () => {
+    const events = [1, 2, 3, 4].map((n) => ({
+      id: String(n),
+      title: `Grow update ${n}`,
+      timestamp: `2026-08-0${n}`,
+      summary: `Journal note ${n}`
+    }));
+    const screen = render(<GrowTimelineFlow events={[]} />);
+    screen.rerender(<GrowTimelineFlow events={events.slice(0, 2)} />);
+    expect(screen.getByText("Journal note 2")).toBeTruthy();
+    screen.rerender(<GrowTimelineFlow events={events.slice(0, 3)} />);
+    expect(screen.getByText("Journal note 3")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Open timeline entry 2: Grow update 2"));
+    screen.rerender(<GrowTimelineFlow events={[...events].reverse()} />);
+    expect(screen.getByText("Journal note 2")).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Show latest timeline entry" }));
+    expect(screen.getByText("Journal note 4")).toBeTruthy();
+    screen.rerender(<GrowTimelineFlow events={events.slice(0, 1)} />);
+    expect(screen.getByText("Journal note 1")).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Show latest timeline entry" })
+    ).toBeNull();
+  });
+
+  it("honors a featured point when the data arrive and falls back to the newest visible point", () => {
+    const events = [1, 2, 3].map((n) => ({
+      id: String(n),
+      title: `Point ${n}`,
+      timestamp: `2026-08-0${n}`
+    }));
+    const screen = render(<GrowTimelineFlow events={[]} initialEventId="2" />);
+    screen.rerender(<GrowTimelineFlow events={events} initialEventId="2" />);
+    expect(screen.getByLabelText("Selected timeline entry: Point 2")).toBeTruthy();
+    screen.rerender(
+      <GrowTimelineFlow events={[events[0], events[2]]} initialEventId="2" />
+    );
+    expect(screen.getByLabelText("Selected timeline entry: Point 3")).toBeTruthy();
   });
 
   it("lets the heading wrap beside a stable count while long timelines keep every point selectable", () => {
@@ -83,8 +123,10 @@ describe("GrowTimelineFlow", () => {
       true
     );
     expect(
-      screen.getByLabelText("Selected timeline entry: Seedling established")
+      screen.getByLabelText("Selected timeline entry: Flowering photo")
     ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Open timeline entry 1: Seedling established"));
+    expect(screen.getByText("First saved detail")).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Open timeline entry 2: Flowering photo"));
 
@@ -124,8 +166,8 @@ describe("GrowTimelineFlow", () => {
       />
     );
 
-    expect(screen.getAllByText(calendarLabel)).toHaveLength(1);
-    expect(screen.getAllByText(priorEveningLabel)).toHaveLength(2);
+    expect(screen.getAllByText(calendarLabel)).toHaveLength(2);
+    expect(screen.getAllByText(priorEveningLabel)).toHaveLength(1);
     expect(
       screen.getByLabelText("Open timeline entry 1: Late prior evening")
     ).toBeTruthy();

@@ -19,6 +19,78 @@ describe("telemetry CSV parsing", () => {
     '"03/19/2026 1:28\u202fAM","620.00","65.10","42.00","1.20","70.10","31.20"'
   ].join("\n");
 
+  it.each([
+    ["tempC", "C", 25, 0],
+    ["temp_c", "C", 25, 0],
+    ["Air Temperature (°C)", "C", 25, 0],
+    ["temperature [Celsius]", "C", 25, 0],
+    ["temp℃", "C", 25, 0],
+    ["tempF", "F", 77, 32],
+    ["temp_f", "F", 77, 32],
+    ["temperature °F", "F", 77, 32],
+    ["Air Temperature (Fahrenheit)", "F", 77, 32]
+  ])("reads explicit temperature units from the %s header", (header, unit, warm, cold) => {
+    const parsed = parseCsvText(
+      [
+        `timestamp,${header},rh`,
+        `2026-01-01T00:00:00Z,${warm},55`,
+        `2026-01-01T01:00:00Z,${cold},60`
+      ].join("\n")
+    );
+    const mapping = suggestedTelemetryMapping(parsed);
+    expect(mapping).toMatchObject({ tempCol: 1, tempUnit: unit });
+    expect(mapCsvToPoints(parsed, mapping!).map((point) => point.airTempC)).toEqual([25, 0]);
+  });
+
+  it.each([
+    ["°F", "tempC", 77],
+    ["°C", "tempF", 25]
+  ])("prefers explicit export metadata %s over a conflicting header", (unit, header, warm) => {
+    const parsed = parseCsvText(
+      [
+        `Temperature Units,${unit}`,
+        `Time,${header},Humidity`,
+        `2026-01-01T00:00:00Z,${warm},55`
+      ].join("\n")
+    );
+    const mapping = suggestedTelemetryMapping(parsed);
+    expect(mapping?.tempUnit).toBe(unit === "°C" ? "C" : "F");
+    expect(mapCsvToPoints(parsed, mapping!)[0].airTempC).toBe(25);
+  });
+
+  it.each([
+    ["unknown", "tempC", "C"],
+    ["unspecified", "temperature", "F"],
+    ["", "temperature °C", "C"]
+  ])("ignores unrecognized export metadata %s for %s", (units, header, expectedUnit) => {
+    const parsed = parseCsvText(
+      [
+        `Temperature Units,${units}`,
+        `Time,${header},Humidity`,
+        "2026-01-01T00:00:00Z,25,55"
+      ].join("\n")
+    );
+    expect(suggestedTelemetryMapping(parsed)?.tempUnit).toBe(expectedUnit);
+  });
+
+  it("keeps the existing default for ambiguous labels and honors a manual correction", () => {
+    const parsed = parseCsvText(
+      "Time,temperature (C/F),rh\n2026-01-01T00:00:00Z,25,55"
+    );
+    const mapping = suggestedTelemetryMapping(parsed);
+    expect(mapping?.tempUnit).toBe("F");
+    expect(mapCsvToPoints(parsed, { ...mapping!, tempUnit: "C" })[0].airTempC).toBe(25);
+  });
+
+  it("takes units from the chosen temperature channel and ignores other headers", () => {
+    const parsed = parseCsvText(
+      "Time,outside temperature (°C),inside temperature,rh\n2026-01-01T00:00:00Z,2,77,55"
+    );
+    const mapping = suggestedTelemetryMapping(parsed);
+    expect(mapping).toMatchObject({ tempCol: 2, tempUnit: "F" });
+    expect(mapCsvToPoints(parsed, mapping!)[0].airTempC).toBe(25);
+  });
+
   it("detects AC Infinity metadata and maps the inside environment channel", () => {
     const parsed = parseCsvText(acInfinityFixture);
     const mapping = suggestedTelemetryMapping(parsed);

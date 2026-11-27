@@ -12,6 +12,8 @@ import {
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
+const mockCheckSave = jest.fn();
 const mockCreatePersonalLog = jest.fn();
 const mockCreateCommercialLog = jest.fn();
 const mockApiRequest = jest.fn();
@@ -79,7 +81,7 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockSearchParams,
   useRouter: () => ({
     replace: mockReplace,
-    push: jest.fn(),
+    push: mockPush,
     back: jest.fn()
   }),
   Link: ({ children }: any) => children
@@ -111,6 +113,7 @@ jest.mock("@/theme/appTheme", () => {
 });
 
 jest.mock("@/api/logs", () => ({
+  checkJournalSave: (...args: any[]) => mockCheckSave(...args),
   createPersonalLog: (...args: any[]) => mockCreatePersonalLog(...args)
 }));
 
@@ -227,6 +230,51 @@ describe("NewLogScreen plant/photo context", () => {
       summary: "Reviewed draft summary",
       provider: "test-provider"
     });
+  });
+
+  it("reuses the save reference after a lost reply and renews it after a confirmed save", async () => {
+    mockCreatePersonalLog.mockRejectedValueOnce(new Error("Reply lost"));
+    const screen = render(<NewLogScreen />);
+    fillDraft(screen);
+    await attachPhoto(screen);
+    fireEvent.press(screen.getByLabelText("Create log"));
+    await screen.findByText("Check earlier save");
+    expectRetainedDraft(screen);
+    const first = mockCreatePersonalLog.mock.calls[0][0];
+    expect(first.clientSaveKey).toMatch(/^[a-f0-9-]{36}$/i);
+    fireEvent.press(screen.getByLabelText("Create log"));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
+    expect(mockCreatePersonalLog.mock.calls[1][0]).toEqual(first);
+    fillDraft(screen);
+    await attachPhoto(screen);
+    fireEvent.press(screen.getByLabelText("Create log"));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(2));
+    expect(mockCreatePersonalLog.mock.calls[2][0].clientSaveKey).not.toEqual(
+      first.clientSaveKey
+    );
+  });
+
+  it("checks an ambiguous save and can explicitly start a separate entry without losing edits", async () => {
+    mockCreatePersonalLog.mockRejectedValueOnce(new Error("Reply lost"));
+    const logId = "a".repeat(24);
+    mockCheckSave.mockResolvedValue({ status: "saved", logId });
+    const screen = render(<NewLogScreen />);
+    fillDraft(screen);
+    fireEvent.press(screen.getByLabelText("Create log"));
+    fireEvent.press(await screen.findByText("Check earlier save"));
+    const firstKey = mockCreatePersonalLog.mock.calls[0][0].clientSaveKey;
+    fireEvent.press(await screen.findByText("Open saved entry"));
+    expect(mockCheckSave).toHaveBeenCalledWith("grow-1", firstKey);
+    expect(mockPush).toHaveBeenCalledWith("/home/personal/logs/" + logId);
+    expect(mockCreatePersonalLog).toHaveBeenCalledTimes(1);
+    fireEvent.changeText(screen.getByLabelText("Log notes"), "Another watering");
+    fireEvent.press(screen.getByText("Start a separate entry"));
+    fireEvent.press(screen.getByLabelText("Create log"));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
+    expect(mockCreatePersonalLog.mock.calls[1][0]).toMatchObject({
+      notes: "Another watering"
+    });
+    expect(mockCreatePersonalLog.mock.calls[1][0].clientSaveKey).not.toBe(firstKey);
   });
 
   it("renders a persisted relative preview from the API host after a failed save", async () => {

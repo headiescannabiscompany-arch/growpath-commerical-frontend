@@ -1,16 +1,30 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import PublicGrowTimelineRoute from "@/app/grow-timeline/[token]";
 
 const mockGetPublicCopy = jest.fn();
 let reportProps: any = null;
+let mockToken = "A".repeat(43);
+const mockAuth = {
+  token: "",
+  isHydrating: false,
+  user: { id: "", cannabisVisibility: "hide" }
+};
+const mockLink = jest.fn();
+jest.mock("@/auth/AuthContext", () => ({ useAuth: () => mockAuth }));
+jest.mock("@react-navigation/native", () => ({
+  useFocusEffect: (fn: () => void) => require("react").useEffect(fn, [fn])
+}));
 
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    useLocalSearchParams: () => ({ token: "A".repeat(43) }),
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+    useLocalSearchParams: () => ({ token: mockToken }),
+    Link: ({ children, href }: any) => {
+      mockLink(href);
+      return React.createElement(React.Fragment, null, children);
+    }
   };
 });
 
@@ -34,6 +48,9 @@ jest.mock("@/utils/publicLinks", () => ({
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockToken = "A".repeat(43);
+  mockAuth.token = "";
+  mockAuth.isHydrating = false;
   reportProps = null;
   mockGetPublicCopy.mockResolvedValue({
     id: "507f1f77bcf86cd799439012",
@@ -86,7 +103,9 @@ describe("PublicGrowTimelineRoute", () => {
   });
 
   it("does not expose whether an unavailable link was withdrawn or restricted", async () => {
-    mockGetPublicCopy.mockRejectedValue(new Error("not found"));
+    mockGetPublicCopy.mockRejectedValue(
+      Object.assign(new Error("unavailable"), { status: 404 })
+    );
     const screen = render(<PublicGrowTimelineRoute />);
     await waitFor(() =>
       expect(
@@ -96,6 +115,54 @@ describe("PublicGrowTimelineRoute", () => {
       ).toBeTruthy()
     );
     expect(screen.queryByText("Tomato season")).toBeNull();
+  });
+
+  it("returns a visitor to the exact shared timeline after signing in", async () => {
+    mockGetPublicCopy.mockRejectedValueOnce({ status: 404 });
+    const screen = render(<PublicGrowTimelineRoute />);
+    await screen.findByText("Sign in and return to this timeline");
+    expect(mockLink).toHaveBeenCalledWith(
+      "/login?next=" + encodeURIComponent("/grow-timeline/" + mockToken)
+    );
+  });
+
+  it("recovers a temporary error without requiring sign-in", async () => {
+    mockGetPublicCopy.mockRejectedValueOnce({ status: 503 });
+    const screen = render(<PublicGrowTimelineRoute />);
+    await screen.findByText("The shared timeline could not be loaded. Try again.");
+    expect(screen.queryByText("Sign in and return to this timeline")).toBeNull();
+    fireEvent.press(screen.getByText("Try again"));
+    await screen.findByText("Tomato season");
+  });
+
+  it("does not prompt a signed-in reader to log in again for a restricted link", async () => {
+    mockAuth.token = "test-session";
+    mockGetPublicCopy.mockRejectedValueOnce({ status: 404 });
+    const screen = render(<PublicGrowTimelineRoute />);
+    await screen.findByText("Try again");
+    expect(screen.queryByText("Sign in and return to this timeline")).toBeNull();
+  });
+
+  it("ignores a late result for a previous timeline", async () => {
+    let resolveOld!: (copy: any) => void;
+    mockGetPublicCopy.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOld = resolve;
+        })
+    );
+    const screen = render(<PublicGrowTimelineRoute />);
+    await waitFor(() => expect(mockGetPublicCopy).toHaveBeenCalledTimes(1));
+    const old = mockToken;
+    mockToken = "B".repeat(43);
+    mockGetPublicCopy.mockRejectedValueOnce({ status: 404 });
+    screen.rerender(<PublicGrowTimelineRoute />);
+    await screen.findByText("Try again");
+    await act(async () =>
+      resolveOld({ token: old, status: "published", title: "Previous timeline" })
+    );
+    expect(screen.queryByText("Previous timeline")).toBeNull();
+    expect(screen.getByText("Try again")).toBeTruthy();
   });
 
   it("renders a published list presentation without the visual flow", async () => {

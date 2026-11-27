@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -10,6 +10,12 @@ import {
   type TextProps
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useOptionalAuth } from "@/auth/AuthContext";
+import {
+  historyCsvCheckpointKey,
+  prepareHistoryCsvImport
+} from "@/features/personal/tools/dewPointGuard/historyCsvImport";
+import { useHistoryCsvUpload } from "@/features/personal/tools/dewPointGuard/useHistoryCsvUpload";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -189,8 +195,20 @@ type CsvFileIdentity = {
   lastModified: number | null;
   uriScheme: string | null;
 };
-const CSV_MAX_ROWS = 5000;
+const HISTORY_PREVIEW_LIMIT = 5000;
 const CSV_MAX_FILE_BYTES = 25 * 1024 * 1024;
+// The picker can omit size, and the clipboard reports UTF-16 character count.
+function csvFileBytes(text: string) {
+  if (text.length > CSV_MAX_FILE_BYTES) return text.length;
+  let bytes = 0;
+  for (const character of text) {
+    const unit = character.charCodeAt(0);
+    bytes += character.length === 2 ? 4 : unit < 128 ? 1 : unit < 2048 ? 2 : 3;
+    if (bytes > CSV_MAX_FILE_BYTES) break;
+  }
+  return bytes;
+}
+
 const PULSE_IMPORTED_METRICS = [
   "air_temperature",
   "relative_humidity",
@@ -293,6 +311,8 @@ export default function DewPointGuardTool({
   const styles = useMemo(() => createDewPointGuardStyles(palette), [palette]);
   const router = useRouter();
   const params = useLocalSearchParams();
+  const auth = useOptionalAuth();
+  const accountId = auth?.user?.id || auth?.user?._id || "";
   const growId = asString(params.growId);
   const plantContext = useToolPlantContext(
     growId,
@@ -364,7 +384,6 @@ export default function DewPointGuardTool({
   const [csvRhHeader, setCsvRhHeader] = useState("");
   const [csvTempUnit, setCsvTempUnit] = useState<"F" | "C">("F");
   const [parsingCsv, setParsingCsv] = useState(false);
-  const [csvLimitNotice, setCsvLimitNotice] = useState("");
   const [csvImportSummary, setCsvImportSummary] = useState("");
   const [csvWarnings, setCsvWarnings] = useState<string[]>([]);
   const [csvDetectedExtras, setCsvDetectedExtras] = useState<
@@ -456,6 +475,105 @@ export default function DewPointGuardTool({
   const csvMappingStorageKey = selectedSourceId
     ? `dew_point_guard_csv_mapping:${selectedSourceId}`
     : "";
+
+  const csvMapping = useMemo<CsvMapping>(
+    () => ({
+      tsCol: headerIndex(csvHeaders, csvTsHeader),
+      tempCol: headerIndex(csvHeaders, csvTempHeader),
+      rhCol: headerIndex(csvHeaders, csvRhHeader),
+      tempUnit: csvTempUnit,
+      ...csvDetectedExtras
+    }),
+    [csvHeaders, csvTsHeader, csvTempHeader, csvRhHeader, csvTempUnit, csvDetectedExtras]
+  );
+  const importPlan = useMemo(() => {
+    if (
+      !csvRows.length ||
+      !isValidTelemetryTimezone(sourceTimezone) ||
+      csvMapping.tsCol < 0 ||
+      csvMapping.tempCol < 0 ||
+      csvMapping.rhCol < 0
+    )
+      return null;
+    return prepareHistoryCsvImport(
+      mapCsvToPoints({ headers: csvHeaders, rows: csvRows }, csvMapping, {
+        normalizeTimestamp: (value) => normalizeCsvTimestampToIso(value, sourceTimezone)
+      }),
+      csvRows.length
+    );
+  }, [csvRows, csvHeaders, csvMapping, sourceTimezone]);
+  const checkpointKey = useMemo(() => {
+    if (
+      !auth?.token ||
+      !accountId ||
+      !csvReviewComplete ||
+      !selectedSourceMatchesCsv ||
+      !selectedSource
+    )
+      return "";
+    return historyCsvCheckpointKey(
+      csvText,
+      JSON.stringify([
+        accountId,
+        selectedSource.id,
+        selectedSource.workspaceId || null,
+        csvReview,
+        csvMapping
+      ])
+    );
+  }, [
+    auth?.token,
+    accountId,
+    selectedSource,
+    csvReviewComplete,
+    selectedSourceMatchesCsv,
+    csvText,
+    csvReview,
+    csvMapping
+  ]);
+  const csvUpload = useHistoryCsvUpload(
+    checkpointKey,
+    importPlan?.points || [],
+    auth?.token ?? null
+  );
+  const importRunning = csvUpload.progress?.phase === "running";
+  const canImportCsv = Boolean(
+    csvReviewComplete &&
+    selectedSourceMatchesCsv &&
+    !ingesting &&
+    !importRunning &&
+    importPlan?.points.length &&
+    csvUpload.progress &&
+    csvUpload.progress.phase !== "loading"
+  );
+
+  const csvDestination = JSON.stringify([accountId, workspaceType, facilityId, growId]);
+  const destinationRef = useRef(csvDestination);
+  useLayoutEffect(() => {
+    if (destinationRef.current === csvDestination) return;
+    destinationRef.current = csvDestination;
+    setCsvText("");
+    setCsvHeaders([]);
+    setCsvRows([]);
+    setCsvFileIdentity(null);
+    setConfirmedCsvReviewSignature("");
+    setSelectedSourceId("");
+    setSources([]);
+    setTelemetryPoints([]);
+    setPendingReadings([]);
+    setCsvRoomName(initialRoomName);
+  }, [csvDestination, initialRoomName]);
+
+  function editCsvText(text: string) {
+    setCsvText(text);
+    if (csvFileIdentity) {
+      // Edited or replaced text must be parsed and reviewed before it can be written.
+      setCsvFileIdentity(null);
+      setCsvRows([]);
+      setCsvHeaders([]);
+      setConfirmedCsvReviewSignature("");
+    }
+  }
 
   function applyCsvColumnByIndex(idx: number) {
     const h = csvHeaders[idx];
@@ -614,6 +732,7 @@ export default function DewPointGuardTool({
     setLoadingSources(true);
     try {
       const list = await listTelemetrySources(growId, workspaceScope);
+      if (destinationRef.current !== csvDestination) return;
       setSources(list);
       if (!selectedSourceId && list.length) setSelectedSourceId(list[0].id);
     } catch (e: any) {
@@ -686,6 +805,7 @@ export default function DewPointGuardTool({
               }
             : {}
       });
+      if (destinationRef.current !== csvDestination) return;
       setSources((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
       setSelectedSourceId(created.id);
       Alert.alert("Source created", `${created.name} (${created.type})`);
@@ -814,6 +934,7 @@ export default function DewPointGuardTool({
           }
         }
       });
+      if (destinationRef.current !== csvDestination) return;
       setSources((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
       setSelectedSourceId(created.id);
       setPulseApiKey("");
@@ -827,13 +948,18 @@ export default function DewPointGuardTool({
   }
 
   function applyParsedCsv(text: string, fileIdentity: CsvFileIdentity) {
+    const bytes = csvFileBytes(text);
+    if (bytes > CSV_MAX_FILE_BYTES) {
+      Alert.alert("History file is too large", "Choose a CSV no larger than 25 MB.");
+      return;
+    }
     const parsed = parseCsvText(text);
     if (!parsed.headers.length || !parsed.rows.length) {
       Alert.alert("CSV parse failed", "Need a header row and at least one data row.");
       return;
     }
     setConfirmedCsvReviewSignature("");
-    setCsvFileIdentity(fileIdentity);
+    setCsvFileIdentity({ ...fileIdentity, size: Math.max(fileIdentity.size, bytes) });
     setCsvText(text);
     setCsvHeaders(parsed.headers);
     setCsvRows(parsed.rows);
@@ -886,7 +1012,6 @@ export default function DewPointGuardTool({
       },
       temperatureUnit: suggested?.tempUnit || null
     });
-    setCsvLimitNotice("");
   }
 
   async function pickCsvFile() {
@@ -902,7 +1027,7 @@ export default function DewPointGuardTool({
         multiple: false,
         copyToCacheDirectory: true
       });
-      if (result.canceled) return;
+      if (result.canceled || destinationRef.current !== csvDestination) return;
       const asset = result.assets?.[0];
       if (!asset) return;
 
@@ -930,6 +1055,7 @@ export default function DewPointGuardTool({
       const maybeFile = (asset as any).file;
       if (maybeFile && typeof maybeFile.text === "function") {
         const text = await maybeFile.text();
+        if (destinationRef.current !== csvDestination) return;
         applyParsedCsv(text, {
           ...identity,
           size: identity.size || String(text).length
@@ -939,6 +1065,7 @@ export default function DewPointGuardTool({
 
       if (uri) {
         const text = await FileSystem.readAsStringAsync(uri);
+        if (destinationRef.current !== csvDestination) return;
         applyParsedCsv(text, {
           ...identity,
           size: identity.size || String(text).length
@@ -1005,6 +1132,13 @@ export default function DewPointGuardTool({
       Alert.alert(
         "Column mapping incomplete",
         "Review the timestamp, temperature, and humidity columns first."
+      );
+      return;
+    }
+    if (!importPlan?.points.length) {
+      Alert.alert(
+        "No valid readings",
+        "Check the timestamp, temperature and humidity columns before confirming."
       );
       return;
     }
@@ -1164,100 +1298,48 @@ export default function DewPointGuardTool({
       );
     }
 
-    setIngesting(true);
-    setIngestStatus("");
-    try {
-      const mapping: CsvMapping = {
-        tsCol: headerIndex(csvHeaders, csvTsHeader),
-        tempCol: headerIndex(csvHeaders, csvTempHeader),
-        rhCol: headerIndex(csvHeaders, csvRhHeader),
-        tempUnit: csvTempUnit,
-        ...csvDetectedExtras
-      };
-      if (mapping.tsCol < 0 || mapping.tempCol < 0 || mapping.rhCol < 0) {
-        Alert.alert(
-          "Mapping invalid",
-          "Selected CSV columns are not present in headers."
-        );
-        return;
-      }
+    if (!canImportCsv || !importPlan) return;
 
-      const parsedPoints = mapCsvToPoints(
-        { headers: csvHeaders, rows: csvRows },
-        mapping,
-        {
-          normalizeTimestamp: (tsRaw) => normalizeCsvTimestampToIso(tsRaw, sourceTimezone)
-        }
-      )
-        .filter((p) => !!p.ts)
-        .map((p, idx) => ({ ...p, _idx: idx }));
-
-      if (!parsedPoints.length) {
-        Alert.alert(
-          "No valid points",
-          "CSV rows could not be converted using current mapping."
-        );
-        return;
-      }
-
-      const sorted = [...parsedPoints].sort(
-        (a, b) => Date.parse(a.ts) - Date.parse(b.ts)
-      );
-      const clipped =
-        sorted.length > CSV_MAX_ROWS
-          ? sorted.slice(sorted.length - CSV_MAX_ROWS)
-          : sorted;
-      setCsvLimitNotice(
-        sorted.length > CSV_MAX_ROWS
-          ? `CSV capped to most recent ${CSV_MAX_ROWS} rows (from ${sorted.length}).`
-          : ""
-      );
-      const points = clipped.map((point) => ({
-        ts: point.ts,
-        airTempC: point.airTempC,
-        rh: point.rh,
-        vpdKpa: point.vpdKpa,
-        co2Ppm: point.co2Ppm,
-        lightLux: point.lightLux,
-        ppfd: point.ppfd,
-        dliMolM2Day: point.dliMolM2Day,
-        lightValue: point.lightValue,
-        lightUnit: point.lightUnit
-      }));
-
-      const res = await bulkIngestTelemetryPoints({
+    const stillCurrent = await csvUpload.start((points) =>
+      bulkIngestTelemetryPoints({
         sourceId: selectedSource.id,
         mode: "upsert",
         ...workspaceScope,
         points
+      })
+    );
+    if (!stillCurrent?.()) return;
+    // Mapping preferences and the chart preview are optional follow-up work.
+    AsyncStorage.setItem(
+      csvMappingStorageKey,
+      JSON.stringify({
+        tsCol: csvTsHeader,
+        tempCol: csvTempHeader,
+        rhCol: csvRhHeader,
+        unit: csvTempUnit
+      })
+    ).catch(() => {});
+    const first = importPlan.points[0].ts;
+    const last = importPlan.points[importPlan.points.length - 1].ts;
+    const end = first === last ? new Date(Date.parse(last) + 1).toISOString() : last;
+    setWindowMode("custom");
+    setStartIsoText(first);
+    setEndIsoText(end);
+    try {
+      const preview = await getTelemetryPoints({
+        sourceId: selectedSource.id,
+        ...workspaceScope,
+        startIso: first,
+        endIso: end,
+        limit: HISTORY_PREVIEW_LIMIT
       });
-      if (csvMappingStorageKey) {
-        await AsyncStorage.setItem(
-          csvMappingStorageKey,
-          JSON.stringify({
-            tsCol: csvTsHeader,
-            tempCol: csvTempHeader,
-            rhCol: csvRhHeader,
-            unit: csvTempUnit
-          })
-        );
-      }
-      setIngestStatus(
-        `Ingested=${res.ingested} Updated=${res.updated} Skipped=${res.skipped}`
-      );
-      await fetchWindowPoints();
-    } catch (e: any) {
-      if (String(e?.code || "") === "SOURCE_NOT_INGESTABLE") {
+      if (stillCurrent()) setTelemetryPoints(preview.points || []);
+    } catch {
+      if (stillCurrent())
         Alert.alert(
-          "Ingest blocked",
-          "This source type cannot accept manual ingest. Use pull for pulse sources."
+          "Readings saved",
+          "The chart could not be refreshed. Use Fetch points to load the saved readings."
         );
-      } else {
-        const auth = telemetryAuthMessage(e);
-        Alert.alert("CSV ingest failed", auth || formatApiError(e));
-      }
-    } finally {
-      setIngesting(false);
     }
   }
   const csvPreviewRows = useMemo(() => {
@@ -1280,6 +1362,8 @@ export default function DewPointGuardTool({
       const rhN = Number(rhRaw);
       const valid =
         !!tsIso &&
+        tempRaw !== "" &&
+        rhRaw !== "" &&
         Number.isFinite(tempN) &&
         Number.isFinite(rhN) &&
         rhN >= 0 &&
@@ -1875,7 +1959,7 @@ export default function DewPointGuardTool({
             <TextInput
               testID="dpg-csv-paste"
               value={csvText}
-              onChangeText={setCsvText}
+              onChangeText={editCsvText}
               placeholder={"timestamp,temp,rh\n2026-02-27T03:00:00.000Z,70.2,58"}
               placeholderTextColor={palette.textMuted}
               selectionColor={palette.accent}
@@ -2143,6 +2227,33 @@ export default function DewPointGuardTool({
                     File: {csvFileIdentity?.name || "Not selected"} ·{" "}
                     {csvFileIdentity?.size || 0} bytes
                   </Text>
+                  {importPlan ? (
+                    <View testID="dpg-csv-plan">
+                      <Text style={styles.mutedText}>
+                        {importPlan.points.length} unique readings from{" "}
+                        {importPlan.totalRows} rows · {importPlan.rejectedRows} invalid ·{" "}
+                        {importPlan.duplicateRows} duplicate timestamps
+                      </Text>
+                      {importPlan.points.length ? (
+                        <Text style={styles.mutedText}>
+                          UTC range: {importPlan.points[0].ts} –{" "}
+                          {importPlan.points[importPlan.points.length - 1].ts}
+                        </Text>
+                      ) : null}
+                      {importPlan.rejectedRows > 0 ? (
+                        <Text style={styles.warningText}>
+                          Invalid rows will be skipped. Correct the file and parse it
+                          again to include them.
+                        </Text>
+                      ) : null}
+                      {importPlan.duplicateRows > 0 ? (
+                        <Text style={styles.mutedText}>
+                          At matching timestamps, the last supplied value for each
+                          measurement is used.
+                        </Text>
+                      ) : null}
+                    </View>
+                  ) : null}
                   <Text style={styles.mutedText}>
                     Re-importing the same source timestamps uses duplicate-safe updates;
                     it does not create a second reading for the same source and time.
@@ -2199,34 +2310,65 @@ export default function DewPointGuardTool({
                 <Pressable
                   testID="dpg-csv-ingest"
                   onPress={ingestCsvRows}
-                  disabled={
-                    ingesting ||
-                    !csvRows.length ||
-                    !csvReviewComplete ||
-                    !selectedSourceMatchesCsv
-                  }
+                  accessibilityRole="button"
+                  disabled={!canImportCsv}
                   style={[
                     styles.primaryButton,
                     {
-                      opacity:
-                        ingesting ||
-                        !csvRows.length ||
-                        !csvReviewComplete ||
-                        !selectedSourceMatchesCsv
-                          ? 0.6
-                          : 1,
+                      opacity: canImportCsv ? 1 : 0.6,
                       paddingVertical: 12,
                       alignItems: "center"
                     }
                   ]}
                 >
                   <Text style={styles.primaryButtonText}>
-                    {ingesting ? "Importing..." : "Import reviewed CSV rows"}
+                    {importRunning
+                      ? "Importing..."
+                      : csvUpload.progress?.phase === "paused"
+                        ? "Resume import"
+                        : csvUpload.progress?.phase === "complete"
+                          ? "Import again"
+                          : "Import reviewed CSV rows"}
                   </Text>
                 </Pressable>
-                {csvLimitNotice ? (
-                  <Text style={[styles.mutedText, { marginTop: 6 }]}>
-                    {csvLimitNotice}
+                {importRunning ? (
+                  <Pressable
+                    testID="dpg-csv-pause"
+                    accessibilityRole="button"
+                    onPress={csvUpload.pause}
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryButtonText}>Pause after this batch</Text>
+                  </Pressable>
+                ) : null}
+                {csvUpload.progress &&
+                ["running", "paused", "complete"].includes(csvUpload.progress.phase) ? (
+                  <View testID="dpg-csv-progress" accessibilityLiveRegion="polite">
+                    <Text style={styles.mutedText}>
+                      {csvUpload.progress.phase === "complete"
+                        ? "Import complete."
+                        : "Import progress."}{" "}
+                      {csvUpload.progress.nextRow} of {importPlan?.points.length} readings
+                      confirmed.
+                    </Text>
+                    {csvUpload.progress.phase === "paused" ? (
+                      <Text style={styles.mutedText}>
+                        To resume after leaving, reselect the same file, source and
+                        mapping.
+                      </Text>
+                    ) : null}
+                    {csvUpload.progress.phase === "complete" &&
+                    (importPlan?.points.length || 0) > HISTORY_PREVIEW_LIMIT ? (
+                      <Text style={styles.mutedText}>
+                        The chart shows up to {HISTORY_PREVIEW_LIMIT} readings at a time.
+                        Choose a shorter window to see later readings.
+                      </Text>
+                    ) : null}
+                  </View>
+                ) : null}
+                {csvUpload.progress?.message ? (
+                  <Text accessibilityLiveRegion="polite" style={styles.warningText}>
+                    {csvUpload.progress.message}
                   </Text>
                 ) : null}
               </View>

@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import { ApiError } from "@/api/apiRequest";
 import ClaimComplimentaryAccessScreen from "@/app/claim-complimentary-access";
@@ -12,6 +12,11 @@ import {
 
 const mockPreview = jest.fn();
 const mockClaim = jest.fn();
+const mockAccept = jest.fn();
+let mockIsHydrating = false;
+jest.mock("@/api/guestGiftAcceptance", () => ({
+  acceptGuestGift: (...args: any[]) => mockAccept(...args)
+}));
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockRetryMe = jest.fn();
@@ -28,6 +33,7 @@ jest.mock("@/api/complimentaryGrants", () => ({
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
     token: mockToken,
+    isHydrating: mockIsHydrating,
     retryMe: (...args: any[]) => mockRetryMe(...args),
     logout: (...args: any[]) => mockLogout(...args)
   })
@@ -56,6 +62,8 @@ describe("ClaimComplimentaryAccessScreen", () => {
     await clearComplimentaryClaimToken();
     jest.clearAllMocks();
     mockToken = null;
+    mockIsHydrating = false;
+    mockAccept.mockReset();
     mockParams = { token: "complimentary-token-1" };
     mockPreview.mockResolvedValue(summary);
     mockLogout.mockResolvedValue(undefined);
@@ -64,6 +72,102 @@ describe("ClaimComplimentaryAccessScreen", () => {
 
   afterAll(() => {
     (globalThis as any).window = originalWindow;
+  });
+
+  it("accepts from the email link with no login, signup or optimistic activation", async () => {
+    const screen = render(<ClaimComplimentaryAccessScreen />);
+    await screen.findByText(/One year|One month/, {}, { timeout: 6000 });
+    const acceptButton = screen.getByRole("button", { name: "Accept my gift" });
+    expect(mockAccept).not.toHaveBeenCalled();
+    let complete!: () => void;
+    mockAccept.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          complete = resolve;
+        })
+    );
+    act(() => {
+      fireEvent.press(acceptButton);
+      fireEvent.press(acceptButton);
+    });
+    expect(mockAccept).toHaveBeenCalledTimes(1);
+    expect(mockAccept).toHaveBeenCalledWith("complimentary", "complimentary-token-1");
+    expect(screen.queryByText(/Gift accepted for/)).toBeNull();
+    await act(async () => complete());
+    expect(
+      await screen.findByText("Gift accepted for the invited email address.")
+    ).toBeTruthy();
+    expect(mockClaim).not.toHaveBeenCalled();
+    expect(mockRetryMe).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByRole("button", { name: "Create a free account" }));
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: "/register",
+      params: { plan: "free" }
+    });
+    fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
+    expect(mockPush).toHaveBeenLastCalledWith("/login");
+  });
+
+  it("recovers a lost acceptance reply and requires a tap to retry", async () => {
+    mockAccept
+      .mockRejectedValueOnce(new Error("Lost reply"))
+      .mockResolvedValueOnce(undefined);
+    const screen = render(<ClaimComplimentaryAccessScreen />);
+    fireEvent.press(await screen.findByRole("button", { name: "Accept my gift" }));
+    expect(await screen.findByText(/couldn’t confirm your acceptance/)).toBeTruthy();
+    expect(screen.queryByText(/Gift accepted for/)).toBeNull();
+    expect(mockAccept).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByRole("button", { name: "Accept my gift" }));
+    await screen.findByText(/Gift accepted for/);
+    expect(mockAccept).toHaveBeenCalledTimes(2);
+    expect(mockClaim).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["COMPLIMENTARY_RECIPIENT_EMAIL_MISMATCH", 403],
+    ["SESSION_EXPIRED", 401]
+  ] as const)(
+    "accepts for the invited address after %s without switching the current account",
+    async (code, status) => {
+      mockToken = "different-or-expired-session";
+      mockClaim.mockRejectedValueOnce(new ApiError(code, status));
+      mockAccept.mockResolvedValueOnce(undefined);
+      const screen = render(<ClaimComplimentaryAccessScreen />);
+      fireEvent.press(await screen.findByLabelText("Activate complimentary access"));
+      fireEvent.press(
+        await screen.findByRole("button", { name: "Accept for the invited address" })
+      );
+      await screen.findByText("Gift accepted for the invited email address.");
+      expect(mockClaim).toHaveBeenCalledTimes(1);
+      expect(mockAccept).toHaveBeenCalledTimes(1);
+      expect(mockLogout).not.toHaveBeenCalled();
+      expect(mockRetryMe).not.toHaveBeenCalled();
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+    }
+  );
+
+  it("waits for session hydration and preserves the signed-in claim path", async () => {
+    mockIsHydrating = true;
+    const screen = render(<ClaimComplimentaryAccessScreen />);
+    await screen.findByText(/One year|One month/);
+    expect(screen.queryByRole("button", { name: "Accept my gift" })).toBeNull();
+    mockIsHydrating = false;
+    mockToken = "signed-in";
+    screen.rerender(<ClaimComplimentaryAccessScreen />);
+    expect(screen.queryByRole("button", { name: "Accept my gift" })).toBeNull();
+    expect(mockAccept).not.toHaveBeenCalled();
+  });
+
+  it("records paid-period consent without offering to change billing while signed out", async () => {
+    mockPreview.mockResolvedValue({ ...summary, startMode: "after_paid_period" });
+    mockAccept.mockResolvedValue(undefined);
+    const screen = render(<ClaimComplimentaryAccessScreen />);
+    fireEvent.press(await screen.findByRole("button", { name: "Accept my gift" }));
+    await screen.findByText(/paid subscription and renewal settings stay as they are/);
+    expect(mockClaim).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("Open Billing to manage renewal")).toBeNull();
   });
 
   it("stores an incoming token and uses tokenless sign-in and registration routes", async () => {
@@ -77,14 +181,12 @@ describe("ClaimComplimentaryAccessScreen", () => {
       )
     ).toBeTruthy();
 
-    fireEvent.press(screen.getByLabelText("Sign in to claim complimentary access"));
+    fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: "/login",
       params: { next: "/claim-complimentary-access" }
     });
-    fireEvent.press(
-      screen.getByLabelText("Create account to claim complimentary access")
-    );
+    fireEvent.press(screen.getByRole("button", { name: "Create a free account" }));
     expect(mockPush).toHaveBeenLastCalledWith({
       pathname: "/register",
       params: { next: "/claim-complimentary-access" }

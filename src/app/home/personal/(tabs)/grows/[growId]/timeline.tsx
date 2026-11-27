@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Link, useLocalSearchParams } from "expo-router";
 import {
@@ -14,6 +14,7 @@ import {
 import { type PersonalGrowTimelineEvent } from "@/api/grows";
 import { useAuth } from "@/auth/AuthContext";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
+import TimelineJournalEditSheet from "@/features/grows/screens/TimelineJournalEditSheet";
 import GrowTimelineFlow from "@/components/grows/GrowTimelineFlow";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
@@ -342,6 +343,9 @@ function GrowTimelineContent({ growId, workspace }: { growId: string; workspace:
   const basePath = growWorkspaceBasePath(workspace);
 
   const [read, setRead] = useState<TimelineRead>({ status: "loading" });
+  const [editLogId, setEditLogId] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
+  const refreshInPlace = useRef(false);
   const [attempt, setAttempt] = useState(0);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
   const [zoom, setZoom] = useState<GrowTimelineZoom>("lifecycle");
@@ -351,7 +355,8 @@ function GrowTimelineContent({ growId, workspace }: { growId: string; workspace:
     useCallback(() => {
       if (!growId) return;
       let current = true;
-      setRead({ status: "loading" });
+      if (!refreshInPlace.current) setRead({ status: "loading" });
+      refreshInPlace.current = false;
       void getWorkspaceGrowTimeline(workspace, growId, { verifyRecords: true }).then(
         (events) => {
           if (current) setRead({ status: "ready", events });
@@ -396,6 +401,40 @@ function GrowTimelineContent({ growId, workspace }: { growId: string; workspace:
       })),
     [consolidatedEvents]
   );
+  function entryActions(event: PersonalGrowTimelineEvent) {
+    const logId =
+      event.sourceModel === "GrowLog" && event.sourceId ? String(event.sourceId) : "";
+    const href = sourceHref(event, growId, workspace);
+    if (!logId && !href) return null;
+    return (
+      <View style={styles.filterRow}>
+        {logId ? (
+          <Pressable
+            style={[styles.sourceAction, styles.retry]}
+            accessibilityRole="button"
+            accessibilityLabel={`Edit journal entry: ${event.title}`}
+            onPress={() => {
+              setSaveMessage("");
+              setEditLogId(logId);
+            }}
+          >
+            <Text style={styles.sourceActionText}>Edit journal entry</Text>
+          </Pressable>
+        ) : null}
+        {href ? (
+          <Link href={href} asChild>
+            <Pressable
+              style={styles.sourceAction}
+              accessibilityRole="button"
+              accessibilityLabel={`${sourceLabel(event)}: ${event.title}`}
+            >
+              <Text style={styles.sourceActionText}>{sourceLabel(event)}</Text>
+            </Pressable>
+          </Link>
+        ) : null}
+      </View>
+    );
+  }
   const shareHref = `${basePath}/grows/${encodeURIComponent(growId)}/share?presentation=${view}`;
 
   return (
@@ -406,6 +445,26 @@ function GrowTimelineContent({ growId, workspace }: { growId: string; workspace:
         and milestones. Zoom changes detail; it never invents missing events.
       </Text>
       {!growId ? <Text style={styles.error}>No grow selected.</Text> : null}
+      {editLogId ? (
+        <TimelineJournalEditSheet
+          key={editLogId}
+          workspace={workspace}
+          growId={growId}
+          logId={editLogId}
+          onClose={() => setEditLogId("")}
+          onSaved={() => {
+            setEditLogId("");
+            setSaveMessage("Journal entry saved.");
+            refreshInPlace.current = true;
+            setAttempt((previous) => previous + 1);
+          }}
+        />
+      ) : null}
+      {saveMessage ? (
+        <Text accessibilityLiveRegion="polite" style={styles.subtitle}>
+          {saveMessage}
+        </Text>
+      ) : null}
       {growId && read.status === "failed" ? (
         <View>
           <Text accessibilityRole="alert" style={styles.error}>Could not load this timeline</Text>
@@ -424,6 +483,13 @@ function GrowTimelineContent({ growId, workspace }: { growId: string; workspace:
         longContent
       />
       <GrowWorkspaceNav growId={growId} active="timeline" />
+      {growId ? (
+        <Link href={`${basePath}/logs/new?growId=${encodeURIComponent(growId)}`} asChild>
+          <Pressable accessibilityRole="link" style={StyleSheet.flatten([styles.sourceAction, styles.retry])}>
+            <Text style={styles.sourceActionText}>Add journal entry</Text>
+          </Pressable>
+        </Link>
+      ) : null}
       <ContextualWorkflowLinks
         title="Viewer-friendly timeline export"
         helper="Create a readable narrative export with dates, notes, and photo links. Compliance reporting remains separate."
@@ -531,7 +597,15 @@ function GrowTimelineContent({ growId, workspace }: { growId: string; workspace:
         </Text>
       ) : null}
 
-      {view === "visual" && read.status === "ready" ? <GrowTimelineFlow events={flowEvents} /> : null}
+      {view === "visual" && read.status === "ready" ? (
+        <GrowTimelineFlow
+          events={flowEvents}
+          renderEntryActions={(id) => {
+            const event = consolidatedEvents.find((row) => row.id === id);
+            return event ? entryActions(event) : null;
+          }}
+        />
+      ) : null}
 
       {view === "list" &&
         groupedEvents.map((period) => (
@@ -573,17 +647,7 @@ function GrowTimelineContent({ growId, workspace }: { growId: string; workspace:
                       {detail}
                     </Text>
                   ))}
-                  {sourceHref(event, growId, workspace) ? (
-                    <Link href={sourceHref(event, growId, workspace)} asChild>
-                      <Pressable
-                        style={styles.sourceAction}
-                        accessibilityRole="button"
-                        accessibilityLabel={`${sourceLabel(event)}: ${event.title}`}
-                      >
-                        <Text style={styles.sourceActionText}>{sourceLabel(event)}</Text>
-                      </Pressable>
-                    </Link>
-                  ) : null}
+                  {entryActions(event)}
                   {Array.isArray(event.tags) && event.tags.length ? (
                     <View style={styles.tags}>
                       {event.tags.slice(0, 5).map((tag) => (

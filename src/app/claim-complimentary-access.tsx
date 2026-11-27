@@ -15,6 +15,7 @@ import {
   type ComplimentaryClaimSummary
 } from "@/api/complimentaryGrants";
 import { ApiError } from "@/api/apiRequest";
+import GuestGiftAcceptance from "@/components/GuestGiftAcceptance";
 import { useAuth } from "@/auth/AuthContext";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -40,10 +41,7 @@ const BLOCKED_CODES = new Set([
   "GIFT_SUBSCRIPTION_CONFLICT",
   "SUBSCRIPTION_CHECKOUT_IN_PROGRESS",
   "TEST_ACCOUNT_PLAN_LOCKED",
-  "PROTECTED_PLATFORM_IDENTITY",
-  "COMPLIMENTARY_RECIPIENT_EMAIL_MISMATCH",
-  "COMPLIMENTARY_FACILITY_OWNER_MISMATCH",
-  "COMPLIMENTARY_RECIPIENT_EMAIL_UNVERIFIED"
+  "PROTECTED_PLATFORM_IDENTITY"
 ]);
 
 type State =
@@ -53,6 +51,8 @@ type State =
   | "claimed"
   | "scheduled"
   | "renewal-required"
+  | "guest-accepted"
+  | "identity-blocked"
   | "blocked"
   | "signin-required"
   | "error"
@@ -71,11 +71,15 @@ export default function ClaimComplimentaryAccessScreen() {
   );
   const [token, setToken] = useState("");
   const [tokenReady, setTokenReady] = useState(false);
+  const [previewedToken, setPreviewedToken] = useState("");
   const [summary, setSummary] = useState<ComplimentaryClaimSummary | null>(null);
   const [state, setState] = useState<State>("loading");
   const [message, setMessage] = useState("");
   const [retry, setRetry] = useState(0);
   const afterPaidPeriod = summary?.startMode === "after_paid_period";
+  const identityRecovery = state === "signin-required" || state === "identity-blocked";
+  const guestRecovery =
+    Boolean(auth.token) && (identityRecovery || state === "guest-accepted");
   const completed = state === "claimed" || state === "scheduled";
 
   useEffect(() => {
@@ -112,6 +116,7 @@ export default function ClaimComplimentaryAccessScreen() {
         const result = await previewComplimentaryGrant(token);
         if (!mounted) return;
         setSummary(result);
+        setPreviewedToken(token);
         setState("ready");
       } catch (error) {
         const code = error instanceof ApiError ? error.code : "";
@@ -172,6 +177,14 @@ export default function ClaimComplimentaryAccessScreen() {
           "Stop renewal in Billing, then return to this invitation to schedule the gift. Your paid access continues through its current period. This invitation has been kept; it does not cancel your subscription."
         );
         return;
+      } else if (
+        [
+          "COMPLIMENTARY_RECIPIENT_EMAIL_MISMATCH",
+          "COMPLIMENTARY_RECIPIENT_EMAIL_UNVERIFIED",
+          "COMPLIMENTARY_FACILITY_OWNER_MISMATCH"
+        ].includes(code)
+      ) {
+        setState("identity-blocked");
       } else if (BLOCKED_CODES.has(code)) {
         setState("blocked");
       } else {
@@ -230,8 +243,10 @@ export default function ClaimComplimentaryAccessScreen() {
               {afterPaidPeriod
                 ? completed
                   ? "Check Billing for the gift's current status. Scheduling does not start the free access early."
-                  : "You keep the time you already paid for. This gift starts after the current paid period on the same plan. The invitation does not stop renewal: use Billing to stop renewal, then return here to schedule the gift with the matching verified account."
-                : "Access starts only when the matching verified account claims it."}
+                  : !auth.token
+                    ? "You keep your current paid time. Accepting this gift leaves renewal and billing decisions with you."
+                    : "You keep the time you already paid for. This gift starts after the current paid period on the same plan. The invitation does not stop renewal: use Billing to stop renewal, then return here to schedule the gift with the matching verified account."
+                : "Access applies to an eligible account with the verified recipient email."}
             </Text>
             {summary.plan === "facility" && summary.facilityId ? (
               <Text style={styles.helper}>
@@ -251,7 +266,9 @@ export default function ClaimComplimentaryAccessScreen() {
           </Text>
         ) : null}
 
-        {state === "blocked" || (state === "terminal" && !token) ? (
+        {state === "blocked" ||
+        state === "identity-blocked" ||
+        (state === "terminal" && !token) ? (
           <Text style={styles.helper}>
             If email verification opened in another tab and the claim did not resume,
             reopen the original complimentary-access email and use its claim button again.
@@ -259,35 +276,26 @@ export default function ClaimComplimentaryAccessScreen() {
           </Text>
         ) : null}
 
-        {summary && state === "ready" && !auth.token ? (
-          <View style={styles.actions}>
-            <Pressable
-              accessibilityLabel="Sign in to claim complimentary access"
-              accessibilityRole="button"
-              style={styles.primary}
-              onPress={() =>
-                router.push({
-                  pathname: "/login",
-                  params: { next: COMPLIMENTARY_CLAIM_PATH }
-                } as any)
-              }
-            >
-              <Text style={styles.primaryText}>Sign in to claim</Text>
-            </Pressable>
-            <Pressable
-              accessibilityLabel="Create account to claim complimentary access"
-              accessibilityRole="button"
-              style={styles.secondary}
-              onPress={() =>
-                router.push({
-                  pathname: "/register",
-                  params: { next: COMPLIMENTARY_CLAIM_PATH }
-                } as any)
-              }
-            >
-              <Text style={styles.secondaryText}>Create account</Text>
-            </Pressable>
-          </View>
+        {summary &&
+        ((state === "ready" && !auth.token) || guestRecovery) &&
+        !auth.isHydrating &&
+        previewedToken === token &&
+        (!nativeParamToken || nativeParamToken === token) ? (
+          <GuestGiftAcceptance
+            key={token}
+            kind="complimentary"
+            token={token}
+            claimPath={COMPLIMENTARY_CLAIM_PATH}
+            afterPaidPeriod={afterPaidPeriod}
+            onAcceptForInvitedAddress={
+              guestRecovery
+                ? () => {
+                    setMessage("");
+                    setState("guest-accepted");
+                  }
+                : undefined
+            }
+          />
         ) : null}
 
         {summary && auth.token && ["ready", "claiming"].includes(state) ? (
@@ -345,7 +353,7 @@ export default function ClaimComplimentaryAccessScreen() {
           </Pressable>
         ) : null}
 
-        {auth.token && state === "blocked" ? (
+        {auth.token && (state === "blocked" || state === "identity-blocked") ? (
           <Pressable
             accessibilityLabel="Use a different account for complimentary access"
             accessibilityRole="button"

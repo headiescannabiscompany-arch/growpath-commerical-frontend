@@ -165,6 +165,16 @@ export async function readComplimentaryClaimToken() {
   }
 }
 
+// An accepted invitation no longer needs the sign-in handoff in a verification tab.
+// Keep this tab's token for reload, and preserve other invitations opened elsewhere.
+export function finishGuestClaimContinuation(token: string): void {
+  if (!token || typeof window === "undefined") return;
+  const storage = browserStorage("localStorage");
+  if (readContinuationRecord(storage) === token) {
+    readContinuationRecord(storage, { consume: true });
+  }
+}
+
 export function hasPendingComplimentaryClaimContinuation() {
   if (typeof window === "undefined") return false;
   return Boolean(readContinuationRecord(browserStorage("localStorage")));

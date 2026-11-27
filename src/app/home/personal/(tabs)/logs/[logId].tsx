@@ -1,5 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
-import * as ImagePicker from "expo-image-picker";
+import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -7,9 +6,7 @@ import {
   Image,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
-  TextInput,
   useWindowDimensions,
   View
 } from "react-native";
@@ -20,33 +17,18 @@ import {
   updatePersonalLog,
   type PersonalLog
 } from "@/api/logs";
-import CalendarDateField from "@/components/forms/CalendarDateField";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { fmtDate } from "@/features/grows/routeUtils";
-import {
-  persistImageUris,
-  resolveImageUri,
-  type UploadedPhotoMetadata
-} from "@/utils/photoUploads";
+import { resolveImageUri } from "@/utils/photoUploads";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
-import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
-import { radius } from "@/theme/theme";
+import { useAppTheme } from "@/theme/appTheme";
+import JournalEntryEditor from "@/features/grows/screens/JournalEntryEditor";
+import { createLogDetailStyles } from "@/features/grows/screens/logDetailStyles";
+export { createLogDetailStyles };
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
-}
-
-function dateOnly(value?: string) {
-  if (!value) return "";
-  return String(value).slice(0, 10);
-}
-
-function splitTags(value: string) {
-  return value
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
 }
 
 export default function LogDetailScreen() {
@@ -64,21 +46,9 @@ export default function LogDetailScreen() {
   const [log, setLog] = useState<PersonalLog | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [pickingPhotos, setPickingPhotos] = useState(false);
-  const photoOperationInProgress = useRef(false);
   const [deleting, setDeleting] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [brokenPhotos, setBrokenPhotos] = useState<Record<string, true>>({});
-  const [addedPhotos, setAddedPhotos] = useState<ImagePicker.ImagePickerAsset[]>([]);
-  const [form, setForm] = useState({
-    title: "",
-    date: "",
-    type: "other",
-    notes: "",
-    tags: ""
-  });
-
   const load = useCallback(async () => {
     if (!logId) {
       setFeedback("Missing journal entry id.");
@@ -90,16 +60,7 @@ export default function LogDetailScreen() {
     const row = await getPersonalLog(logId);
     setLog(row);
     setBrokenPhotos({});
-    setAddedPhotos([]);
-    if (row) {
-      setForm({
-        title: row.title || "",
-        date: dateOnly(row.date || row.createdAt),
-        type: row.type || "other",
-        notes: row.notes || "",
-        tags: Array.isArray(row.tags) ? row.tags.join(", ") : ""
-      });
-    } else {
+    if (!row) {
       setFeedback("Journal entry not found.");
     }
     setLoading(false);
@@ -110,126 +71,6 @@ export default function LogDetailScreen() {
       load();
     }, [load])
   );
-
-  async function pickPhotos() {
-    if (photoOperationInProgress.current) return;
-    photoOperationInProgress.current = true;
-    setPickingPhotos(true);
-    try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        setFeedback("Photo-library permission is required to attach images.");
-        return;
-      }
-      const picked = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsMultipleSelection: true,
-        allowsEditing: false,
-        quality: 0.8
-      });
-      if (!picked.canceled) {
-        setAddedPhotos((current) => [
-          ...current,
-          ...picked.assets.filter((photo) => photo.uri)
-        ]);
-        setFeedback("");
-      }
-    } catch {
-      setFeedback("Unable to open photos. Please try again.");
-    } finally {
-      photoOperationInProgress.current = false;
-      setPickingPhotos(false);
-    }
-  }
-
-  async function save() {
-    if (photoOperationInProgress.current) return;
-    if (!logId || !form.title.trim() || !form.date.trim()) {
-      setFeedback("Title and date are required.");
-      return;
-    }
-    photoOperationInProgress.current = true;
-    setSaving(true);
-    setFeedback("");
-    try {
-      const uploaded: string[] = [];
-      const savedMetadata = new Map<string, UploadedPhotoMetadata>();
-      for (const [index, photo] of addedPhotos.entries()) {
-        const [url] = await persistImageUris([photo.uri], {
-          prepareForJournal: true,
-          onUploaded: (_sourceUri, savedUrl, metadata) => {
-            savedMetadata.set(savedUrl, metadata);
-          }
-        });
-        if (!url) throw new Error("Image upload did not return a URL.");
-        uploaded.push(url);
-        // Retain each upload even if a later photo or the journal PATCH fails.
-        setAddedPhotos((current) =>
-          current.map((candidate, candidateIndex) =>
-            candidateIndex === index && candidate.uri === photo.uri
-              ? {
-                  ...candidate,
-                  ...savedMetadata.get(url),
-                  mimeType: savedMetadata.get(url)?.mimeType || candidate.mimeType,
-                  width: savedMetadata.get(url)?.width === null ? 0 : candidate.width,
-                  height: savedMetadata.get(url)?.height === null ? 0 : candidate.height,
-                  fileSize: savedMetadata.get(url)?.sizeBytes ?? candidate.fileSize,
-                  uri: url
-                }
-              : candidate
-          )
-        );
-      }
-      const photoPatch = uploaded.length
-        ? {
-            photos: [...(log?.photos || []), ...uploaded],
-            photoMetadata: [
-              ...(log?.photos || []).map((url) => ({
-                ...log?.photoMetadata?.find((metadata) => metadata.url === url),
-                url
-              })),
-              ...uploaded.map((url, index) => ({
-                url,
-                growId: log?.growId,
-                plantId: log?.plantId || null,
-                logId,
-                mimeType: addedPhotos[index]?.mimeType || null,
-                width: addedPhotos[index]?.width || null,
-                height: addedPhotos[index]?.height || null,
-                sizeBytes: addedPhotos[index]?.fileSize || null,
-                ...savedMetadata.get(url),
-                consentForAI: false,
-                consentForTraining: false
-              }))
-            ]
-          }
-        : {};
-      const updated = await updatePersonalLog(logId, {
-        title: form.title.trim(),
-        date: form.date.trim() === dateOnly(log?.date) ? log?.date : form.date.trim(),
-        type: form.type.trim() || "other",
-        notes: form.notes.trim(),
-        tags: splitTags(form.tags),
-        ...photoPatch
-      });
-      if (!updated) {
-        setFeedback("Unable to save journal entry.");
-        return;
-      }
-      setLog(updated);
-      setAddedPhotos([]);
-      setBrokenPhotos({});
-      setEditing(false);
-      setFeedback("Journal entry saved.");
-    } catch {
-      setFeedback(
-        "Unable to upload photos or save this entry. Your changes are still here; please try again."
-      );
-    } finally {
-      photoOperationInProgress.current = false;
-      setSaving(false);
-    }
-  }
 
   async function remove() {
     if (!logId || deleting) return;
@@ -310,125 +151,18 @@ export default function LogDetailScreen() {
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
         {!log ? null : editing ? (
-          <View style={styles.card}>
-            <Text style={styles.label}>Title</Text>
-            <TextInput
-              style={styles.input}
-              value={form.title}
-              editable={!saving}
-              onChangeText={(title) => setForm((current) => ({ ...current, title }))}
-              placeholderTextColor={palette.textMuted}
-              selectionColor={palette.accent}
-              accessibilityLabel="Edit log title"
-            />
-            <CalendarDateField
-              label="Date"
-              value={form.date}
-              onChange={(date) => setForm((current) => ({ ...current, date }))}
-              placeholder="Choose log date"
-              accessibilityLabel="Edit log date"
-              optional={false}
-              disabled={saving}
-            />
-            <Text style={styles.label}>Type</Text>
-            <TextInput
-              style={styles.input}
-              value={form.type}
-              editable={!saving}
-              onChangeText={(type) => setForm((current) => ({ ...current, type }))}
-              placeholderTextColor={palette.textMuted}
-              selectionColor={palette.accent}
-              accessibilityLabel="Edit log type"
-            />
-            <Text style={styles.label}>Notes</Text>
-            <TextInput
-              style={styles.notesInput}
-              value={form.notes}
-              editable={!saving}
-              onChangeText={(notes) => setForm((current) => ({ ...current, notes }))}
-              multiline
-              placeholderTextColor={palette.textMuted}
-              selectionColor={palette.accent}
-              accessibilityLabel="Edit log notes"
-            />
-            <Text style={styles.label}>Tags</Text>
-            <TextInput
-              style={styles.input}
-              value={form.tags}
-              editable={!saving}
-              onChangeText={(tags) => setForm((current) => ({ ...current, tags }))}
-              placeholder="watering, deficiency, follow-up"
-              placeholderTextColor={palette.textMuted}
-              selectionColor={palette.accent}
-              accessibilityLabel="Edit log tags"
-            />
-            <Text style={styles.label}>Photos</Text>
-            <Text style={styles.cardText}>
-              {log.photos?.length || 0} saved photos. New photos are added when you save.
-              Published timeline copies stay unchanged until you review and publish again.
-            </Text>
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={pickPhotos}
-              disabled={saving || pickingPhotos}
-              accessibilityRole="button"
-              accessibilityLabel="Add photos to journal entry"
-            >
-              <Text style={styles.secondaryButtonText}>
-                {pickingPhotos ? "Opening photos..." : "Add Photos"}
-              </Text>
-            </Pressable>
-            <View style={styles.photoGrid}>
-              {addedPhotos.map((photo, index) => (
-                <View key={`${photo.uri}-${index}`} style={styles.photoTile}>
-                  <Image
-                    source={{ uri: resolveImageUri(photo.uri) }}
-                    style={[styles.photoThumb, { width: photoTileWidth }]}
-                    accessibilityLabel={`New journal photo ${index + 1}`}
-                  />
-                  <Pressable
-                    onPress={() =>
-                      setAddedPhotos((current) => current.filter((_, i) => i !== index))
-                    }
-                    disabled={saving || pickingPhotos}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Remove new photo ${index + 1}`}
-                  >
-                    <Text style={styles.secondaryButtonText}>Remove</Text>
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-            <View style={styles.row}>
-              <Pressable
-                style={[
-                  styles.primaryButton,
-                  (saving || pickingPhotos) && styles.disabled
-                ]}
-                disabled={saving || pickingPhotos}
-                onPress={save}
-                accessibilityRole="button"
-                accessibilityLabel="Save log changes"
-              >
-                <Text style={styles.primaryButtonText}>
-                  {saving ? "Saving..." : "Save Changes"}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={styles.secondaryButton}
-                disabled={saving || pickingPhotos}
-                onPress={() => {
-                  if (photoOperationInProgress.current) return;
-                  setAddedPhotos([]);
-                  setEditing(false);
-                }}
-                accessibilityRole="button"
-                accessibilityLabel="Cancel log editing"
-              >
-                <Text style={styles.secondaryButtonText}>Cancel</Text>
-              </Pressable>
-            </View>
-          </View>
+          <JournalEntryEditor
+            key={logId}
+            log={log}
+            saveLog={(patch) => updatePersonalLog(logId, patch)}
+            onCancel={() => setEditing(false)}
+            onSaved={(updated) => {
+              setLog(updated);
+              setBrokenPhotos({});
+              setEditing(false);
+              setFeedback("Journal entry saved.");
+            }}
+          />
         ) : (
           <>
             <View style={styles.card}>
@@ -570,7 +304,10 @@ export default function LogDetailScreen() {
             <View style={styles.row}>
               <Pressable
                 style={styles.primaryButton}
-                onPress={() => setEditing(true)}
+                onPress={() => {
+                  setFeedback("");
+                  setEditing(true);
+                }}
                 accessibilityRole="button"
                 accessibilityLabel="Edit log entry"
               >
@@ -599,121 +336,4 @@ export default function LogDetailScreen() {
       </ScrollView>
     </ScreenBoundary>
   );
-}
-
-export function createLogDetailStyles(palette: ThemePalette) {
-  return StyleSheet.create({
-    center: {
-      flex: 1,
-      alignItems: "center",
-      backgroundColor: palette.page,
-      justifyContent: "center"
-    },
-    container: { flex: 1, backgroundColor: palette.page },
-    content: { padding: 20, paddingBottom: 40, gap: 10 },
-    title: { fontSize: 22, fontWeight: "800", color: palette.text },
-    meta: { fontSize: 13, color: palette.textMuted },
-    card: {
-      padding: 14,
-      borderWidth: 1,
-      borderColor: palette.border,
-      borderRadius: radius.card,
-      backgroundColor: palette.card,
-      gap: 8
-    },
-    cardTitle: { fontSize: 16, fontWeight: "800", color: palette.text },
-    cardText: { color: palette.textMuted, lineHeight: 20 },
-    notes: { color: palette.textSoft, lineHeight: 20 },
-    linkMeta: { color: palette.textMuted, lineHeight: 19 },
-    label: { color: palette.text, fontWeight: "800" },
-    input: {
-      backgroundColor: palette.surfaceStrong,
-      borderWidth: 1,
-      borderColor: palette.border,
-      borderRadius: radius.card,
-      color: palette.text,
-      padding: 10
-    },
-    notesInput: {
-      minHeight: 130,
-      backgroundColor: palette.surfaceStrong,
-      borderWidth: 1,
-      borderColor: palette.border,
-      borderRadius: radius.card,
-      color: palette.text,
-      padding: 10,
-      textAlignVertical: "top"
-    },
-    tags: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-    tag: {
-      borderRadius: 999,
-      backgroundColor: palette.accentSoft,
-      color: palette.success,
-      fontWeight: "800",
-      paddingHorizontal: 9,
-      paddingVertical: 5,
-      overflow: "hidden"
-    },
-    rejectedTag: {
-      borderRadius: 999,
-      backgroundColor: palette.surfaceMuted,
-      color: palette.danger,
-      fontWeight: "800",
-      paddingHorizontal: 9,
-      paddingVertical: 5,
-      overflow: "hidden"
-    },
-    photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-    photoTile: {
-      borderWidth: 1,
-      borderColor: palette.border,
-      borderRadius: radius.card,
-      overflow: "hidden",
-      backgroundColor: palette.card
-    },
-    photoThumb: { width: "100%", height: 88, backgroundColor: palette.surfaceStrong },
-    photoFallback: {
-      height: 88,
-      backgroundColor: palette.surfaceMuted,
-      padding: 8,
-      justifyContent: "center"
-    },
-    photoFallbackTitle: { color: palette.warning, fontWeight: "800", fontSize: 12 },
-    photoFallbackText: { color: palette.warning, fontSize: 11, marginTop: 3 },
-    photoMeta: { padding: 6, color: palette.textMuted, fontSize: 11, fontWeight: "700" },
-    row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-    primaryButton: {
-      backgroundColor: palette.accent,
-      borderRadius: radius.card,
-      paddingHorizontal: 12,
-      paddingVertical: 9
-    },
-    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
-    secondaryButton: {
-      backgroundColor: palette.surface,
-      borderWidth: 1,
-      borderColor: palette.border,
-      borderRadius: radius.card,
-      paddingHorizontal: 12,
-      paddingVertical: 9
-    },
-    secondaryButtonText: { color: palette.text, fontWeight: "800" },
-    dangerButton: {
-      backgroundColor: palette.surface,
-      borderWidth: 1,
-      borderColor: palette.danger,
-      borderRadius: radius.card,
-      paddingHorizontal: 12,
-      paddingVertical: 9
-    },
-    dangerButtonText: { color: palette.danger, fontWeight: "800" },
-    disabled: { opacity: 0.5 },
-    feedback: {
-      color: palette.textSoft,
-      backgroundColor: palette.surfaceMuted,
-      borderRadius: radius.card,
-      padding: 9,
-      fontWeight: "700"
-    }
-  });
 }

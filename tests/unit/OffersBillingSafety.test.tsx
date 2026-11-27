@@ -567,50 +567,74 @@ describe("Offers billing safety", () => {
     });
   });
 
-  it("keeps an anonymous continuation non-gift until explicit safe sign-in", async () => {
+  it("opens the gift link straight to independently priced monthly and annual gifts", async () => {
     mockToken = null;
     mockSearchParams.gift = "1";
+    const quotes = recurringQuotes();
+    quotes.pro.yearly.unitAmount = 7601;
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
-      mode: "live",
       giftCheckoutConfigured: true,
-      trial: { enabled: true, days: 30 }
+      quotes
     });
     const screen = render(<Offers />);
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(/Sign in with the purchasing account before gift checkout/i)
-      ).toBeTruthy()
-    );
+    expect(await screen.findByText("$10 · one-time gift")).toBeTruthy();
+    expect(screen.getByText("$50 · one-time gift")).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "One year" }));
+    expect(screen.getByText("$76.01 · one-time gift")).toBeTruthy();
+    expect(screen.getByText("$500 · one-time gift")).toBeTruthy();
+    expect(screen.queryByText(/one introductory trial/i)).toBeNull();
     expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
+    expect(screen.queryByText("Facility")).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(getSubscription).not.toHaveBeenCalled();
     expect(getGiftCheckoutRecovery).not.toHaveBeenCalled();
-    expect(screen.getByLabelText("Gift checkout sign in required")).toBeTruthy();
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
 
-    fireEvent.press(screen.getByLabelText("Sign in for gift subscription"));
+    fireEvent.press(screen.getByRole("button", { name: "Buy with an existing account" }));
     expect(mockPush).toHaveBeenCalledWith("/login?next=%2Foffers%3Fgift%3D1");
-    fireEvent.press(screen.getByLabelText("Sign in to buy a gift"));
-    expect(mockPush).toHaveBeenCalledWith("/login?next=%2Foffers%3Fgift%3D1");
+  });
+
+  it("keeps a partial session on the public review and never guesses a missing gift price", async () => {
+    mockUserAvailable = false;
+    mockSearchParams.gift = "1";
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      giftCheckoutConfigured: true
+    });
+    const screen = render(<Offers />);
+    expect(await screen.findAllByText("Price unavailable for this term")).toHaveLength(2);
+    expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
     expect(getGiftCheckoutRecovery).not.toHaveBeenCalled();
     expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
     expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 
-  it("does not enter gift mode or call protected recovery with token but no user", async () => {
-    mockUserAvailable = false;
+  it("lets a guest retry the public catalog without a payment or sign-in", async () => {
+    mockToken = null;
     mockSearchParams.gift = "1";
+    (getSubscriptionSetupStatus as jest.Mock)
+      .mockRejectedValueOnce(new Error("unavailable"))
+      .mockResolvedValueOnce({ giftCheckoutConfigured: true, quotes: recurringQuotes() });
+    const screen = render(<Offers />);
+    const retry = await screen.findByRole("button", { name: "Check again" });
+    expect(screen.queryByText(/one-time gift/)).toBeNull();
+    fireEvent.press(retry);
+    expect(await screen.findByText("$10 · one-time gift")).toBeTruthy();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(getSubscription).not.toHaveBeenCalled();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("opens public gift review from the signed-out plan list", async () => {
+    mockToken = null;
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
-      mode: "live",
       giftCheckoutConfigured: true,
-      trial: { enabled: true, days: 30 }
+      quotes: recurringQuotes()
     });
     const screen = render(<Offers />);
-
-    await waitFor(() =>
-      expect(screen.getByLabelText("Gift checkout sign in required")).toBeTruthy()
-    );
-    expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
-    expect(getGiftCheckoutRecovery).not.toHaveBeenCalled();
-    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+    fireEvent.press(await screen.findByRole("button", { name: "Review prepaid gifts" }));
+    expect(mockPush).toHaveBeenCalledWith("/offers?gift=1");
     expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 

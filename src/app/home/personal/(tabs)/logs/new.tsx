@@ -34,6 +34,14 @@ import {
   resolveImageUri,
   type UploadedPhotoMetadata
 } from "@/utils/photoUploads";
+import { checkJournalSave } from "@/api/logs";
+import {
+  journalSaveKey,
+  journalReceiptScope,
+  readJournalReceipt,
+  writeJournalReceipt,
+  clearJournalReceipt
+} from "@/features/personal/logs/journalSaveReceipt";
 import { createWorkspaceLog, getWorkspaceGrow } from "@/features/grows/workspaceData";
 import { localCalendarDate } from "@/features/grows/routeUtils";
 
@@ -53,19 +61,44 @@ export type NewLogScreenProps = {
   workspace?: "personal" | "commercial";
 };
 
+type JournalParams = {
+  growId?: string | string[];
+  plantId?: string | string[];
+  toolRunId?: string | string[];
+  focus?: string | string[];
+  from?: string | string[];
+};
+
 export default function NewLogScreen({ workspace = "personal" }: NewLogScreenProps = {}) {
-  const router = useRouter();
-  const basePath = workspace === "commercial" ? "/home/commercial" : "/home/personal";
-  const params = useLocalSearchParams<{
-    growId?: string | string[];
-    plantId?: string | string[];
-    toolRunId?: string | string[];
-    focus?: string | string[];
-    from?: string | string[];
-  }>();
+  const params = useLocalSearchParams<JournalParams>();
   const growId = param(params.growId);
   const accountId = useOptionalAuth()?.user?.id;
-  const growNameScope = accountId && growId ? JSON.stringify([accountId, workspace, growId]) : null;
+  return (
+    <JournalForm
+      key={JSON.stringify([workspace, accountId, growId])}
+      workspace={workspace}
+      accountId={accountId}
+      growId={growId}
+      params={params}
+    />
+  );
+}
+
+function JournalForm({
+  workspace,
+  accountId,
+  growId,
+  params
+}: {
+  workspace: "personal" | "commercial";
+  accountId?: string;
+  growId: string;
+  params: JournalParams;
+}) {
+  const router = useRouter();
+  const basePath = `/home/${workspace}`;
+  const growNameScope =
+    accountId && growId ? JSON.stringify([accountId, workspace, growId]) : null;
   const fromPersonalHome = workspace === "personal" && params.from === "personal-home";
   const growJournalHref = growId
     ? `${basePath}/grows/${encodeURIComponent(growId)}/journal`
@@ -85,7 +118,10 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
   const { plants, plantId, selectedPlant, setPlantId, toolRunContext } =
     useToolPlantContext(growId, initialPlantId, true, workspace);
 
-  const [growNameRead, setGrowNameRead] = useState<{ scope: string; name: string } | null>(null);
+  const [growNameRead, setGrowNameRead] = useState<{
+    scope: string;
+    name: string;
+  } | null>(null);
   const growName = growNameRead?.scope === growNameScope ? growNameRead.name : "";
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(() => localCalendarDate());
@@ -103,6 +139,79 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
   const [photoUrl, setPhotoUrl] = useState("");
   const draftGeneration = useRef(0);
   const saveInFlight = useRef(false);
+  const receiptScope =
+    workspace === "personal" ? journalReceiptScope(accountId, growId) : null;
+  const requestKey = useRef<string | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const [receiptReady, setReceiptReady] = useState(!receiptScope);
+  const [unconfirmed, setUnconfirmed] = useState(false);
+  const [savedLogId, setSavedLogId] = useState("");
+  const [checkingSave, setCheckingSave] = useState(false);
+  const [receiptNotice, setReceiptNotice] = useState("");
+  useEffect(() => {
+    if (!receiptScope) return;
+    let current = true;
+    void readJournalReceipt(receiptScope).then((key) => {
+      if (!current) return;
+      requestKey.current = key;
+      setUnconfirmed(Boolean(key));
+      setReceiptReady(true);
+    });
+    return () => {
+      current = false;
+    };
+  }, [receiptScope]);
+
+  async function checkLastSave() {
+    const key = requestKey.current;
+    if (!key || saveInFlight.current || checkingSave) return;
+    setCheckingSave(true);
+    try {
+      const result = await checkJournalSave(growId, key);
+      if (key !== requestKey.current) return;
+      setSavedLogId(result.status === "saved" ? result.logId : "");
+      setReceiptNotice(
+        result.status === "saved"
+          ? "Your earlier entry is saved."
+          : result.status === "removed"
+            ? "Your earlier entry was removed. You can start a separate entry."
+            : "No saved entry is confirmed yet. Complete this draft and save it again."
+      );
+    } catch {
+      setReceiptNotice("The previous save could not be checked. Try again.");
+    } finally {
+      setCheckingSave(false);
+    }
+  }
+
+  function openSavedEntry() {
+    const key = requestKey.current;
+    if (!key || !savedLogId || saveInFlight.current || checkingSave) return;
+    try {
+      router.push(`${basePath}/logs/${encodeURIComponent(savedLogId)}` as any);
+      // Returning to this mounted draft preserves edits. A fresh composer starts a new entry.
+      void clearJournalReceipt(receiptScope, key);
+    } catch {
+      setReceiptNotice("Your entry is saved. Try opening it again.");
+    }
+  }
+
+  async function startSeparateEntry() {
+    const key = requestKey.current;
+    if (!key || saveInFlight.current || checkingSave) return;
+    requestKey.current = null;
+    setSavedLogId("");
+    setUnconfirmed(false);
+    setReceiptNotice("");
+    setError("");
+    await clearJournalReceipt(receiptScope, key);
+  }
   const logTypes = useMemo(
     () => ["watering", "feed", "training", "environment", "issues", "harvest", "other"],
     []
@@ -111,7 +220,10 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
   useEffect(() => {
     if (!growNameScope) return;
     let current = true;
-    void getWorkspaceGrow(workspace, growId, { verifyRecords: true, notifyTransport: false })
+    void getWorkspaceGrow(workspace, growId, {
+      verifyRecords: true,
+      notifyTransport: false
+    })
       .catch(() => null)
       .then((grow) => {
         if (!current) return;
@@ -146,7 +258,9 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     }
   }, [plantId, selectedToolRun?.plantId, setPlantId]);
 
-  const canSave = Boolean(growId && title.trim() && date.trim());
+  const canSave = Boolean(
+    receiptReady && !checkingSave && growId && title.trim() && date.trim()
+  );
 
   const pickPhotos = useCallback(async () => {
     if (saveInFlight.current) return;
@@ -263,7 +377,14 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           }
         }
       );
+      let key: string | undefined;
+      if (workspace === "personal") {
+        key = requestKey.current || journalSaveKey();
+        requestKey.current = key;
+        await writeJournalReceipt(receiptScope, key);
+      }
       const created = await createWorkspaceLog(workspace, {
+        ...(key ? { clientSaveKey: key } : {}),
         growId,
         plantId: toolRunContext.plantId,
         title: title.trim(),
@@ -299,6 +420,14 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           : undefined
       });
       if (!created) throw new Error("Failed to create log.");
+      if (key) await clearJournalReceipt(receiptScope, key);
+      if (!mounted.current) return;
+      if (key) {
+        requestKey.current = null;
+        setUnconfirmed(false);
+        setSavedLogId("");
+        setReceiptNotice("");
+      }
       // A retained screen must not reuse a saved draft, even if navigation fails.
       // Invalidate outstanding photo/AI work before clearing its completed state.
       draftGeneration.current += 1;
@@ -320,6 +449,14 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
         setError("Journal entry saved. Open the grow journal to view it.");
       }
     } catch (failure: any) {
+      if (requestKey.current) {
+        setUnconfirmed(true);
+        if (
+          failure?.code === "PERSONAL_LOG_SAVE_CONFLICT" &&
+          /^[0-9a-f]{24}$/i.test(String(failure?.data?.logId ?? ""))
+        )
+          setSavedLogId(failure.data.logId);
+      }
       setError(failure?.message || "Failed to create log.");
     } finally {
       saveInFlight.current = false;
@@ -329,6 +466,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     acceptedTags,
     basePath,
     canSave,
+    receiptScope,
     date,
     growId,
     logType,
@@ -463,6 +601,43 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           </Text>
         ) : null}
         {error ? <Text style={styles.error}>{error}</Text> : null}
+        {unconfirmed ? (
+          <View style={{ gap: 8 }}>
+            <Text accessibilityLiveRegion="polite" style={styles.subtitle}>
+              {receiptNotice ||
+                "Check the earlier save or retry this entry. Start a separate entry only if you want another journal record."}
+            </Text>
+            {savedLogId ? (
+              <Pressable
+                style={{ minHeight: 44, justifyContent: "center" }}
+                accessibilityRole="button"
+                disabled={saving || checkingSave}
+                onPress={openSavedEntry}
+              >
+                <Text style={styles.label}>Open saved entry</Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                style={{ minHeight: 44, justifyContent: "center" }}
+                accessibilityRole="button"
+                disabled={saving || checkingSave}
+                onPress={() => void checkLastSave()}
+              >
+                <Text style={styles.label}>
+                  {checkingSave ? "Checking…" : "Check earlier save"}
+                </Text>
+              </Pressable>
+            )}
+            <Pressable
+              style={{ minHeight: 44, justifyContent: "center" }}
+              accessibilityRole="button"
+              disabled={saving || checkingSave}
+              onPress={() => void startSeparateEntry()}
+            >
+              <Text style={styles.label}>Start a separate entry</Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         <ToolPlantContextPicker
           plants={plants}
